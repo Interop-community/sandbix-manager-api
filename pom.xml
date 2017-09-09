@@ -8,9 +8,9 @@
     </parent>
 
     <groupId>org.hspconsortium.sandbox</groupId>
-    <artifactId>hspc-sandbox-manager</artifactId>
-    <version>1.12.0-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <artifactId>hspc-sandbox-manager-api</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <name>Sandbox Manager</name>
     <description>Sandbox Management Tool</description>
