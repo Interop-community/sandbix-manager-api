@@ -85,6 +85,12 @@
             <artifactId>spring-security-oauth2</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.tuckey/urlrewritefilter -->
         <dependency>
             <groupId>org.tuckey</groupId>

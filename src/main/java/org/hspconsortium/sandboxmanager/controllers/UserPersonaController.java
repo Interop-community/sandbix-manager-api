@@ -43,7 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/REST/userPersona")
+@RequestMapping("/userPersona")
 public class UserPersonaController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(UserPersonaController.class.getName());
 

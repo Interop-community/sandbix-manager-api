@@ -35,7 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/REST/launchScenario")
+@RequestMapping("/launchScenario")
 public class LaunchScenarioController extends AbstractController  {
 
     private final LaunchScenarioService launchScenarioService;

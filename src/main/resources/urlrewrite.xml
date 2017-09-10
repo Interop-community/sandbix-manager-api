@@ -17,9 +17,9 @@
     </rule>
 
     <rule>
-        <condition type="request-uri">^/[^/\.]+/REST/.*$</condition>
-        <from>^(.*)/.*/REST/(.*)$</from>
-        <to last="true" type="redirect">$1/REST/$2</to>
+        <condition type="request-uri">^/[^/\.]+/.*$</condition>
+        <from>^(.*)/.*/(.*)$</from>
+        <to last="true" type="redirect">$1/$2</to>
     </rule>
 
     <rule>
@@ -36,7 +36,7 @@
 
     <rule>
         <condition type="request-uri">^((?!/static/).)*$</condition>
-        <condition type="request-uri">^((?!/REST/).)*$</condition>
+        <condition type="request-uri">^((?!/).)*$</condition>
         <condition type="request-uri">^((?!/launch.html).)*$</condition>
         <condition type="request-uri">^((?!/launchEmbedded.html).)*$</condition>
         <condition type="request-uri">^((?!/index.html).)*$</condition>
@@ -47,7 +47,7 @@
 
     <rule>
         <condition type="request-uri">^((?!/static/).)*$</condition>
-        <condition type="request-uri">^((?!/REST/).)*$</condition>
+        <condition type="request-uri">^((?!/).)*$</condition>
         <condition type="request-uri">^((?!/launch.html).)*$</condition>
         <condition type="request-uri">^((?!/launchEmbedded.html).)*$</condition>
         <condition next="or" type="request-uri">^/([^/\.]+)?$</condition>
@@ -65,10 +65,10 @@
 <!--RewriteCond %{REQUEST_URI} ^/static/.*$-->
 <!--RewriteRule ^.*$ - [L]-->
 
-<!--RewriteCond %{REQUEST_URI} ^/[^/\.]+/REST/.*$-->
-<!--RewriteRule ^(.*)/.*/REST/(.*)$ $1/REST/$2 [L,QSA]-->
+<!--RewriteCond %{REQUEST_URI} ^/[^/\.]+/.*$-->
+<!--RewriteRule ^(.*)/.*/(.*)$ $1/$2 [L,QSA]-->
 
-<!--RewriteCond %{REQUEST_URI} ^/REST/.*$-->
+<!--RewriteCond %{REQUEST_URI} ^/.*$-->
 <!--RewriteRule ^.*$ - [L,QSA]-->
 
 <!--RewriteCond %{REQUEST_URI} ^/[^/\.]+/launch.html/.*$-->

@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
-@RequestMapping("/REST/sandbox")
+@RequestMapping("/sandbox")
 public class SandboxController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxController.class.getName());
 

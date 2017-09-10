@@ -36,7 +36,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/REST/admin")
+@RequestMapping("/admin")
 public class AdminController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(AdminController.class.getName());
 
