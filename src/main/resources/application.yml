@@ -1,8 +1,8 @@
 server:
   port: 12000
-  session:
-    cookie:
-      name: SBM_JSESSIONID
+#  session:
+#    cookie:
+#      name: SBM_JSESSIONID
   tomcat:
     remote_ip_header: x-forwarded-for
     protocol_header: x-forwarded-proto
@@ -42,6 +42,12 @@ spring:
 
 flyway:
   locations: db/mysql/migration
+
+security:
+  oauth2:
+    resource:
+      userInfoUri: ${hspc.platform.authorization.url}/userinfo
+      token-info-uri: ${hspc.platform.authorization.url}/token
 
 hspc:
   platform:
