@@ -9,11 +9,6 @@ pipelines:
           - echo "Please use a GitFlow branch"
           - exit 1;
   branches:
-    # In the GitFlow Workflow, the develop branch is the main development branch
-    # and the parent to all feature branches.
-    # CD Pipeline:
-    #  - Commits to develop are automatically pushed to dev
-    #  - Commits to develop are released to the maven repo as snapshot versions
     develop:
       - step:
           caches:
@@ -22,59 +17,27 @@ pipelines:
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
             - gpg --import private-key.gpg
             - mvn -V -B -s settings.xml deploy -P DEPLOY
-            # todo push to dev
-    # In the GitFlow Workflow, feature branches are for active development.
-    # CD Pipeline:
-    #  - Commits to feature are verified for testing
-    #  - Commits to feature are not released to maven
     feature/*:
       - step:
           caches:
             - maven
           script:
             - mvn -B verify
-    # In the GitFlow Workflow, release branches are for polishing a release prior to cutting.
-    # Releases are cut by:
-    #  1) merging to master and setting the maven version number
-    #  2) tagging the commit to master with the maven version number
-    #  3) releasing the artifact as part of the master commit
-    #  4) merging the release branch to develop
-    # CD Pipeline:
-    #  - Commits to release are automatically pushed to test
-    #  - Commits to release are released to the maven repo as snapshot versions
     release/*:
       - step:
           caches:
             - maven
           script:
-            - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
-            - gpg --import private-key.gpg
-            - mvn -V -B -s settings.xml deploy -P DEPLOY
-            # todo push to test
-    # In the GitFlow Workflow, hotfix branches are the only branches that should branch off master
-    # CD Pipeline:
-    #  - Commits to hotfix are automatically pushed to test
-    #  - Commits to release are released to the maven repo as snapshot versions
+            - mvn -B verify
     hotfix/*:
       - step:
           caches:
             - maven
           script:
+            - mvn -B verify
+    master:
+      - step:
+          script:
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
             - gpg --import private-key.gpg
             - mvn -V -B -s settings.xml deploy -P DEPLOY
-            # todo push to test
-    # In the GitFlow Workflow, the master branch stores all historical releases.
-    # Once a release branch is ready for cutting, the release branch is merged into
-    # master and tagged with a version number.  In addition, the release branch should
-    # be merged into develop.
-    # CD Pipeline:
-    #  - Commits to master are automatically pushed to test
-    #  - Commits to release are not released to the maven repo because they shoud have been on the release or hotfix branch
-    master:
-      - step:
-          caches:
-            - maven
-          script:
-            - mvn -B verify
-            # todo push to test
