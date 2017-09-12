@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/envinfo")
+@RequestMapping("/envinfo")
 public class EnvInfoController {
 
     @Value("${envInfo.active:}")

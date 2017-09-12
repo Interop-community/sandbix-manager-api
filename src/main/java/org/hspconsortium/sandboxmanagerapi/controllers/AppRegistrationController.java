@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/api/app"})
+@RequestMapping({"/app"})
 public class AppRegistrationController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(AppRegistrationController.class.getName());
 

@@ -36,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sandboxinvite")
+@RequestMapping("/sandboxinvite")
 public class SandboxInviteController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxInviteController.class.getName());
 

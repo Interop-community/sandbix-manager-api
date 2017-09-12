@@ -34,7 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/api/fhirdata"})
+@RequestMapping({"/fhirdata"})
 public class DataManagerController extends AbstractController {
 
     private static Logger LOGGER = LoggerFactory.getLogger(DataManagerController.class.getName());

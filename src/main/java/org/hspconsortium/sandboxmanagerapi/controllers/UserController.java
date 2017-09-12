@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 @RestController
-@RequestMapping({"/api/user"})
+@RequestMapping({"/user"})
 public class UserController extends AbstractController {
 
     @Value("${hspc.platform.defaultSystemRoles}")

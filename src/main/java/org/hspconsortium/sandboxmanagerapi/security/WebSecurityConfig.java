@@ -1,4 +1,4 @@
-//package org.hspconsortium.sandboxmanagerapi.config;
+//package org.hspconsortium.sandboxmanagerapi.security;
 //
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.context.annotation.Configuration;

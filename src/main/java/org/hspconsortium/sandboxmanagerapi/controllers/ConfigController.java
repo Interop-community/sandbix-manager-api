@@ -34,7 +34,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/config")
+@RequestMapping("/config")
 public class ConfigController {
     private static Logger LOGGER = LoggerFactory.getLogger(ConfigController.class.getName());
 

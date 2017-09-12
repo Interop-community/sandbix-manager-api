@@ -36,11 +36,13 @@
 
     <dependencies>
 
+<!--
         <dependency>
             <groupId>org.hspconsortium.account</groupId>
             <artifactId>hspc-account-java-client</artifactId>
             <version>${hspc.reference.account.java.client.version}</version>
         </dependency>
+-->
 
         <dependency>
             <groupId>org.hspconsortium.reference</groupId>

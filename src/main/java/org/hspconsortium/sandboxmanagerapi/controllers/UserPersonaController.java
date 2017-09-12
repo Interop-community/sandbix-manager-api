@@ -40,7 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 @RestController
-@RequestMapping("/api/userPersona")
+@RequestMapping("/userPersona")
 public class UserPersonaController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(UserPersonaController.class.getName());
 

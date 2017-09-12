@@ -38,7 +38,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/api/termsofuse")
+@RequestMapping("/termsofuse")
 public class TermsOfUseController extends AbstractController  {
     private static Logger LOGGER = LoggerFactory.getLogger(TermsOfUseController.class.getName());
 
