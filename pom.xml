@@ -36,14 +36,6 @@
 
     <dependencies>
 
-<!--
-        <dependency>
-            <groupId>org.hspconsortium.account</groupId>
-            <artifactId>hspc-account-java-client</artifactId>
-            <version>${hspc.reference.account.java.client.version}</version>
-        </dependency>
--->
-
         <dependency>
             <groupId>org.hspconsortium.reference</groupId>
             <artifactId>hspc-reference-messaging-common</artifactId>
@@ -51,7 +43,6 @@
         </dependency>
 
         <!-- Spring Boot -->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -148,14 +139,12 @@
         </dependency>
 
         <!-- Hibernate validator -->
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
 
         <!-- Guava -->
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -163,7 +152,6 @@
         </dependency>
 
         <!-- Java EE -->
-
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
@@ -171,7 +159,6 @@
         </dependency>
 
         <!-- JWT -->
-
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
