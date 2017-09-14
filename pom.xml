@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.hspconsortium.release</groupId>
         <artifactId>hspc-release-spring-boot</artifactId>
-        <version>0.8</version>
+        <version>0.9.0</version>
     </parent>
 
     <groupId>org.hspconsortium.sandbox</groupId>
@@ -32,52 +32,52 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
-<!--
-    <profiles>
-        <profile>
-            <id>hspc-nexus</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <repositories>
-                <repository>
-                    <name>HSPC Releases</name>
-                    <id>hspc-releases</id>
-                    <url>https://nexus.hspconsortium.org/repository/maven-releases/</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <name>HSPC Snapshots</name>
-                    <id>hspc-snapshots</id>
-                    <url>https://nexus.hspconsortium.org/repository/maven-snapshots/</url>
-                    <releases>
-                        <enabled>false</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>central</id>
-                    <url>https://repo1.maven.org/maven2/</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
-    </profiles>
--->
+    <!--
+        <profiles>
+            <profile>
+                <id>hspc-nexus</id>
+                <activation>
+                    <activeByDefault>true</activeByDefault>
+                </activation>
+                <repositories>
+                    <repository>
+                        <name>HSPC Releases</name>
+                        <id>hspc-releases</id>
+                        <url>https://nexus.hspconsortium.org/repository/maven-releases/</url>
+                        <releases>
+                            <enabled>true</enabled>
+                        </releases>
+                        <snapshots>
+                            <enabled>false</enabled>
+                        </snapshots>
+                    </repository>
+                    <repository>
+                        <name>HSPC Snapshots</name>
+                        <id>hspc-snapshots</id>
+                        <url>https://nexus.hspconsortium.org/repository/maven-snapshots/</url>
+                        <releases>
+                            <enabled>false</enabled>
+                        </releases>
+                        <snapshots>
+                            <enabled>true</enabled>
+                        </snapshots>
+                    </repository>
+                </repositories>
+                <pluginRepositories>
+                    <pluginRepository>
+                        <id>central</id>
+                        <url>https://repo1.maven.org/maven2/</url>
+                        <releases>
+                            <enabled>true</enabled>
+                        </releases>
+                        <snapshots>
+                            <enabled>true</enabled>
+                        </snapshots>
+                    </pluginRepository>
+                </pluginRepositories>
+            </profile>
+        </profiles>
+    -->
 
     <dependencies>
 

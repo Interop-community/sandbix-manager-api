@@ -1,12 +1,8 @@
 [
   {
-    "name": "hspc-sandbox-manager-api",
-    "image": "nexus.hspconsortium.org:18083/hspc/hspc-sandbox-manager-api:0.2.0",
+    "name": "sandbox-manager-api",
+    "image": "nexus.hspconsortium.org:18083/hspc/sandbox-manager-api:latest",
     "cpu": 0,
-    "command": [
-      "echo",
-      "hello"
-    ],
     "portMappings": [
       {
         "containerPort": 12000,
@@ -15,6 +11,12 @@
       }
     ],
     "memory": 300,
-    "essential": true
+    "essential": true,
+    "environment": [
+      {
+        "name": "EXAMPLE_NAME",
+        "value": "EXAMPLE_VALUE"
+      }
+    ]
   }
 ]
