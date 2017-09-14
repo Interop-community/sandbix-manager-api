@@ -1,27 +1,20 @@
 <settings>
-  <mirrors>
-    <mirror>
-      <id>hspc-nexus</id>
-      <name>HSPC Nexus</name>
-      <mirrorOf>*</mirrorOf>
-      <url>https://nexus.hspconsortium.org/repository/maven-all/</url>
-    </mirror>
-  </mirrors>
   <servers>
     <server>
-      <id>hspc-nexus</id>
-      <username>${env.NEXUS_USR}</username>
-      <password>${env.NEXUS_PWD}</password>
-    </server>
-    <server>
-      <id>hspc-releases</id>
-      <username>${env.NEXUS_USR}</username>
-      <password>${env.NEXUS_PWD}</password>
-    </server>
-    <server>
-      <id>hspc-snapshots</id>
-      <username>${env.NEXUS_USR}</username>
-      <password>${env.NEXUS_PWD}</password>
+      <id>ossrh</id>
+      <username>${env.OSSRH_USER_TOKEN}</username>
+      <password>${env.OSSRH_PWD_TOKEN}</password>
     </server>
   </servers>
+  <profiles>
+    <profile>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <gpg.keyname>${env.GPG_KEY}</gpg.keyname>
+        <gpg.passphrase>${env.GPG_PWD}</gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
 </settings>
