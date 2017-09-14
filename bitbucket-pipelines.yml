@@ -15,7 +15,7 @@ pipelines:
             - maven
           script:
             # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
-            - mvn -V -B -s settings.xml deploy
+            - mvn -V -B -s settings.xml deploy -P DEPLOY
             # install ASW CLI and jq library
             - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
             - unzip awscli-bundle.zip
@@ -56,7 +56,7 @@ pipelines:
             - maven
           script:
             # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
-            - mvn -V -B -s settings.xml deploy
+            - mvn -V -B -s settings.xml deploy -P DEPLOY
             # install ASW CLI and jq library
             - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
             - unzip awscli-bundle.zip
