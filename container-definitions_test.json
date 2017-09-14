@@ -1,7 +1,7 @@
 [
   {
-    "name": "smart-launch-proxy",
-    "image": "nexus.interopion.com:18083/interopio/slp:0.2.0-SNAPSHOT",
+    "name": "hspc-sandbox-manager-api",
+    "image": "nexus.hspconsortium.org:18083/hspc/hspc-sandbox-manager-api:0.2.0",
     "cpu": 0,
     "command": [
       "echo",
@@ -10,7 +10,7 @@
     "portMappings": [
       {
         "containerPort": 12000,
-        "hostPort": 13000,
+        "hostPort": 12000,
         "protocol": "tcp"
       }
     ],
