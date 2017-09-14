@@ -1,0 +1,20 @@
+[
+  {
+    "name": "smart-launch-proxy",
+    "image": "nexus.interopion.com:18083/interopio/slp:0.2.0-SNAPSHOT",
+    "cpu": 0,
+    "command": [
+      "echo",
+      "hello"
+    ],
+    "portMappings": [
+      {
+        "containerPort": 12000,
+        "hostPort": 13000,
+        "protocol": "tcp"
+      }
+    ],
+    "memory": 300,
+    "essential": true
+  }
+]
