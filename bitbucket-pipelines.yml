@@ -14,8 +14,12 @@ pipelines:
           caches:
             - maven
           script:
-            # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
+            # using OSSRH
+            - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
+            - gpg --import private-key.gpg
             - mvn -V -B -s settings.xml deploy -P DEPLOY
+            # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
+#            - mvn -V -B -s settings.xml deploy -P DEPLOY
             # install ASW CLI and jq library
             - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
             - unzip awscli-bundle.zip
@@ -55,8 +59,12 @@ pipelines:
           caches:
             - maven
           script:
-            # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
+            # using OSSRH
+            - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
+            - gpg --import private-key.gpg
             - mvn -V -B -s settings.xml deploy -P DEPLOY
+            # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
+#            - mvn -V -B -s settings.xml deploy -P DEPLOY
             # install ASW CLI and jq library
             - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
             - unzip awscli-bundle.zip
