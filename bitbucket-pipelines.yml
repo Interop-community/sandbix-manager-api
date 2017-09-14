@@ -14,30 +14,65 @@ pipelines:
           caches:
             - maven
           script:
-            - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
-            - gpg --import private-key.gpg
-            - mvn -V -B -s settings.xml deploy -P DEPLOY
+            # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
+            - mvn -V -B -s settings.xml deploy
+            # install ASW CLI and jq library
+            - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+            - unzip awscli-bundle.zip
+            - ./awscli-bundle/install -b ~/bin/aws
+            - export PATH=~/bin:$PATH
+            - curl -o /usr/local/bin/jq -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/local/bin/jq
+            # build docker image and push to nexus.interopion.com:18083 (docker-interopion)
+            - export IMAGE_NAME=$(cat container-definitions_dev.json | jq --raw-output '.[0].image')
+            - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.interopion.com:18083
+            - docker build -t $IMAGE_NAME .
+            - docker push $IMAGE_NAME
+            # register the ECS task definition and capture the version
+            - export TASK_VERSION=$(aws ecs register-task-definition --family smart-launch-proxy --container-definitions $(cat container-definitions_dev.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - echo "Registered ECS Task Definition - " $TASK_VERSION
+            # update the service to use the latest task definition
+            - aws ecs update-service --cluster interopio-dev --service smart-launch-proxy-service --task-definition smart-launch-proxy:$TASK_VERSION
     feature/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify
+            - mvn clean verify
     release/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify
+            - mvn clean verify
     hotfix/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify
+            - mvn clean verify
     master:
       - step:
+          caches:
+            - maven
           script:
-            - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
-            - gpg --import private-key.gpg
-            - mvn -V -B -s settings.xml deploy -P DEPLOY
+            # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
+            - mvn -V -B -s settings.xml deploy
+            # install ASW CLI and jq library
+            - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+            - unzip awscli-bundle.zip
+            - ./awscli-bundle/install -b ~/bin/aws
+            - export PATH=~/bin:$PATH
+            - curl -o /usr/local/bin/jq -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/local/bin/jq
+            # build docker image and push to nexus.interopion.com:18083 (docker-interopion)
+            - export IMAGE_NAME=$(cat container-definitions_test.json | jq --raw-output '.[0].image')
+            - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.interopion.com:18083
+            - docker build -t $IMAGE_NAME .
+            - docker push $IMAGE_NAME
+            # register the ECS task definition and capture the version
+            - export TASK_VERSION=$(aws ecs register-task-definition --family smart-launch-proxy --container-definitions $(cat container-definitions_test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - echo "Registered ECS Task Definition - " $TASK_VERSION
+            # update the service to use the latest task definition
+            - aws ecs update-service --cluster interopio-test --service smart-launch-proxy-service --task-definition smart-launch-proxy:$TASK_VERSION
+
+options:
+  docker: true
