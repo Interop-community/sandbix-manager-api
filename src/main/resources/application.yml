@@ -1,8 +1,5 @@
 server:
-  port: 8080
-  session:
-    cookie:
-      name: SBM_JSESSIONID
+  port: 12000
   tomcat:
     remote_ip_header: x-forwarded-for
     protocol_header: x-forwarded-proto
@@ -27,7 +24,7 @@ spring:
     username: ${spring.datasource.username}
     password: ${spring.datasource.password}
     driverClassName: ${spring.datasource.driverClassName}
-    validation-query: ${${spring.datasource.validation-query}}
+    validation-query: ${spring.datasource.validation-query}
     test-on-borrow: ${spring.datasource.test-on-borrow}
     initialSize: 1
     maxActive: 1
@@ -42,6 +39,12 @@ spring:
 
 flyway:
   locations: db/mysql/migration
+
+security:
+  oauth2:
+    resource:
+      userInfoUri: ${hspc.platform.authorization.url}/userinfo
+      token-info-uri: ${hspc.platform.authorization.url}/token
 
 hspc:
   platform:
