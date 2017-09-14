@@ -17,10 +17,10 @@ import javax.sql.DataSource;
 @SpringBootApplication
 //@EnableOAuth2Sso
 @EnableResourceServer
-public class Application {
+public class SandboxManagerApiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(SandboxManagerApiApplication.class, args);
     }
 
     @Bean
