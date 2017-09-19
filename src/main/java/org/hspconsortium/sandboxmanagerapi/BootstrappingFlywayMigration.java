@@ -12,14 +12,14 @@ import javax.sql.DataSource;
 @Component
 public class BootstrappingFlywayMigration implements FlywayMigrationStrategy {
 
-    private DataSource bootstrapDataSource;
+    private DataSource dataSource;
 
     private DataSourceProperties dataSourceProperties;
 
     @Inject
-    @Qualifier("bootstrapDataSource")
-    public void setBootstrapDataSource(DataSource bootstrapDataSource) {
-        this.bootstrapDataSource = bootstrapDataSource;
+    public BootstrappingFlywayMigration setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+        return this;
     }
 
     @Inject
@@ -29,7 +29,7 @@ public class BootstrappingFlywayMigration implements FlywayMigrationStrategy {
 
     @Override
     public void migrate(Flyway flyway) {
-        flyway.setDataSource(bootstrapDataSource);
+        flyway.setDataSource(dataSource);
         flyway.setSchemas(
                 dataSourceProperties.getUrl().substring(
                         dataSourceProperties.getUrl().lastIndexOf("/") + 1));

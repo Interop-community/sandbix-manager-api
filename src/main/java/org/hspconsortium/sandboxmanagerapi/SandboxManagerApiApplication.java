@@ -2,7 +2,6 @@ package org.hspconsortium.sandboxmanagerapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -26,21 +25,15 @@ public class SandboxManagerApiApplication {
     @Bean
     @Primary
     @ConfigurationProperties("spring.datasource")
-    public DataSourceProperties primaryDataSourceProperties() {
+    public DataSourceProperties dataSourceProperties() {
         return new DataSourceProperties();
     }
 
     @Bean
     @Primary
     @ConfigurationProperties("spring.datasource")
-    public DataSource primaryDataSource() {
-        return primaryDataSourceProperties().initializeDataSourceBuilder().build();
-    }
-
-    @Bean
-    @ConfigurationProperties("spring.bootstrapDatasource")
-    public DataSource bootstrapDataSource() {
-        return DataSourceBuilder.create().build();
+    public DataSource dataSource() {
+        return dataSourceProperties().initializeDataSourceBuilder().build();
     }
 
 }
