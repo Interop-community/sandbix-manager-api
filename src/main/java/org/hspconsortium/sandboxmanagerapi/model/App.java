@@ -14,15 +14,18 @@ import java.sql.Timestamp;
                 "c.authClient.clientId = :clientId and c.sandbox.sandboxId = :sandboxId"),
         // Used to delete all registered apps when a sandbox is deleted
         @NamedQuery(name="App.findBySandboxId",
-        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL"),
+        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL " +
+                "order by c.authClient.clientName"),
         // Used to retrieve all registered apps visible to a user of this a sandbox
         @NamedQuery(name="App.findBySandboxIdAndCreatedByOrVisibility",
         query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
-                "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility)"),
+                "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility) " +
+                "order by c.authClient.clientName"),
         // Used to delete a user's PRIVATE registered apps when they are removed from a sandbox
         @NamedQuery(name="App.findBySandboxIdAndCreatedBy",
         query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
-                "c.createdBy.sbmUserId = :createdBy")
+                "c.createdBy.sbmUserId = :createdBy " +
+                "order by c.authClient.clientName")
 })
 public class App extends AbstractSandboxItem {
 
