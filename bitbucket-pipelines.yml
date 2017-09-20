@@ -1,6 +1,6 @@
 # This project uses the GitFlow Workflow as defined here:
 #   https://www.atlassian.com/git/tutorials/comparing-workflows#GitFlow-workflow
-image: maven:3.3.9-jdk-8
+image: maven:3.3.9
 
 pipelines:
   default:
@@ -14,9 +14,23 @@ pipelines:
           caches:
             - maven
           script:
+            # Deploy to maven central
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
             - gpg --import private-key.gpg
-            - mvn -V -B -s settings.xml deploy -P DEPLOY
+            - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
+            # Deploy to hspc-nexus
+            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
+            # install ASW CLI and jq library
+            - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+            - unzip awscli-bundle.zip
+            - ./awscli-bundle/install -b ~/bin/aws
+            - export PATH=~/bin:$PATH
+            - curl -o /usr/local/bin/jq -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/local/bin/jq
+            # build docker image and push to nexus.interopion.com:18083 (docker-interopion)
+            - export IMAGE_NAME=$(cat container-definitions_test.json | jq --raw-output '.[0].image')
+            - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.hspconsortium.org:18083
+            - docker build -t $IMAGE_NAME .
+            - docker push $IMAGE_NAME
     feature/*:
       - step:
           caches:
@@ -40,4 +54,8 @@ pipelines:
           script:
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
             - gpg --import private-key.gpg
-            - mvn -V -B -s settings.xml deploy -P DEPLOY
+            - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
+            # Deploy to hspc-nexus
+            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
+options:
+  docker: true

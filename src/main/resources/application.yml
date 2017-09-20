@@ -18,16 +18,6 @@ spring:
     test-on-borrow: true
     initialSize: 1
     maxActive: 5
-  # Used to create the sandman schema
-  bootstrapDatasource:
-    url: ${spring.datasource.base_url}
-    username: ${spring.datasource.username}
-    password: ${spring.datasource.password}
-    driverClassName: ${spring.datasource.driverClassName}
-    validation-query: ${spring.datasource.validation-query}
-    test-on-borrow: ${spring.datasource.test-on-borrow}
-    initialSize: 1
-    maxActive: 1
   jpa:
     hibernate:
       # Do not commit with a different value (update, create, etc)
