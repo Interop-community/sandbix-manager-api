@@ -56,6 +56,6 @@ pipelines:
             - gpg --import private-key.gpg
             - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
             # Deploy to hspc-nexus
-            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
+            - mvn -V -B -s settings-nexus.xml deploy -P DEPLOY-HSPC,hspc-nexus
 options:
   docker: true
