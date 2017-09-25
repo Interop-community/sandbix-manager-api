@@ -21,9 +21,6 @@ pipelines:
 #            - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
             # deploy to hspc-nexus
             - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC
-            # prepare the container-definitions.json
-#            - DOCKER_ARTIFACT_VERSION=$(xmllint --xpath "//*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
-#            - sed -e "s/\${DOCKER_CONTAINER_VERSION}/$DOCKER_ARTIFACT_VERSION/" container-definitions-template.json > container-definitions.json
             # install ASW CLI and jq library
             - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
             - unzip awscli-bundle.zip
@@ -33,6 +30,9 @@ pipelines:
             # clear out the other jar files
             - rm target/*-sources.jar
             - rm target/*-javadoc.jar
+            # prepare the container-definitions.json
+#            - DOCKER_ARTIFACT_VERSION=$(xmllint --xpath "//*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
+#            - sed -e "s/\${DOCKER_CONTAINER_VERSION}/$DOCKER_ARTIFACT_VERSION/" container-definitions-template.json > container-definitions.json
             # build docker image and push to nexus.interopion.com:18083 (docker-interopion)
             - export IMAGE_NAME=$(cat container-definitions_test.json | jq --raw-output '.[0].image')
             - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.hspconsortium.org:18083
@@ -59,11 +59,12 @@ pipelines:
     master:
       - step:
           script:
-            # Deploy to maven central
+            # initialize GPG for artifact signing
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
             - gpg --import private-key.gpg
+            # deploy to maven central
             - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
-            # Deploy to hspc-nexus
+            # deploy to hspc-nexus
             - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC
             # install ASW CLI and jq library
             - curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
@@ -71,9 +72,16 @@ pipelines:
             - ./awscli-bundle/install -b ~/bin/aws
             - export PATH=~/bin:$PATH
             - curl -o /usr/local/bin/jq -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/local/bin/jq
+            # clear out the other jar files
+            - rm target/*-sources.jar
+            - rm target/*-javadoc.jar
+            # prepare the container-definitions.json
+            - DOCKER_ARTIFACT_VERSION=$(xmllint --xpath "//*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
+            - sed -e "s/:latest/:$DOCKER_ARTIFACT_VERSION/" container-definitions_test.json > container-definitions.json
             # build docker image and push to nexus.interopion.com:18083 (docker-interopion)
             - export IMAGE_NAME=$(cat container-definitions_test.json | jq --raw-output '.[0].image')
             - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.hspconsortium.org:18083
+            - cat ~/.docker/config.json | jq .auths
             - docker build -t $IMAGE_NAME .
             - docker push $IMAGE_NAME
 options:
