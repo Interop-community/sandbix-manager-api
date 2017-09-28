@@ -10,6 +10,9 @@ Welcome to the HSPC Sandbox Manager API!
 
 ### How do I get set up? ###
 
+### Prerequisites ###
+ * build "sandman" schema in local mysql. Check application.yml that name has not changed.
+
 #### Build and Deploy ####
     mvn clean package
     ./run_local.sh
