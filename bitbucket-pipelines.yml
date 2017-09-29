@@ -39,19 +39,19 @@ pipelines:
           caches:
             - maven
           script:
-            - mvn -B verify
+            - mvn -B verify -s settings.xml
     release/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify
+            - mvn -B verify -s settings.xml
     hotfix/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify
+            - mvn -B verify -s settings.xml
     master:
       - step:
           script:
