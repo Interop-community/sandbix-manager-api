@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.hspconsortium.release</groupId>
         <artifactId>hspc-release-spring-boot</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.4</version>
     </parent>
 
     <groupId>org.hspconsortium.sandbox</groupId>
     <artifactId>hspc-sandbox-manager-api</artifactId>
-    <version>0.3.1</version>
+    <version>0.4.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Sandbox Manager API</name>
@@ -196,14 +196,5 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
