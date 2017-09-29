@@ -1,7 +1,7 @@
 [
   {
     "name": "sandbox-manager-api",
-    "image": "nexus.hspconsortium.org:18083/hspc/sandbox-manager-api:1.0.0",
+    "image": "nexus.hspconsortium.org:18083/hspc/sandbox-manager-api:latest",
     "cpu": 0,
     "portMappings": [
       {
