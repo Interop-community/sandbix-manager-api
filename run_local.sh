@@ -3,4 +3,4 @@
 java \
   -Xms256M \
   -Xmx512M \
-  -jar target/hspc-sandbox-manager-api*.jar
+  -jar target/hspc-sandbox-manager-api*.jar --jasypt.encryptor.password=password

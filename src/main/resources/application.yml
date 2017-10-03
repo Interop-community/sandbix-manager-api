@@ -12,7 +12,7 @@ spring:
     my_schema: sandman
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: root
-    password: password
+    password: ENC(C/m347ZYi+aF0Sa7xGidrckfMBRg68U1)
     driverClassName: com.mysql.jdbc.Driver
     validation-query: SELECT 1
     test-on-borrow: true
@@ -29,6 +29,7 @@ spring:
 
 flyway:
   locations: db/mysql/migration
+  out-of-order: true
 
 security:
   oauth2:
@@ -81,3 +82,7 @@ hspc:
 
 multipart:
   enabled: true
+
+#jasypt:
+#  encryptor:
+#    password: password
