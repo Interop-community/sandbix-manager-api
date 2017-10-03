@@ -15,7 +15,7 @@ pipelines:
             - maven
           script:
             # Add jasypt pw to container definition
-            - jq '.[].environment += [{"name": “jasypt_password”, "value": “$JMASTER”}]’ container-definitions_dev.json > tmp.json && mv tmp.json container-definitions_dev.json
+            - jq '.[].environment += [{"name":“jasypt_password”, "value":“$JMASTER”}]’ container-definitions_dev.json > tmp.json && mv tmp.json container-definitions_dev.json
             - cat container-definitions_dev.json
             # Deploy to maven central
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
