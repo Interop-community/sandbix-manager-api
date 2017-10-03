@@ -35,7 +35,7 @@ pipelines:
             - docker build -t $IMAGE_NAME .
             - docker push $IMAGE_NAME
             # Add jasypt pw to container definition
-            - jq '.[].environment += [{"name":"jasypt.encryptor.password", "value":"'$JMASTER'"}]' container-definitions_test.json > tmp.json && mv tmp.json container-definitions_test.json
+            - jq '.[].environment += [{"name":"JASYPT_ENCRYPTOR_PASSWORD", "value":"'$JMASTER'"}]' container-definitions_test.json > tmp.json && mv tmp.json container-definitions_test.json
             - cat container-definitions_test.json
             # register the ECS task definition and capture the version
             - export TASK_VERSION=$(aws ecs register-task-definition --family hspc-sandbox-manager-api --container-definitions $(cat container-definitions_test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')

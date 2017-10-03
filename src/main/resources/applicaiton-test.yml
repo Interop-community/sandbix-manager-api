@@ -7,7 +7,7 @@ spring:
     password: UG9Ax,rjMHj3(
 jasypt:
   encryptor:
-    password: $jasypt_password
+    password: ${JASYPT_ENCRYPTOR_PASSWORD}
 Dhspc:
   platform:
     api:
