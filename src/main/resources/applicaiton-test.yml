@@ -1,6 +1,6 @@
 spring:
   datasource:
-    base_url: hspc-sandbox-db-test.czjm4xwbyh18.us-west-2.rds.amazonaws.com:3306
+    base_url: jdbc:mysql://hspc-sandbox-db-test.czjm4xwbyh18.us-west-2.rds.amazonaws.com:3306
     my_schema: sandman
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: sandman_api
