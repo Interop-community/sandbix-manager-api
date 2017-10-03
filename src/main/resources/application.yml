@@ -12,7 +12,7 @@ spring:
     my_schema: sandman
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: root
-    password: ENC(C/m347ZYi+aF0Sa7xGidrckfMBRg68U1)
+    password: password
     driverClassName: com.mysql.jdbc.Driver
     validation-query: SELECT 1
     test-on-borrow: true
@@ -83,6 +83,3 @@ hspc:
 multipart:
   enabled: true
 
-#jasypt:
-#  encryptor:
-#    password: password

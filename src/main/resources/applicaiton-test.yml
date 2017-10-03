@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    base_url: jdbc:mysql://localhost:3306
+    my_schema: sandman
+    url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
+    username: root
+    password: password
+jasypt:
+  encryptor:
+    password: $jasypt_password
