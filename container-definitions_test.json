@@ -14,8 +14,8 @@
     "essential": true,
     "environment": [
       {
-        "name": "EXAMPLE_NAME",
-        "value": "EXAMPLE_VALUE"
+        "name": "spring.profiles.active",
+        "value": "test"
       }
     ]
   }
