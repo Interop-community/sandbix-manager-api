@@ -26,9 +26,12 @@ spring:
       show-sql: false
       dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE}
 
 flyway:
   locations: db/mysql/migration
+  out-of-order: true
 
 security:
   oauth2:
@@ -81,3 +84,4 @@ hspc:
 
 multipart:
   enabled: true
+
