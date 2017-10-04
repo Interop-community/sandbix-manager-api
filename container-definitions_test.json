@@ -10,7 +10,7 @@
         "protocol": "tcp"
       }
     ],
-    "memory": 300,
+    "memory": 800,
     "essential": true,
     "environment": [
       {
