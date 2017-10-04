@@ -5,9 +5,9 @@ spring:
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: sandman_api
     password: UG9Ax,rjMHj3(
-jasypt:
-  encryptor:
-    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+#jasypt:
+#  encryptor:
+#    password: ${JASYPT_ENCRYPTOR_PASSWORD}
 Dhspc:
   platform:
     api:
