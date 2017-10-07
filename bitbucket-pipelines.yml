@@ -40,7 +40,8 @@ pipelines:
             - export TASK_VERSION=$(aws ecs register-task-definition --family hspc-sandbox-manager-api --container-definitions $(cat container-definitions_test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
             - echo "Registered ECS Task Definition - " $TASK_VERSION
             # update the service to use the latest task definition
-            - aws ecs update-service --cluster hspc-test-large --service sandbox-manager-api-service --task-definition hspc-sandbox-manager-api:$TASK_VERSION
+            - aws ecs update-service --cluster hspc-test --service sandbox-manager-api-service --task-definition hspc-sandbox-manager-api:$TASK_VERSION
+#            - aws ecs update-service --cluster hspc-test-large --service sandbox-manager-api-service --task-definition hspc-sandbox-manager-api:$TASK_VERSION
     feature/*:
       - step:
           caches:
