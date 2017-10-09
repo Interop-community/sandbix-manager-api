@@ -38,9 +38,9 @@ pipelines:
             - jq '.[].environment += [{"name":"JASYPT_ENCRYPTOR_PASSWORD", "value":"'$JMASTER'"}]' container-definitions_test.json > tmp.json && mv tmp.json container-definitions_test.json
             # register the ECS task definition and capture the version
             - export TASK_VERSION=$(aws ecs register-task-definition --family hspc-sandbox-manager-api --container-definitions $(cat container-definitions_test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
-            - echo "Registered ECS Task Definition - " $TASK_VERSION
+            - echo "Registered ECS Task Definition - $TASK_VERSION"
             # update the service to use the latest task definition
-            - aws ecs update-service --cluster hspc-test-2 --service sandbox-manager-api-service --task-definition hspc-sandbox-manager-api:$TASK_VERSION
+            - aws ecs update-service --cluster $TARGET_AWS_CLUSTER --service $TARGET_AWS_SERVICE --task-definition $TARGET_AWS_TASK_DEFINITION:$TASK_VERSION
 #            - aws ecs update-service --cluster hspc-test-large --service sandbox-manager-api-service --task-definition hspc-sandbox-manager-api:$TASK_VERSION
     feature/*:
       - step:
