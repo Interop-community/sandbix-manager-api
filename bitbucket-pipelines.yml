@@ -34,7 +34,7 @@ pipelines:
             - echo $CONTAINER_NAME
             - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             - echo $PROJECT_VERSION
-            - sed -e "s/{{CONTAINER_NAME}}/$CONTAINER_NAME/g" -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" container-definitions-template.json > container-defintions.json
+            - sed -e "s/{{CONTAINER_NAME}}/$CONTAINER_NAME/g" -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" container-definitions-template.json > container-definitions.json
             - cat container-definitions.json
             - export IMAGE_NAME=$(cat container-definitions.json | jq --raw-output '.[0].image')
             - echo $IMAGE_NAME
