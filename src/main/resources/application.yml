@@ -3,6 +3,8 @@ server:
   tomcat:
     remote_ip_header: x-forwarded-for
     protocol_header: x-forwarded-proto
+# If we want to have paths for each project uncomment this
+# context-path: /api
 
 spring:
   application:
