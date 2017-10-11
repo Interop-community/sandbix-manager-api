@@ -4,7 +4,7 @@ spring:
     my_schema: sandman
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: sandman_api
-    password: ENC(Olddpxz/DpEzfEHsPtYetTa1nuT7BBFY)
+    password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
@@ -34,3 +34,7 @@ Dhspc:
       url: https://auth-test.hspconsortium.org
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndTripleDES
