@@ -30,10 +30,9 @@ pipelines:
             - rm target/*-sources.jar
             - rm target/*-javadoc.jar
             # build docker image and push to nexus.hspconsortium.com:18083
-            - export ENVIRONMENT="test"
             - export CONTAINER_NAME=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.artifactId}' --non-recursive exec:exec)
             - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            - sed -e "s/{{CONTAINER_NAME}}/$CONTAINER_NAME/g" -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" container-definitions-template.json > container-definitions.json
+            - sed -i -e "s/{{CONTAINER_NAME}}/$CONTAINER_NAME/g" -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" container-definitions-test.json
             - cat container-definitions.json
             - export IMAGE_NAME=$(cat container-definitions.json | jq --raw-output '.[0].image')
             - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.hspconsortium.org:18083

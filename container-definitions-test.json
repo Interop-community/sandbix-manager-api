@@ -15,7 +15,7 @@
     "environment": [
       {
         "name": "SPRING_PROFILES_ACTIVE",
-        "value": "{{ENVIRONMENT}}"
+        "value": "test"
       }
     ]
   }
