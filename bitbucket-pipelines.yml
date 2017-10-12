@@ -34,7 +34,7 @@ pipelines:
             - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             - sed -i -e "s/{{CONTAINER_NAME}}/$CONTAINER_NAME/g" -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" container-definitions-test.json
             - cat container-definitions-test.json
-            - export IMAGE_NAME=$(cat container-definitions.json | jq --raw-output '.[0].image')
+            - export IMAGE_NAME=$(cat container-definitions-test.json | jq --raw-output '.[0].image')
             - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.hspconsortium.org:18083
             - docker build -t $IMAGE_NAME .
             - docker push $IMAGE_NAME
