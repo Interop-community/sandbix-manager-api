@@ -27,8 +27,8 @@ pipelines:
 #            - export PATH=~/bin:$PATH
 #            - curl -o /usr/local/bin/jq -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/local/bin/jq
             # clear out the other jar files
-#            - rm target/*-sources.jar
-#            - rm target/*-javadoc.jar
+            - rm target/*-sources.jar
+            - rm target/*-javadoc.jar
             # build docker image and push to nexus.hspconsortium.com:18083
             - export CONTAINER_NAME=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.artifactId}' --non-recursive exec:exec)
             - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
