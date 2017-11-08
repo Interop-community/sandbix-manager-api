@@ -8,7 +8,7 @@ spring:
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
-Dhspc:
+hspc:
   platform:
     api:
       version1:
