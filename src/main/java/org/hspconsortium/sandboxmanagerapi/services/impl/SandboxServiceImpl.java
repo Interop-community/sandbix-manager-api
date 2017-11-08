@@ -67,6 +67,12 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${hspc.platform.api.version4.baseUrl}")
     private String apiBaseURL_4;
 
+    @Value("${hspc.platform.api.version4.baseUrl}")
+    private String apiBaseURL_5;
+
+    @Value("${hspc.platform.api.version4.baseUrl}")
+    private String apiBaseURL_6;
+
     @Value("${hspc.platform.api.oauthUserInfoEndpointURL}")
     private String oauthUserInfoEndpointURL;
 
@@ -457,8 +463,14 @@ public class SandboxServiceImpl implements SandboxService {
             case "3":
                 url = apiBaseURL_3;
                 break;
-            default:
+            case "4":
                 url = apiBaseURL_4;
+                break;
+            case "5":
+                url = apiBaseURL_5;
+                break;
+            default:
+                url = apiBaseURL_6;
         }
         return url;
     }

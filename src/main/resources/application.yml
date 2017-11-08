@@ -69,6 +69,10 @@ hspc:
         baseUrl: http://localhost:8073/
       version4:
         baseUrl: http://localhost:8075/
+      version5:
+        baseUrl: https://api-dstu2-test.hspconsortium.org
+      version6:
+        baseUrl: https://api-stu3-test.hspconsortium.org
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:
