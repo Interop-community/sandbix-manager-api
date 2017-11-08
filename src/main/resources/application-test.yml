@@ -29,7 +29,7 @@ hspc:
     defaultSandboxCreatorRoles: ADMIN,MANAGE_USERS,MANAGE_DATA
     defaultSystemRoles: USER,CREATE_SANDBOX
     defaultPrivateSandboxRoles: USER,MANAGE_USERS,MANAGE_DATA
-    defaultSandboxVisibility: Private
+    defaultSandboxVisibility: PRIVATE
     defaultPublicSandboxRoles: USER
     authorization:
       adminAccess:
