@@ -39,9 +39,9 @@ public class AdminServiceImpl implements AdminService {
         Statistics statistics = new Statistics();
         statistics.setFullSandboxCount(sandboxService.fullCount());
         statistics.setSchema1Sandboxes(sandboxService.schemaCount("1"));
-        statistics.setSchema2Sandboxes(sandboxService.schemaCount("2"));
+        statistics.setSchema2Sandboxes(sandboxService.schemaCount("2") + sandboxService.schemaCount("5"));
         statistics.setSchema3Sandboxes(sandboxService.schemaCount("3"));
-        statistics.setSchema4Sandboxes(sandboxService.schemaCount("4"));
+        statistics.setSchema4Sandboxes(sandboxService.schemaCount("4") + sandboxService.schemaCount("6"));
         statistics.setSandboxesInInterval(sandboxService.intervalCount(timestamp));
 
         statistics.setFullUserCount(userService.fullCount());
