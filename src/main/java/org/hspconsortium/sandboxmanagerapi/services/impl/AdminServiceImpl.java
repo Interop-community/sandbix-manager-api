@@ -46,7 +46,7 @@ public class AdminServiceImpl implements AdminService {
         statistics.setSchema3Sandboxes(sandboxService.schemaCount("3"));
         int apiEndpoint4 = Integer.parseInt(sandboxService.schemaCount("4"));
         int apiEndpoint6 = Integer.parseInt(sandboxService.schemaCount("6"));
-        int fourTotal = apiEndpoint2 + apiEndpoint5;
+        int fourTotal = apiEndpoint4 + apiEndpoint6;
         statistics.setSchema4Sandboxes(Integer.toString(fourTotal));
         statistics.setSandboxesInInterval(sandboxService.intervalCount(timestamp));
 
