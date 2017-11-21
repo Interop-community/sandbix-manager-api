@@ -1,10 +1,10 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://sandboxdb.hspconsortium.org:3306
+    base_url: jdbc:mysql://db-test.hspconsortium.org:3306
     my_schema: sandman
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
-    username: system
-    password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
+    username: sandman_api
+    password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
