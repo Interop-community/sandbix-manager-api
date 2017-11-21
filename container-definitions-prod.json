@@ -1,21 +1,21 @@
 [
   {
-    "name": "sandbox-manager-api",
-    "image": "nexus.hspconsortium.org:18083/hspc/sandbox-manager-api:1.0.0",
+    "name": "{{CONTAINER_NAME}}-prod",
+    "image": "nexus.hspconsortium.org:18083/hspc/{{CONTAINER_NAME}}:{{PROJECT_VERSION}}",
     "cpu": 0,
     "portMappings": [
       {
         "containerPort": 12000,
-        "hostPort": 12000,
+        "hostPort": 0,
         "protocol": "tcp"
       }
     ],
-    "memory": 300,
+    "memory": 1000,
     "essential": true,
     "environment": [
       {
         "name": "SPRING_PROFILES_ACTIVE",
-        "value": "test"
+        "value": "prod"
       }
     ]
   }

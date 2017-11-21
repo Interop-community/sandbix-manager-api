@@ -1,14 +1,14 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://hspc-sandbox-db-test.czjm4xwbyh18.us-west-2.rds.amazonaws.com:3306
+    base_url: jdbc:mysql://db-test.hspconsortium.org:3306
     my_schema: sandman
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: sandman_api
-    password: UG9Ax,rjMHj3(
-jasypt:
-  encryptor:
-    password: ${JASYPT_ENCRYPTOR_PASSWORD}
-Dhspc:
+    password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
+#jasypt:
+#  encryptor:
+#    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+hspc:
   platform:
     api:
       version1:
@@ -19,13 +19,17 @@ Dhspc:
         baseUrl: https://api3-test.hspconsortium.org
       version4:
         baseUrl: https://api-stu3-test.hspconsortium.org
+      version5:
+        baseUrl: https://api-dstu2-test.hspconsortium.org
+      version6:
+        baseUrl: https://api-stu3-test.hspconsortium.org
     messaging:
       url: https://messaging-test.hspconsortium.org
       sendEmail: False
     defaultSandboxCreatorRoles: ADMIN,MANAGE_USERS,MANAGE_DATA
     defaultSystemRoles: USER,CREATE_SANDBOX
     defaultPrivateSandboxRoles: USER,MANAGE_USERS,MANAGE_DATA
-    defaultSandboxVisibility: Private
+    defaultSandboxVisibility: PRIVATE
     defaultPublicSandboxRoles: USER
     authorization:
       adminAccess:
@@ -34,3 +38,7 @@ Dhspc:
       url: https://auth-test.hspconsortium.org
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndTripleDES

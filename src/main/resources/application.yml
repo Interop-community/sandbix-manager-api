@@ -3,6 +3,8 @@ server:
   tomcat:
     remote_ip_header: x-forwarded-for
     protocol_header: x-forwarded-proto
+# If we want to have paths for each project uncomment this
+# context-path: /api
 
 spring:
   application:
@@ -26,8 +28,6 @@ spring:
       show-sql: false
       dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE}
 
 flyway:
   locations: db/mysql/migration
@@ -68,7 +68,11 @@ hspc:
       version3:
         baseUrl: http://localhost:8073/
       version4:
-        baseUrl: http://localhost:8074/
+        baseUrl: http://localhost:8075/
+      version5:
+        baseUrl: https://api-dstu2-test.hspconsortium.org
+      version6:
+        baseUrl: https://api-stu3-test.hspconsortium.org
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:
@@ -84,4 +88,5 @@ hspc:
 
 multipart:
   enabled: true
+
 
