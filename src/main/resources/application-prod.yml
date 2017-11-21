@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    base_url: jdbc:mysql://db-test.hspconsortium.org:3306
+    my_schema: sandman
+    url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
+    username: sandman_api
+    password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
+#jasypt:
+#  encryptor:
+#    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+hspc:
+  platform:
+    api:
+      version1:
+        baseUrl: https://api.hspconsortium.org
+      version2:
+        baseUrl: https://api2.hspconsortium.org
+      version3:
+        baseUrl: https://api3.hspconsortium.org
+      version4:
+        baseUrl: https://api-stu3.hspconsortium.org
+      version5:
+        baseUrl: https://api-v5-dstu2.hspconsortium.org
+      version6:
+        baseUrl: https://api-v5-stu3.hspconsortium.org
+    messaging:
+      url: https://messaging.hspconsortium.org
+      sendEmail: False
+    defaultSandboxCreatorRoles: ADMIN,MANAGE_USERS,MANAGE_DATA
+    defaultSystemRoles: USER,CREATE_SANDBOX
+    defaultPrivateSandboxRoles: USER,MANAGE_USERS,MANAGE_DATA
+    defaultSandboxVisibility: PRIVATE
+    defaultPublicSandboxRoles: USER
+    authorization:
+      adminAccess:
+        clientId: sandman_admin
+        clientSecret: secret
+      url: https://auth.hspconsortium.org
+    jwt:
+      key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndTripleDES
