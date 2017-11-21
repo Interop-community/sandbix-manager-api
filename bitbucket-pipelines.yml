@@ -66,8 +66,6 @@ pipelines:
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
             - gpg --import private-key.gpg
             - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
-            # Deploy to hspc-nexus
-            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
             # clear out the other jar files
             - rm target/*-sources.jar
             - rm target/*-javadoc.jar
