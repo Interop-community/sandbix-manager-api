@@ -9,6 +9,8 @@ server:
 spring:
   application:
     name: HSPC Sandbox Manager
+  profiles:
+    active:
   datasource:
     base_url: jdbc:mysql://localhost:3306
     my_schema: sandman
