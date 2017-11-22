@@ -20,7 +20,6 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String createSignedJwt(String subject) {
-        System.out.println("The jwtkey: " + jwtKey.toString());
         return Jwts.builder()
                 .setSubject(subject)
                 .signWith(SignatureAlgorithm.forName(signatureAlgorithm), jwtKey)
