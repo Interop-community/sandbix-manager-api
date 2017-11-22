@@ -37,7 +37,7 @@ hspc:
         clientSecret: secret
       url: https://auth.hspconsortium.org
     jwt:
-      key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
+      key: ENC(32oeS4V7gZfqPfndJXegT0cEHIU805Xbn/2qt5p8/5WriF926qEn58gJJdy+6+6ayCAJYN09y43R/9tcIktIXA3Yg6scHRMLzfx+9a4eybo=)
 
 jasypt:
   encryptor:
