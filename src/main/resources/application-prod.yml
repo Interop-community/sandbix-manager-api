@@ -25,6 +25,7 @@ hspc:
         baseUrl: https://api-v5-stu3.hspconsortium.org
     messaging:
       url: https://messaging.hspconsortium.org
+      emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
       sendEmail: False
     defaultSandboxCreatorRoles: ADMIN,MANAGE_USERS,MANAGE_DATA
     defaultSystemRoles: USER,CREATE_SANDBOX

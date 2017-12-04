@@ -26,6 +26,7 @@ hspc:
     messaging:
       url: https://messaging-test.hspconsortium.org
       sendEmail: False
+      emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     defaultSandboxCreatorRoles: ADMIN,MANAGE_USERS,MANAGE_DATA
     defaultSystemRoles: USER,CREATE_SANDBOX
     defaultPrivateSandboxRoles: USER,MANAGE_USERS,MANAGE_DATA
