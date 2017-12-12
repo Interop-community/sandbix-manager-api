@@ -5,6 +5,8 @@ spring:
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: sandman_api
     password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
+  mail:
+    password: ENC(G617hEtHdDqtzbpE9CtoYnopRfcrBqK8)
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
