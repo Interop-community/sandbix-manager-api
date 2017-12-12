@@ -7,8 +7,8 @@ import org.springframework.data.repository.query.Param;
 import java.sql.Timestamp;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
-    public User findBySbmUserId(@Param("sbmUserId") String sbmUserId);
-    public User findByUserEmail(@Param("email") String email);
-    public String fullCount();
-    public String intervalCount(@Param("intervalTime") Timestamp intervalTime);
+    User findBySbmUserId(@Param("sbmUserId") String sbmUserId);
+    User findByUserEmail(@Param("email") String email);
+    String fullCount();
+    String intervalCount(@Param("intervalTime") Timestamp intervalTime);
 }

@@ -134,13 +134,13 @@ public class EmailServiceImpl implements EmailService {
             }
 
         } catch (IOException e) {
-            LOGGER.error("Error posting to " + url, e);
+            LOGGER.error("Error posting to {}", url, e);
             throw new RuntimeException(e);
         } finally {
             try {
                 httpClient.close();
             }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient");
+                LOGGER.error("Error closing HttpClient", e);
             }
         }
     }

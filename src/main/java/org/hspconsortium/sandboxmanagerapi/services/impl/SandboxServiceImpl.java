@@ -138,7 +138,7 @@ public class SandboxServiceImpl implements SandboxService {
         try {
             callDeleteSandboxAPI(sandbox, bearerToken);
         } catch (Exception ex) {
-            throw new SandboxDeleteFailedException("Failed to delete sandbox: " + sandbox.getSandboxId() + ". \n" + ex.getMessage());
+            throw new SandboxDeleteFailedException(String.format("Failed to delete sandbox: %s %n %s", sandbox.getSandboxId(), ex.getMessage()), ex);
         }
     }
 
@@ -231,34 +231,18 @@ public class SandboxServiceImpl implements SandboxService {
 
             //delete launch scenarios, context params
             List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxIdAndCreatedBy(sandbox.getSandboxId(), user.getSbmUserId());
-            for (LaunchScenario launchScenario : launchScenarios) {
-                if (launchScenario.getVisibility() == Visibility.PRIVATE) {
-                    launchScenarioService.delete(launchScenario);
-                }
-            }
+            launchScenarios.stream().filter(launchScenario -> launchScenario.getVisibility() == Visibility.PRIVATE).forEach(launchScenarioService::delete);
 
             //delete user launches for public launch scenarios in this sandbox
             List<UserLaunch> userLaunches = userLaunchService.findByUserId(user.getSbmUserId());
-            for (UserLaunch userLaunch : userLaunches) {
-                if (userLaunch.getLaunchScenario().getSandbox().getSandboxId().equalsIgnoreCase(sandbox.getSandboxId())) {
-                    userLaunchService.delete(userLaunch);
-                }
-            }
+            userLaunches.stream().filter(userLaunch -> userLaunch.getLaunchScenario().getSandbox().getSandboxId().equalsIgnoreCase(sandbox.getSandboxId())).forEach(userLaunchService::delete);
 
             //delete all registered app, authClients, images
             List<App> apps = appService.findBySandboxIdAndCreatedBy(sandbox.getSandboxId(), user.getSbmUserId());
-            for (App app : apps) {
-                if (app.getVisibility() == Visibility.PRIVATE) {
-                    appService.delete(app);
-                }
-            }
+            apps.stream().filter(app -> app.getVisibility() == Visibility.PRIVATE).forEach(appService::delete);
 
             List<UserPersona> userPersonas = userPersonaService.findBySandboxIdAndCreatedBy(sandbox.getSandboxId(), user.getSbmUserId());
-            for (UserPersona userPersona : userPersonas) {
-                if (userPersona.getVisibility() == Visibility.PRIVATE) {
-                    userPersonaService.delete(userPersona);
-                }
-            }
+            userPersonas.stream().filter(userPersona -> userPersona.getVisibility() == Visibility.PRIVATE).forEach(userPersonaService::delete);
 
             List<UserRole> allUserRoles = sandbox.getUserRoles();
             List<UserRole> currentUserRoles = new ArrayList<>();
@@ -270,12 +254,10 @@ public class SandboxServiceImpl implements SandboxService {
                     iterator.remove();
                 }
             }
-            if (currentUserRoles.size() > 0) {
+            if (!currentUserRoles.isEmpty()) {
                 sandbox.setUserRoles(allUserRoles);
                 save(sandbox);
-                for (UserRole userRole : currentUserRoles) {
-                    userRoleService.delete(userRole);
-                }
+                currentUserRoles.forEach(userRoleService::delete);
             }
             sandboxActivityLogService.sandboxUserRemoved(sandbox, sandbox.getCreatedBy(), user);
         }

@@ -11,11 +11,11 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping({"/newsItem"})
 public class NewsItemController {
-    private static Logger LOGGER = LoggerFactory.getLogger(NewsItemController.class.getName());
-
     private final NewsItemService newsItemService;
 
     @Inject
@@ -23,19 +23,19 @@ public class NewsItemController {
         this.newsItemService = newsItemService;
     }
 
-    @RequestMapping("/all")
+    @GetMapping("/all")
     public @ResponseBody
     List<NewsItem> findAllNewsItems(HttpServletRequest request){
         return newsItemService.findAll();
     }
 
-    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/delete/{id}")
     @Transactional
     public void deleteNewsItemById(@PathVariable int id) {
         newsItemService.delete(id);
     }
 
-    @RequestMapping(value = "/save", method = RequestMethod.POST, consumes = "application/json")
+    @PostMapping(value = "/save", produces = APPLICATION_JSON_VALUE)
     public void saveNewsItem(@RequestBody NewsItem newsItem) {
 
         newsItemService.save(newsItem);

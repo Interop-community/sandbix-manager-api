@@ -37,8 +37,6 @@ import java.util.List;
 @RequestMapping({"/fhirdata"})
 public class DataManagerController extends AbstractController {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(DataManagerController.class.getName());
-
     private final SandboxService sandboxService;
     private final UserService userService;
     private final DataManagerService dataManagerService;
@@ -55,7 +53,7 @@ public class DataManagerController extends AbstractController {
         this.dataManagerService = dataManagerService;
     }
 
-    @RequestMapping(value = "/import", method = RequestMethod.GET, params = {"sandboxId"})
+    @GetMapping(value = "/import", params = {"sandboxId"})
     @Transactional
     public @ResponseBody
     List<SandboxImport> getSandboxImports(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId)  throws UnsupportedEncodingException {
@@ -68,7 +66,7 @@ public class DataManagerController extends AbstractController {
         return sandbox.getImports();
     }
 
-    @RequestMapping(value = "/import", method = RequestMethod.POST, params = {"sandboxId", "patientId", "endpoint", "fhirIdPrefix"})
+    @PostMapping(value = "/import", params = {"sandboxId", "patientId", "endpoint", "fhirIdPrefix"})
     @Transactional
     public @ResponseBody String importAllPatientData(final HttpServletRequest request,
                                                      @RequestParam(value = "sandboxId") String sandboxId,
@@ -89,7 +87,7 @@ public class DataManagerController extends AbstractController {
         return dataManagerService.importPatientData(sandbox, oAuthService.getBearerToken(request), endpoint, patientId, fhirIdPrefix);
     }
 
-    @RequestMapping(value = "/reset", method = RequestMethod.POST, params = {"sandboxId", "dataSet"})
+    @PostMapping(value = "/reset", params = {"sandboxId", "dataSet"})
     @Transactional
     public @ResponseBody String reset(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "dataSet") DataSet dataSet)  throws UnsupportedEncodingException {
 

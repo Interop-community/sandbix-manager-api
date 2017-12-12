@@ -35,6 +35,10 @@ import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/sandbox")
@@ -54,7 +58,7 @@ public class SandboxController extends AbstractController {
         this.sandboxInviteService = sandboxInviteService;
     }
 
-    @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces ="application/json")
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException{
 
@@ -70,7 +74,7 @@ public class SandboxController extends AbstractController {
         return sandboxService.create(sandbox, user, oAuthService.getBearerToken(request));
     }
 
-    @RequestMapping(method = RequestMethod.GET, params = {"lookUpId"}, produces ="application/json")
+    @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String checkForSandboxById(@RequestParam(value = "lookUpId")  String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {
@@ -79,7 +83,7 @@ public class SandboxController extends AbstractController {
         return null;
     }
 
-    @RequestMapping(method = RequestMethod.GET, params = {"sandboxId"}, produces ="application/json")
+    @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getSandboxById(@RequestParam(value = "sandboxId")  String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {
@@ -88,7 +92,7 @@ public class SandboxController extends AbstractController {
         return null;
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces ="application/json")
+    @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody Sandbox getSandboxById(HttpServletRequest request, @PathVariable String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         User user = userService.findBySbmUserId(getSystemUserId(request));
@@ -99,7 +103,7 @@ public class SandboxController extends AbstractController {
         return sandbox;
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces ="application/json")
+    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
@@ -115,7 +119,7 @@ public class SandboxController extends AbstractController {
         sandboxService.delete(sandbox, oAuthService.getBearerToken(request));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces ="application/json")
+    @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void updateSandboxById(HttpServletRequest request, @PathVariable String id, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException {
         User user = userService.findBySbmUserId(getSystemUserId(request));
@@ -123,7 +127,7 @@ public class SandboxController extends AbstractController {
         sandboxService.update(sandbox, user, oAuthService.getBearerToken(request));
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces ="application/json", params = {"userId"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userId"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
     List<Sandbox> getSandboxesByMember(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
@@ -133,7 +137,7 @@ public class SandboxController extends AbstractController {
         return sandboxService.getAllowedSandboxes(user);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = "application/json", params = {"removeUserId"})
+    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, params = {"removeUserId"})
     @Transactional
     public void removeSandboxMember(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "removeUserId") String userIdEncoded) throws UnsupportedEncodingException {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
@@ -149,7 +153,8 @@ public class SandboxController extends AbstractController {
         }
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = "application/json", params = {"editUserRole", "role", "add"})
+
+    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, params = {"editUserRole", "role", "add"})
     @Transactional
     public void updateSandboxMemberRole(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "editUserRole") String userIdEncoded,
                 @RequestParam(value = "role") Role role, @RequestParam(value = "add") boolean add) throws UnsupportedEncodingException {
@@ -170,7 +175,7 @@ public class SandboxController extends AbstractController {
         }
     }
 
-    @RequestMapping(value = "/{id}/login", method = RequestMethod.POST, params = {"userId"})
+    @PostMapping(value = "/{id}/login", params = {"userId"})
     @Transactional
     public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException{
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
