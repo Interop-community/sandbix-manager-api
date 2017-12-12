@@ -145,10 +145,8 @@ public class SandboxController extends AbstractController {
 
         checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
         String removeUserId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-
         User removedUser = userService.findBySbmUserId(removeUserId);
-        // Don't allow the Sandbox creator to be removed
-        if (!removedUser.equals(sandbox.getCreatedBy())) {
+        if(canRemoveUser(sandbox, removedUser)){
             sandboxService.removeMember(sandbox, removedUser, oAuthService.getBearerToken(request));
         }
     }
@@ -183,4 +181,26 @@ public class SandboxController extends AbstractController {
         sandboxService.sandboxLogin(id, userId);
     }
 
+    /**
+     * A user can be removed from a sandbox if they are
+     *  - not an {@link Role#ADMIN } user
+     *  - more than one {@link Role#ADMIN} users exist
+     *
+     * @param sandbox - the sandbox to remove a user from
+     * @param removedUser the user to remove
+     * @return true if the user can be removed
+     */
+    private boolean canRemoveUser(Sandbox sandbox, User removedUser) {
+        Optional<UserRole> first = sandbox.getUserRoles()
+                .stream()
+                .filter(u -> u.getUser().getId().equals(removedUser.getId())
+                        && isAdminUser(u))
+                .findFirst();
+
+        return !first.isPresent() || sandbox.getUserRoles().stream().filter(this::isAdminUser).count() > 1;
+    }
+
+    private boolean isAdminUser(UserRole u) {
+        return Role.ADMIN.equals(u.getRole());
+    }
 }
