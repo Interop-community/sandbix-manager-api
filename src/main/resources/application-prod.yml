@@ -5,6 +5,8 @@ spring:
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: system
     password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
+  mail:
+    password: ENC(HKnkcsBUqrbsBvPGwfjZvdnP3+tECpmt)
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}

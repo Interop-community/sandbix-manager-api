@@ -25,20 +25,33 @@ import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.services.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamSource;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
+import org.thymeleaf.spring4.SpringTemplateEngine;
+import org.thymeleaf.context.Context;
 import javax.imageio.ImageIO;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.net.ssl.SSLContext;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.Console;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -46,15 +59,20 @@ public class EmailServiceImpl implements EmailService {
 
     private static final String HSPC_EMAIL = "no-reply@hspconsortium.org";
     private static final String PNG_MIME = "image/png";
-    private static final String TEMPLATE_FILE = "email\\templates\\email-sandbox-invite.html";
     private static final String EMAIL_SUBJECT = "HSPC Sandbox Invitation";
-    private static final String HSPC_LOGO_IMAGE = "email\\images\\hspc-sndbx-logo.png";
+    private static final String HSPC_LOGO_IMAGE = "templates\\hspc-sndbx-logo.png";
 
     @Value("${hspc.platform.messaging.emailSenderEndpointURL}")
     private String emailSenderEndpointURL;
 
     @Value("${hspc.platform.messaging.sendEmail}")
     private boolean sendEmail;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private SpringTemplateEngine templateEngine;
 
     @Override
     public void sendEmail(User inviter, User invitee, Sandbox sandbox) throws IOException {
@@ -69,7 +87,6 @@ public class EmailServiceImpl implements EmailService {
             message.setSenderEmail(HSPC_EMAIL);
             message.addRecipient(invitee.getName(), invitee.getEmail());
 
-            message.setTemplate(getFile(TEMPLATE_FILE));
             message.setTemplateFormat(Message.TemplateFormat.HTML);
 
             if (inviter.getName() != null) {
@@ -87,7 +104,12 @@ public class EmailServiceImpl implements EmailService {
 
             // Add the inline images, referenced from the HTML code as "cid:image-name"
             message.addResource("hspc-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
-            sendEmailToMessaging(message);
+//            sendEmailToMessaging(message);
+            try {
+                sendEmailByJavaMail(message);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -143,6 +165,57 @@ public class EmailServiceImpl implements EmailService {
                 LOGGER.error("Error closing HttpClient");
             }
         }
+    }
+
+    public void sendEmailByJavaMail(Message emailMessage)
+            throws MessagingException {
+
+        for (Message.Recipient recipient : emailMessage.getRecipients()) {
+            final Context ctx = new Context(recipient.getLocale());
+            ctx.setVariables(emailMessage.getVariable());
+
+            // Prepare messageHelper using a Spring helper
+            final MimeMessage mimeMessage = this.mailSender.createMimeMessage();
+            final MimeMessageHelper messageHelper
+                    = new MimeMessageHelper(mimeMessage, emailMessage.isMultipart(), emailMessage.getEncoding());
+
+            messageHelper.setSubject(emailMessage.getSubject());
+            messageHelper.setFrom(emailMessage.getSenderEmail());
+            messageHelper.setTo(recipient.getEmail());
+            if (emailMessage.isAuditEnabled() && (recipient.getReplyTo() == null)) {
+                messageHelper.setReplyTo(UUID.randomUUID().toString().toLowerCase() + "@" + emailMessage.getSenderEmail().split("@")[1]);
+            } else if (recipient.getReplyTo() != null) {
+                messageHelper.setReplyTo(recipient.getReplyTo());
+            }
+            if (emailMessage.getAttachments() != null) {
+                for (Message.Resource attachment : emailMessage.getAttachments()) {
+                    // Add the attachment
+                    final InputStreamSource attachmentSource = new ByteArrayResource(attachment.getContent());
+                    messageHelper.addAttachment(
+                            attachment.getContentName(), attachmentSource, attachment.getContentType());
+                }
+            }
+
+            if (emailMessage.getResources() != null) {
+                for (final Message.Resource resource : emailMessage.getResources()) {
+                    final InputStreamSource imageSource = new ByteArrayResource(resource.getContent());
+                    messageHelper.addInline(resource.getContentName(), imageSource, resource.getContentType());
+                }
+            }
+
+            // Create the HTML body using Thymeleaf
+            final String htmlContent = this.templateEngine.process("email-sandbox-invite", ctx);
+            messageHelper.setText(htmlContent, true /* isHtml */);
+
+            // Send email
+            try {
+                this.mailSender.send(mimeMessage);
+            } catch (Exception e) {
+                LOGGER.error("Error sending email message", e);
+            }
+
+        }
+
     }
 
     private static String toJson(Message message) {

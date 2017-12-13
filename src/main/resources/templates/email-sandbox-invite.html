@@ -29,10 +29,11 @@
             <div style="padding: 10px;">
                 <div style="text-align: center; min-width: 200px; margin: 0 auto 0 auto">
                     <div style="background-color: #ffffff; padding: 4px 4px 2px 4px;">
-                        <img style="height: 32px; width: 204px; margin: 0 auto 0 auto" src="../images/hspc-sndbx-logo.png" data-th-src="|cid:hspc-logo|" />
+                        <img style="height: 32px; width: 204px; margin: 0 auto 0 auto" src="https://sandbox-test.hspconsortium.org/static/images/hspc-sndbx-logo.png" />
                     </div>
                     <div style="padding: 15px 15px 30px 15px; font-family: Verdana, Arial, Helvetica, sans-serif; font-size:1em; background-color: #fff; color:#333;">
-                            <b data-th-text="${inviter}">John Doe</b> has invited you to join <b data-th-text="${sandboxName}">John's Sandbox</b> HSPC Sandbox.
+                        <p>
+                            <b th:text="${inviter}">John Doe</b> has invited you to join <b th:text="${sandboxName}">John's Sandbox</b> HSPC Sandbox.
                         </p>
                         <br />
                         <p>
@@ -40,7 +41,7 @@
                         </p>
                         <br />
                         <p>
-                            Be sure to sign-in/sign-up with <b data-th-text="${inviteeEmail}">user@gmail.com</b>.
+                            Be sure to sign-in/sign-up with <b th:text="${inviteeEmail}">user@gmail.com</b>.
                         </p>
                         <br />
                         <p>
