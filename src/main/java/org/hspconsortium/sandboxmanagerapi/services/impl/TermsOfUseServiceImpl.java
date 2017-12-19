@@ -33,6 +33,6 @@ public class TermsOfUseServiceImpl implements TermsOfUseService {
     @Override
     public TermsOfUse mostRecent() {
         List<TermsOfUse> all = repository.orderByCreatedTimestamp();
-        return (all != null && all.size() > 0 ? all.get(0) : null);
+        return (all != null && !all.isEmpty() ? all.get(0) : null);
     }
 }

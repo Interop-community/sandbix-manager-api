@@ -27,6 +27,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -67,7 +68,7 @@ public class UserController extends AbstractController {
     }
 
     @CrossOrigin(origins = "*")
-    @RequestMapping(method = RequestMethod.GET, params = {"sbmUserId"})
+    @GetMapping(params = {"sbmUserId"})
     @Transactional
     public @ResponseBody
     User getUser(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
@@ -80,7 +81,7 @@ public class UserController extends AbstractController {
             createUserIfNotExists(sbmUserId, oauthUsername, oauthUserEmail);
         } catch (InterruptedException e) {
             LOGGER.error("User create thread interrupted.", e);
-        } catch(Throwable e) {
+        } catch(Exception e) {
             LOGGER.error("Exception handling the creation of a user.", e);
         } finally {
             // thread will be released in the event of an exception or successful user return
@@ -91,7 +92,7 @@ public class UserController extends AbstractController {
     }
 
     @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/acceptterms", method = RequestMethod.POST, params = {"sbmUserId", "termsId"})
+    @PostMapping(value = "/acceptterms", params = {"sbmUserId", "termsId"})
     @Transactional
     public void acceptTermsOfUse(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId,
                                  @RequestParam(value = "termsId") String termsId) {
@@ -133,11 +134,11 @@ public class UserController extends AbstractController {
             }
             user.setSystemRoles(systemRoles);
             userService.save(user);
-        } else if (user.getName() == null || user.getName().isEmpty() || !user.getName().equalsIgnoreCase(oauthUsername) ||
-                user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().equalsIgnoreCase(oauthUserEmail)) {
+        } else if (StringUtils.isEmpty(user.getName()) || !user.getName().equalsIgnoreCase(oauthUsername) ||
+                StringUtils.isEmpty(user.getEmail()) || !user.getEmail().equalsIgnoreCase(oauthUserEmail)) {
 
             Set<SystemRole> curSystemRoles = user.getSystemRoles();
-            if (curSystemRoles.size() == 0) {
+            if (curSystemRoles.isEmpty()) {
                 Set<SystemRole> systemRoles = new HashSet<>();
                 for (String roleName : defaultSystemRoles) {
                     SystemRole role = SystemRole.valueOf(roleName);

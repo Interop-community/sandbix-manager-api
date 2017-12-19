@@ -6,5 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface TermsOfUseRepository extends CrudRepository<TermsOfUse, Integer> {
-    public List<TermsOfUse> orderByCreatedTimestamp();
+    List<TermsOfUse> orderByCreatedTimestamp();
 }

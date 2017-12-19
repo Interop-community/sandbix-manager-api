@@ -150,7 +150,7 @@ public class OAuthServiceImpl implements OAuthService {
                 }
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
-                throw new RuntimeException(String.format("Response Status : %s .\nResponse Detail :%s."
+                throw new RuntimeException(String.format("Response Status : %s .%nResponse Detail :%s."
                         , closeableHttpResponse.getStatusLine()
                         , responseString));
             }
@@ -170,7 +170,7 @@ public class OAuthServiceImpl implements OAuthService {
             try {
                 httpClient.close();
             }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient");
+                LOGGER.error("Error closing HttpClient", e);
             }
         }
     }

@@ -35,10 +35,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("/sandboxinvite")
 public class SandboxInviteController extends AbstractController {
-    private static Logger LOGGER = LoggerFactory.getLogger(SandboxInviteController.class.getName());
 
     private final SandboxInviteService sandboxInviteService;
     private final UserService userService;
@@ -58,7 +59,7 @@ public class SandboxInviteController extends AbstractController {
         this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
-    @RequestMapping(method = RequestMethod.PUT, consumes = "application/json")
+    @PutMapping(consumes = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void createOrUpdateSandboxInvite(HttpServletRequest request, @RequestBody final SandboxInvite sandboxInvite) throws IOException {
 
@@ -69,12 +70,12 @@ public class SandboxInviteController extends AbstractController {
 
         // Check for an existing invite for this invitee
         List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeIdAndSandboxId(sandboxInvite.getInvitee().getSbmUserId(), sandboxInvite.getSandbox().getSandboxId());
-        if (sandboxInvites.size() == 0) {
+        if (sandboxInvites.isEmpty()) {
             sandboxInvites = sandboxInviteService.findInvitesByInviteeEmailAndSandboxId(sandboxInvite.getInvitee().getEmail(), sandboxInvite.getSandbox().getSandboxId());
         }
 
         // Resend
-        if (sandboxInvites.size() > 0 && !sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())) {
+        if (!sandboxInvites.isEmpty() && !sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())) {
             SandboxInvite existingSandboxInvite = sandboxInvites.get(0);
             existingSandboxInvite.setStatus(InviteStatus.PENDING);
             sandboxInviteService.save(existingSandboxInvite);
@@ -88,7 +89,7 @@ public class SandboxInviteController extends AbstractController {
                 invitee = userService.findByUserEmail(sandboxInvite.getInvitee().getEmail());
             }
             emailService.sendEmail(inviter, invitee, sandboxInvite.getSandbox());
-        } else if (sandboxInvites.size() == 0) { // Create
+        } else if (sandboxInvites.isEmpty()) { // Create
             // Make sure the inviter is the authenticated user
             User invitedBy = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());
             checkUserAuthorization(request, invitedBy.getSbmUserId());
@@ -96,7 +97,7 @@ public class SandboxInviteController extends AbstractController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces ="application/json", params = {"sbmUserId", "status"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sbmUserId", "status"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
     List<SandboxInvite> getSandboxInvitesByInvitee(HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserIdEncoded,
@@ -115,10 +116,10 @@ public class SandboxInviteController extends AbstractController {
             }
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces ="application/json", params = {"sandboxId", "status"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId", "status"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
     List<SandboxInvite> getSandboxInvitesBySandbox(HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId,
@@ -139,10 +140,10 @@ public class SandboxInviteController extends AbstractController {
             }
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT, params = {"status"})
+    @PutMapping(value = "/{id}", params = {"status"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
     void updateSandboxInvite(HttpServletRequest request, @PathVariable Integer id, @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {

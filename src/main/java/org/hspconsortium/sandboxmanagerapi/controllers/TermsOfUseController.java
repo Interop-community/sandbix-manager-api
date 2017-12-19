@@ -37,6 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("/termsofuse")
 public class TermsOfUseController extends AbstractController  {
@@ -54,7 +56,7 @@ public class TermsOfUseController extends AbstractController  {
     }
 
     @CrossOrigin(origins = "*")
-    @RequestMapping(method = RequestMethod.GET, produces ="application/json")
+    @GetMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<TermsOfUse> getLatestTermsOfUse() {
         TermsOfUse mostRecent = termsOfUseService.mostRecent();
         if (mostRecent != null) {
@@ -64,7 +66,7 @@ public class TermsOfUseController extends AbstractController  {
         }
     }
 
-    @RequestMapping(method = RequestMethod.POST, produces ="application/json")
+    @PostMapping(produces = APPLICATION_JSON_VALUE)
     public TermsOfUse createTermsOfUse(HttpServletRequest request, @RequestBody final TermsOfUse termsOfUse) {
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkUserSystemRole(user, SystemRole.ADMIN);

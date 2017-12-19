@@ -28,6 +28,7 @@ import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,6 +38,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
+
+import static org.springframework.http.MediaType.*;
 
 @RestController
 @RequestMapping({"/app"})
@@ -56,7 +59,7 @@ public class AppRegistrationController extends AbstractController {
         this.userService = userService;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     @Transactional
     public @ResponseBody App createApp(final HttpServletRequest request, @RequestBody App app) {
         Sandbox sandbox = sandboxService.findBySandboxId(app.getSandbox().getSandboxId());
@@ -70,27 +73,27 @@ public class AppRegistrationController extends AbstractController {
         return appService.create(app);
     }
 
-    @RequestMapping(method = RequestMethod.GET, params = {"sandboxId"})
+    @GetMapping(params = {"sandboxId"})
     public @ResponseBody List<App> getApps(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         String sbmUserId = checkSandboxUserReadAuthorization(request, sandbox);
         return appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces ="application/json")
+    @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody App getApp(final HttpServletRequest request, @PathVariable Integer id) {
         try {
             App app = appService.getById(id);
             checkSandboxUserReadAuthorization(request, app.getSandbox());
             return appService.getClientJSON(app);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // not being handled by global exception handler?
             LOGGER.error("Error retrieving app", e);
             throw new RuntimeException(e);
         }
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces ="application/json")
+    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void deleteApp(final HttpServletRequest request, @PathVariable Integer id) {
 
@@ -99,7 +102,7 @@ public class AppRegistrationController extends AbstractController {
         appService.delete(app);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces ="application/json")
+    @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody App updateApp(final HttpServletRequest request, @PathVariable Integer id, @RequestBody App app) {
 
@@ -114,9 +117,7 @@ public class AppRegistrationController extends AbstractController {
     }
 
 
-    @RequestMapping(value = "/{id}/image", method = RequestMethod.GET, produces ={
-            "image/gif", "image/png", "image/jpg", "image/jpeg"
-    })
+    @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
     public @ResponseBody void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
 
         App app = appService.getById(id);
@@ -128,7 +129,7 @@ public class AppRegistrationController extends AbstractController {
         }
     }
 
-    @RequestMapping(value = "/{id}/image", method = RequestMethod.POST, consumes = {"multipart/form-data"} )
+    @PostMapping(value = "/{id}/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE} )
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
 
@@ -142,7 +143,9 @@ public class AppRegistrationController extends AbstractController {
             image.setContentType(file.getContentType());
             appService.updateAppImage(app, image);
         } catch (IOException e) {
-            e.printStackTrace();
+            if(LOGGER.isErrorEnabled()){
+                LOGGER.error("Unable to update image", e);
+            }
         }
     }
 }

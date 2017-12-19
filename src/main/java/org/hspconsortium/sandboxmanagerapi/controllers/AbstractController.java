@@ -28,6 +28,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 abstract class AbstractController {
+    public static final String UNAUTHORIZED_ERROR = "Response Status : %s.\n" +
+                    "Response Detail : User not authorized to perform this action.";
     final OAuthService oAuthService;
 
     @Inject
@@ -40,9 +42,7 @@ abstract class AbstractController {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
         if (!userId.equalsIgnoreCase(oauthUserId)) {
-            throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                            "Response Detail : User not authorized to perform this action."
-                    , HttpStatus.SC_UNAUTHORIZED));
+            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
     }
 
@@ -90,9 +90,7 @@ abstract class AbstractController {
                 }
             }
         }
-        throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                        "Response Detail : User not authorized to perform this action."
-                , HttpStatus.SC_UNAUTHORIZED));
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     String checkSystemUserDeleteSandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
@@ -104,9 +102,7 @@ abstract class AbstractController {
                 (sandbox.getVisibility() == Visibility.PRIVATE && sandbox.getCreatedBy().getSbmUserId().equalsIgnoreCase(oauthUserId))) {
             return oauthUserId;
         }
-        throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                        "Response Detail : User not authorized to perform this action."
-                , HttpStatus.SC_UNAUTHORIZED));
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     // Sandbox Admin rights
@@ -119,9 +115,7 @@ abstract class AbstractController {
             return oauthUserId;
         }
 
-        throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                        "Response Detail : User not authorized to perform this action."
-                , HttpStatus.SC_UNAUTHORIZED));
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     String checkSystemUserCanManageSandboxDataAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
@@ -134,9 +128,7 @@ abstract class AbstractController {
             return oauthUserId;
         }
 
-        throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                        "Response Detail : User not authorized to perform this action."
-                , HttpStatus.SC_UNAUTHORIZED));
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     // Can manage user's is for inviting users to a sandbox
@@ -151,26 +143,20 @@ abstract class AbstractController {
             return oauthUserId;
         }
 
-        throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                        "Response Detail : User not authorized to perform this action."
-                , HttpStatus.SC_UNAUTHORIZED));
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     void checkUserSystemRole(final User user, final SystemRole role) {
         if (!checkUserHasSystemRole(user, role)) {
 
-            throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                            "Response Detail : User not authorized to perform this action."
-                    , HttpStatus.SC_UNAUTHORIZED));
+            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
     }
 
     void checkUserSandboxRole(final HttpServletRequest request, final Sandbox sandbox, final Role role) {
         if (!checkUserHasSandboxRole(request, sandbox, role)) {
 
-            throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                            "Response Detail : User not authorized to perform this action."
-                    , HttpStatus.SC_UNAUTHORIZED));
+            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
     }
 
@@ -214,9 +200,7 @@ abstract class AbstractController {
             return oauthUserId;
         }
 
-        throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                        "Response Detail : User not authorized to perform this action."
-                , HttpStatus.SC_UNAUTHORIZED));
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     private String checkSandboxMember(final Sandbox sandbox, final String sbmUserId) {
@@ -225,9 +209,7 @@ abstract class AbstractController {
                 return sbmUserId;
             }
         }
-        throw new UnauthorizedException(String.format("Response Status : %s.\n" +
-                        "Response Detail : User not authorized to perform this action."
-                , HttpStatus.SC_UNAUTHORIZED));
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     private boolean checkUserHasSystemRole(final User user, final SystemRole role) {
