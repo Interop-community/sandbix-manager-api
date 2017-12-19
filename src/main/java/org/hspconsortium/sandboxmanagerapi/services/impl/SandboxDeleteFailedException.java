@@ -22,7 +22,7 @@ package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 public class SandboxDeleteFailedException extends RuntimeException {
 
-    public SandboxDeleteFailedException(String message) {
-        super(message);
+    public SandboxDeleteFailedException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

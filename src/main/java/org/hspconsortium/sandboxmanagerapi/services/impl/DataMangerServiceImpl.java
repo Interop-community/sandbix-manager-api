@@ -38,6 +38,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Service
 public class DataMangerServiceImpl implements DataManagerService {
@@ -63,7 +64,7 @@ public class DataMangerServiceImpl implements DataManagerService {
         String success = getEverythingForPatient(patientId, endpoint, fhirIdPrefix, sandbox, bearerToken, sandboxImport);
 
         long seconds = (new Date().getTime()-start.getTime())/1000;
-        sandboxImport.setDurationSeconds("" + seconds);
+        sandboxImport.setDurationSeconds(Long.toString(seconds));
         sandboxService.addSandboxImport(sandbox, sandboxImport);
         return success;
     }
@@ -74,9 +75,6 @@ public class DataMangerServiceImpl implements DataManagerService {
     }
 
     private String getEverythingForPatient(String patientId, String endpoint, String fhirIdPrefix, Sandbox sandbox, String bearerToken, SandboxImport sandboxImport) throws UnsupportedEncodingException {
-        int success = 0;
-        int failure = 0;
-
         String nextPage;
         List<JSONObject> everythingResources = new ArrayList<>();
         String query = "/Patient/" + patientId + "/$everything";
@@ -108,7 +106,7 @@ public class DataMangerServiceImpl implements DataManagerService {
         String bundleString = buildTransactionBundle(everythingResources, fhirIdPrefix);
 
         postFHIRBundle(sandbox, bundleString, bearerToken);
-        sandboxImport.setSuccessCount("" + resourceIds.size());
+        sandboxImport.setSuccessCount(Integer.toString(resourceIds.size()));
         return "SUCCESS";
     }
 
@@ -142,25 +140,28 @@ public class DataMangerServiceImpl implements DataManagerService {
     private void fixupIDs(Object json, String fhirIdPrefix) {
 
         if (json instanceof JSONObject) {
-            JSONObject jsonObject = (JSONObject) json;
-            if (jsonObject.has("reference")) {
-                String ref = jsonObject.getString("reference");
-                String[] resourceAndId = ref.split("/");
-                if (resourceAndId.length == 2) {
-                    ref = resourceAndId[0] + "/" + fhirIdPrefix + resourceAndId[1];
-                    jsonObject.put("reference", ref);
-                }
-            } else {
-                for (Object object : jsonObject.keySet()) {
-                    if (object instanceof String) {
-                        fixupIDs(jsonObject.get((String) object), fhirIdPrefix);
-                    }
-                }
-            }
+            fixupJsonObjectIds((JSONObject) json, fhirIdPrefix);
         } else if (json instanceof JSONArray){
             JSONArray jsonArray = (JSONArray) json;
-            for (int i = 0; i < jsonArray.length(); i++) {
-                fixupIDs(jsonArray.get(i), fhirIdPrefix);
+            IntStream.range(0, jsonArray.length()).forEach(i -> fixupIDs(jsonArray.get(i), fhirIdPrefix));
+        }
+    }
+
+    private void fixupJsonObjectIds(JSONObject json, String fhirIdPrefix) {
+        final String reference = "reference";
+        JSONObject jsonObject = json;
+        if (jsonObject.has(reference)) {
+            String ref = jsonObject.getString(reference);
+            String[] resourceAndId = ref.split("/");
+            if (resourceAndId.length == 2) {
+                ref = resourceAndId[0] + "/" + fhirIdPrefix + resourceAndId[1];
+                jsonObject.put(reference, ref);
+            }
+        } else {
+            for (Object object : jsonObject.keySet()) {
+                if (object instanceof String) {
+                    fixupIDs(jsonObject.get((String) object), fhirIdPrefix);
+                }
             }
         }
     }
@@ -186,7 +187,7 @@ public class DataMangerServiceImpl implements DataManagerService {
         for (int i = 0; i < links.length(); i++) {
             JSONObject link = links.getJSONObject(i);
 
-            if (link.getString("relation").equalsIgnoreCase("next")) {
+            if ("next".equalsIgnoreCase(link.getString("relation"))) {
                 return link.getString("url");
             }
         }
@@ -241,7 +242,7 @@ public class DataMangerServiceImpl implements DataManagerService {
             try {
                 httpClient.close();
             }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient");
+                LOGGER.error("Error closing HttpClient", e);
             }
         }
     }
@@ -309,13 +310,13 @@ public class DataMangerServiceImpl implements DataManagerService {
 
             return true;
         } catch (IOException e) {
-            LOGGER.error("Error posting to " + url, e);
+            LOGGER.error("Error posting to {}", url, e);
             throw new RuntimeException(e);
         } finally {
             try {
                 httpClient.close();
             }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient");
+                LOGGER.error("Error closing HttpClient", e);
             }
         }
     }

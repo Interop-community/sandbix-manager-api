@@ -32,8 +32,8 @@ public class InvalidMediaTypeFilter implements Filter {
             // successfully parsed mediaType
             chain.doFilter(request, response);
         } catch (InvalidMediaTypeException e) {
-            LOGGER.error("Unsupported media type: " + request.getContentType()
-                    + " received for request: " + buildRequestLogMessage(request));
+            LOGGER.error("Unsupported media type: {} received for request: {}",request.getContentType(),
+                    buildRequestLogMessage(request), e);
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Requested MIME type is not supported: " + request.getContentType());
         }

@@ -9,9 +9,9 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public interface SandboxActivityLogRepository extends CrudRepository<SandboxActivityLog, Integer> {
-    public List<SandboxActivityLog> findByUserSbmUserId(@Param("sbmUserId") String sbmUserId);
-    public List<SandboxActivityLog> findByUserId(@Param("userId") int UserId);
-    public List<SandboxActivityLog> findBySandboxId(@Param("sandboxId") String sandboxId);
-    public List<SandboxActivityLog> findBySandboxActivity(@Param("sandboxActivity") SandboxActivity sandboxActivity);
-    public String intervalActive(@Param("intervalTime") Timestamp intervalTime);
+    List<SandboxActivityLog> findByUserSbmUserId(@Param("sbmUserId") String sbmUserId);
+    List<SandboxActivityLog> findByUserId(@Param("userId") int UserId);
+    List<SandboxActivityLog> findBySandboxId(@Param("sandboxId") String sandboxId);
+    List<SandboxActivityLog> findBySandboxActivity(@Param("sandboxActivity") SandboxActivity sandboxActivity);
+    String intervalActive(@Param("intervalTime") Timestamp intervalTime);
 }
