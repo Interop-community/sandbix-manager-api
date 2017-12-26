@@ -1,9 +1,12 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/envinfo")
@@ -54,7 +57,7 @@ public class EnvInfoController {
     @Value("${personaCookieDomain:}")
     String personaCookieDomain;
 
-    @RequestMapping(method = RequestMethod.GET, produces ="application/javascript")
+    @GetMapping(produces = APPLICATION_JSON_VALUE)
     public String get() {
         StringBuilder stringBuffer = new StringBuilder();
 

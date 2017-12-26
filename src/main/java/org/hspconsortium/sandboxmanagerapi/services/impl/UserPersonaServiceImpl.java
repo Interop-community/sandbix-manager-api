@@ -50,7 +50,7 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public UserPersona findDefaultBySandboxId(String sandboxId, String createdBy, Visibility visibility) {
         List<UserPersona> personas = repository.findDefaultBySandboxId(sandboxId, createdBy, visibility);
-        return personas.size() > 0 ? personas.get(0) : null;
+        return !personas.isEmpty() ? personas.get(0) : null;
     }
 
     @Override

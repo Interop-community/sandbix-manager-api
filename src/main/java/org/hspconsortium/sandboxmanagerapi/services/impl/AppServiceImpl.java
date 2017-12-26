@@ -23,6 +23,7 @@ import java.util.List;
 
 @Service
 public class AppServiceImpl implements AppService {
+    public static final String JSON_ERROR_READING_ENTITY = "JSON Error reading entity: {}";
     private static Logger LOGGER = LoggerFactory.getLogger(AppServiceImpl.class.getName());
 
     private final AppRepository repository;
@@ -96,7 +97,7 @@ public class AppServiceImpl implements AppService {
             app.setAuthClient(authClient);
             return save(app);
         } catch (JSONException e) {
-            LOGGER.error("JSON Error reading entity: " + entity, e);
+            LOGGER.error(JSON_ERROR_READING_ENTITY, entity, e);
             throw new RuntimeException(e);
         }
 
@@ -114,7 +115,7 @@ public class AppServiceImpl implements AppService {
             existingApp.getAuthClient().setLogoUri(app.getLogoUri());
             authClientService.save(existingApp.getAuthClient());
         } catch (JSONException e) {
-            LOGGER.error("JSON Error reading entity: " + entity, e);
+            LOGGER.error(JSON_ERROR_READING_ENTITY, entity, e);
             throw new RuntimeException(e);
         }
         existingApp.setLaunchUri(app.getLaunchUri());
@@ -141,7 +142,7 @@ public class AppServiceImpl implements AppService {
             jsonObject.put("logoUri", app.getLogoUri());
             oAuthClientService.putOAuthClient(app.getAuthClient().getAuthDatabaseId(), jsonObject.toString());
         } catch (JSONException e) {
-            LOGGER.error("JSON Error reading entity: " + clientJSON, e);
+            LOGGER.error(JSON_ERROR_READING_ENTITY, clientJSON, e);
             throw new RuntimeException(e);
         }
 

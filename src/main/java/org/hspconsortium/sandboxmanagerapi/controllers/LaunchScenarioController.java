@@ -33,6 +33,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("/launchScenario")
 public class LaunchScenarioController extends AbstractController  {
@@ -59,7 +61,7 @@ public class LaunchScenarioController extends AbstractController  {
         this.userLaunchService = userLaunchService;
     }
 
-    @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces ="application/json")
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody LaunchScenario createLaunchScenario(HttpServletRequest request, @RequestBody final LaunchScenario launchScenario) {
 
@@ -77,7 +79,7 @@ public class LaunchScenarioController extends AbstractController  {
         return createdLaunchScenario;
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces ="application/json")
+    @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody LaunchScenario updateLaunchScenario(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
         LaunchScenario existingLaunchScenario = launchScenarioService.getById(id);
@@ -91,7 +93,7 @@ public class LaunchScenarioController extends AbstractController  {
         return launchScenarioService.update(launchScenario);
     }
 
-    @RequestMapping(value = "/{id}/launched", method = RequestMethod.PUT, produces ="application/json")
+    @PutMapping(value = "/{id}/launched", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void updateLaunchTimestamp(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
         LaunchScenario existingLaunchScenario = launchScenarioService.getById(id);
@@ -111,7 +113,7 @@ public class LaunchScenarioController extends AbstractController  {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces ="application/json", params = {"appId"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"appId"})
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
                    @RequestParam(value = "appId") int appId) {
 
@@ -121,7 +123,7 @@ public class LaunchScenarioController extends AbstractController  {
         return launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces ="application/json", params = {"userPersonaId"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userPersonaId"})
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForPersona(HttpServletRequest request,
                                                                            @RequestParam(value = "userPersonaId") int personaId) {
 
@@ -131,7 +133,7 @@ public class LaunchScenarioController extends AbstractController  {
         return launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces ="application/json")
+    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void deleteLaunchScenario(HttpServletRequest request, @PathVariable Integer id) {
         LaunchScenario launchScenario = launchScenarioService.getById(id);
@@ -140,7 +142,7 @@ public class LaunchScenarioController extends AbstractController  {
         launchScenarioService.delete(launchScenario);
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces = "application/json", params = {"sandboxId"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId"})
     @SuppressWarnings("unchecked")
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenarios(HttpServletRequest request,
         @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException{

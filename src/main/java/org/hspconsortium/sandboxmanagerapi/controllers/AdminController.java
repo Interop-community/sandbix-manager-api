@@ -25,8 +25,6 @@ import org.hspconsortium.sandboxmanagerapi.model.SandboxInvite;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -35,10 +33,11 @@ import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("/admin")
 public class AdminController extends AbstractController {
-    private static Logger LOGGER = LoggerFactory.getLogger(AdminController.class.getName());
 
     private final UserService userService;
     private final SandboxService sandboxService;
@@ -56,7 +55,7 @@ public class AdminController extends AbstractController {
         this.adminService = adminService;
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces ="application/json", params = {"interval"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"interval"})
     public @ResponseBody String getSandboxStatistics(HttpServletRequest request, @RequestParam(value = "interval") String intervalDays) throws UnsupportedEncodingException {
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkUserSystemRole(user, SystemRole.ADMIN);
@@ -64,7 +63,7 @@ public class AdminController extends AbstractController {
     }
 
     // Admin Level Sandbox Delete (originally for cleaning up orphaned sandboxes
-    @RequestMapping(value = "/sandbox/{id}", method = RequestMethod.DELETE, produces ="application/json")
+    @DeleteMapping(value = "/sandbox/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
@@ -73,9 +72,7 @@ public class AdminController extends AbstractController {
 
         //delete sandbox invites
         List<SandboxInvite> invites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
-        for (SandboxInvite invite : invites) {
-            sandboxInviteService.delete(invite);
-        }
+        invites.forEach(sandboxInviteService::delete);
 
         sandboxService.delete(sandbox, oAuthService.getBearerToken(request), user);
     }

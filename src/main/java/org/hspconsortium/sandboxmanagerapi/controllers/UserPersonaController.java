@@ -39,11 +39,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("/userPersona")
 public class UserPersonaController extends AbstractController {
-    private static Logger LOGGER = LoggerFactory.getLogger(UserPersonaController.class.getName());
-
     private final SandboxService sandboxService;
     private final UserService userService;
     private final UserPersonaService userPersonaService;
@@ -59,7 +59,7 @@ public class UserPersonaController extends AbstractController {
         this.jwtService = jwtService;
     }
 
-    @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces ="application/json")
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody UserPersona createUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
@@ -72,7 +72,7 @@ public class UserPersonaController extends AbstractController {
         return userPersonaService.create(userPersona);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, consumes = "application/json", produces ="application/json")
+    @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody UserPersona updateUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
@@ -81,7 +81,7 @@ public class UserPersonaController extends AbstractController {
         return userPersonaService.update(userPersona);
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces = "application/json", params = {"sandboxId"})
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId"})
     @SuppressWarnings("unchecked")
     public @ResponseBody Iterable<UserPersona> getSandboxUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
@@ -92,7 +92,7 @@ public class UserPersonaController extends AbstractController {
         return userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
 
-    @RequestMapping(value = "/default", method = RequestMethod.GET, produces = "application/json", params = {"sandboxId"})
+    @GetMapping(value = "/default", produces = APPLICATION_JSON_VALUE, params = {"sandboxId"})
     @SuppressWarnings("unchecked")
     public @ResponseBody UserPersona getSandboxDefaultUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
@@ -103,13 +103,13 @@ public class UserPersonaController extends AbstractController {
         return userPersonaService.findDefaultBySandboxId(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
 
-    @RequestMapping(method = RequestMethod.GET, params = {"lookUpId"})
+    @GetMapping(params = {"lookUpId"})
     public @ResponseBody String checkForUserPersonaById(@RequestParam(value = "lookUpId")  String id) {
         UserPersona userPersona = userPersonaService.findByPersonaUserId(id);
         return (userPersona == null) ? null : userPersona.getPersonaUserId();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces ="application/json")
+    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void deleteSandboxUserPersona(HttpServletRequest request, @PathVariable Integer id) {
         UserPersona userPersona = userPersonaService.getById(id);
@@ -118,7 +118,7 @@ public class UserPersonaController extends AbstractController {
         userPersonaService.delete(userPersona);
     }
 
-    @RequestMapping(value = "/{username}", method = RequestMethod.GET, produces ="application/json")
+    @GetMapping(value = "/{username}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody UserPersonaDto readUserPersona(HttpServletResponse response, @PathVariable String username) {
         UserPersona userPersona = userPersonaService.findByPersonaUserId(username);
         if(userPersona == null) {
@@ -136,7 +136,7 @@ public class UserPersonaController extends AbstractController {
     }
 
     @CrossOrigin(origins = "*")
-    @RequestMapping(value="/authenticate", method = RequestMethod.POST, produces="application/json")
+    @PostMapping(value="/authenticate", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity authenticateUserPersona(@RequestBody UserPersonaCredentials userPersonaCredentials){
 
         if(userPersonaCredentials == null ||

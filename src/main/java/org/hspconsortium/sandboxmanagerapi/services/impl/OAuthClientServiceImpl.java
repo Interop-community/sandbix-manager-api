@@ -33,7 +33,6 @@ import java.util.Collections;
 
 @Service
 public class OAuthClientServiceImpl implements OAuthClientService {
-    private static Logger LOGGER = LoggerFactory.getLogger(OAuthClientServiceImpl.class.getName());
 
     @Value("${hspc.platform.api.oauthClientEndpointURL}")
     String oauthClientEndpointURL;
@@ -45,7 +44,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     public String postOAuthClient(String clientJSON) {
 
         HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setAccept(Collections.singletonList(new MediaType("application", "json")));
+        requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
 
@@ -56,7 +55,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Override
     public String putOAuthClient(Integer id, String clientJSON) {
         HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setAccept(Collections.singletonList(new MediaType("application", "json")));
+        requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
 
@@ -68,7 +67,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     public String getOAuthClient(Integer id) {
 
         HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setAccept(Collections.singletonList(new MediaType("application", "json")));
+        requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         HttpEntity<String> requestEntity = new HttpEntity<>(requestHeaders);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "/" + id, HttpMethod.GET, requestEntity, String.class);
