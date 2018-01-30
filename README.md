@@ -15,7 +15,7 @@ Welcome to the HSPC Sandbox Manager API!
 
 #### Build and Deploy ####
     mvn clean package
-    ./run_local.sh
+    ./run-local.sh
 
 #### Configuration ####
 
