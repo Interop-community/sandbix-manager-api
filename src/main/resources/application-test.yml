@@ -25,6 +25,8 @@ hspc:
         baseUrl: https://api-dstu2-test.hspconsortium.org
       version6:
         baseUrl: https://api-stu3-test.hspconsortium.org
+      version7:
+        baseUrl: https://api-v5-r4-test.hspconsortium.org
     messaging:
       url: https://messaging-test.hspconsortium.org
       sendEmail: true

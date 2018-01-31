@@ -102,6 +102,8 @@ hspc:
         baseUrl: http://localhost:8075/
       version6:
         baseUrl: http://localhost:8076/
+      version7:
+        baseUrl: http://localhost:8077/
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:
