@@ -26,3 +26,14 @@ Various property files configure the sandbox manager api:
  
 ### Where to go from here ###
 https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platform+Consortium
+
+## Additional Info
+
+### Port Assignments
+
+| Item                    | Port  |
+| ----------------------- | -----:|
+| SANDMAN-API-DSTU2       | 12000 |
+| SANDMAN-API-DSTU2-DEBUG | 12005 |
+| MySQL                   |  3306 |
+

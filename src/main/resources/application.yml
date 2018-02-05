@@ -3,8 +3,6 @@ server:
   tomcat:
     remote_ip_header: x-forwarded-for
     protocol_header: x-forwarded-proto
-# If we want to have paths for each project uncomment this
-# context-path: /api
 
 spring:
   application:
@@ -12,11 +10,11 @@ spring:
   profiles:
     active:
   datasource:
-    base_url: jdbc:mysql://localhost:3306
-    my_schema: sandman
+    base_url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}
+    my_schema: ${DB_NAME:sandman}
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
-    username: root
-    password: password
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:password}
     driverClassName: com.mysql.jdbc.Driver
     validation-query: SELECT 1
     test-on-borrow: true
@@ -30,23 +28,6 @@ spring:
       show-sql: false
       dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
-  mail:
-    sender:
-      address: no-reply@hspconsortium.org
-    host: smtp.gmail.com
-    port: 587
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          ssl:
-            enable: false
-          quitwait: false
-    username: no-reply@hspconsortium.org
-    password: ThisIsNotTheRightPW
   thymeleaf:
       cache: false
       check-template: true
@@ -56,7 +37,6 @@ spring:
       encoding: UTF-8
       prefix: classpath:/templates/
       suffix: .html
-
 
 flyway:
   locations: db/mysql/migration
@@ -83,7 +63,7 @@ hspc:
     #    defaultSandboxVisibility: PUBLIC
     defaultSandboxVisibility: PRIVATE
     authorization:
-      url: http://localhost:8060
+      url: http://${AUTH_HOST:localhost}:${AUTH_PORT:8060}
       tokenEndpoint: ${hspc.platform.authorization.url}/token
       authorizeEndpoint: ${hspc.platform.authorization.url}/authorize
       adminAccess:
@@ -99,11 +79,11 @@ hspc:
       version4:
         baseUrl: http://localhost:8074/
       version5:
-        baseUrl: http://localhost:8075/
+        baseUrl: http://${API_DSTU2_HOST:localhost}:{API_DSTU2_PORT:8075}/
       version6:
-        baseUrl: http://localhost:8076/
+        baseUrl: http://${API_STU3_HOST:localhost}:{API_STU3_PORT:8076}/
       version7:
-        baseUrl: http://localhost:8077/
+        baseUrl: http://${API_R4_HOST:localhost}:{API_R4_PORT:8077}/
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:

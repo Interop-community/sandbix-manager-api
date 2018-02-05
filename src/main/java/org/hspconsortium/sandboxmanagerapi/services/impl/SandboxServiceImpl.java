@@ -55,25 +55,25 @@ public class SandboxServiceImpl implements SandboxService {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
     private final SandboxRepository repository;
 
-    @Value("${hspc.platform.api.version1.baseUrl}")
+    @Value("${hspc.platform.api.version1.baseUrl:}")
     private String apiBaseURL_1;
 
-    @Value("${hspc.platform.api.version2.baseUrl}")
+    @Value("${hspc.platform.api.version2.baseUrl:}")
     private String apiBaseURL_2;
 
-    @Value("${hspc.platform.api.version3.baseUrl}")
+    @Value("${hspc.platform.api.version3.baseUrl:}")
     private String apiBaseURL_3;
 
-    @Value("${hspc.platform.api.version4.baseUrl}")
+    @Value("${hspc.platform.api.version4.baseUrl:}")
     private String apiBaseURL_4;
 
-    @Value("${hspc.platform.api.version5.baseUrl}")
+    @Value("${hspc.platform.api.version5.baseUrl:}")
     private String apiBaseURL_5;
 
-    @Value("${hspc.platform.api.version6.baseUrl}")
+    @Value("${hspc.platform.api.version6.baseUrl:}")
     private String apiBaseURL_6;
 
-    @Value("${hspc.platform.api.version7.baseUrl}")
+    @Value("${hspc.platform.api.version7.baseUrl:}")
     private String apiBaseURL_7;
 
     @Value("${hspc.platform.api.oauthUserInfoEndpointURL}")

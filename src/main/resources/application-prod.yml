@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: email
   datasource:
     base_url: jdbc:mysql://sandboxdb.hspconsortium.org:3306
     my_schema: sandman
@@ -6,7 +8,23 @@ spring:
     username: system
     password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
   mail:
+    sender:
+      address: no-reply@hspconsortium.org
+    host: example.com
+    port: 587
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            enable: false
+          quitwait: false
+    username: no-reply@hspconsortium.org
     password: ENC(HKnkcsBUqrbsBvPGwfjZvdnP3+tECpmt)
+
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
