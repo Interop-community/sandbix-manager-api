@@ -79,11 +79,11 @@ hspc:
       version4:
         baseUrl: http://localhost:8074/
       version5:
-        baseUrl: http://${API_DSTU2_HOST:localhost}:{API_DSTU2_PORT:8075}/
+        baseUrl: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}/
       version6:
-        baseUrl: http://${API_STU3_HOST:localhost}:{API_STU3_PORT:8076}/
+        baseUrl: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}/
       version7:
-        baseUrl: http://${API_R4_HOST:localhost}:{API_R4_PORT:8077}/
+        baseUrl: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}/
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:
