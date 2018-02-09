@@ -43,7 +43,7 @@ pipelines:
             - export TASK_VERSION=$(aws ecs register-task-definition --family "$AWS_CONTAINER_NAME" --container-definitions $(cat container-definitions.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
             - echo "Registered ECS Task Definition - $AWS_CONTAINER_NAME:$TASK_VERSION"
             # update the service to use the latest task definition
-            - aws ecs update-service --cluster hspc-test --service hspc-patient-data-manager-service --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
+            - aws ecs update-service --cluster hspc-test --service sandbox-manager-api-service --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
     master:
       - step:
           name: build jar and upload to nexus
@@ -76,7 +76,7 @@ pipelines:
             - export TASK_VERSION=$(aws ecs register-task-definition --family "$AWS_CONTAINER_NAME" --container-definitions $(cat container-definitions.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
             - echo "Registered ECS Task Definition - $AWS_CONTAINER_NAME:$TASK_VERSION"
             # update the service to use the latest task definition
-            - aws ecs update-service --cluster hspc-prod --service hspc-patient-data-manager-prod-service --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
+            - aws ecs update-service --cluster hspc-prod --service hspc-sandbox-manager-api-prod-service --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
     feature/*:
       - step:
           caches:
