@@ -1,35 +1,19 @@
 spring:
-  profiles:
-    active: email
   datasource:
     base_url: jdbc:mysql://sandboxdb.hspconsortium.org:3306
-    my_schema: sandman
-    url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: system
     password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
   mail:
-    sender:
-      address: no-reply@hspconsortium.org
-    host: example.com
-    port: 587
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          ssl:
-            enable: false
-          quitwait: false
-    username: no-reply@hspconsortium.org
     password: ENC(HKnkcsBUqrbsBvPGwfjZvdnP3+tECpmt)
-
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
 hspc:
   platform:
+    authorization:
+      url: https://auth.hspconsortium.org
+      adminAccess:
+        clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
     api:
       version1:
         baseUrl: https://api.hspconsortium.org
@@ -46,22 +30,8 @@ hspc:
       version7:
         baseUrl: https://api-v5-r4.hspconsortium.org
     messaging:
+      sendEmail: true
       url: https://messaging.hspconsortium.org
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
-      sendEmail: true
-    defaultSandboxCreatorRoles: ADMIN,MANAGE_USERS,MANAGE_DATA
-    defaultSystemRoles: USER,CREATE_SANDBOX
-    defaultPrivateSandboxRoles: USER,MANAGE_USERS,MANAGE_DATA
-    defaultSandboxVisibility: PRIVATE
-    defaultPublicSandboxRoles: USER
-    authorization:
-      adminAccess:
-        clientId: sandman_admin
-        clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
-      url: https://auth.hspconsortium.org
     jwt:
       key: ENC(32oeS4V7gZfqPfndJXegT0cEHIU805Xbn/2qt5p8/5WriF926qEn58gJJdy+6+6ayCAJYN09y43R/9tcIktIXA3Yg6scHRMLzfx+9a4eybo=)
-
-jasypt:
-  encryptor:
-    algorithm: PBEWithMD5AndTripleDES
