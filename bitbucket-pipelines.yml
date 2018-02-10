@@ -26,7 +26,7 @@ pipelines:
             # build the set-env.sh script
             - . sandbox-ci/bitbucket-pipeline-scripts/build-set-env-for-maven.sh test 12000 400
           artifacts:
-            - set_env.sh
+            - set-env.sh
             - target/*.jar
       - step:
           name: build docker and upload to docker hub
