@@ -84,6 +84,8 @@ pipelines:
           trigger: manual
           script:
             - . set-env.sh
+            # override the container name
+            - export AWS_CONTAINER_NAME=hspc-sandbox-manager-api-prod
             # get the ci scripts
             - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
             # build the container-definition.json
@@ -93,7 +95,6 @@ pipelines:
             - echo "Registered ECS Task Definition - $AWS_CONTAINER_NAME:$TASK_VERSION"
             # override the service name
             - export AWS_SERVICE_NAME=hspc-sandbox-manager-api-prod-service
-            - export AWS_CONTAINER_NAME=hspc-sandbox-manager-api-prod
             # update the service to use the latest task definition
             - aws ecs update-service --cluster hspc-prod --service "$AWS_SERVICE_NAME" --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
     feature/*:
