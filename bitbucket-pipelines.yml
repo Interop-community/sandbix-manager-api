@@ -65,8 +65,6 @@ pipelines:
             - rm target/*-javadoc.jar
             # get the ci scripts
             - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
-            # override the service name
-            - export AWS_SERVICE_NAME=hspc-sandbox-manager-api-prod-service
             # build the set-env.sh script
             - . sandbox-ci/bitbucket-pipeline-scripts/build-set-env-for-maven.sh prod 12000 500
           artifacts:
@@ -93,6 +91,8 @@ pipelines:
             # register the ECS task definition and capture the version
             - export TASK_VERSION=$(aws ecs register-task-definition --family "$AWS_CONTAINER_NAME" --container-definitions $(cat sandbox-ci/bitbucket-pipeline-scripts/container-definitions.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
             - echo "Registered ECS Task Definition - $AWS_CONTAINER_NAME:$TASK_VERSION"
+            # override the service name
+            - export AWS_SERVICE_NAME=hspc-sandbox-manager-api-prod-service
             # update the service to use the latest task definition
             - aws ecs update-service --cluster hspc-prod --service "$AWS_SERVICE_NAME" --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
     feature/*:
