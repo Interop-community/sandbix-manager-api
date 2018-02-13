@@ -6,9 +6,9 @@ import org.hspconsortium.sandboxmanagerapi.model.SandboxInvite;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxInviteRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -18,14 +18,14 @@ import java.util.List;
 @Service
 public class SandboxInviteServiceImpl implements SandboxInviteService {
 
-    private final SandboxInviteRepository repository;
-    private final UserService userService;
-    private final SandboxService sandboxService;
-    private final EmailService emailService;
-    private final SandboxActivityLogService sandboxActivityLogService;
+    private SandboxInviteRepository repository;
+    private UserService userService;
+    private SandboxService sandboxService;
+    private EmailService emailService;
+    private SandboxActivityLogService sandboxActivityLogService;
 
-    @Inject
-    public SandboxInviteServiceImpl(final SandboxInviteRepository repository,final UserService userService,
+    @Autowired
+    public SandboxInviteServiceImpl(final SandboxInviteRepository repository, final UserService userService,
                                     final SandboxService sandboxService, final EmailService emailService,
                                     final SandboxActivityLogService sandboxActivityLogService) {
         this.repository = repository;
@@ -33,6 +33,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
         this.sandboxService = sandboxService;
         this.emailService = emailService;
         this.sandboxActivityLogService = sandboxActivityLogService;
+    }
+
+    public SandboxInviteServiceImpl() {
     }
 
     @Override
@@ -85,6 +88,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
 
             // Send an Email
             emailService.sendEmail(invitedBy, invitee, sandboxInvite.getSandbox());
+
             sandboxActivityLogService.sandboxUserInvited(sandbox, invitedBy, invitee);
             return save(sandboxInvite);
         }
@@ -109,7 +113,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
 
     @Override
     public SandboxInvite getById(final int id) {
-        return  repository.findOne(id);
+        return repository.findOne(id);
     }
 
     @Override

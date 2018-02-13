@@ -3,8 +3,6 @@ server:
   tomcat:
     remote_ip_header: x-forwarded-for
     protocol_header: x-forwarded-proto
-# If we want to have paths for each project uncomment this
-# context-path: /api
 
 spring:
   application:
@@ -12,11 +10,11 @@ spring:
   profiles:
     active:
   datasource:
-    base_url: jdbc:mysql://localhost:3306
-    my_schema: sandman
+    base_url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}
+    my_schema: ${DB_NAME:sandman}
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
-    username: root
-    password: password
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:password}
     driverClassName: com.mysql.jdbc.Driver
     validation-query: SELECT 1
     test-on-borrow: true
@@ -57,7 +55,6 @@ spring:
       prefix: classpath:/templates/
       suffix: .html
 
-
 flyway:
   locations: db/mysql/migration
   out-of-order: true
@@ -83,7 +80,7 @@ hspc:
     #    defaultSandboxVisibility: PUBLIC
     defaultSandboxVisibility: PRIVATE
     authorization:
-      url: http://localhost:8060
+      url: http://${AUTH_HOST:localhost}:${AUTH_PORT:8060}
       tokenEndpoint: ${hspc.platform.authorization.url}/token
       authorizeEndpoint: ${hspc.platform.authorization.url}/authorize
       adminAccess:
@@ -91,17 +88,19 @@ hspc:
         clientSecret: secret
     api:
       version1:
-        baseUrl: http://localhost:8071/
+        baseUrl: http://localhost:8071
       version2:
-        baseUrl: http://localhost:8072/
+        baseUrl: http://localhost:8072
       version3:
-        baseUrl: http://localhost:8073/
+        baseUrl: http://localhost:8073
       version4:
-        baseUrl: http://localhost:8074/
+        baseUrl: http://localhost:8074
       version5:
-        baseUrl: http://localhost:8075/
+        baseUrl: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
       version6:
-        baseUrl: http://localhost:8076/
+        baseUrl: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
+      version7:
+        baseUrl: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:
@@ -118,6 +117,6 @@ hspc:
 multipart:
   enabled: true
 
-
-
-
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndTripleDES

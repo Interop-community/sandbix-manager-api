@@ -38,6 +38,34 @@ public class App extends AbstractSandboxItem {
     private AuthClient authClient;
     private String samplePatients;
     private String clientJSON;
+    private String info;
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
+
+    public String getBriefDescription() {
+        return briefDescription;
+    }
+
+    public void setBriefDescription(String briefDescription) {
+        this.briefDescription = briefDescription;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    private String briefDescription;
+    private String author;
 
     /******************* App Property Getter/Setters ************************/
 

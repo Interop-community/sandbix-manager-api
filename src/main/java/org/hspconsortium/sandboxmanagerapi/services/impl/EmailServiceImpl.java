@@ -27,33 +27,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamSource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.spring4.SpringTemplateEngine;
+
 import javax.imageio.ImageIO;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.net.ssl.SSLContext;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.Console;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
+@Profile("email")
 public class EmailServiceImpl implements EmailService {
     private static Logger LOGGER = LoggerFactory.getLogger(EmailService.class.getName());
 
