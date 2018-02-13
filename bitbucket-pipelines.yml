@@ -65,6 +65,8 @@ pipelines:
             - rm target/*-javadoc.jar
             # get the ci scripts
             - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
+            # override the service name
+            - export AWS_SERVICE_NAME=hspc-sandbox-manager-api-prod-service
             # build the set-env.sh script
             - . sandbox-ci/bitbucket-pipeline-scripts/build-set-env-for-maven.sh prod 12000 500
           artifacts:
