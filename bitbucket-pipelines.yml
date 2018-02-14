@@ -34,7 +34,7 @@ pipelines:
             - . set-env.sh
             - echo $IMAGE_COORDINATES
             # build docker image and push
-            - docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
+            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
             - docker build -t $IMAGE_COORDINATES .
             - docker push $IMAGE_COORDINATES
       - step:
@@ -76,7 +76,7 @@ pipelines:
             - . set-env.sh
             - echo $IMAGE_COORDINATES
             # build docker image and push
-            - docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
+            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
             - docker build -t $IMAGE_COORDINATES .
             - docker push $IMAGE_COORDINATES
       - step:
