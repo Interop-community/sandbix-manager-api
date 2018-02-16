@@ -1,6 +1,8 @@
 # This project uses the GitFlow Workflow as defined here:
 #   https://www.atlassian.com/git/tutorials/comparing-workflows#GitFlow-workflow
 image: hspconsortium/hspc-ubuntu-base
+clone:           # the 'clone' section
+  depth: 1       # the depth, in this case the clone will contain last one commits
 
 pipelines:
   default:
@@ -11,79 +13,107 @@ pipelines:
   branches:
     develop:
       - step:
+          name: build jar and upload to nexus
+          caches:
+            - maven
+          script:
+            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
+            # clear out the other jar files
+            - rm target/*-sources.jar
+            - rm target/*-javadoc.jar
+            # get the ci scripts
+            - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
+            # build the set-env.sh script
+            - . sandbox-ci/bitbucket-pipeline-scripts/build-set-env-for-maven.sh test 12000 400
+          artifacts:
+            - set-env.sh
+            - target/*.jar
+      - step:
+          name: build docker and upload to docker hub
+          script:
+            - . set-env.sh
+            - echo $IMAGE_COORDINATES
+            # build docker image and push
+            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+            - docker build -t $IMAGE_COORDINATES .
+            - docker push $IMAGE_COORDINATES
+      - step:
+          name: AUTOMATICALLY update the aws test service
+          script:
+            - . set-env.sh
+            # get the ci scripts
+            - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
+            # build the container-definition.json
+            - . sandbox-ci/bitbucket-pipeline-scripts/build-container-definition.sh $ENC_PW_TEST
+            # register the ECS task definition and capture the version
+            - export TASK_VERSION=$(aws ecs register-task-definition --family "$AWS_CONTAINER_NAME" --container-definitions $(cat sandbox-ci/bitbucket-pipeline-scripts/container-definitions.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - echo "Registered ECS Task Definition - $AWS_CONTAINER_NAME:$TASK_VERSION"
+            # update the service to use the latest task definition
+            - aws ecs update-service --cluster hspc-test --service "$AWS_SERVICE_NAME" --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
+    master:
+      - step:
+          name: build jar and upload to nexus
           caches:
             - maven
           script:
             # Deploy to maven central
             - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
             - gpg --batch --import private-key.gpg
-#            - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
-            # Deploy to hspc-nexus
-            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
+            - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
             # clear out the other jar files
             - rm target/*-sources.jar
             - rm target/*-javadoc.jar
-            # build docker image and push to nexus.hspconsortium.com:18083
-            - export CONTAINER_NAME=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.artifactId}' --non-recursive exec:exec)
-            - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            - sed -i -e "s/{{CONTAINER_NAME}}/$CONTAINER_NAME/g" -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" container-definitions-test.json
-            - cat container-definitions-test.json
-            - export IMAGE_NAME=$(cat container-definitions-test.json | jq --raw-output '.[0].image')
-            - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.hspconsortium.org:18083
-            - docker build -t $IMAGE_NAME .
-            - docker push $IMAGE_NAME
-            # Add jasypt pw to container definition
-            - jq '.[].environment += [{"name":"JASYPT_ENCRYPTOR_PASSWORD", "value":"'$ENC_PW_TEST'"}]' container-definitions-test.json > tmp.json && mv tmp.json container-definitions-test.json
+            # get the ci scripts
+            - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
+            # build the set-env.sh script
+            - . sandbox-ci/bitbucket-pipeline-scripts/build-set-env-for-maven.sh prod 12000 500
+          artifacts:
+            - set-env.sh
+            - target/*.jar
+      - step:
+          name: build docker and upload to docker hub
+          script:
+            - . set-env.sh
+            - echo $IMAGE_COORDINATES
+            # build docker image and push
+            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+            - docker build -t $IMAGE_COORDINATES .
+            - docker push $IMAGE_COORDINATES
+      - step:
+          name: MANUALLY update the aws prod service
+          trigger: manual
+          script:
+            - . set-env.sh
+            # override the container name
+            - export AWS_CONTAINER_NAME=hspc-sandbox-manager-api-prod
+            # get the ci scripts
+            - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
+            # build the container-definition.json
+            - . sandbox-ci/bitbucket-pipeline-scripts/build-container-definition.sh $ENC_PW_PROD
             # register the ECS task definition and capture the version
-            - export TASK_VERSION=$(aws ecs register-task-definition --family hspc-sandbox-manager-api --container-definitions $(cat container-definitions-test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - export TASK_VERSION=$(aws ecs register-task-definition --family "$AWS_CONTAINER_NAME" --container-definitions $(cat sandbox-ci/bitbucket-pipeline-scripts/container-definitions.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - echo "Registered ECS Task Definition - $AWS_CONTAINER_NAME:$TASK_VERSION"
+            # override the service name
+            - export AWS_SERVICE_NAME=hspc-sandbox-manager-api-prod-service
             # update the service to use the latest task definition
-            - aws ecs update-service --cluster $TARGET_AWS_CLUSTER --service $TARGET_AWS_SERVICE --task-definition $CONTAINER_NAME:$TASK_VERSION
-#            - aws ecs update-service --cluster hspc-test-large --service sandbox-manager-api-service --task-definition hspc-sandbox-manager-api:$TASK_VERSION
+            - aws ecs update-service --cluster hspc-prod --service "$AWS_SERVICE_NAME" --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
     feature/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify -s settings.xml
+            - mvn -B verify
     release/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify -s settings.xml
+            - mvn -B verify
     hotfix/*:
       - step:
           caches:
             - maven
           script:
-            - mvn -B verify -s settings.xml
-    master:
-      - step:
-          caches:
-            - maven
-          script:
-            # Deploy to maven central
-            - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
-            - gpg --import private-key.gpg
-            - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
-            # clear out the other jar files
-            - rm target/*-sources.jar
-            - rm target/*-javadoc.jar
-            # build docker image and push to nexus.hspconsortium.com:18083
-            - export CONTAINER_NAME=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.artifactId}' --non-recursive exec:exec)
-            - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
-            - sed -i -e "s/{{CONTAINER_NAME}}/$CONTAINER_NAME/g" -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" container-definitions-prod.json
-            - cat container-definitions-prod.json
-            - export IMAGE_NAME=$(cat container-definitions-prod.json | jq --raw-output '.[0].image')
-            - docker login -u $NEXUS_USR -p $NEXUS_PWD nexus.hspconsortium.org:18083
-            - docker build -t $IMAGE_NAME .
-            - docker push $IMAGE_NAME
-            # Add jasypt pw to container definition
-            - jq '.[].environment += [{"name":"JASYPT_ENCRYPTOR_PASSWORD", "value":"'$ENC_PW_PROD'"}]' container-definitions-prod.json > tmp.json && mv tmp.json container-definitions-prod.json
-            # register the ECS task definition and capture the version
-            - export NEW_CONTAINER_NAME=$(cat container-definitions-prod.json | jq --raw-output '.[0].name')
-            - export TASK_VERSION=$(aws ecs register-task-definition --family $NEW_CONTAINER_NAME --container-definitions $(cat container-definitions-prod.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
-
-
+            - mvn -B verify
 options:
   docker: true

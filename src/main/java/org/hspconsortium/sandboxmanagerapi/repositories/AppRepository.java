@@ -4,9 +4,11 @@ import org.hspconsortium.sandboxmanagerapi.model.App;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface AppRepository extends CrudRepository<App, Integer> {
     App findByLaunchUriAndClientIdAndSandboxId(@Param("launchUri") String launchUri,
                                                       @Param("clientId") String clientId,

@@ -28,6 +28,23 @@ spring:
       show-sql: false
       dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+  mail:
+    sender:
+      address: no-reply@hspconsortium.org
+    host: smtp.gmail.com
+    port: 587
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            enable: false
+          quitwait: false
+    username: no-reply@hspconsortium.org
+    password: ThisIsNotTheRightPW
   thymeleaf:
       cache: false
       check-template: true
@@ -71,19 +88,19 @@ hspc:
         clientSecret: secret
     api:
       version1:
-        baseUrl: http://localhost:8071/
+        baseUrl: http://localhost:8071
       version2:
-        baseUrl: http://localhost:8072/
+        baseUrl: http://localhost:8072
       version3:
-        baseUrl: http://localhost:8073/
+        baseUrl: http://localhost:8073
       version4:
-        baseUrl: http://localhost:8074/
+        baseUrl: http://localhost:8074
       version5:
-        baseUrl: http://${API_DSTU2_HOST:localhost}:{API_DSTU2_PORT:8075}/
+        baseUrl: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
       version6:
-        baseUrl: http://${API_STU3_HOST:localhost}:{API_STU3_PORT:8076}/
+        baseUrl: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
       version7:
-        baseUrl: http://${API_R4_HOST:localhost}:{API_R4_PORT:8077}/
+        baseUrl: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:
@@ -100,6 +117,6 @@ hspc:
 multipart:
   enabled: true
 
-
-
-
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndTripleDES

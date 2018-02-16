@@ -10,7 +10,7 @@
 
     <groupId>org.hspconsortium.sandbox</groupId>
     <artifactId>hspc-sandbox-manager-api</artifactId>
-    <version>0.6.0-SNAPSHOT</version>
+    <version>0.6.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Sandbox Manager API</name>

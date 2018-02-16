@@ -4,9 +4,11 @@ import org.hspconsortium.sandboxmanagerapi.model.UserPersona;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface UserPersonaRepository extends CrudRepository<UserPersona, Integer> {
     UserPersona findByPersonaUserId(@Param("personaUserId") String personaUserId);
 
