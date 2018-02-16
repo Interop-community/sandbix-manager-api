@@ -121,6 +121,8 @@ public class AppServiceImpl implements AppService {
         existingApp.setLaunchUri(app.getLaunchUri());
         existingApp.setLogoUri(app.getLogoUri());
         existingApp.setSamplePatients(app.getSamplePatients());
+        existingApp.setBriefDescription(app.getBriefDescription());
+        existingApp.setAuthor(app.getAuthor());
         return save(existingApp);
 
     }
