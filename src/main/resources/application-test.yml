@@ -1,13 +1,10 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://db-test.hspconsortium.org:3306
-    username: sandman_api
-    password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
+    base_url: jdbc:mysql://sandboxdb-test.hspconsortium.org
+    username: hspctest
+    password: ENC(kYqZKAjsHHSeqTtyGKzNsrrIUWdjXiXl)
   mail:
     password: ENC(G617hEtHdDqtzbpE9CtoYnopRfcrBqK8)
-#jasypt:
-#  encryptor:
-#    password: ${JASYPT_ENCRYPTOR_PASSWORD}
 hspc:
   platform:
     authorization:
