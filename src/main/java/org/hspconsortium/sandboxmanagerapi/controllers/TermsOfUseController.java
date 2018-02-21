@@ -55,7 +55,6 @@ public class TermsOfUseController extends AbstractController  {
         this.userService = userService;
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<TermsOfUse> getLatestTermsOfUse() {
         TermsOfUse mostRecent = termsOfUseService.mostRecent();

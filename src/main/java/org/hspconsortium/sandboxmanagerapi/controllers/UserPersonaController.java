@@ -27,8 +27,6 @@ import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.model.UserPersona;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -135,7 +133,6 @@ public class UserPersonaController extends AbstractController {
         return userPersonaDto;
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(value="/authenticate", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity authenticateUserPersona(@RequestBody UserPersonaCredentials userPersonaCredentials){
 

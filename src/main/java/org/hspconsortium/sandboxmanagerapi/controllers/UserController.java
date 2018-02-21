@@ -67,7 +67,6 @@ public class UserController extends AbstractController {
         this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(params = {"sbmUserId"})
     @Transactional
     public @ResponseBody
@@ -91,7 +90,6 @@ public class UserController extends AbstractController {
         return userService.findBySbmUserId(sbmUserId);
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/acceptterms", params = {"sbmUserId", "termsId"})
     @Transactional
     public void acceptTermsOfUse(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId,
