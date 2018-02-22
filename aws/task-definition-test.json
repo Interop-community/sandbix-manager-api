@@ -1,11 +1,10 @@
 {
-  "executionRoleArn": "arn:aws:iam::657600230790:role/ecsTaskExecutionRole",
   "family": "sandbox-manager-test",
   "networkMode": "awsvpc",
   "containerDefinitions": [
     {
       "name": "sandbox-manager-test",
-      "image": "TBD",
+      "image": "hspconsortium/sandbox-manager-api:0.7.0-SNAPSHOT",
       "cpu": 512,
       "memoryReservation": 1024,
       "logConfiguration": {
