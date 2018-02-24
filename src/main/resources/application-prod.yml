@@ -1,6 +1,6 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://sandboxdb.hspconsortium.org:3306
+    host: sandbox-db-prod.hspconsortium.org
     username: system
     password: ENC(Ug+CO2kXMtyYJNrRagiJOEVBKJFshM4K)
   mail:
@@ -11,7 +11,7 @@ spring:
 hspc:
   platform:
     authorization:
-      url: https://auth2.hspconsortium.org
+      url: https://auth.hspconsortium.org
       adminAccess:
         clientSecret: ENC(6kmKr5Yip2z6a59Oq3srEoP2L9bx+VuL/QGarR6M1GhMjhMWngZk+tXUvA22tACRfSbCPj0f/wrzcqN0N6QsOGwoN8wbbQSySOzQ82tuFTMz+Phaw0+61cvTX+cvZ/6P)
     api:
