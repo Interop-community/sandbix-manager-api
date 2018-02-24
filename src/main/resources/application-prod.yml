@@ -1,6 +1,6 @@
 spring:
   datasource:
-    host: sandbox-db-prod.hspconsortium.org
+    base_url: jdbc:mysql://sandbox-db-prod.hspconsortium.org:3306
     username: system
     password: ENC(Ug+CO2kXMtyYJNrRagiJOEVBKJFshM4K)
   mail:
