@@ -21,9 +21,9 @@ hspc:
       version4:
         baseUrl: https://api-stu3-test.hspconsortium.org
       version5:
-        baseUrl: https://api-dstu2-test.hspconsortium.org
+        baseUrl: https://api-v5-dstu2-test.hspconsortium.org
       version6:
-        baseUrl: https://api-stu3-test.hspconsortium.org
+        baseUrl: https://api-v5-stu3-test.hspconsortium.org
       version7:
         baseUrl: https://api-v5-r4-test.hspconsortium.org
     messaging:
