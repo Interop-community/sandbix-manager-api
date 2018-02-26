@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-CONFIG_FILE="../aws/task-config.json"
-
 export PROJECT_NAME="sandbox-manager-api"
 
 export PROJECT_FULL_NAME="${PROJECT_NAME}-${TARGET_ENV}"
