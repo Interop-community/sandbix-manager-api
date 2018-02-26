@@ -1,27 +1,37 @@
 {
-  "family": "TBD",
+  "family": "sandbox-manager-api-test",
   "containerDefinitions": [
     {
-      "name": "TBD",
-      "image": "TBD",
+      "name": "sandbox-manager-api-test",
+      "image": "hspconsortium/sandbox-manager-api:0.7.1-SNAPSHOT",
       "cpu": 0,
       "portMappings": [
         {
-          "containerPort": 0,
+          "containerPort": 12000,
           "hostPort": 0,
           "protocol": "tcp"
         }
       ],
-      "memoryReservation": 0,
+      "memoryReservation": 400,
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "TBD",
+          "awslogs-group": "/ecs/sandbox-manager-api-test",
           "awslogs-region": "us-west-2",
           "awslogs-stream-prefix": "ecs"
         }
       },
-      "essential": true
+      "essential": true,
+      "environment": [
+        {
+          "name": "JASYPT_ENCRYPTOR_PASSWORD",
+          "value": ""
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "test"
+        }
+      ]
     }
   ]
 }

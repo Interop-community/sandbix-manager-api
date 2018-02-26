@@ -1,8 +1,8 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://sandbox-db-prod.hspconsortium.org:3306
+    base_url: jdbc:mysql://sandboxdb.hspconsortium.org:3306
     username: system
-    password: ENC(Ug+CO2kXMtyYJNrRagiJOEVBKJFshM4K)
+    password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
   mail:
     password: ENC(HKnkcsBUqrbsBvPGwfjZvdnP3+tECpmt)
 #jasypt:
@@ -13,7 +13,7 @@ hspc:
     authorization:
       url: https://auth.hspconsortium.org
       adminAccess:
-        clientSecret: ENC(6kmKr5Yip2z6a59Oq3srEoP2L9bx+VuL/QGarR6M1GhMjhMWngZk+tXUvA22tACRfSbCPj0f/wrzcqN0N6QsOGwoN8wbbQSySOzQ82tuFTMz+Phaw0+61cvTX+cvZ/6P)
+        clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
     api:
       version1:
         baseUrl: https://api.hspconsortium.org
@@ -34,4 +34,4 @@ hspc:
       url: https://messaging.hspconsortium.org
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
-      key: ENC(Mv+rOiWWXL8EjK31WoY4N2QCW+18S8NBHA8g46xeTGNxfvVJwzW0bU+qXrdUFDIAcpOb7wR5/bfzLwUB28m88n5/3BEDuPLKx7DohkSx5ds=)
+      key: ENC(32oeS4V7gZfqPfndJXegT0cEHIU805Xbn/2qt5p8/5WriF926qEn58gJJdy+6+6ayCAJYN09y43R/9tcIktIXA3Yg6scHRMLzfx+9a4eybo=)

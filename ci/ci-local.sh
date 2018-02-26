@@ -3,13 +3,11 @@
 set -x
 
 # set values provided at build time
-export ACTIVE_ENV=test
-export PROJECT_NAME=sandbox-manager-api
-export TARGET_AWS_CLUSTER=hspc-test
-export ENC_PW_TEST=changeme
+export TARGET_ENV=test
 
 . ci-0-set-properties.sh
 . ci-1-prepare-sources.sh
-#. ci-2-docker-image.sh
-. ci-3-aws-task-update.sh
-. ci-4-aws-service-update.sh
+. ci-2-build-project.sh
+#. ci-3-docker-image.sh
+#. ci-4-aws-task-update.sh
+#. ci-5-aws-service-update.sh
