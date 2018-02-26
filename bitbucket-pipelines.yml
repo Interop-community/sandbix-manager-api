@@ -55,7 +55,7 @@ pipelines:
             - maven
           script:
             - export TARGET_ENV=prod
-            - export CREDENTIALS=${ENC_PW_TEST}
+            - export CREDENTIALS=${ENC_PW_PROD}
             - cd ci
             - . ci-0-set-properties.sh
             - . ci-1-prepare-sources.sh
