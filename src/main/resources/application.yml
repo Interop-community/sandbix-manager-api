@@ -119,7 +119,10 @@ jasypt:
   encryptor:
     algorithm: PBEWithMD5AndTripleDES
 
+endpoints:
+  health:
+    sensitive: false
 management:
-  endpoint:
-    health:
-      show-details: always
+  security:
+    enabled: false
+
