@@ -118,3 +118,8 @@ multipart:
 jasypt:
   encryptor:
     algorithm: PBEWithMD5AndTripleDES
+
+management:
+  endpoint:
+    health:
+      show-details: always
