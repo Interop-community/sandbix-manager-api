@@ -122,7 +122,16 @@ jasypt:
 endpoints:
   health:
     sensitive: false
+
 management:
   security:
     enabled: false
 
+cloud:
+  aws:
+    cloudwatch:
+      namespace: sandbox-manager-api
+    region:
+      static: us-west-2
+    stack:
+      auto: false

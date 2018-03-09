@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
 import org.hspconsortium.sandboxmanagerapi.model.Patient;
 import org.hspconsortium.sandboxmanagerapi.repositories.PatientRepository;
 import org.hspconsortium.sandboxmanagerapi.services.PatientService;
@@ -21,6 +22,7 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public Patient save(final Patient patient) {
         return repository.save(patient);
     }
