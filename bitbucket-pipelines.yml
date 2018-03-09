@@ -58,6 +58,7 @@ pipelines:
             - export CREDENTIALS=${ENC_PW_PROD}
             - cd ci
             - . ci-0-set-properties.sh
+            - export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE},aws-metrics
             - . ci-1-prepare-sources.sh
             - . ci-2-build-project.sh
           artifacts:
