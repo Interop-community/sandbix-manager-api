@@ -2,11 +2,11 @@ package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxActivityLogRepository;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxActivityLogService;
 import org.springframework.stereotype.Service;
-
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.lang.reflect.Type;
@@ -38,6 +38,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxCreate(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.CREATED);
@@ -46,6 +47,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxLogin(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.LOGGED_IN);
@@ -54,6 +56,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxDelete(Sandbox sandbox, User user) {
         List<SandboxActivityLog> sandboxActivityLogList = findBySandboxId(sandbox.getSandboxId());
         for (SandboxActivityLog sandboxActivityLog : sandboxActivityLogList) {
@@ -69,6 +72,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInviteAccepted(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_ACCEPTED_INVITE);
@@ -76,6 +80,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInviteRevoked(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_INVITATION_REVOKED);
@@ -83,6 +88,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInviteRejected(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_INVITATION_REJECTED);
@@ -91,6 +97,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxUserRemoved(Sandbox sandbox, User user, User removedUser) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_REMOVED);
@@ -100,6 +107,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInvited(Sandbox sandbox, User user, User invitedUser) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_INVITED);
@@ -108,6 +116,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxOpenEndpoint(Sandbox sandbox, User user, Boolean openEndpoint) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.OPEN_ENDPOINT);
@@ -116,6 +125,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxUserAdded(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_ADDED);
@@ -131,6 +141,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxImport(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.SANDBOX_DATA_IMPORT);
@@ -138,6 +149,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    @PublishAtomicMetric
     public SandboxActivityLog sandboxReset(Sandbox sandbox, User user) {
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.SANDBOX_RESET);
@@ -161,6 +173,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    @PublishAtomicMetric
     public SandboxActivityLog userDelete(final User user) {
         List<SandboxActivityLog> sandboxActivityLogList = findByUserId(user.getId());
         for (SandboxActivityLog sandboxActivityLog : sandboxActivityLogList) {

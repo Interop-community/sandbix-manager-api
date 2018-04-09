@@ -17,95 +17,90 @@ pipelines:
           caches:
             - maven
           script:
-            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
-            - rm target/*-sources.jar
-            - rm target/*-javadoc.jar
+            - export TARGET_ENV=test
+            - export CREDENTIALS=${ENC_PW_TEST}
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-1-prepare-sources.sh
+            - . ci-2-build-project.sh
           artifacts:
             - target/*.jar
+            - aws/task-definition.json
       - step:
           name: build docker and upload to docker hub
           script:
-            - . bitbucket-pipelines-env.sh sandbox-manager-api test
-            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-            - docker build -t $IMAGE_COORDINATES .
-            - docker push $IMAGE_COORDINATES
+            - export TARGET_ENV=test
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-3-docker-image.sh
       - step:
           name: update the aws task definition
           script:
-            - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
-            - export SPRING_PROFILES_ACTIVE=test
-            - . bitbucket-pipelines-env.sh sandbox-manager-api test
-            - export TEMPLATE_FILE="sandbox-ci/aws/templates/task-definition-template.json"
-            - ./sandbox-ci/aws/scripts/env-substitution.sh $TEMPLATE_FILE
-            - cat $(echo "$TEMPLATE_FILE")
-            - jq '.containerDefinitions[0].environment += [{"name":"JASYPT_ENCRYPTOR_PASSWORD", "value":"'$ENC_PW_TEST'"}]' ${TEMPLATE_FILE} > tmp.json && mv tmp.json ${TEMPLATE_FILE}
-            - cat $(echo "$TEMPLATE_FILE")
-            - export TASK_RESPONSE=$(aws ecs register-task-definition --region $AWS_REGION --cli-input-json file://$TEMPLATE_FILE)
-            - echo $TASK_RESPONSE
+            - export TARGET_ENV=test
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-4-aws-task-update.sh
+      - step:
+          name: update the aws service
+          deployment: test
+          script:
+            - export TARGET_ENV=test
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-5-aws-service-update.sh
     master:
       - step:
-          name: build jar and upload to nexus
+          name: build the source code
           caches:
             - maven
           script:
-            # Deploy to maven central
-            - openssl aes-256-cbc -pass pass:$OPENSSL_PWD -in private-key.gpg.enc -out private-key.gpg -d
-            - gpg --batch --import private-key.gpg
-            - mvn -V -B -s settings.xml deploy -P DEPLOY,ossrh
-            # clear out the other jar files
-            - rm target/*-sources.jar
-            - rm target/*-javadoc.jar
-            # get the ci scripts
-            - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
-            # build the set-env.sh script
-            - . sandbox-ci/bitbucket-pipeline-scripts/build-set-env-for-maven.sh prod 12000 500
+            - export TARGET_ENV=prod
+            - export CREDENTIALS=${ENC_PW_PROD}
+            - cd ci
+            - . ci-0-set-properties.sh
+            - export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE},aws-metrics
+            - . ci-1-prepare-sources.sh
+            - . ci-2-build-project.sh
           artifacts:
-            - set-env.sh
             - target/*.jar
+            - aws/task-definition.json
       - step:
           name: build docker and upload to docker hub
           script:
-            - . set-env.sh
-            - echo $IMAGE_COORDINATES
-            # build docker image and push
-            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-            - docker build -t $IMAGE_COORDINATES .
-            - docker push $IMAGE_COORDINATES
+            - export TARGET_ENV=prod
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-3-docker-image.sh
       - step:
-          name: MANUALLY update the aws prod service
+          name: update the aws task definition
+          script:
+            - export TARGET_ENV=prod
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-4-aws-task-update.sh
+      - step:
+          name: update the aws service
+          deployment: production
           trigger: manual
           script:
-            - . set-env.sh
-            # override the container name
-            - export AWS_CONTAINER_NAME=hspc-sandbox-manager-api-prod
-            # get the ci scripts
-            - git clone https://bitbucket.org/hspconsortium/sandbox-ci.git
-            # build the container-definition.json
-            - . sandbox-ci/bitbucket-pipeline-scripts/build-container-definition.sh $ENC_PW_PROD
-            # register the ECS task definition and capture the version
-            - export TASK_VERSION=$(aws ecs register-task-definition --family "$AWS_CONTAINER_NAME" --container-definitions $(cat sandbox-ci/bitbucket-pipeline-scripts/container-definitions.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
-            - echo "Registered ECS Task Definition - $AWS_CONTAINER_NAME:$TASK_VERSION"
-            # override the service name
-            - export AWS_SERVICE_NAME=hspc-sandbox-manager-api-prod-service
-            # update the service to use the latest task definition
-            - aws ecs update-service --cluster hspc-prod --service "$AWS_SERVICE_NAME" --task-definition $AWS_CONTAINER_NAME:$TASK_VERSION
+            - export TARGET_ENV=prod
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-5-aws-service-update.sh
     feature/*:
       - step:
-          caches:
-            - maven
+          name: build the source code
           script:
-            - mvn -B verify
+            - echo "success"
     release/*:
       - step:
-          caches:
-            - maven
+          name: build the source code
           script:
-            - mvn -B verify
+            - echo "success"
     hotfix/*:
       - step:
-          caches:
-            - maven
+          name: build the source code
           script:
-            - mvn -B verify
+            - echo "success"
 options:
   docker: true

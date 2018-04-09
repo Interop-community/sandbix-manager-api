@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
 import org.hspconsortium.sandboxmanagerapi.model.App;
 import org.hspconsortium.sandboxmanagerapi.model.AuthClient;
 import org.hspconsortium.sandboxmanagerapi.model.Image;
@@ -83,6 +84,7 @@ public class AppServiceImpl implements AppService {
 
     @Override
     @Transactional
+    @PublishAtomicMetric
     public App create(final App app) {
         app.setLogo(null);
         app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
