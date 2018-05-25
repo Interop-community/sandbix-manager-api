@@ -35,6 +35,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -78,6 +80,12 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Value("${hspc.platform.api.oauthUserInfoEndpointURL}")
     private String oauthUserInfoEndpointURL;
+
+    @Value("${expiration-message}")
+    private String expirationMessage;
+
+    @Value("${expiration-date}")
+    private String expirationDate;
 
     private final UserService userService;
     private final UserRoleService userRoleService;
@@ -201,6 +209,11 @@ public class SandboxServiceImpl implements SandboxService {
             sandbox.setCreatedBy(user);
             sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
+            // Set expiration date and message for R4 sandboxes
+            if(sandbox.getApiEndpointIndex().equals("7")) {
+                sandbox.setExpirationMessage(expirationMessage);
+                sandbox.setExpirationDate(formatDate());
+            }
             Sandbox savedSandbox = save(sandbox);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {
@@ -571,6 +584,18 @@ public class SandboxServiceImpl implements SandboxService {
             }catch (IOException e) {
                 LOGGER.error("Error closing HttpClient");
             }
+        }
+    }
+
+    private java.sql.Date formatDate() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date parsed = format.parse(expirationDate);
+            return new java.sql.Date(parsed.getTime());
+        } catch (ParseException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            return null;
         }
     }
 }

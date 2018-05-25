@@ -135,3 +135,6 @@ cloud:
       static: us-west-2
     stack:
       auto: false
+
+expiration-message: The version of this sandbox (R4) is not final. Therefore, this is a temporary sandbox that will no longer be available after Aug 31, 2018.
+expiration-date: 2018-09-01
