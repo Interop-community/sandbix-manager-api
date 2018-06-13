@@ -1,0 +1,1 @@
+ALTER TABLE app MODIFY sample_patients VARCHAR(1000);

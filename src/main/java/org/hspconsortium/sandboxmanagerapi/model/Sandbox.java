@@ -3,6 +3,7 @@ package org.hspconsortium.sandboxmanagerapi.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,8 @@ public class Sandbox extends AbstractItem {
     private boolean allowOpenAccess;
     private List<UserRole> userRoles = new ArrayList<>();
     private List<SandboxImport> imports = new ArrayList<>();
+    private String expirationMessage;
+    private Date expirationDate;
 
     /******************* Sandbox Property Getter/Setters ************************/
 
@@ -158,5 +161,13 @@ public class Sandbox extends AbstractItem {
     public void setVisibility(Visibility visibility) {
         this.visibility = visibility;
     }
+
+    public String getExpirationMessage() { return expirationMessage; }
+
+    public void setExpirationMessage(String expirationMessage) { this.expirationMessage = expirationMessage; }
+
+    public Date getExpirationDate() { return expirationDate; }
+
+    public void setExpirationDate(Date expirationDate) { this.expirationDate = expirationDate; }
 
 }
