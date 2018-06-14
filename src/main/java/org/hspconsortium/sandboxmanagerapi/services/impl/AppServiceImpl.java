@@ -170,7 +170,7 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public List<App> findBySandboxId(final String sandboxId){
-        return  repository.findBySandboxId(sandboxId);
+        return repository.findBySandboxId(sandboxId);
     }
 
     @Override

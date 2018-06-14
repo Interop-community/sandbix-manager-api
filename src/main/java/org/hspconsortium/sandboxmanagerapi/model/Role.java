@@ -1,7 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
 public enum Role {
-    ADMIN(0), USER(1), READONLY(2), MANAGE_USERS(3), MANAGE_DATA(4);
+    ADMIN(0), USER(1), READONLY(2), MANAGE_USERS(3), MANAGE_DATA(4), CREATE_SANDBOX(5);
 
     private int numVal;
 

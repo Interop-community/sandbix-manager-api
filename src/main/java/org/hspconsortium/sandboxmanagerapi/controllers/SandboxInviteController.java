@@ -163,7 +163,9 @@ public class SandboxInviteController extends AbstractController {
             }
 
             Sandbox sandbox = sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId());
-            sandboxService.addMember(sandbox, invitee);
+            if(!sandboxService.isSandboxMember(sandbox, invitee)) {
+                sandboxService.addMember(sandbox, invitee);
+            }
             sandboxActivityLogService.sandboxUserInviteAccepted(sandbox, invitee);
 
             sandboxInvite.setStatus(status);
