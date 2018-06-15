@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.model.UserRole;
@@ -45,28 +46,26 @@ public class AnalyticsController extends AbstractController {
     Integer countSandboxesByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 //        checkUserAuthorization(request, userId);
-        Integer count = 0;
+
         User primaryUser = userService.findBySbmUserId(userId);
-        List<Sandbox> userSandboxes = sandboxService.getAllowedSandboxes(primaryUser);
-        for (Sandbox sandbox: userSandboxes) {
-            for (UserRole userRole: sandbox.getUserRoles()) {
-                if (userRole.getUser().getSbmUserId().equals(userId)) {
-                    if (userRole.getRole().equals(Role.CREATE_SANDBOX)) {
-                        count++;
-                    }
-                }
-            }
+        if (primaryUser == null) {
+            throw new ResourceNotFoundException("User not found.");
         }
-        return count;
+        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
+        return userCreatedSandboxes.size();
     }
 
     @GetMapping(value = "/users", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countUsersBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 //        checkUserAuthorization(request, userId);
-        User user = userService.findBySbmUserId(userId);
+        User primaryUser = userService.findBySbmUserId(userId);
+        if (primaryUser == null) {
+            throw new ResourceNotFoundException("User not found.");
+        }
         HashMap<String, Integer> sandboxUsers = new HashMap<>();
-        for (Sandbox sandbox: user.getSandboxes()) {
+        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
+        for (Sandbox sandbox: userCreatedSandboxes) {
             List<UserRole> usersRoles = sandbox.getUserRoles();
             Map<String, UserRole> uniqueUsers = new LinkedHashMap<>();
             for (UserRole userRole : usersRoles) {
@@ -82,9 +81,13 @@ public class AnalyticsController extends AbstractController {
     public @ResponseBody HashMap<String, Integer> countAppsBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 //        checkUserAuthorization(request, userId);
-        User user = userService.findBySbmUserId(userId);
+        User primaryUser = userService.findBySbmUserId(userId);
+        if (primaryUser == null) {
+            throw new ResourceNotFoundException("User not found.");
+        }
         HashMap<String, Integer> sandboxApps = new HashMap<>();
-        for (Sandbox sandbox: user.getSandboxes()) {
+        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
+        for (Sandbox sandbox: userCreatedSandboxes) {
             String sandboxId = sandbox.getSandboxId();
             sandboxApps.put(sandboxId, appService.findBySandboxId(sandboxId).size());
         }
@@ -97,15 +100,12 @@ public class AnalyticsController extends AbstractController {
 //        checkUserAuthorization(request, userId);
         Double memoryUseInMB = 0.0;
         User primaryUser = userService.findBySbmUserId(userId);
-        List<Sandbox> userSandboxes = sandboxService.getAllowedSandboxes(primaryUser);
-        for (Sandbox sandbox: userSandboxes) {
-            for (UserRole userRole: sandbox.getUserRoles()) {
-                if (userRole.getUser().getSbmUserId().equals(userId)) {
-                    if (userRole.getRole().equals(Role.CREATE_SANDBOX)) {
-                        memoryUseInMB += analyticsService.retrieveMemoryInSchema(sandbox.getSandboxId());
-                    }
-                }
-            }
+        if (primaryUser == null) {
+            throw new ResourceNotFoundException("User not found.");
+        }
+        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
+        for (Sandbox sandbox: userCreatedSandboxes) {
+            memoryUseInMB += analyticsService.retrieveMemoryInSchema(sandbox.getSandboxId());
         }
         return memoryUseInMB;
     }

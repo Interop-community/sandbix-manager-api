@@ -1,7 +1,11 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.hspconsortium.sandboxmanagerapi.model.Role;
+import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.User;
+import org.hspconsortium.sandboxmanagerapi.model.UserRole;
 import org.hspconsortium.sandboxmanagerapi.services.AnalyticsService;
+import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +15,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AnalyticsServiceImpl implements AnalyticsService {
@@ -25,15 +31,32 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private String databasePassword;
 
     private final UserService userService;
+    private final SandboxService sandboxService;
 
     @Inject
-    AnalyticsServiceImpl(final UserService userService) {
+    AnalyticsServiceImpl(final UserService userService, final SandboxService sandboxService) {
         this.userService = userService;
+        this.sandboxService = sandboxService;
     }
 
     public Integer countSandboxesByUser(String userId) {
         User user = userService.findBySbmUserId(userId);
         return 1;
+    }
+
+    public List<Sandbox> sandboxesCreatedByUser(User user) {
+        List<Sandbox> userSandboxes = sandboxService.getAllowedSandboxes(user);
+        List<Sandbox> userCreatedSandboxes = new ArrayList<>();
+        for (Sandbox sandbox: userSandboxes) {
+            for (UserRole userRole: sandbox.getUserRoles()) {
+                if (userRole.getUser().getSbmUserId().equals(user.getSbmUserId())) {
+                    if (userRole.getRole().equals(Role.CREATE_SANDBOX)) {
+                        userCreatedSandboxes.add(sandbox);
+                    }
+                }
+            }
+        }
+        return userCreatedSandboxes;
     }
 
     public Double retrieveMemoryInSchema(String schemaName) {
