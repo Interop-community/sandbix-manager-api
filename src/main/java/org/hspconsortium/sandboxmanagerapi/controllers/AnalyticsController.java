@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.sql.ResultSet;
 import java.util.*;
 
 @RestController
@@ -44,7 +45,6 @@ public class AnalyticsController extends AbstractController {
     Integer countSandboxesByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 //        checkUserAuthorization(request, userId);
-        // TODO: only return sandboxes that this user created
         Integer count = 0;
         User primaryUser = userService.findBySbmUserId(userId);
         List<Sandbox> userSandboxes = sandboxService.getAllowedSandboxes(primaryUser);
@@ -91,10 +91,22 @@ public class AnalyticsController extends AbstractController {
         return sandboxApps;
     }
 
-//    @GetMapping(value = "/memory", params = {"userId"})
-//    public @ResponseBody HashMap<String, Integer> memoryUsedByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
-//        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-////        checkUserAuthorization(request, userId);
-//
-//    }
+    @GetMapping(value = "/memory", params = {"userId"})
+    public @ResponseBody Double memoryUsedByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
+//        checkUserAuthorization(request, userId);
+        Double memoryUseInMB = 0.0;
+        User primaryUser = userService.findBySbmUserId(userId);
+        List<Sandbox> userSandboxes = sandboxService.getAllowedSandboxes(primaryUser);
+        for (Sandbox sandbox: userSandboxes) {
+            for (UserRole userRole: sandbox.getUserRoles()) {
+                if (userRole.getUser().getSbmUserId().equals(userId)) {
+                    if (userRole.getRole().equals(Role.CREATE_SANDBOX)) {
+                        memoryUseInMB += analyticsService.retrieveMemoryInSchema(sandbox.getSandboxId());
+                    }
+                }
+            }
+        }
+        return memoryUseInMB;
+    }
 }
