@@ -3,6 +3,7 @@ package org.hspconsortium.sandboxmanagerapi.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import javax.xml.crypto.Data;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class Sandbox extends AbstractItem {
     private String apiEndpointIndex;
     private String fhirServerEndPoint;
     private DataSet dataSet = DataSet.NA;
+    private DataSet apps = DataSet.NA;
     private boolean allowOpenAccess;
     private List<UserRole> userRoles = new ArrayList<>();
     private List<SandboxImport> imports = new ArrayList<>();
@@ -90,6 +92,15 @@ public class Sandbox extends AbstractItem {
 
     public void setDataSet(DataSet dataSet) {
         this.dataSet = dataSet;
+    }
+
+    @Transient
+    public DataSet getApps() {
+        return apps;
+    }
+
+    public void setApps(DataSet apps) {
+        this.apps = apps;
     }
 
     public boolean isAllowOpenAccess() {

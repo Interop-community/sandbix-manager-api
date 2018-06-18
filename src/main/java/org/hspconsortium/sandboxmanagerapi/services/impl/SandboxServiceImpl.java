@@ -210,12 +210,16 @@ public class SandboxServiceImpl implements SandboxService {
             sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
             // Set expiration date and message for R4 sandboxes
-            if(sandbox.getApiEndpointIndex().equals("7")) {
+            if (sandbox.getApiEndpointIndex().equals("7")) {
                 sandbox.setExpirationMessage(expirationMessage);
                 sandbox.setExpirationDate(formatDate());
             }
+            if (sandbox.getApps().equals(DataSet.DEFAULT)) {
+                appService.registerDefaultApps(sandbox);
+            }
             Sandbox savedSandbox = save(sandbox);
             addMember(savedSandbox, user, Role.ADMIN);
+            addMember(savedSandbox, user, Role.CREATE_SANDBOX);
             for (String roleName : defaultSandboxCreatorRoles) {
                 addMemberRole(sandbox, user, Role.valueOf(roleName));
             }
@@ -291,15 +295,13 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public void addMember(final Sandbox sandbox, final User user, final Role role) {
-        if (!isSandboxMember(sandbox, user)) {
-            List<UserRole> userRoles = sandbox.getUserRoles();
-            userRoles.add(new UserRole(user, role));
-            sandboxActivityLogService.sandboxUserRoleChange(sandbox, user, role, true);
-            sandbox.setUserRoles(userRoles);
-            userService.addSandbox(sandbox, user);
-            sandboxActivityLogService.sandboxUserAdded(sandbox, user);
-            save(sandbox);
-        }
+        List<UserRole> userRoles = sandbox.getUserRoles();
+        userRoles.add(new UserRole(user, role));
+        sandboxActivityLogService.sandboxUserRoleChange(sandbox, user, role, true);
+        sandbox.setUserRoles(userRoles);
+        userService.addSandbox(sandbox, user);
+        sandboxActivityLogService.sandboxUserAdded(sandbox, user);
+        save(sandbox);
     }
 
     @Override

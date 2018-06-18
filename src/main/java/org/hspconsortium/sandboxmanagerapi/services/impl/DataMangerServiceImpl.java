@@ -249,7 +249,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private boolean resetSandboxFhirData(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {
         String jsonString = "{}";
-        if (!sandbox.getDataSet().equals(DataSet.NA)) {
+        if (sandbox.getDataSet().equals(DataSet.DEFAULT)) {
             jsonString = "{\"dataSet\": \"" + sandbox.getDataSet() + "\"}";
         }
 
