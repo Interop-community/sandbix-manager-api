@@ -210,9 +210,12 @@ public class SandboxServiceImpl implements SandboxService {
             sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
             // Set expiration date and message for R4 sandboxes
-            if(sandbox.getApiEndpointIndex().equals("7")) {
+            if (sandbox.getApiEndpointIndex().equals("7")) {
                 sandbox.setExpirationMessage(expirationMessage);
                 sandbox.setExpirationDate(formatDate());
+            }
+            if (sandbox.getApps().equals(DataSet.DEFAULT)) {
+                appService.registerDefaultApps(sandbox);
             }
             Sandbox savedSandbox = save(sandbox);
             addMember(savedSandbox, user, Role.ADMIN);

@@ -1,7 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
 public enum DataSet {
-    NA("na"), NONE("none"), DEFAULT("default");
+    NONE("none"), DEFAULT("default"), NA("na");
 
     private String value;
 

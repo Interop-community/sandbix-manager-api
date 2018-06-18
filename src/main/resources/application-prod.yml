@@ -39,3 +39,5 @@ hspc:
 endpoints:
   health:
     sensitive: true
+
+default-apps-file: default_apps/sample-apps_prod.json

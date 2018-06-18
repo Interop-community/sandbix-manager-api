@@ -1,24 +1,25 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.json.simple.parser.JSONParser;
 import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
-import org.hspconsortium.sandboxmanagerapi.model.App;
-import org.hspconsortium.sandboxmanagerapi.model.AuthClient;
-import org.hspconsortium.sandboxmanagerapi.model.Image;
-import org.hspconsortium.sandboxmanagerapi.model.Visibility;
+import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.AppRepository;
 import org.hspconsortium.sandboxmanagerapi.services.AppService;
 import org.hspconsortium.sandboxmanagerapi.services.AuthClientService;
 import org.hspconsortium.sandboxmanagerapi.services.ImageService;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthClientService;
+import org.json.simple.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.sql.Timestamp;
+import java.io.*;
+import java.sql.*;
 import java.util.Date;
 import java.util.List;
 
@@ -182,4 +183,77 @@ public class AppServiceImpl implements AppService {
     public List<App> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy) {
         return repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy);
     }
+
+    @Value("${default-apps-file}")
+    private String defaultAppsFile;
+
+    @Override
+    public void registerDefaultApps(final Sandbox sandbox) {
+        JSONParser parser = new JSONParser();
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            File file = new File(classLoader.getResource(defaultAppsFile).getFile());
+            FileReader fileReader = new FileReader(file);
+            JSONArray apps = (JSONArray) parser.parse(new FileReader(file));
+            for (Object appInfo: apps) {
+                org.json.simple.JSONObject appInfoJson = (org.json.simple.JSONObject) appInfo;
+                String clientId = (String) ((org.json.simple.JSONObject) appInfoJson.get("authClient")).get("clientId");
+                String clientName = (String) ((org.json.simple.JSONObject) appInfoJson.get("authClient")).get("clientName");
+                Integer authClientId = getAuthClientId(clientId);
+
+                AuthClient authClient = new AuthClient();
+                authClient.setClientId(clientId);
+                authClient.setClientName(clientName);
+                authClient.setLogoUri((String) appInfoJson.get("logoUri"));
+                authClient.setAuthDatabaseId(authClientId);
+                authClientService.save(authClient);
+
+                App app = new App();
+                app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+                app.setLogoUri((String) appInfoJson.get("logoUri"));
+                app.setLaunchUri((String) appInfoJson.get("launchUri"));
+                app.setBriefDescription((String) appInfoJson.get("briefDescription"));
+                if (appInfoJson.get("samplePatients") != null) {
+                    app.setSamplePatients((String) appInfoJson.get("samplePatients"));
+                }
+                app.setSandbox(sandbox);
+                app.setCreatedBy(sandbox.getCreatedBy());
+                app.setAuthClient(authClient);
+                save(app);
+            }
+        }
+        catch (Exception e) {
+            LOGGER.error("Error in registering default apps.", e);
+        }
+
+    }
+
+    @Value("${spring.datasource.base_url}")
+    private String databaseUrl;
+
+    @Value("${spring.datasource.username}")
+    private String databaseUserName;
+
+    @Value("${spring.datasource.password}")
+    private String databasePassword;
+
+    private Integer getAuthClientId(String clientId) {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
+            Statement stmt = conn.createStatement() ;
+            String query = "SELECT * FROM oic.client_details WHERE client_id='" + clientId + "';" ;
+            ResultSet rs = stmt.executeQuery(query);
+            Integer id = 0;
+            while (rs.next()) {
+                // Had to use this workaround to keep the id in scope
+                id += Integer.parseInt(rs.getString(1));
+            }
+            conn.close();
+            return id;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting Id for client " + clientId, e);
+        }
+    }
+
 }

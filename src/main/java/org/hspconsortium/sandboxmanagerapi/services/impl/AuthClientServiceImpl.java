@@ -30,4 +30,5 @@ public class AuthClientServiceImpl implements AuthClientService {
         repository.delete(id);
     }
 
+
 }
