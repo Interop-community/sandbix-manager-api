@@ -126,8 +126,8 @@ public class AppServiceImpl implements AppService {
         existingApp.setSamplePatients(app.getSamplePatients());
         existingApp.setBriefDescription(app.getBriefDescription());
         existingApp.setAuthor(app.getAuthor());
+        existingApp.setClientJSON(app.getClientJSON());
         return save(existingApp);
-
     }
 
     @Override

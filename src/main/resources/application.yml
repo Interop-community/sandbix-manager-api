@@ -139,4 +139,4 @@ cloud:
 expiration-message: The version of this sandbox (R4) is not final. Therefore, this is a temporary sandbox that will no longer be available after Aug 31, 2018.
 expiration-date: 2018-09-01
 
-default-apps-file: default_apps/sample-apps.json
+default-apps-file: /classes/default_apps/sample-apps.json
