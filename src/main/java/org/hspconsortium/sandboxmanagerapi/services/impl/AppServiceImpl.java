@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.json.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
 import org.hspconsortium.sandboxmanagerapi.model.*;
@@ -8,7 +9,7 @@ import org.hspconsortium.sandboxmanagerapi.services.AppService;
 import org.hspconsortium.sandboxmanagerapi.services.AuthClientService;
 import org.hspconsortium.sandboxmanagerapi.services.ImageService;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthClientService;
-import org.json.simple.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -191,14 +192,25 @@ public class AppServiceImpl implements AppService {
     public void registerDefaultApps(final Sandbox sandbox) {
         JSONParser parser = new JSONParser();
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            File file = new File(classLoader.getResource(defaultAppsFile).getFile());
-            FileReader fileReader = new FileReader(file);
-            JSONArray apps = (JSONArray) parser.parse(new FileReader(file));
-            for (Object appInfo: apps) {
-                org.json.simple.JSONObject appInfoJson = (org.json.simple.JSONObject) appInfo;
-                String clientId = (String) ((org.json.simple.JSONObject) appInfoJson.get("authClient")).get("clientId");
-                String clientName = (String) ((org.json.simple.JSONObject) appInfoJson.get("authClient")).get("clientName");
+//            ClassLoader classLoader = getClass().getClassLoader();
+//            File file = new File(classLoader.getResource(defaultAppsFile).getFile());
+//            FileReader fileReader = new FileReader(file);
+//            JSONArray apps = (JSONArray) parser.parse(new FileReader(file));
+
+            InputStream in = getClass().getResourceAsStream(defaultAppsFile);
+            BufferedReader input = new BufferedReader(new InputStreamReader(in));
+            StringBuilder sb = new StringBuilder();
+
+            String line;
+            while ((line = input.readLine()) != null) {
+                sb.append(line);
+            }
+
+            JSONArray apps = new JSONArray(sb.toString());
+            for (int i = 0; i < apps.length(); ++i) {
+                JSONObject appInfoJson = apps.getJSONObject(i);
+                String clientId = appInfoJson.getJSONObject("authClient").getString("clientId");
+                String clientName = appInfoJson.getJSONObject("authClient").getString("clientName");
                 Integer authClientId = getAuthClientId(clientId);
 
                 AuthClient authClient = new AuthClient();
@@ -213,9 +225,6 @@ public class AppServiceImpl implements AppService {
                 app.setLogoUri((String) appInfoJson.get("logoUri"));
                 app.setLaunchUri((String) appInfoJson.get("launchUri"));
                 app.setBriefDescription((String) appInfoJson.get("briefDescription"));
-                if (appInfoJson.get("samplePatients") != null) {
-                    app.setSamplePatients((String) appInfoJson.get("samplePatients"));
-                }
                 app.setSandbox(sandbox);
                 app.setCreatedBy(sandbox.getCreatedBy());
                 app.setAuthClient(authClient);
