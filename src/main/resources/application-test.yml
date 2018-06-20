@@ -33,4 +33,4 @@ hspc:
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
 
-default-apps-file: default_apps/sample-apps_test.json
+default-apps-file: classpath:default_apps/sample-apps_test.json

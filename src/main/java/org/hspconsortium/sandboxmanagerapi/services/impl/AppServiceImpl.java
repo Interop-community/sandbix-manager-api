@@ -15,6 +15,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -33,16 +35,19 @@ public class AppServiceImpl implements AppService {
     private final AuthClientService authClientService;
     private final ImageService imageService;
     private final OAuthClientService oAuthClientService;
+    private final ResourceLoader resourceLoader;
+
 
     @Inject
     public AppServiceImpl(final AppRepository repository,
                           final AuthClientService authClientService,
                           final ImageService imageService,
-                          final OAuthClientService oAuthClientService) {
+                          final OAuthClientService oAuthClientService, final ResourceLoader resourceLoader) {
         this.repository = repository;
         this.authClientService = authClientService;
         this.imageService = imageService;
         this.oAuthClientService = oAuthClientService;
+        this.resourceLoader = resourceLoader;
     }
 
     @Override
@@ -192,12 +197,9 @@ public class AppServiceImpl implements AppService {
     public void registerDefaultApps(final Sandbox sandbox) {
         JSONParser parser = new JSONParser();
         try {
-//            ClassLoader classLoader = getClass().getClassLoader();
-//            File file = new File(classLoader.getResource(defaultAppsFile).getFile());
-//            FileReader fileReader = new FileReader(file);
-//            JSONArray apps = (JSONArray) parser.parse(new FileReader(file));
 
-            InputStream in = getClass().getResourceAsStream(defaultAppsFile);
+            Resource resource = resourceLoader.getResource(defaultAppsFile);
+            InputStream in = resource.getInputStream();
             BufferedReader input = new BufferedReader(new InputStreamReader(in));
             StringBuilder sb = new StringBuilder();
 

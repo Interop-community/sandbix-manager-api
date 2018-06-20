@@ -40,4 +40,4 @@ endpoints:
   health:
     sensitive: true
 
-default-apps-file: default_apps/sample-apps_prod.json
+default-apps-file: classpath:default_apps/sample-apps_prod.json
