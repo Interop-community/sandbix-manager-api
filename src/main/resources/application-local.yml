@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    base_url: jdbc:mysql://localhost:3306
+    username: root
+    password: password
+  mail:
+    password: password
+hspc:
+  platform:
+    authorization:
+      url: http://localhost:8060
+      adminAccess:
+        clientSecret: secret
+    api:
+      version1:
+        baseUrl: http://localhost:8071
+      version2:
+        baseUrl: http://localhost:8072
+      version3:
+        baseUrl: http://localhost:8073
+      version4:
+        baseUrl: http://localhost:8074
+      version5:
+        baseUrl: http://localhost:8075
+      version6:
+        baseUrl: http://localhost:8076
+      version7:
+        baseUrl: http://localhost:8077
+    messaging:
+      sendEmail: true
+      url: https://messaging-test.hspconsortium.org
+      emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
+    jwt:
+      key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration

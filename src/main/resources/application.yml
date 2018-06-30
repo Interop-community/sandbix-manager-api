@@ -56,7 +56,7 @@ spring:
       suffix: .html
 
 flyway:
-  locations: db/mysql/migration
+  locations: classpath:db/migration/{vendor}
   out-of-order: true
 
 security:
