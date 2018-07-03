@@ -39,6 +39,7 @@ public class Sandbox extends AbstractItem {
     private DataSet apps = DataSet.NA;
     private boolean allowOpenAccess;
     private List<UserRole> userRoles = new ArrayList<>();
+    private List<SmartApp> smartApps = new ArrayList<>();
     private List<SandboxImport> imports = new ArrayList<>();
     private String expirationMessage;
     private Date expirationDate;
@@ -122,6 +123,19 @@ public class Sandbox extends AbstractItem {
 
     public void setUserRoles(List<UserRole> userRoles) {
         this.userRoles = userRoles;
+    }
+
+    @OneToMany(cascade={CascadeType.ALL})
+    @JoinTable(name = "sandbox_smart_apps", joinColumns = {
+            @JoinColumn(name = "sandbox", nullable = false, updatable = false) },
+            inverseJoinColumns = { @JoinColumn(name = "smart_app",
+                    nullable = false, updatable = false) })
+    public List<SmartApp> getSmartApps() {
+        return smartApps;
+    }
+
+    public void setSmartApps(List<SmartApp> smartApps) {
+        this.smartApps = smartApps;
     }
 
     @OneToMany(cascade={CascadeType.ALL})

@@ -1,14 +1,11 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.json.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.AppRepository;
-import org.hspconsortium.sandboxmanagerapi.services.AppService;
-import org.hspconsortium.sandboxmanagerapi.services.AuthClientService;
-import org.hspconsortium.sandboxmanagerapi.services.ImageService;
-import org.hspconsortium.sandboxmanagerapi.services.OAuthClientService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,18 +33,25 @@ public class AppServiceImpl implements AppService {
     private final ImageService imageService;
     private final OAuthClientService oAuthClientService;
     private final ResourceLoader resourceLoader;
+    private LaunchScenarioService launchScenarioService;
 
 
     @Inject
     public AppServiceImpl(final AppRepository repository,
                           final AuthClientService authClientService,
                           final ImageService imageService,
-                          final OAuthClientService oAuthClientService, final ResourceLoader resourceLoader) {
+                          final OAuthClientService oAuthClientService,
+                          final ResourceLoader resourceLoader) {
         this.repository = repository;
         this.authClientService = authClientService;
         this.imageService = imageService;
         this.oAuthClientService = oAuthClientService;
         this.resourceLoader = resourceLoader;
+    }
+
+    @Inject
+    public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
+        this.launchScenarioService = launchScenarioService;
     }
 
     @Override
@@ -69,11 +73,18 @@ public class AppServiceImpl implements AppService {
         Integer authDatabaseId = app.getAuthClient().getAuthDatabaseId();
         if (authDatabaseId != null) {
             try {
+                // TODO: don't delete in auth server if default app
+//                JSONArray apps = getDefaultAppList();
                 oAuthClientService.deleteOAuthClient(authDatabaseId);
             } catch (Exception ex) {
                 // Ignoring this error. Failure to delete client from Auth server
                 // shouldn't fail a sandbox delete.
             }
+        }
+
+        List<LaunchScenario> launchScenarios = launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+        for (LaunchScenario launchScenario: launchScenarios) {
+            launchScenarioService.delete(launchScenario.getId());
         }
 
         if (app.getLogo() != null) {
@@ -116,6 +127,8 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public App update(final App app) {
         App existingApp = getById(app.getId());
+        // TODO: don't update in auth server if default app
+//        JSONArray apps = getDefaultAppList();
         String entity = oAuthClientService.putOAuthClient(existingApp.getAuthClient().getAuthDatabaseId(), app.getClientJSON());
 
         try {
@@ -190,81 +203,84 @@ public class AppServiceImpl implements AppService {
         return repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy);
     }
 
-    @Value("${default-apps-file}")
-    private String defaultAppsFile;
-
-    @Override
-    public void registerDefaultApps(final Sandbox sandbox) {
-        JSONParser parser = new JSONParser();
-        try {
-
-            Resource resource = resourceLoader.getResource(defaultAppsFile);
-            InputStream in = resource.getInputStream();
-            BufferedReader input = new BufferedReader(new InputStreamReader(in));
-            StringBuilder sb = new StringBuilder();
-
-            String line;
-            while ((line = input.readLine()) != null) {
-                sb.append(line);
-            }
-
-            JSONArray apps = new JSONArray(sb.toString());
-            for (int i = 0; i < apps.length(); ++i) {
-                JSONObject appInfoJson = apps.getJSONObject(i);
-                String clientId = appInfoJson.getJSONObject("authClient").getString("clientId");
-                String clientName = appInfoJson.getJSONObject("authClient").getString("clientName");
-                Integer authClientId = getAuthClientId(clientId);
-
-                AuthClient authClient = new AuthClient();
-                authClient.setClientId(clientId);
-                authClient.setClientName(clientName);
-                authClient.setLogoUri((String) appInfoJson.get("logoUri"));
-                authClient.setAuthDatabaseId(authClientId);
-                authClientService.save(authClient);
-
-                App app = new App();
-                app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-                app.setLogoUri((String) appInfoJson.get("logoUri"));
-                app.setLaunchUri((String) appInfoJson.get("launchUri"));
-                app.setBriefDescription((String) appInfoJson.get("briefDescription"));
-                app.setSandbox(sandbox);
-                app.setCreatedBy(sandbox.getCreatedBy());
-                app.setAuthClient(authClient);
-                save(app);
-            }
-        }
-        catch (Exception e) {
-            LOGGER.error("Error in registering default apps.", e);
-        }
-
-    }
-
-    @Value("${spring.datasource.base_url}")
-    private String databaseUrl;
-
-    @Value("${spring.datasource.username}")
-    private String databaseUserName;
-
-    @Value("${spring.datasource.password}")
-    private String databasePassword;
-
-    private Integer getAuthClientId(String clientId) {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
-            Statement stmt = conn.createStatement() ;
-            String query = "SELECT * FROM oic.client_details WHERE client_id='" + clientId + "';" ;
-            ResultSet rs = stmt.executeQuery(query);
-            Integer id = 0;
-            while (rs.next()) {
-                // Had to use this workaround to keep the id in scope
-                id += Integer.parseInt(rs.getString(1));
-            }
-            conn.close();
-            return id;
-        } catch (Exception e) {
-            throw new RuntimeException("Error getting Id for client " + clientId, e);
-        }
-    }
+//    @Value("${default-apps-file}")
+//    private String defaultAppsFile;
+//
+//    @Override
+//    public void registerDefaultApps(final Sandbox sandbox) {
+//
+//        JSONArray apps = getDefaultAppList();
+//
+//        for (int i = 0; i < apps.length(); ++i) {
+//            JSONObject appInfoJson = apps.getJSONObject(i);
+//            String clientId = appInfoJson.getJSONObject("authClient").getString("clientId");
+//            String clientName = appInfoJson.getJSONObject("authClient").getString("clientName");
+//            Integer authClientId = getAuthClientId(clientId);
+//
+//            AuthClient authClient = new AuthClient();
+//            authClient.setClientId(clientId);
+//            authClient.setClientName(clientName);
+//            authClient.setLogoUri((String) appInfoJson.get("logoUri"));
+//            authClient.setAuthDatabaseId(authClientId);
+//            authClientService.save(authClient);
+//
+//            App app = new App();
+//            app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+//            app.setLogoUri((String) appInfoJson.get("logoUri"));
+//            app.setLaunchUri((String) appInfoJson.get("launchUri"));
+//            app.setBriefDescription((String) appInfoJson.get("briefDescription"));
+//            app.setSandbox(sandbox);
+//            app.setCreatedBy(sandbox.getCreatedBy());
+//            app.setAuthClient(authClient);
+//            save(app);
+//        }
+//    }
+//
+//    private JSONArray getDefaultAppList() {
+//        try {
+//            Resource resource = resourceLoader.getResource(defaultAppsFile);
+//            InputStream in = resource.getInputStream();
+//            BufferedReader input = new BufferedReader(new InputStreamReader(in));
+//            StringBuilder sb = new StringBuilder();
+//
+//            String line;
+//            while ((line = input.readLine()) != null) {
+//                sb.append(line);
+//            }
+//
+//            return new JSONArray(sb.toString());
+//        } catch (Exception e) {
+//            LOGGER.error("Unable to load default app information.", e);
+//            return new JSONArray();
+//        }
+//    }
+//
+//    @Value("${spring.datasource.base_url}")
+//    private String databaseUrl;
+//
+//    @Value("${spring.datasource.username}")
+//    private String databaseUserName;
+//
+//    @Value("${spring.datasource.password}")
+//    private String databasePassword;
+//
+//    private Integer getAuthClientId(String clientId) {
+//        try {
+//            Class.forName("com.mysql.jdbc.Driver");
+//            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
+//            Statement stmt = conn.createStatement() ;
+//            String query = "SELECT * FROM oic.client_details WHERE client_id='" + clientId + "';" ;
+//            ResultSet rs = stmt.executeQuery(query);
+//            Integer id = 0;
+//            while (rs.next()) {
+//                // Had to use this workaround to keep the id in scope
+//                id += Integer.parseInt(rs.getString(1));
+//            }
+//            conn.close();
+//            return id;
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error getting Id for client " + clientId, e);
+//        }
+//    }
 
 }

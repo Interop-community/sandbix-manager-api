@@ -50,9 +50,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         for (Sandbox sandbox: userSandboxes) {
             for (UserRole userRole: sandbox.getUserRoles()) {
                 if (userRole.getUser().getSbmUserId().equals(user.getSbmUserId())) {
-                    if (userRole.getRole().equals(Role.CREATE_SANDBOX)) {
-                        userCreatedSandboxes.add(sandbox);
-                    }
+                    // TODO need to change this to if the user is the "payer"
+                    userCreatedSandboxes.add(sandbox);
+//                    if (userRole.getRole().equals(Role.CREATE_SANDBOX)) {
+//                        userCreatedSandboxes.add(sandbox);
+//                    }
                 }
             }
         }

@@ -87,11 +87,15 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${expiration-date}")
     private String expirationDate;
 
+    @Value("${default-public-apps}")
+    private String[] defaultPublicApps;
+
     private final UserService userService;
     private final UserRoleService userRoleService;
     private final UserPersonaService userPersonaService;
     private final UserLaunchService userLaunchService;
     private final AppService appService;
+    private final SmartAppService smartAppService;
     private final LaunchScenarioService launchScenarioService;
     private final PatientService patientService;
     private final SandboxImportService sandboxImportService;
@@ -100,6 +104,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository, final UserService userService,
                               final UserRoleService userRoleService, final AppService appService,
+                              final SmartAppService smartAppService,
                               final UserPersonaService userPersonaService,
                               final UserLaunchService userLaunchService,
                               final LaunchScenarioService launchScenarioService,
@@ -112,6 +117,7 @@ public class SandboxServiceImpl implements SandboxService {
         this.userPersonaService = userPersonaService;
         this.userLaunchService = userLaunchService;
         this.appService = appService;
+        this.smartAppService = smartAppService;
         this.launchScenarioService = launchScenarioService;
         this.patientService = patientService;
         this.sandboxImportService = sandboxImportService;
@@ -215,11 +221,18 @@ public class SandboxServiceImpl implements SandboxService {
                 sandbox.setExpirationDate(formatDate());
             }
             if (sandbox.getApps().equals(DataSet.DEFAULT)) {
-                appService.registerDefaultApps(sandbox);
+                List<SmartApp> smartApps = smartAppService.findPublic();
+                List<String> defaultApps = Arrays.asList(defaultPublicApps);
+                for (SmartApp smartApp: smartApps) {
+//                    defaultApps.contains(smartApp.)
+                }
+
+
+
+                //appService.registerDefaultApps(sandbox);
             }
             Sandbox savedSandbox = save(sandbox);
             addMember(savedSandbox, user, Role.ADMIN);
-            addMember(savedSandbox, user, Role.CREATE_SANDBOX);
             for (String roleName : defaultSandboxCreatorRoles) {
                 addMemberRole(sandbox, user, Role.valueOf(roleName));
             }

@@ -32,5 +32,3 @@ hspc:
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
-
-default-apps-file: classpath:default_apps/sample-apps_test.json

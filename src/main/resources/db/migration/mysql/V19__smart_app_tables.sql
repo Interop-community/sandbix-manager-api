@@ -1,5 +1,6 @@
-CREATE TABLE smartapp (
+CREATE TABLE smart_app (
   id                VARCHAR(36)  NOT NULL,
+  name              VARCHAR(100)  NOT NULL,
   manifest_url      VARCHAR(500) NOT NULL,
   client_id         VARCHAR(50)           DEFAULT NULL,
   owner_id          INT(11)      NOT NULL,
@@ -14,4 +15,4 @@ CREATE TABLE smartapp (
 );
 
 CREATE INDEX smartapp_owner_idx
-  ON smartapp (owner_id);
+  ON smart_app (owner_id);

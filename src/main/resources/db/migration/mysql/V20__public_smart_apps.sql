@@ -1,8 +1,9 @@
-INSERT INTO smartapp
-(id, manifest_url, client_id, owner_id, created_timestamp, visibility, sample_patients, info, brief_description, author)
+INSERT INTO smart_app
+(id, name, manifest_url, client_id, owner_id, created_timestamp, visibility, sample_patients, info, brief_description, author)
 VALUES
   (
     'hspc-bilirubin-risk-chart',
+    'Bilirubin Risk Chart',
     'https://bilirubin-risk-chart.hspconsortium.org/.well-known/smart/manifest.json',
     'bilirubin_chart',
     (SELECT id
@@ -17,6 +18,7 @@ VALUES
   ),
   (
     'hspc-patient-data-manager',
+    'Patient Data Manager',
     'https://patient-data-manager.hspconsortium.org/.well-known/smart/manifest.json',
     'patient_data_manager',
     (SELECT id
@@ -31,6 +33,7 @@ VALUES
   ),
   (
     'hspc-my-web-app',
+    'My Web App',
     'https://content.hspconsortium.org/apps/my-web-app/.well-known/smart/manifest.json',
     'my_web_app',
     (SELECT id
@@ -45,6 +48,7 @@ VALUES
   ),
   (
     'cds-hooks-sandbox',
+    'CDS Hooks Sandbox',
     'https://content.hspconsortium.org/apps/cds-hooks-sandbox/.well-known/smart/manifest.json',
     '48163c5e-88b5-4cb3-92d3-23b800caa927',
     (SELECT id
@@ -57,3 +61,12 @@ VALUES
     'The CDS Hooks Sandbox is a tool that allows users to simulate the workflow of the CDS Hooks standard.',
     'CDS Hooks'
   );
+
+CREATE TABLE sandbox_smart_apps (
+  sandbox    INT(11) NOT NULL,
+  smart_app  VARCHAR(36) NOT NULL,
+  UNIQUE KEY (smart_app),
+  KEY (sandbox),
+  CONSTRAINT FOREIGN KEY (sandbox) REFERENCES sandbox (id),
+  CONSTRAINT FOREIGN KEY (smart_app) REFERENCES smart_app (id)
+);

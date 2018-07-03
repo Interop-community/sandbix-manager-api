@@ -33,5 +33,5 @@ public interface AppService {
 
     List<App> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy);
 
-    void registerDefaultApps(final Sandbox sandbox);
+//    void registerDefaultApps(final Sandbox sandbox);
 }

@@ -10,7 +10,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import java.sql.Timestamp;
 
-@Entity(name = "smartapp")
+@Entity(name = "smart_app")
 @Data
 @AllArgsConstructor(staticName = "of")
 @NoArgsConstructor
