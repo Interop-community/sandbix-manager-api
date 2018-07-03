@@ -34,6 +34,7 @@ public class AppServiceImpl implements AppService {
     private final OAuthClientService oAuthClientService;
     private final ResourceLoader resourceLoader;
     private LaunchScenarioService launchScenarioService;
+    private UserLaunchService userLaunchService;
 
 
     @Inject
@@ -50,8 +51,9 @@ public class AppServiceImpl implements AppService {
     }
 
     @Inject
-    public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
+    public void setLaunchScenarioServices(LaunchScenarioService launchScenarioService, UserLaunchService userLaunchService) {
         this.launchScenarioService = launchScenarioService;
+        this.userLaunchService = userLaunchService;
     }
 
     @Override
@@ -82,8 +84,12 @@ public class AppServiceImpl implements AppService {
             }
         }
 
+        // Delete all associated Launch Scenarios
         List<LaunchScenario> launchScenarios = launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
         for (LaunchScenario launchScenario: launchScenarios) {
+            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
+                userLaunchService.delete(userLaunch.getId());
+            }
             launchScenarioService.delete(launchScenario.getId());
         }
 
