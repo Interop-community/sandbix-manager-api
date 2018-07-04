@@ -122,7 +122,14 @@ public class AnalyticsController extends AbstractController {
     }
 
     @PostMapping(value = "/transaction/{sandboxId}")
-    public void incrementTransactionNumber(@PathVariable String sandboxId) {
+    public void incrementTransactionNumber(final HttpServletRequest request, @PathVariable String sandboxId) {
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        try {
+            checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
+        } catch (UnauthorizedException e) {
+            throw new UnauthorizedException("User does not have access to this sandbox");
+        }
         Integer count = 0;
         count++;
     }
