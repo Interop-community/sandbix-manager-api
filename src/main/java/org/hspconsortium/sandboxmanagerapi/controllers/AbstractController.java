@@ -190,7 +190,7 @@ abstract class AbstractController {
         // If the Sandbox is PUBLIC, a system sandbox creator or system Admin can modify.
         return  (user.getSbmUserId().equalsIgnoreCase(oauthUserId) &&
                 ((sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.ADMIN)) ||
-                        (checkUserHasSystemRole(user, SystemRole.ADMIN) || checkUserHasSystemRole(user, SystemRole.CREATE_SANDBOX))));
+                        checkUserHasSystemRole(user, SystemRole.ADMIN)));
     }
 
     private String checkSandboxUserNotReadOnlyAuthorization(final HttpServletRequest request, final Sandbox sandbox) {

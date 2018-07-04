@@ -166,12 +166,15 @@ public class SandboxController extends AbstractController {
 
         User modifyUser = userService.findBySbmUserId(modifyUserId);
         // Don't allow the Sandbox creator to be modified
+        // TODO: either keep or get rid of the following if/else statement
         if (!modifyUser.equals(sandbox.getCreatedBy())) {
             if (add) {
                 sandboxService.addMemberRole(sandbox, modifyUser, role);
             } else {
                 sandboxService.removeMemberRole(sandbox, modifyUser, role);
             }
+        } else {
+            throw new UnsupportedEncodingException("Can't change role of Sandbox creator.");
         }
     }
 
