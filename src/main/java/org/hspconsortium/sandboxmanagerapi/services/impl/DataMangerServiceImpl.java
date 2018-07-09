@@ -45,10 +45,14 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
 
-    private final SandboxService sandboxService;
+    private SandboxService sandboxService;
+
+
+    public DataMangerServiceImpl() {
+    }
 
     @Inject
-    public DataMangerServiceImpl(final SandboxService sandboxService) {
+    public void setSandboxService(SandboxService sandboxService) {
         this.sandboxService = sandboxService;
     }
 

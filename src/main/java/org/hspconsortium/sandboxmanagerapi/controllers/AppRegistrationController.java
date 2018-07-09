@@ -70,7 +70,7 @@ public class AppRegistrationController extends AbstractController {
         User user = userService.findBySbmUserId(sbmUserId);
         app.setVisibility(getDefaultVisibility(user, sandbox));
         app.setCreatedBy(user);
-        return appService.create(app);
+        return appService.create(app, sandbox);
     }
 
     @GetMapping(params = {"sandboxId"})

@@ -15,23 +15,40 @@ import java.util.List;
 @Service
 public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
-    private final LaunchScenarioRepository repository;
-    private final ContextParamsService contextParamsService;
-    private final AppService appService;
-    private final PatientService patientService;
-    private final UserPersonaService userPersonaService;
-    private final UserLaunchService userLaunchService;
+    private LaunchScenarioRepository repository;
+    private ContextParamsService contextParamsService;
+    private AppService appService;
+    private PatientService patientService;
+    private UserPersonaService userPersonaService;
+    private UserLaunchService userLaunchService;
 
     @Inject
-    public LaunchScenarioServiceImpl(final LaunchScenarioRepository repository,
-                                     final ContextParamsService contextParamsService, final AppService appService,
-                                     final PatientService patientService, final UserPersonaService userPersonaService,
-                                     final UserLaunchService userLaunchService) {
-        this.repository = repository;
+    public LaunchScenarioServiceImpl(LaunchScenarioRepository launchScenarioRepository) {
+        this.repository = launchScenarioRepository;
+    }
+
+    @Inject
+    public void setContextParamsService(ContextParamsService contextParamsService) {
         this.contextParamsService = contextParamsService;
+    }
+
+    @Inject
+    public void setAppService(AppService appService) {
         this.appService = appService;
+    }
+
+    @Inject
+    public void setPatientService(PatientService patientService) {
         this.patientService = patientService;
+    }
+
+    @Inject
+    public void setUserPersonaService(UserPersonaService userPersonaService) {
         this.userPersonaService = userPersonaService;
+    }
+
+    @Inject
+    public void setUserLaunchService(UserLaunchService userLaunchService) {
         this.userLaunchService = userLaunchService;
     }
 

@@ -29,31 +29,58 @@ public class AppServiceImpl implements AppService {
     private static Logger LOGGER = LoggerFactory.getLogger(AppServiceImpl.class.getName());
 
     private final AppRepository repository;
-    private final AuthClientService authClientService;
-    private final ImageService imageService;
-    private final OAuthClientService oAuthClientService;
-    private final ResourceLoader resourceLoader;
+    private AuthClientService authClientService;
+    private ImageService imageService;
+    private OAuthClientService oAuthClientService;
+    private ResourceLoader resourceLoader;
+    private RuleService ruleService;
     private LaunchScenarioService launchScenarioService;
     private UserLaunchService userLaunchService;
 
 
     @Inject
-    public AppServiceImpl(final AppRepository repository,
-                          final AuthClientService authClientService,
-                          final ImageService imageService,
-                          final OAuthClientService oAuthClientService,
-                          final ResourceLoader resourceLoader) {
+    public AppServiceImpl(final AppRepository repository) {
         this.repository = repository;
-        this.authClientService = authClientService;
-        this.imageService = imageService;
-        this.oAuthClientService = oAuthClientService;
+    }
+
+    @Inject
+    public void setResourceLoader(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
+    }
+
+    @Inject
+    public void setAuthClientService(AuthClientService authClientService) {
+        this.authClientService = authClientService;
+    }
+
+    @Inject
+    public void setImageService(ImageService imageService) {
+        this.imageService = imageService;
+    }
+
+    @Inject
+    public void setoAuthClientService(OAuthClientService oAuthClientService) {
+        this.oAuthClientService = oAuthClientService;
+    }
+
+    @Inject
+    public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
+        this.launchScenarioService = launchScenarioService;
+    }
+
+    @Inject
+    public void setUserLaunchService(UserLaunchService userLaunchService) {
+        this.userLaunchService = userLaunchService;
     }
 
     @Inject
     public void setLaunchScenarioServices(LaunchScenarioService launchScenarioService, UserLaunchService userLaunchService) {
         this.launchScenarioService = launchScenarioService;
-        this.userLaunchService = userLaunchService;
+    }
+
+    @Inject
+    public void setRuleService(RuleService ruleService) {
+        this.ruleService = ruleService;
     }
 
     @Override
@@ -109,9 +136,13 @@ public class AppServiceImpl implements AppService {
     @Override
     @Transactional
     @PublishAtomicMetric
-    public App create(final App app) {
+    public App create(final App app, final Sandbox sandbox) {
         app.setLogo(null);
         app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+
+        if (!ruleService.checkIfUserCanCreateApp(sandbox.getPayerUserId(), findBySandboxId(sandbox.getSandboxId()).size())) {
+            return null;
+        }
 
         String entity = oAuthClientService.postOAuthClient(app.getClientJSON());
         try {

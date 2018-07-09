@@ -15,7 +15,7 @@ public interface AppService {
 
     void delete(final App app);
 
-    App create(final App app);
+    App create(final App app, final Sandbox sandbox);
 
     App update(final App app);
 

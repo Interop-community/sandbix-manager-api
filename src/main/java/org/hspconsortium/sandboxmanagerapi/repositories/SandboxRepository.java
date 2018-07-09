@@ -13,6 +13,7 @@ import java.util.List;
 public interface SandboxRepository extends CrudRepository<Sandbox, Integer> {
     Sandbox findBySandboxId(@Param("sandboxId") String sandboxId);
     List<Sandbox> findByVisibility(@Param("visibility") Visibility visibility);
+    List<Sandbox> findByPayerUserId(@Param("payerId") Integer payerId);
     String fullCount();
     String schemaCount(@Param("apiEndpointIndex") String apiEndpointIndex);
     String intervalCount(@Param("intervalTime") Timestamp intervalTime);

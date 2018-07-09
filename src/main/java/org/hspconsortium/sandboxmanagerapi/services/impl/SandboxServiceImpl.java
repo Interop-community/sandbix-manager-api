@@ -90,38 +90,76 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${default-public-apps}")
     private String[] defaultPublicApps;
 
-    private final UserService userService;
-    private final UserRoleService userRoleService;
-    private final UserPersonaService userPersonaService;
-    private final UserLaunchService userLaunchService;
-    private final AppService appService;
-    private final SmartAppService smartAppService;
-    private final LaunchScenarioService launchScenarioService;
-    private final PatientService patientService;
-    private final SandboxImportService sandboxImportService;
-    private final SandboxActivityLogService sandboxActivityLogService;
+    private UserService userService;
+    private UserRoleService userRoleService;
+    private UserPersonaService userPersonaService;
+    private UserLaunchService userLaunchService;
+    private AppService appService;
+    private SmartAppService smartAppService;
+    private LaunchScenarioService launchScenarioService;
+    private PatientService patientService;
+    private SandboxImportService sandboxImportService;
+    private SandboxActivityLogService sandboxActivityLogService;
+    private RuleService ruleService;
 
     @Inject
-    public SandboxServiceImpl(final SandboxRepository repository, final UserService userService,
-                              final UserRoleService userRoleService, final AppService appService,
-                              final SmartAppService smartAppService,
-                              final UserPersonaService userPersonaService,
-                              final UserLaunchService userLaunchService,
-                              final LaunchScenarioService launchScenarioService,
-                              final PatientService patientService,
-                              final SandboxImportService sandboxImportService,
-                              final SandboxActivityLogService sandboxActivityLogService) {
+    public SandboxServiceImpl(final SandboxRepository repository) {
         this.repository = repository;
+    }
+
+    @Inject
+    public void setUserService(UserService userService) {
         this.userService = userService;
+    }
+
+    @Inject
+    public void setUserRoleService(UserRoleService userRoleService) {
         this.userRoleService = userRoleService;
+    }
+
+    @Inject
+    public void setUserPersonaService(UserPersonaService userPersonaService) {
         this.userPersonaService = userPersonaService;
+    }
+
+    @Inject
+    public void setUserLaunchService(UserLaunchService userLaunchService) {
         this.userLaunchService = userLaunchService;
+    }
+
+    @Inject
+    public void setAppService(AppService appService) {
         this.appService = appService;
+    }
+
+    @Inject
+    public void setSmartAppService(SmartAppService smartAppService) {
         this.smartAppService = smartAppService;
+    }
+
+    @Inject
+    public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
         this.launchScenarioService = launchScenarioService;
+    }
+
+    @Inject
+    public void setPatientService(PatientService patientService) {
         this.patientService = patientService;
+    }
+
+    @Inject
+    public void setSandboxImportService(SandboxImportService sandboxImportService) {
         this.sandboxImportService = sandboxImportService;
+    }
+
+    @Inject
+    public void setSandboxActivityLogService(SandboxActivityLogService sandboxActivityLogService) {
         this.sandboxActivityLogService = sandboxActivityLogService;
+    }
+
+    @Inject
+    public void setRuleService(RuleService ruleService) {
+        this.ruleService = ruleService;
     }
 
     @Override
@@ -209,6 +247,10 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, findByPayerId(user.getId()).size());
+        if (!canCreate) {
+            return null;
+        }
         UserPersona userPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
 
         if (userPersona == null && callCreateOrUpdateSandboxAPI(sandbox, bearerToken)) {
@@ -231,6 +273,7 @@ public class SandboxServiceImpl implements SandboxService {
 
                 //appService.registerDefaultApps(sandbox);
             }
+            sandbox.setPayerUserId(user.getId());
             Sandbox savedSandbox = save(sandbox);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {
@@ -612,6 +655,10 @@ public class SandboxServiceImpl implements SandboxService {
             e1.printStackTrace();
             return null;
         }
+    }
+
+    public List<Sandbox> findByPayerId(Integer payerId) {
+        return repository.findByPayerUserId(payerId);
     }
 }
 

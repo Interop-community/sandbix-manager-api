@@ -53,4 +53,6 @@ public interface SandboxService {
     String schemaCount(final String apiEndpointIndex);
 
     String intervalCount(final Timestamp intervalTime);
+
+    List<Sandbox> findByPayerId(Integer payerId);
 }

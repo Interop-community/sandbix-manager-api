@@ -20,15 +20,21 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final TermsOfUseService termsOfUseService;
-    private final TermsOfUseAcceptanceService termsOfUseAcceptanceService;
+    private TermsOfUseService termsOfUseService;
+    private TermsOfUseAcceptanceService termsOfUseAcceptanceService;
 
     @Inject
-    public UserServiceImpl(final UserRepository repository,
-                           final TermsOfUseService termsOfUseService,
-                           final TermsOfUseAcceptanceService termsOfUseAcceptanceService) {
+    public UserServiceImpl(final UserRepository repository) {
         this.repository = repository;
+    }
+
+    @Inject
+    public void setTermsOfUseService(TermsOfUseService termsOfUseService) {
         this.termsOfUseService = termsOfUseService;
+    }
+
+    @Inject
+    public void setTermsOfUseAcceptanceService(TermsOfUseAcceptanceService termsOfUseAcceptanceService) {
         this.termsOfUseAcceptanceService = termsOfUseAcceptanceService;
     }
 
@@ -56,6 +62,16 @@ public class UserServiceImpl implements UserService {
 
     public User findByUserEmail(final String email) {
         User user = repository.findByUserEmail(email);
+
+        if(user == null)
+            return null;
+
+        userHasAcceptedTermsOfUse(user);
+        return user;
+    }
+
+    public User findById(final Integer id) {
+        User user = repository.findById(id);
 
         if(user == null)
             return null;

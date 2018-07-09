@@ -35,6 +35,7 @@ public class User {
     private List<Sandbox> sandboxes = new ArrayList<>();
     private Boolean hasAcceptedLatestTermsOfUse;
     private List<TermsOfUseAcceptance> termsOfUseAcceptances = new ArrayList<>();
+    private Tier tierLevel;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,8 +76,15 @@ public class User {
     }
 
     public void setName(String name) {
-
         this.name = name;
+    }
+
+    public Tier getTierLevel() {
+        return tierLevel;
+    }
+
+    public void setTierLevel(Tier tierLevel) {
+        this.tierLevel = tierLevel;
     }
 
     @ElementCollection(targetClass = SystemRole.class)

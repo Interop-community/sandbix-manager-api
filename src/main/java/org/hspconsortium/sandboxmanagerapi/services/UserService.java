@@ -15,6 +15,8 @@ public interface UserService {
 
     User findByUserEmail(final String email);
 
+    User findById(final Integer id);
+
     String fullCount();
 
     String intervalCount(final Timestamp intervalTime);
