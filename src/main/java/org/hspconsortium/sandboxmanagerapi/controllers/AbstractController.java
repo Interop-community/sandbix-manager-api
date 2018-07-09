@@ -23,9 +23,11 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 import org.apache.http.HttpStatus;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
+import org.hspconsortium.sandboxmanagerapi.services.UserPersonaService;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 abstract class AbstractController {
     public static final String UNAUTHORIZED_ERROR = "Response Status : %s.\n" +
@@ -156,6 +158,19 @@ abstract class AbstractController {
     void checkUserSandboxRole(final HttpServletRequest request, final Sandbox sandbox, final Role role) {
         if (!checkUserHasSandboxRole(request, sandbox, role)) {
 
+            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
+        }
+    }
+
+    void checkSystemUserCanMakeTransaction(Sandbox sandbox, User user) {
+        List<Sandbox> sandboxes = user.getSandboxes();
+        if (!sandboxes.contains(sandbox)) {
+            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
+        }
+    }
+
+    void checkIfPersonaAndHasAuthority(Sandbox sandbox, UserPersona userPersona) {
+        if (!sandbox.equals(userPersona.getSandbox())) {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
     }

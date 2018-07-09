@@ -100,6 +100,7 @@ public class SandboxController extends AbstractController {
             sandboxService.addMember(sandbox, user);
         }
         checkSandboxUserReadAuthorization(request, sandbox);
+        // TODO: update last_visited_timestamp
         return sandbox;
     }
 

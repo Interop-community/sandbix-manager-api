@@ -1,11 +1,9 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
-import org.hspconsortium.sandboxmanagerapi.model.FhirTransaction;
-import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
-import org.hspconsortium.sandboxmanagerapi.model.User;
-import org.hspconsortium.sandboxmanagerapi.model.UserRole;
+import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
+import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -23,7 +21,7 @@ public class AnalyticsController extends AbstractController {
     private SandboxService sandboxService;
     private AppService appService;
     private RuleService ruleService;
-
+    private UserPersonaService userPersonaService;
 
     @Inject
     public AnalyticsController(final AnalyticsService analyticsService,
@@ -31,13 +29,15 @@ public class AnalyticsController extends AbstractController {
                                final SandboxService sandboxService,
                                final AppService appService,
                                final OAuthService oAuthService,
-                               final RuleService ruleService) {
+                               final RuleService ruleService,
+                               final UserPersonaService userPersonaService) {
         super(oAuthService);
         this.analyticsService = analyticsService;
         this.userService = userService;
         this.sandboxService = sandboxService;
         this.appService = appService;
         this.ruleService = ruleService;
+        this.userPersonaService = userPersonaService;
     }
 
     @GetMapping(value = "/sandboxes", params = {"userId"})
@@ -92,14 +92,25 @@ public class AnalyticsController extends AbstractController {
     public @ResponseBody
     FhirTransaction handleFhirTransaction(final HttpServletRequest request, @RequestBody final HashMap transactionInfo) {
         Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
+        String userId = transactionInfo.get("userId").toString();
         User user;
         if(transactionInfo.get("secured").toString().equals("true")) {
-            user= userService.findBySbmUserId(getSystemUserId(request));
-            try {
-                checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
-            } catch (UnauthorizedException e) {
-                throw new UnauthorizedException("User does not have access to this sandbox");
+            user = userService.findBySbmUserId(userId);
+            if (user != null) {
+                try {
+                    checkSystemUserCanMakeTransaction(sandbox, user);
+                } catch (UnauthorizedException e) {
+                    throw new UnauthorizedException("User does not have access to this sandbox");
+                }
+            } else {
+                try {
+                    UserPersona userPersona = userPersonaService.findByPersonaUserId(userId);
+                    checkIfPersonaAndHasAuthority(sandbox, userPersona);
+                } catch (UnauthorizedException e2) {
+                    throw new UnauthorizedException("Persona does not have access to this sandbox");
+                }
             }
+
         } else {
             user = null;
         }
