@@ -4,6 +4,7 @@ import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,11 +29,15 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private UserService userService;
     private SandboxService sandboxService;
     private FhirTransactionRepository fhirTransactionRepository;
+    private UserAccessHistoryRepository userAccessHistoryRepository;
     private AppService appService;
     private RuleService ruleService;
 
     @Inject
-    AnalyticsServiceImpl() {  }
+    AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository, final UserAccessHistoryRepository userAccessHistoryRepository) {
+        this.fhirTransactionRepository = fhirTransactionRepository;
+        this.userAccessHistoryRepository = userAccessHistoryRepository;
+    }
 
     @Inject
     public void setUserService(UserService userService) {
@@ -42,11 +47,6 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Inject
     public void setSandboxService(SandboxService sandboxService) {
         this.sandboxService = sandboxService;
-    }
-
-    @Inject
-    public void setFhirTransactionRepository(FhirTransactionRepository fhirTransactionRepository) {
-        this.fhirTransactionRepository = fhirTransactionRepository;
     }
 
     @Inject
@@ -145,5 +145,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         } catch (Exception e) {
             throw new RuntimeException("Error getting memory information for " + schemaName, e);
         }
+    }
+
+    public void recordUserAccessHistory(Sandbox sandbox, User user) {
+        UserAccessHistory userAccessHistory = new UserAccessHistory();
+        userAccessHistory.setSandbox(sandbox);
+        userAccessHistory.setUser(user);
+        userAccessHistory.setAccessTimestamp(new Timestamp(System.currentTimeMillis()));
+        userAccessHistoryRepository.save(userAccessHistory);
     }
 }

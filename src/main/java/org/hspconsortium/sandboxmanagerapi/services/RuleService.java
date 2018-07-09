@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface RuleService {
 
-    Boolean checkIfUserCanCreateSandbox(User user, Integer sandboxes);
+    Boolean checkIfUserCanCreateSandbox(User user);
 
     Boolean checkIfUserCanCreateApp(Integer payerId, Integer appsInSandbox);
 

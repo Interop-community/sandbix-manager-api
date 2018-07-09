@@ -21,10 +21,7 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
-import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxInviteService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -48,14 +45,17 @@ public class SandboxController extends AbstractController {
     private final SandboxService sandboxService;
     private final UserService userService;
     private final SandboxInviteService sandboxInviteService;
+    private final AnalyticsService analyticsService;
 
     @Inject
     public SandboxController(final SandboxService sandboxService, final UserService userService,
-                             final SandboxInviteService sandboxInviteService, final OAuthService oAuthService) {
+                             final SandboxInviteService sandboxInviteService, final OAuthService oAuthService,
+                             final AnalyticsService analyticsService) {
         super(oAuthService);
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
+        this.analyticsService = analyticsService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -100,7 +100,7 @@ public class SandboxController extends AbstractController {
             sandboxService.addMember(sandbox, user);
         }
         checkSandboxUserReadAuthorization(request, sandbox);
-        // TODO: update last_visited_timestamp
+        analyticsService.recordUserAccessHistory(sandbox, user);
         return sandbox;
     }
 

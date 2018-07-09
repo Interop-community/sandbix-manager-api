@@ -247,7 +247,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
-        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, findByPayerId(user.getId()).size());
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
         if (!canCreate) {
             return null;
         }

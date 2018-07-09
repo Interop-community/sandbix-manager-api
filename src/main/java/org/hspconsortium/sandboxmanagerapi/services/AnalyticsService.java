@@ -22,4 +22,7 @@ public interface AnalyticsService {
     Double retrieveTotalMemoryByUser(User user);
 
     Double retrieveMemoryInSchema(String schemaName);
+
+    void recordUserAccessHistory(Sandbox sandbox, User user);
+
 }

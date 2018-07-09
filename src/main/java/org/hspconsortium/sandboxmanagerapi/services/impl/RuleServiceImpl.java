@@ -35,15 +35,16 @@ public class RuleServiceImpl implements RuleService {
         this.analyticsService = analyticsService;
     }
 
-    public Boolean checkIfUserCanCreateSandbox(User user, Integer sandboxes) {
-        if (rulesList == null) {
-            return true;
-        }
+    public Boolean checkIfUserCanCreateSandbox(User user) {
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
         Rule rules = findRulesByUser(user);
-        if (rules.getSandboxes() > sandboxes) {
+        if (rules == null) {
+            return true;
+        }
+        List<Sandbox> sandboxes = sandboxService.findByPayerId(user.getId());
+        if (rules.getSandboxes() > sandboxes.size()) {
             if(rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user)) {
                 return true;
             }
@@ -52,26 +53,33 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public Boolean checkIfUserCanCreateApp(Integer payerId, Integer appsInSandbox) {
-        if (rulesList == null) {
+        if (rulesList.getTierRuleList() == null) {
             return true;
         }
-        if (rulesList.getTierRuleList() == null) {
+        if (payerId == null) {
             return true;
         }
         User user = userService.findById(payerId);
         Rule rules = findRulesByUser(user);
+        if (rules == null) {
+            return true;
+        }
         return rules.getApps() > appsInSandbox;
     }
 
     public Boolean checkIfUserCanBeAdded(String sandBoxId) {
-        if (rulesList == null) {
-            return true;
-        }
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
-        User user = userService.findById(sandboxService.findBySandboxId(sandBoxId).getPayerUserId());
+        Integer payerId = sandboxService.findBySandboxId(sandBoxId).getPayerUserId();
+        if (payerId == null) {
+            return true;
+        }
+        User user = userService.findById(payerId);
         Rule rules = findRulesByUser(user);
+        if (rules == null) {
+            return true;
+        }
         List<UserRole> usersRoles = sandboxService.findBySandboxId(sandBoxId).getUserRoles();
         Set<String> uniqueUsers = new HashSet<>();
         for (UserRole userRole : usersRoles) {
@@ -82,14 +90,18 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public Boolean checkIfUserCanPerformTransaction(Sandbox sandbox, String operation) {
-        if (rulesList == null) {
-            return true;
-        }
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
-        User user = userService.findById(sandbox.getPayerUserId());
+        Integer payerId = sandbox.getPayerUserId();
+        if (payerId == null) {
+            return true;
+        }
+        User user = userService.findById(payerId);
         Rule rules = findRulesByUser(user);
+        if (rules == null) {
+            return true;
+        }
         if (rules.getTransactions() > analyticsService.countTransactionsByPayer(user)) {
             if (!operation.equals("GET") && !operation.equals("DELETE")) {
                 // Don't need to check memory for these operations
@@ -104,6 +116,9 @@ public class RuleServiceImpl implements RuleService {
     }
 
     private Rule findRulesByUser(User user) {
+        if (user.getTierLevel() == null) {
+            return null;
+        }
         return rulesList.getTierRuleList().get(user.getTierLevel().name());
     }
 
