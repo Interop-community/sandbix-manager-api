@@ -36,6 +36,9 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public Boolean checkIfUserCanCreateSandbox(User user, Integer sandboxes) {
+        if (rulesList == null) {
+            return true;
+        }
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
@@ -49,6 +52,9 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public Boolean checkIfUserCanCreateApp(Integer payerId, Integer appsInSandbox) {
+        if (rulesList == null) {
+            return true;
+        }
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
@@ -58,6 +64,9 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public Boolean checkIfUserCanBeAdded(String sandBoxId) {
+        if (rulesList == null) {
+            return true;
+        }
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
@@ -73,6 +82,9 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public Boolean checkIfUserCanPerformTransaction(Sandbox sandbox, String operation) {
+        if (rulesList == null) {
+            return true;
+        }
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
