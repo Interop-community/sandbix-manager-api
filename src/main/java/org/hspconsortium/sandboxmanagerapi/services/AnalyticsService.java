@@ -23,6 +23,4 @@ public interface AnalyticsService {
 
     Double retrieveMemoryInSchema(String schemaName);
 
-    void recordUserAccessHistory(Sandbox sandbox, User user);
-
 }

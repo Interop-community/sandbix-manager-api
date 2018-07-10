@@ -147,11 +147,4 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }
     }
 
-    public void recordUserAccessHistory(Sandbox sandbox, User user) {
-        UserAccessHistory userAccessHistory = new UserAccessHistory();
-        userAccessHistory.setSandbox(sandbox);
-        userAccessHistory.setUser(user);
-        userAccessHistory.setAccessTimestamp(new Timestamp(System.currentTimeMillis()));
-        userAccessHistoryRepository.save(userAccessHistory);
-    }
 }

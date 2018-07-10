@@ -51,4 +51,5 @@ public class UserAccessHistory {
     public void setUser(User user) {
         this.user = user;
     }
+
 }

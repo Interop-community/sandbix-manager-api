@@ -7,6 +7,7 @@ import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.repositories.UserRepository;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseAcceptanceService;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
+import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private TermsOfUseService termsOfUseService;
     private TermsOfUseAcceptanceService termsOfUseAcceptanceService;
+    private UserAccessHistoryService userAccessHistoryService;
 
     @Inject
     public UserServiceImpl(final UserRepository repository) {
@@ -38,6 +40,11 @@ public class UserServiceImpl implements UserService {
         this.termsOfUseAcceptanceService = termsOfUseAcceptanceService;
     }
 
+    @Inject
+    public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
+        this.userAccessHistoryService = userAccessHistoryService;
+    }
+
     @Override
     @Transactional
     public User save(final User user) {
@@ -47,6 +54,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(final User user) {
+        userAccessHistoryService.deleteUserAccessInstancesForUser(user);
         repository.delete(user);
     }
 

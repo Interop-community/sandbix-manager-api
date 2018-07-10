@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class AnalyticsController extends AbstractController {
     private AppService appService;
     private RuleService ruleService;
     private UserPersonaService userPersonaService;
+    private UserAccessHistoryService userAccessHistoryService;
 
     @Inject
     public AnalyticsController(final AnalyticsService analyticsService,
@@ -30,7 +32,8 @@ public class AnalyticsController extends AbstractController {
                                final AppService appService,
                                final OAuthService oAuthService,
                                final RuleService ruleService,
-                               final UserPersonaService userPersonaService) {
+                               final UserPersonaService userPersonaService,
+                               final UserAccessHistoryService userAccessHistoryService) {
         super(oAuthService);
         this.analyticsService = analyticsService;
         this.userService = userService;
@@ -38,6 +41,7 @@ public class AnalyticsController extends AbstractController {
         this.appService = appService;
         this.ruleService = ruleService;
         this.userPersonaService = userPersonaService;
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @GetMapping(value = "/sandboxes", params = {"userId"})
@@ -115,5 +119,19 @@ public class AnalyticsController extends AbstractController {
             user = null;
         }
         return analyticsService.handleFhirTransaction(user, transactionInfo);
+    }
+
+    @GetMapping(value = "/last-sandbox-access", params = {"userId", "sandboxId"})
+    public @ResponseBody
+    Timestamp getLastSandboxAccess(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded,
+                                   @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
+        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
+//        checkUserAuthorization(request, userId);
+        User user = userService.findBySbmUserId(userId);
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found.");
+        }
+        return userAccessHistoryService.getLatestUserAccessHistoryInsance(sandbox, user);
     }
 }

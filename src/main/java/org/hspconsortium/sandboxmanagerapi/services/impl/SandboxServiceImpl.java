@@ -19,6 +19,7 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,7 @@ public class SandboxServiceImpl implements SandboxService {
     private SandboxImportService sandboxImportService;
     private SandboxActivityLogService sandboxActivityLogService;
     private RuleService ruleService;
+    private UserAccessHistoryService userAccessHistoryService;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -160,6 +162,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setRuleService(RuleService ruleService) {
         this.ruleService = ruleService;
+    }
+
+    @Inject
+    public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @Override
@@ -241,6 +248,8 @@ public class SandboxServiceImpl implements SandboxService {
             app.setSamplePatients(null);
             appService.save(app);
         }
+
+        userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
     @Override
