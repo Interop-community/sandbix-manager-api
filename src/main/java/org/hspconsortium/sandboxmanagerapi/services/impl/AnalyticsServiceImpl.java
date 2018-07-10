@@ -98,7 +98,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         FhirTransaction fhirTransaction = new FhirTransaction();
         fhirTransaction.setTransactionTimestamp(timestamp);
         fhirTransaction.setSandboxId(sandbox.getId());
-        fhirTransaction.setUserId(user.getId());
+        fhirTransaction.setPerformedById(user.getId());
         fhirTransaction.setUrl(transactionInfo.get("url").toString());
         fhirTransaction.setFhirResource(transactionInfo.get("resource").toString());
         fhirTransaction.setMethod(transactionInfo.get("method").toString());
@@ -106,16 +106,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         fhirTransaction.setIpAddress(transactionInfo.get("ip_address").toString());
         fhirTransaction.setResponseCode(Integer.parseInt(transactionInfo.get("response_code").toString()));
         fhirTransaction.setSecured(Boolean.parseBoolean(transactionInfo.get("secured").toString()));
+        fhirTransaction.setPayerUserId(sandbox.getPayerUserId());
         return fhirTransactionRepository.save(fhirTransaction);
     }
 
     public Integer countTransactionsByPayer(User payer) {
         Integer count = 0;
-        List<Sandbox> sandboxes = sandboxService.findByPayerId(payer.getId());
-        for (Sandbox sandbox: sandboxes) {
-            count += fhirTransactionRepository.findBySandboxId(sandbox.getId()).size();
-        }
-        return count;
+        List<FhirTransaction> fhirTransactions = fhirTransactionRepository.findByPayerUserId(payer.getId());
+        return fhirTransactions.size();
     }
 
     public Double retrieveTotalMemoryByUser(User user) {

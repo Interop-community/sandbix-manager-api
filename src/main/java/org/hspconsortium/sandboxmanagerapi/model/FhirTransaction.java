@@ -11,7 +11,7 @@ public class FhirTransaction {
     private Integer id;
     private Timestamp transactionTimestamp;
     private Integer sandboxId;
-    private Integer userId;
+    private Integer performedById;
     private String url;
     private String fhirResource;
     private String domain;
@@ -19,6 +19,7 @@ public class FhirTransaction {
     private Integer responseCode;
     private String method;
     private Boolean secured;
+    private Integer payerUserId;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,12 +47,12 @@ public class FhirTransaction {
         this.sandboxId = sandboxId;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public Integer getPerformedById() {
+        return performedById;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setPerformedById(Integer performedByID) {
+        this.performedById = performedById;
     }
 
     public String getUrl() {
@@ -108,5 +109,13 @@ public class FhirTransaction {
 
     public void setSecured(Boolean secured) {
         this.secured = secured;
+    }
+
+    public Integer getPayerUserId() {
+        return payerUserId;
+    }
+
+    public void setPayerUserId(Integer payerUserId) {
+        this.payerUserId = payerUserId;
     }
 }
