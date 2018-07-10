@@ -10,10 +10,5 @@ CREATE TABLE fhir_transaction (
   method                VARCHAR(11)   DEFAULT NULL,
   response_code         INT(11)       DEFAULT NULL,
   secured               TINYINT(1)    DEFAULT NULL,
-  PRIMARY KEY (id),
-  KEY (sandbox_id),
-  KEY (user_id),
-  CONSTRAINT FOREIGN KEY (sandbox_id) REFERENCES sandbox (id),
-  CONSTRAINT FOREIGN KEY (user_id) REFERENCES user (id)
-
+  PRIMARY KEY (id)
 )

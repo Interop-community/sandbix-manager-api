@@ -97,8 +97,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         FhirTransaction fhirTransaction = new FhirTransaction();
         fhirTransaction.setTransactionTimestamp(timestamp);
-        fhirTransaction.setSandbox(sandbox);
-        fhirTransaction.setUser(user);
+        fhirTransaction.setSandboxId(sandbox.getId());
+        fhirTransaction.setUserId(user.getId());
         fhirTransaction.setUrl(transactionInfo.get("url").toString());
         fhirTransaction.setFhirResource(transactionInfo.get("resource").toString());
         fhirTransaction.setMethod(transactionInfo.get("method").toString());

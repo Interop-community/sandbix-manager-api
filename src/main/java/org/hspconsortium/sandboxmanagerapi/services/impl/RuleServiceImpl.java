@@ -109,7 +109,7 @@ public class RuleServiceImpl implements RuleService {
                     return true;
                 }
             } else {
-                return false;
+                return true;
             }
         }
         return false;

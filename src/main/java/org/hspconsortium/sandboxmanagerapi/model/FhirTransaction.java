@@ -10,8 +10,8 @@ public class FhirTransaction {
 
     private Integer id;
     private Timestamp transactionTimestamp;
-    private Sandbox sandbox;
-    private User user;
+    private Integer sandboxId;
+    private Integer userId;
     private String url;
     private String fhirResource;
     private String domain;
@@ -38,25 +38,20 @@ public class FhirTransaction {
         this.transactionTimestamp = transactionTimestamp;
     }
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="sandbox_id")
-    @JsonIgnoreProperties(ignoreUnknown = true, allowSetters = true, value={"userRoles", "imports", "dataSet"})
-    public Sandbox getSandbox() {
-        return sandbox;
+    public Integer getSandboxId() {
+        return sandboxId;
     }
 
-    public void setSandbox(Sandbox sandbox) {
-        this.sandbox = sandbox;
+    public void setSandboxId(Integer sandboxId) {
+        this.sandboxId = sandboxId;
     }
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="user_id")
-    public User getUser() {
-        return user;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public String getUrl() {
