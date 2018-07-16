@@ -10,5 +10,7 @@ public interface OAuthClientService {
 
     String getOAuthClient(Integer id);
 
+    String getOAuthClientWithClientId(String clientId);
+
     void deleteOAuthClient(Integer id);
 }

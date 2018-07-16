@@ -17,21 +17,6 @@ VALUES
     'Intermountain Healthcare'
   ),
   (
-    'hspc-patient-data-manager',
-    'Patient Data Manager',
-    'https://patient-data-manager.hspconsortium.org/.well-known/smart/manifest.json',
-    'patient_data_manager',
-    (SELECT id
-     FROM user
-     WHERE sbm_user_id = 'admin'),
-    NOW(),
-    'PUBLIC',
-    '',
-    'https://bitbucket.org/hspconsortium/patient-data-manager/src',
-    'The HSPC Patient Data Manager app is a SMART on FHIR application that is used for managing the data of a single patient.',
-    'HSPC'
-  ),
-  (
     'hspc-my-web-app',
     'My Web App',
     'https://content.hspconsortium.org/apps/my-web-app/.well-known/smart/manifest.json',

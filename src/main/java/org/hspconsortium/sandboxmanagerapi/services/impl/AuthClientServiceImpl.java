@@ -30,5 +30,8 @@ public class AuthClientServiceImpl implements AuthClientService {
         repository.delete(id);
     }
 
+    @Override
+    @Transactional
+    public AuthClient findById(final int id) { return repository.findById(id); }
 
 }

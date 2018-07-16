@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,6 +73,18 @@ public class SandboxController extends AbstractController {
         User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
         checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
         return sandboxService.create(sandbox, user, oAuthService.getBearerToken(request));
+    }
+
+    @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    @Transactional
+    public @ResponseBody Sandbox cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
+        Sandbox newSandbox = sandboxes.get("newSandbox");
+        Sandbox clonedSandbox = sandboxes.get("clonedSandbox");
+        LOGGER.info("Cloning sandbox " + clonedSandbox.getName() + " to sandbox: " + newSandbox.getName());
+        checkCreatedByIsCurrentUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
+        User user = userService.findBySbmUserId(clonedSandbox.getCreatedBy().getSbmUserId());
+        checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
+        return sandboxService.clone(newSandbox, clonedSandbox, user, oAuthService.getBearerToken(request));
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)

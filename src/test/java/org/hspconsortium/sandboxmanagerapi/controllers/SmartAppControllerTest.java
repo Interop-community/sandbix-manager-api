@@ -77,7 +77,7 @@ public class SmartAppControllerTest {
 
     @Test
     public void getFoundTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "clientId",
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "manifest", "name", "clientId",
                 10, new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
@@ -95,7 +95,7 @@ public class SmartAppControllerTest {
 
     @Test
     public void saveTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "clientId",
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "manifest", "name", "clientId",
                 10, new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
@@ -115,7 +115,7 @@ public class SmartAppControllerTest {
 
     @Test
     public void deleteTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "clientId",
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "manifest", "name", "clientId",
                 10, new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 

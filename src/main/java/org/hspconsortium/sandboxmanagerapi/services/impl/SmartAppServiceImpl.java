@@ -3,9 +3,11 @@ package org.hspconsortium.sandboxmanagerapi.services.impl;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SmartApp;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility2;
 import org.hspconsortium.sandboxmanagerapi.repositories.SmartAppRepository;
+import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.hspconsortium.sandboxmanagerapi.services.SmartAppService;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,13 @@ public class SmartAppServiceImpl implements SmartAppService {
 
     @Inject
     private SmartAppRepository smartAppRepository;
+
+    private SandboxService sandboxService;
+
+    @Inject
+    public void setSandboxService(SandboxService sandboxService) {
+        this.sandboxService = sandboxService;
+    }
 
     @Override
     public SmartApp save(@NonNull final SmartApp smartApp, @NonNull final String performedBy) {

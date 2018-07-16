@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,7 +39,8 @@ public class AppServiceImpl implements AppService {
     private RuleService ruleService;
     private LaunchScenarioService launchScenarioService;
     private UserLaunchService userLaunchService;
-
+    private SandboxService sandboxService;
+    private SmartAppService smartAppService;
 
     @Inject
     public AppServiceImpl(final AppRepository repository) {
@@ -81,6 +85,11 @@ public class AppServiceImpl implements AppService {
     @Inject
     public void setRuleService(RuleService ruleService) {
         this.ruleService = ruleService;
+    }
+
+    @Inject
+    public void setSandboxService(SandboxService sandboxService) {
+        this.sandboxService = sandboxService;
     }
 
     @Override
@@ -164,8 +173,6 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public App update(final App app) {
         App existingApp = getById(app.getId());
-        // TODO: don't update in auth server if default app
-//        JSONArray apps = getDefaultAppList();
         String entity = oAuthClientService.putOAuthClient(existingApp.getAuthClient().getAuthDatabaseId(), app.getClientJSON());
 
         try {
@@ -232,7 +239,50 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
-        return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        List<SmartApp> smartApps = sandbox.getSmartApps();
+        List<App> apps = new ArrayList<>();
+        // TODO: the frontend should have to do this
+        for (SmartApp smartApp: smartApps) {
+            if (smartApp.getManifestUrl() != null) {
+                try {
+                    URL url = new URL(smartApp.getManifestUrl());
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("GET");
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(con.getInputStream()));
+                    String inputLine;
+                    StringBuffer content = new StringBuffer();
+                    while ((inputLine = in.readLine()) != null) {
+                        content.append(inputLine);
+                    }
+                    JSONObject manifest = new JSONObject(content.toString());
+                    in.close();
+                    App app = new App();
+                    String oAuthClient = oAuthClientService.getOAuthClientWithClientId(smartApp.getClientId());
+                    JSONObject oAuthClientObject = new JSONObject(oAuthClient);
+                    // TODO: get rid of Authclient object
+                    AuthClient authclient = new AuthClient();
+                    authclient.setClientName(oAuthClientObject.get("clientName").toString());
+                    authclient.setAuthDatabaseId(Integer.parseInt(oAuthClientObject.get("id").toString()));
+                    authclient.setClientId(oAuthClientObject.get("clientId").toString());
+                    app.setAuthClient(authclient);
+                    app.setLaunchUri(manifest.get("launch_url").toString());
+                    app.setSandbox(sandbox);
+                    app.setLogoUri(manifest.get("logo_uri").toString());
+                    app.setAppManifestUri(smartApp.getManifestUrl());
+                    app.setBriefDescription(smartApp.getBriefDescription());
+//                    app.setVisibility(smartApp.getVisibility());
+
+                    apps.add(app);
+                } catch (Exception e) {
+
+                }
+            }
+        }
+        List<App> other_apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+        apps.addAll(other_apps);
+        return apps;
     }
 
     @Override
@@ -292,32 +342,5 @@ public class AppServiceImpl implements AppService {
 //        }
 //    }
 //
-//    @Value("${spring.datasource.base_url}")
-//    private String databaseUrl;
-//
-//    @Value("${spring.datasource.username}")
-//    private String databaseUserName;
-//
-//    @Value("${spring.datasource.password}")
-//    private String databasePassword;
-//
-//    private Integer getAuthClientId(String clientId) {
-//        try {
-//            Class.forName("com.mysql.jdbc.Driver");
-//            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
-//            Statement stmt = conn.createStatement() ;
-//            String query = "SELECT * FROM oic.client_details WHERE client_id='" + clientId + "';" ;
-//            ResultSet rs = stmt.executeQuery(query);
-//            Integer id = 0;
-//            while (rs.next()) {
-//                // Had to use this workaround to keep the id in scope
-//                id += Integer.parseInt(rs.getString(1));
-//            }
-//            conn.close();
-//            return id;
-//        } catch (Exception e) {
-//            throw new RuntimeException("Error getting Id for client " + clientId, e);
-//        }
-//    }
 
 }
