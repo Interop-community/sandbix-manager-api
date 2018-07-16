@@ -8,6 +8,4 @@ public interface AuthClientService {
 
     void delete(final int id);
 
-    AuthClient findById(final int id);
-
 }
