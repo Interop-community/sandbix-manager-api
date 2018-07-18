@@ -77,9 +77,9 @@ public class SmartAppControllerTest {
 
     @Test
     public void getFoundTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl", "clientId",
-                10, new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
-                "info", "briefDesc", "author");
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
+                "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
+                Visibility2.PRIVATE, "samplePatients", "info", "briefDesc", "author");
 
         String json = json(smartApp);
 
@@ -95,9 +95,9 @@ public class SmartAppControllerTest {
 
     @Test
     public void saveTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl", "clientId",
-                10, new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
-                "info", "briefDesc", "author");
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
+                "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
+                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author");
 
         String json = json(smartApp);
 
@@ -115,9 +115,9 @@ public class SmartAppControllerTest {
 
     @Test
     public void deleteTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl", "clientId",
-                10, new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
-                "info", "briefDesc", "author");
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
+                "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
+                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author");
 
         String json = json(smartApp);
 

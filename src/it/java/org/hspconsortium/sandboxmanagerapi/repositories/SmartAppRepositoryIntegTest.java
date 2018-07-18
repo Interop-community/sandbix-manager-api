@@ -114,7 +114,7 @@ public class SmartAppRepositoryIntegTest {
     @Rollback
     public void getFoundTest() throws Exception {
         SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
-                "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
+                "manifest", "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
         String json = json(smartApp);
@@ -133,7 +133,7 @@ public class SmartAppRepositoryIntegTest {
     @Rollback
     public void saveTest() throws Exception {
         SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
-                "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
+                "manifest", "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
         String json = json(smartApp);
@@ -157,7 +157,7 @@ public class SmartAppRepositoryIntegTest {
     @Rollback
     public void deleteTest() throws Exception {
         SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
-                "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
+                "manifest", "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
         String json = json(smartApp);
