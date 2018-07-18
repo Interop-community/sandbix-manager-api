@@ -1,10 +1,12 @@
 package org.hspconsortium.sandboxmanagerapi.repositories;
 
 import org.hspconsortium.sandboxmanagerapi.SandboxManagerApiApplication;
+import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SmartApp;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility2;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
+import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.hspconsortium.sandboxmanagerapi.services.SmartAppService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.junit.Assert;
@@ -27,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
@@ -54,10 +55,15 @@ public class SmartAppRepositoryIntegTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SandboxService sandboxService;
+
     @MockBean
     private OAuthService oAuthService;
 
     private User testUser;
+
+    private Sandbox testSandbox;
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -85,6 +91,16 @@ public class SmartAppRepositoryIntegTest {
             testUser.setSbmUserId("testuser");
             testUser = userService.save(testUser);
         }
+
+        testSandbox = sandboxService.findBySandboxId("testsandbox");
+
+        if (testSandbox == null) {
+            testSandbox = new Sandbox();
+            testSandbox.setSandboxId("testsandbox");
+            testSandbox.setName("name");
+            testSandbox.setAllowOpenAccess(false);
+            testSandbox = sandboxService.save(testSandbox);
+        }
     }
 
     @Test
@@ -97,10 +113,8 @@ public class SmartAppRepositoryIntegTest {
     @Test
     @Rollback
     public void getFoundTest() throws Exception {
-        Date now = new Date();
-        Timestamp ts = new Timestamp(now.getTime());
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "clientId",
-                testUser.getId(), ts, Visibility2.PRIVATE, "samplePatients",
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
+                "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
         String json = json(smartApp);
@@ -118,8 +132,8 @@ public class SmartAppRepositoryIntegTest {
     @Test
     @Rollback
     public void saveTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "clientId",
-                testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
+                "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
         String json = json(smartApp);
@@ -142,8 +156,8 @@ public class SmartAppRepositoryIntegTest {
     @Test
     @Rollback
     public void deleteTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "manifestUrl", "clientId",
-                testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
+                "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
                 "info", "briefDesc", "author");
 
         String json = json(smartApp);

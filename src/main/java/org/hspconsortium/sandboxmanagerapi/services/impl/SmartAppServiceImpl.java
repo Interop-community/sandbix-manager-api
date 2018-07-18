@@ -73,6 +73,12 @@ public class SmartAppServiceImpl implements SmartAppService {
     }
 
     @Override
+    public List<SmartApp> findBySandboxId(@NonNull final String sandboxId, @NonNull final String performedBy) {
+        // todo see if performedBy has rights
+        return smartAppRepository.findBySandboxId(sandboxId);
+    }
+
+    @Override
     public List<SmartApp> findPublic() {
         return smartAppRepository.findByVisibility(Visibility2.PUBLIC);
     }

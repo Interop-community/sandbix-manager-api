@@ -19,6 +19,8 @@ public class SmartApp {
     @Id
     protected String id;
 
+    private String sandboxId;
+
     private String manifestUrl;
 
     private String manifest;
