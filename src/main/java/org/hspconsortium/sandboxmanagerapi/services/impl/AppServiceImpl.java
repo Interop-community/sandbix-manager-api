@@ -279,6 +279,7 @@ public class AppServiceImpl implements AppService {
 
                 }
             }
+
         }
         List<App> other_apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
         apps.addAll(other_apps);

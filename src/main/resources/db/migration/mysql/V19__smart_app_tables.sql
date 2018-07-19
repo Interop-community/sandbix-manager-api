@@ -3,6 +3,7 @@ CREATE TABLE smart_app (
   name              VARCHAR(100)    NOT NULL,
   manifest_url      VARCHAR(500)    NOT NULL,
   manifest          VARCHAR(4000)   DEFAULT NULL,
+  sandbox_id        VARCHAR(255)    DEFAULT NULL,
   client_id         VARCHAR(50)     DEFAULT NULL,
   owner_id          INT(11)         NOT NULL,
   created_timestamp DATETIME(3)     NOT NULL,

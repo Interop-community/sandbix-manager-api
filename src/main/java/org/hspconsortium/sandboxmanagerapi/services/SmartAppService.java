@@ -19,4 +19,6 @@ public interface SmartAppService {
 
     List<SmartApp> findPublic();
 
+    SmartApp findById(final String id);
+
 }

@@ -77,4 +77,9 @@ public class SmartAppServiceImpl implements SmartAppService {
         return smartAppRepository.findByVisibility(Visibility2.PUBLIC);
     }
 
+    @Override
+    public SmartApp findById(final String id) {
+        return smartAppRepository.findById(id);
+    }
+
 }

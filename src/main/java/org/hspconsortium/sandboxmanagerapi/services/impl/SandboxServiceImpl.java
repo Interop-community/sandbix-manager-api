@@ -326,9 +326,9 @@ public class SandboxServiceImpl implements SandboxService {
             }
             sandboxActivityLogService.sandboxCreate(newSandbox, user);
             if (newSandbox.getApps().equals(DataSet.DEFAULT)) {
-                cloneUserPersonas(newSandbox, existingSandbox, user);
-//                cloneApps(newSandbox, existingSandbox, user);
-//                cloneLaunchScenarios(newSandbox, existingSandbox, user);
+                cloneUserPersonas(savedSandbox, existingSandbox, user);
+//                cloneApps(savedSandbox, existingSandbox, user);
+//                cloneLaunchScenarios(savedSandbox, existingSandbox, user);
             }
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             return savedSandbox;
@@ -801,13 +801,14 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneApps(Sandbox newSandbox, Sandbox existingSandbox, User user) {
 //        List<App> apps = appService.findBySandboxId(existingSandbox.getSandboxId());
-        List<SmartApp> smartApps = existingSandbox.getSmartApps();
-        List<SmartApp> newSmartApps = newSandbox.getSmartApps();
-
-            newSmartApps.addAll(smartApps);
-
-        newSandbox.setSmartApps(newSmartApps);
-//        save(newSandbox);
+        newSandbox.setSmartApps(existingSandbox.getSmartApps());
+//        for (String smartAppId: smartApps) {
+////            SandboxSmartApp newSandboxSmartApp = new SandboxSmartApp(newSandbox.getId(), smartAppId);
+////
+//////            newSmartApp.se
+////            newSmartApps.add(smartAppId);
+////        }
+        save(newSandbox);
     }
 
     private void cloneLaunchScenarios(Sandbox newSandbox, Sandbox existingSandbox, User user) {

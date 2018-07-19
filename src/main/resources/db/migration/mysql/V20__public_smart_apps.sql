@@ -46,12 +46,3 @@ VALUES
     'The CDS Hooks Sandbox is a tool that allows users to simulate the workflow of the CDS Hooks standard.',
     'CDS Hooks'
   );
-
-CREATE TABLE sandbox_smart_apps (
-  sandbox    INT(11) NOT NULL,
-  smart_app  VARCHAR(36) NOT NULL,
-  UNIQUE KEY (smart_app),
-  KEY (sandbox),
-  CONSTRAINT FOREIGN KEY (sandbox) REFERENCES sandbox (id),
-  CONSTRAINT FOREIGN KEY (smart_app) REFERENCES smart_app (id)
-);

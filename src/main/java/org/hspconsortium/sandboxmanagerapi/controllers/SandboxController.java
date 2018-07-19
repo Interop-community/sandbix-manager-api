@@ -24,6 +24,7 @@ import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -31,10 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -42,6 +40,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("/sandbox")
 public class SandboxController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxController.class.getName());
+
+    @Value("${hspc.platform.templateSandboxIds}")
+    private String[] templateSandboxIds;
 
     private final SandboxService sandboxService;
     private final UserService userService;
@@ -67,9 +68,8 @@ public class SandboxController extends AbstractController {
         if (existingSandbox != null) {
             return existingSandbox;
         }
-
-        LOGGER.info("Creating sandbox: " + sandbox.getName());
         checkCreatedByIsCurrentUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
+        LOGGER.info("Creating sandbox: " + sandbox.getName());
         User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
         checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
         return sandboxService.create(sandbox, user, oAuthService.getBearerToken(request));
@@ -80,8 +80,12 @@ public class SandboxController extends AbstractController {
     public @ResponseBody Sandbox cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
         Sandbox newSandbox = sandboxes.get("newSandbox");
         Sandbox clonedSandbox = sandboxes.get("clonedSandbox");
+        // Don't need to check authorization of who created the template sandboxes
+        if (!Arrays.asList(templateSandboxIds).contains(clonedSandbox.getSandboxId())) {
+            checkCreatedByIsCurrentUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
+        }
+        checkCreatedByIsCurrentUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
         LOGGER.info("Cloning sandbox " + clonedSandbox.getName() + " to sandbox: " + newSandbox.getName());
-        checkCreatedByIsCurrentUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
         User user = userService.findBySbmUserId(clonedSandbox.getCreatedBy().getSbmUserId());
         checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
         return sandboxService.clone(newSandbox, clonedSandbox, user, oAuthService.getBearerToken(request));

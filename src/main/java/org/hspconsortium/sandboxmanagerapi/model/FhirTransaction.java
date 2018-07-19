@@ -51,7 +51,7 @@ public class FhirTransaction {
         return performedById;
     }
 
-    public void setPerformedById(Integer performedByID) {
+    public void setPerformedById(Integer performedById) {
         this.performedById = performedById;
     }
 

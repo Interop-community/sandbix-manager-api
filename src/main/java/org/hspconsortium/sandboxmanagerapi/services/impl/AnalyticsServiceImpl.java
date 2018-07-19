@@ -93,12 +93,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         if (!ruleService.checkIfUserCanPerformTransaction(sandbox, transactionInfo.get("method").toString())) {
             throw new UnauthorizedException("User has ran out of either transaction counts or storage. Cannot complete transaction.");
         }
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
         FhirTransaction fhirTransaction = new FhirTransaction();
+        if (user != null) {
+            fhirTransaction.setPerformedById(user.getId());
+        }
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         fhirTransaction.setTransactionTimestamp(timestamp);
         fhirTransaction.setSandboxId(sandbox.getId());
-        fhirTransaction.setPerformedById(user.getId());
         fhirTransaction.setUrl(transactionInfo.get("url").toString());
         fhirTransaction.setFhirResource(transactionInfo.get("resource").toString());
         fhirTransaction.setMethod(transactionInfo.get("method").toString());

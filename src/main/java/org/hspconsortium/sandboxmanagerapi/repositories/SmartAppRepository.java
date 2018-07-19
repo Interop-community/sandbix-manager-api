@@ -14,4 +14,6 @@ public interface SmartAppRepository extends CrudRepository<SmartApp, String> {
     List<SmartApp> findByOwnerId(@Param("ownerId") @NonNull int ownerId);
 
     List<SmartApp> findByVisibility(@Param("ownerId") @NonNull Visibility2 visibility);
+
+    SmartApp findById(@Param("id") @NonNull String id);
 }
