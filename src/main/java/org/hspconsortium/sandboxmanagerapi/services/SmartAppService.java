@@ -17,6 +17,8 @@ public interface SmartAppService {
 
     List<SmartApp> findByOwnerId(@NonNull final int ownerId, @NonNull final String performedBy);
 
+    List<SmartApp> findBySandboxId(@NonNull final String sandboxId, @NonNull final String performedBy);
+
     List<SmartApp> findPublic();
 
     SmartApp findById(final String id);
