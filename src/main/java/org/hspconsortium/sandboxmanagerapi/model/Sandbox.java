@@ -127,19 +127,6 @@ public class Sandbox extends AbstractItem {
     }
 
     @OneToMany(cascade={CascadeType.ALL})
-    @JoinTable(name = "sandbox_smart_apps", joinColumns = {
-            @JoinColumn(name = "sandbox", nullable = false, updatable = false) },
-            inverseJoinColumns = { @JoinColumn(name = "smart_app",
-                    nullable = false, updatable = false) })
-    public List<SmartApp> getSmartApps() {
-        return smartApps;
-    }
-
-    public void setSmartApps(List<SmartApp> smartApps) {
-        this.smartApps = smartApps;
-    }
-
-    @OneToMany(cascade={CascadeType.ALL})
     public List<SandboxImport> getImports() {
         return imports;
     }

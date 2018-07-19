@@ -240,50 +240,51 @@ public class AppServiceImpl implements AppService {
     @Override
     public List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        List<SmartApp> smartApps = sandbox.getSmartApps();
-        List<App> apps = new ArrayList<>();
-        // TODO: the frontend should have to do this
-        for (SmartApp smartApp: smartApps) {
-            if (smartApp.getManifestUrl() != null) {
-                try {
-                    URL url = new URL(smartApp.getManifestUrl());
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    con.setRequestMethod("GET");
-                    BufferedReader in = new BufferedReader(
-                            new InputStreamReader(con.getInputStream()));
-                    String inputLine;
-                    StringBuffer content = new StringBuffer();
-                    while ((inputLine = in.readLine()) != null) {
-                        content.append(inputLine);
-                    }
-                    JSONObject manifest = new JSONObject(content.toString());
-                    in.close();
-                    App app = new App();
-                    String oAuthClient = oAuthClientService.getOAuthClientWithClientId(smartApp.getClientId());
-                    JSONObject oAuthClientObject = new JSONObject(oAuthClient);
-                    // TODO: get rid of Authclient object
-                    AuthClient authclient = new AuthClient();
-                    authclient.setClientName(oAuthClientObject.get("clientName").toString());
-                    authclient.setAuthDatabaseId(Integer.parseInt(oAuthClientObject.get("id").toString()));
-                    authclient.setClientId(oAuthClientObject.get("clientId").toString());
-                    app.setAuthClient(authclient);
-                    app.setLaunchUri(manifest.get("launch_url").toString());
-                    app.setSandbox(sandbox);
-                    app.setLogoUri(manifest.get("logo_uri").toString());
-                    app.setAppManifestUri(smartApp.getManifestUrl());
-                    app.setBriefDescription(smartApp.getBriefDescription());
-//                    app.setVisibility(smartApp.getVisibility());
-
-                    apps.add(app);
-                } catch (Exception e) {
-
-                }
-            }
-
-        }
-        List<App> other_apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
-        apps.addAll(other_apps);
-        return apps;
+//        List<SmartApp> smartApps = sandbox.getSmartApps();
+//        List<App> apps = new ArrayList<>();
+//        // TODO: the frontend should have to do this
+//        for (SmartApp smartApp: smartApps) {
+//            if (smartApp.getManifestUrl() != null) {
+//                try {
+//                    URL url = new URL(smartApp.getManifestUrl());
+//                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//                    con.setRequestMethod("GET");
+//                    BufferedReader in = new BufferedReader(
+//                            new InputStreamReader(con.getInputStream()));
+//                    String inputLine;
+//                    StringBuffer content = new StringBuffer();
+//                    while ((inputLine = in.readLine()) != null) {
+//                        content.append(inputLine);
+//                    }
+//                    JSONObject manifest = new JSONObject(content.toString());
+//                    in.close();
+//                    App app = new App();
+//                    String oAuthClient = oAuthClientService.getOAuthClientWithClientId(smartApp.getClientId());
+//                    JSONObject oAuthClientObject = new JSONObject(oAuthClient);
+//                    // TODO: get rid of Authclient object
+//                    AuthClient authclient = new AuthClient();
+//                    authclient.setClientName(oAuthClientObject.get("clientName").toString());
+//                    authclient.setAuthDatabaseId(Integer.parseInt(oAuthClientObject.get("id").toString()));
+//                    authclient.setClientId(oAuthClientObject.get("clientId").toString());
+//                    app.setAuthClient(authclient);
+//                    app.setLaunchUri(manifest.get("launch_url").toString());
+//                    app.setSandbox(sandbox);
+//                    app.setLogoUri(manifest.get("logo_uri").toString());
+//                    app.setAppManifestUri(smartApp.getManifestUrl());
+//                    app.setBriefDescription(smartApp.getBriefDescription());
+////                    app.setVisibility(smartApp.getVisibility());
+//
+//                    apps.add(app);
+//                } catch (Exception e) {
+//
+//                }
+//            }
+//
+//        }
+//        List<App> other_apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+//        apps.addAll(other_apps);
+//        return apps;
+        return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
     }
 
     @Override

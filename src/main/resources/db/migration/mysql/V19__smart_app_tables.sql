@@ -12,6 +12,7 @@ CREATE TABLE smart_app (
   info              VARCHAR(4000)   DEFAULT NULL,
   brief_description VARCHAR(4000)   DEFAULT NULL,
   author            VARCHAR(100)    DEFAULT NULL,
+  copy_type         VARCHAR(36)     DEFAULT 'REPLICA',
   PRIMARY KEY (id),
   CONSTRAINT FOREIGN KEY (owner_id) REFERENCES user (id)
 );

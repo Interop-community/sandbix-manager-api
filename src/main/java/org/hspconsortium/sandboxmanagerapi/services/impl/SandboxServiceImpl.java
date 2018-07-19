@@ -801,14 +801,14 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneApps(Sandbox newSandbox, Sandbox existingSandbox, User user) {
 //        List<App> apps = appService.findBySandboxId(existingSandbox.getSandboxId());
-        newSandbox.setSmartApps(existingSandbox.getSmartApps());
+//        newSandbox.setSmartApps(existingSandbox.getSmartApps());
 //        for (String smartAppId: smartApps) {
 ////            SandboxSmartApp newSandboxSmartApp = new SandboxSmartApp(newSandbox.getId(), smartAppId);
 ////
 //////            newSmartApp.se
 ////            newSmartApps.add(smartAppId);
 ////        }
-        save(newSandbox);
+//        save(newSandbox);
     }
 
     private void cloneLaunchScenarios(Sandbox newSandbox, Sandbox existingSandbox, User user) {
