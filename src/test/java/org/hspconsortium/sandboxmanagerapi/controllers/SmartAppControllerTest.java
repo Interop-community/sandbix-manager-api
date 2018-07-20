@@ -72,7 +72,7 @@ public class SmartAppControllerTest {
         when(smartAppService.getById("not-found", "sandboxId")).thenReturn(null);
 
         mvc
-                .perform(get("/smartapp/not-found"))
+                .perform(get("/smartapp/not-found" + "?sandboxId=none"))
                 .andExpect(status().isNotFound());
     }
 
@@ -87,7 +87,7 @@ public class SmartAppControllerTest {
         when(smartAppService.getById(smartApp.getSmartAppId(), "sandboxId")).thenReturn(smartApp);
 
         mvc
-                .perform(get("/smartapp/found"))
+                .perform(get("/smartapp/" + smartApp.getSmartAppId() + "?sandboxId=" + smartApp.getSandboxId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(json));
@@ -106,7 +106,7 @@ public class SmartAppControllerTest {
 
         mvc
                 .perform(
-                        put("/smartapp/" + smartApp.getSmartAppId())
+                        put("/smartapp/" + smartApp.getSmartAppId() + "?sandboxId=" + smartApp.getSandboxId())
                                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                                 .content(json))
                 .andExpect(status().isOk())
@@ -125,7 +125,7 @@ public class SmartAppControllerTest {
         doNothing().when(smartAppService).delete(smartApp);
 
         mvc
-                .perform(delete("/smartapp/" + smartApp.getSmartAppId()))
+                .perform(delete("/smartapp/" + smartApp.getSmartAppId() + "?sandboxId=" + smartApp.getSandboxId()))
                 .andExpect(status().isOk());
 
     }
