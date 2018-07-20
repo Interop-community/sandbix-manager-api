@@ -7,20 +7,18 @@ import java.util.List;
 
 public interface SmartAppService {
 
-    SmartApp save(final SmartApp smartApp, final String performedBy);
+    SmartApp save(final SmartApp smartApp);
 
-    void delete(final String id, final String performedBy);
+    void delete(final String smartAppId, final String sandboxId);
 
-    void delete(final SmartApp smartApp, final String performedBy);
+    void delete(final SmartApp smartApp);
 
-    SmartApp getById(final String id, final String performedBy);
+    SmartApp getById(final String smartAppId, final String sandboxId);
 
-    List<SmartApp> findByOwnerId(@NonNull final int ownerId, @NonNull final String performedBy);
+    List<SmartApp> findByOwnerId(final int ownerId);
 
-    List<SmartApp> findBySandboxId(@NonNull final String sandboxId, @NonNull final String performedBy);
+    List<SmartApp> findBySandboxId(final String sandboxId);
 
     List<SmartApp> findPublic();
-
-    SmartApp findById(final String id);
 
 }

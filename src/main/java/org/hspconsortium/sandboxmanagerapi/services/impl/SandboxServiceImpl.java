@@ -251,6 +251,11 @@ public class SandboxServiceImpl implements SandboxService {
             appService.save(app);
         }
 
+        List<SmartApp> smartApps = smartAppService.findBySandboxId(sandbox.getSandboxId());
+        for (SmartApp smartApp: smartApps) {
+            smartAppService.delete(smartApp);
+        }
+
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
@@ -327,7 +332,8 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxActivityLogService.sandboxCreate(newSandbox, user);
             if (newSandbox.getApps().equals(DataSet.DEFAULT)) {
                 cloneUserPersonas(savedSandbox, existingSandbox, user);
-//                cloneApps(savedSandbox, existingSandbox, user);
+                cloneApps(savedSandbox, existingSandbox, user);
+                // TODO: add launch scenarios after restructuring them
 //                cloneLaunchScenarios(savedSandbox, existingSandbox, user);
             }
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
@@ -800,15 +806,27 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     private void cloneApps(Sandbox newSandbox, Sandbox existingSandbox, User user) {
-//        List<App> apps = appService.findBySandboxId(existingSandbox.getSandboxId());
-//        newSandbox.setSmartApps(existingSandbox.getSmartApps());
-//        for (String smartAppId: smartApps) {
-////            SandboxSmartApp newSandboxSmartApp = new SandboxSmartApp(newSandbox.getId(), smartAppId);
-////
-//////            newSmartApp.se
-////            newSmartApps.add(smartAppId);
-////        }
-//        save(newSandbox);
+        List<SmartApp> clonedSmartApps = smartAppService.findBySandboxId(existingSandbox.getSandboxId());
+        for (SmartApp smartApp: clonedSmartApps) {
+            SmartApp newSmartApp = new SmartApp();
+            newSmartApp.setSmartAppId(smartApp.getSmartAppId());
+            newSmartApp.setBriefDescription(smartApp.getBriefDescription());
+            newSmartApp.setClientId(smartApp.getClientId());
+            newSmartApp.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+            newSmartApp.setAuthor(smartApp.getAuthor());
+            newSmartApp.setInfo(smartApp.getInfo());
+            newSmartApp.setManifest(smartApp.getManifest());
+            newSmartApp.setManifestUrl(smartApp.getManifestUrl());
+            newSmartApp.setSamplePatients(smartApp.getSamplePatients());
+            newSmartApp.setOwnerId(user.getId());
+
+            newSmartApp.setSandboxId(newSandbox.getSandboxId());
+            newSmartApp.setVisibility(Visibility2.PRIVATE);
+            newSmartApp.setCopyType(CopyType.REPLICA);
+
+            smartAppService.save(newSmartApp);
+        }
+
     }
 
     private void cloneLaunchScenarios(Sandbox newSandbox, Sandbox existingSandbox, User user) {

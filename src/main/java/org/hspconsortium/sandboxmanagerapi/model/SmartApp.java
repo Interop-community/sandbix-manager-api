@@ -4,21 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
-@Entity(name = "smart_app")
+@Entity
 @Data
 @AllArgsConstructor(staticName = "of")
 @NoArgsConstructor
+@IdClass(SmartAppCompositeId.class)
 public class SmartApp {
 
     @Id
-    protected String id;
+    private String smartAppId;
 
+    @Id
     private String sandboxId;
 
     private String manifestUrl;
@@ -27,12 +26,12 @@ public class SmartApp {
 
     private String clientId;
 
-    protected Integer ownerId;
+    private Integer ownerId;
 
-    protected Timestamp createdTimestamp;
+    private Timestamp createdTimestamp;
 
     @Enumerated(EnumType.STRING)
-    protected Visibility2 visibility;
+    private Visibility2 visibility;
 
     private String samplePatients;
 
@@ -41,5 +40,8 @@ public class SmartApp {
     private String briefDescription;
 
     private String author;
+
+    @Enumerated(EnumType.STRING)
+    private CopyType copyType;
 
 }

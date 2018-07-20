@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import org.hspconsortium.sandboxmanagerapi.model.CopyType;
 import org.hspconsortium.sandboxmanagerapi.model.SmartApp;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility2;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
@@ -68,7 +69,7 @@ public class SmartAppControllerTest {
 
     @Test
     public void getNotFoundTest() throws Exception {
-        when(smartAppService.getById("not-found", "me")).thenReturn(null);
+        when(smartAppService.getById("not-found", "sandboxId")).thenReturn(null);
 
         mvc
                 .perform(get("/smartapp/not-found"))
@@ -79,11 +80,11 @@ public class SmartAppControllerTest {
     public void getFoundTest() throws Exception {
         SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
                 "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
-                Visibility2.PRIVATE, "samplePatients", "info", "briefDesc", "author");
+                Visibility2.PRIVATE, "samplePatients", "info", "briefDesc", "author", CopyType.MASTER);
 
         String json = json(smartApp);
 
-        when(smartAppService.getById("found", "me")).thenReturn(smartApp);
+        when(smartAppService.getById(smartApp.getSmartAppId(), "sandboxId")).thenReturn(smartApp);
 
         mvc
                 .perform(get("/smartapp/found"))
@@ -97,15 +98,15 @@ public class SmartAppControllerTest {
     public void saveTest() throws Exception {
         SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
                 "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
-                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author");
+                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER);
 
         String json = json(smartApp);
 
-        when(smartAppService.save(any(), any())).thenReturn(smartApp);
+        when(smartAppService.save(any())).thenReturn(smartApp);
 
         mvc
                 .perform(
-                        put("/smartapp/" + smartApp.getId())
+                        put("/smartapp/" + smartApp.getSmartAppId())
                                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                                 .content(json))
                 .andExpect(status().isOk())
@@ -117,14 +118,14 @@ public class SmartAppControllerTest {
     public void deleteTest() throws Exception {
         SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
                 "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
-                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author");
+                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER);
 
         String json = json(smartApp);
 
-        doNothing().when(smartAppService).delete(smartApp.getId(), "me");
+        doNothing().when(smartAppService).delete(smartApp);
 
         mvc
-                .perform(delete("/smartapp/" + smartApp.getId()))
+                .perform(delete("/smartapp/" + smartApp.getSmartAppId()))
                 .andExpect(status().isOk());
 
     }
