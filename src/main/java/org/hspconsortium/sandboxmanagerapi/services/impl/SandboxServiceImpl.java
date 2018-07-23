@@ -100,7 +100,6 @@ public class SandboxServiceImpl implements SandboxService {
     private AppService appService;
     private SmartAppService smartAppService;
     private LaunchScenarioService launchScenarioService;
-    private PatientService patientService;
     private SandboxImportService sandboxImportService;
     private SandboxActivityLogService sandboxActivityLogService;
     private RuleService ruleService;
@@ -144,11 +143,6 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
         this.launchScenarioService = launchScenarioService;
-    }
-
-    @Inject
-    public void setPatientService(PatientService patientService) {
-        this.patientService = patientService;
     }
 
     @Inject
@@ -230,13 +224,6 @@ public class SandboxServiceImpl implements SandboxService {
         for (LaunchScenario launchScenario : launchScenarios) {
             launchScenarioService.delete(launchScenario);
         }
-
-        //delete patient/personas for sandbox
-        List<Patient> patients = patientService.findBySandboxId(sandbox.getSandboxId());
-        for (Patient patient : patients) {
-            patientService.delete(patient);
-        }
-
 
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(sandbox.getSandboxId());
         for (UserPersona userPersona : userPersonas) {
@@ -848,9 +835,7 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setCreatedBy(user);
             newLaunchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newLaunchScenario.setDescription(launchScenario.getDescription());
-            newLaunchScenario.setLaunchEmbedded(launchScenario.isLaunchEmbedded());
             newLaunchScenario.setLastLaunch(launchScenario.getLastLaunch());
-            newLaunchScenario.setPatient(launchScenario.getPatient());
             newLaunchScenario.setUserPersona(launchScenario.getUserPersona());
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
             launchScenarioService.save(newLaunchScenario);

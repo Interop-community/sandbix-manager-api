@@ -30,13 +30,21 @@ import java.util.List;
 public class LaunchScenario extends AbstractSandboxItem {
 
     private String description;
-    private boolean launchEmbedded;
-    private Patient patient;
     private UserPersona userPersona;
     private App app;
     private List<ContextParams> contextParams;
     private Timestamp lastLaunch;
     private Long lastLaunchSeconds;
+    private String patient;
+    private String patientName;
+    private String encounter;
+    private String location;
+    private String resource;
+    private String intent;
+    private String smartStyleUrl;
+    private String title;
+    private String smartAppId;
+    private String needPatientBanner;
 
 
     /******************* Launch Scenario Property Getter/Setters ************************/
@@ -47,24 +55,6 @@ public class LaunchScenario extends AbstractSandboxItem {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public boolean isLaunchEmbedded() {
-        return launchEmbedded;
-    }
-
-    public void setLaunchEmbedded(boolean launchEmbedded) {
-        this.launchEmbedded = launchEmbedded;
-    }
-
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="patient_id")
-    public Patient getPatient() {
-        return patient;
-    }
-
-    public void setPatient(Patient patient) {
-        this.patient = patient;
     }
 
     @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
@@ -171,4 +161,83 @@ public class LaunchScenario extends AbstractSandboxItem {
         this.visibility = visibility;
     }
 
+    public String getPatient() {
+        return patient;
+    }
+
+    public void setPatient(String patient) {
+        this.patient = patient;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public String getEncounter() {
+        return encounter;
+    }
+
+    public void setEncounter(String encounter) {
+        this.encounter = encounter;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public String getIntent() {
+        return intent;
+    }
+
+    public void setIntent(String intent) {
+        this.intent = intent;
+    }
+
+    public String getSmartStyleUrl() {
+        return smartStyleUrl;
+    }
+
+    public void setSmartStyleUrl(String smartStyleUrl) {
+        this.smartStyleUrl = smartStyleUrl;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getSmartAppId() {
+        return smartAppId;
+    }
+
+    public void setSmartAppId(String smartAppId) {
+        this.smartAppId = smartAppId;
+    }
+
+    public String getNeedPatientBanner() {
+        return needPatientBanner;
+    }
+
+    public void setNeedPatientBanner(String needPatientBanner) {
+        this.needPatientBanner = needPatientBanner;
+    }
 }

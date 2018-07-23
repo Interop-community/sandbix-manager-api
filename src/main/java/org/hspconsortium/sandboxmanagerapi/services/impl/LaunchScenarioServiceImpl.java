@@ -18,7 +18,6 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     private LaunchScenarioRepository repository;
     private ContextParamsService contextParamsService;
     private AppService appService;
-    private PatientService patientService;
     private UserPersonaService userPersonaService;
     private UserLaunchService userLaunchService;
 
@@ -35,11 +34,6 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Inject
     public void setAppService(AppService appService) {
         this.appService = appService;
-    }
-
-    @Inject
-    public void setPatientService(PatientService patientService) {
-        this.patientService = patientService;
     }
 
     @Inject
@@ -106,16 +100,6 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         }
         launchScenario.setUserPersona(userPersona);
 
-        if (launchScenario.getPatient() != null) {
-            Patient patient = patientService.findByFhirIdAndSandboxId(launchScenario.getPatient().getFhirId(), sandbox.getSandboxId());
-            if (patient == null) {
-                patient = launchScenario.getPatient();
-                patient.setSandbox(sandbox);
-                patient = patientService.save(patient);
-            }
-            launchScenario.setPatient(patient);
-        }
-
         if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
             // Create an anonymous App for a custom launch
             launchScenario.getApp().setSandbox(sandbox);
@@ -136,7 +120,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         if (updateLaunchScenario != null) {
             updateLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
             updateLaunchScenario.setDescription(launchScenario.getDescription());
-            updateLaunchScenario.setLaunchEmbedded(launchScenario.isLaunchEmbedded());
+            updateLaunchScenario.setNeedPatientBanner(launchScenario.getNeedPatientBanner());
             updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
             if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
                 // Create an anonymous App for a custom launch
