@@ -123,17 +123,4 @@ public class AnalyticsController extends AbstractController {
         return analyticsService.handleFhirTransaction(user, transactionInfo);
     }
 
-    @GetMapping(value = "/last-sandbox-access", params = {"userId", "sandboxId"})
-    public @ResponseBody
-    Timestamp getLastSandboxAccess(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded,
-                                   @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
-        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
-        User user = userService.findBySbmUserId(userId);
-        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found.");
-        }
-        return userAccessHistoryService.getLatestUserAccessHistoryInsance(sandbox, user);
-    }
 }

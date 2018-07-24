@@ -20,15 +20,23 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
     }
 
     public Timestamp getLatestUserAccessHistoryInsance(Sandbox sandbox, User user) {
-        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findByUserIdAndSandboxId(user.getId(), sandbox.getId());
+        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserIdAndSandboxId(user.getSbmUserId(), sandbox.getSandboxId());
         if (userAccessHistories.size() > 0) {
             return userAccessHistories.get(0).getAccessTimestamp();
         }
         return null;
     }
 
+    public List<UserAccessHistory> getLatestUserAccessHistoryInsancesWithSandbox(Sandbox sandbox) {
+        return userAccessHistoryRepository.findBySandboxId(sandbox.getSandboxId());
+    }
+
+    public List<UserAccessHistory> getLatestUserAccessHistoryInsancesWithSbmUser(User user) {
+        return userAccessHistoryRepository.findBySbmUserId(user.getSbmUserId());
+    }
+
     public void saveUserAccessInstance(Sandbox sandbox, User user) {
-        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findByUserIdAndSandboxId(user.getId(), sandbox.getId());
+        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserIdAndSandboxId(user.getSbmUserId(), sandbox.getSandboxId());
         if (userAccessHistories.size() > 0) {
             // Update instance
             UserAccessHistory userAccessHistory = userAccessHistories.get(0);
@@ -37,22 +45,22 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
         } else {
             // Create instance
             UserAccessHistory userAccessHistory = new UserAccessHistory();
-            userAccessHistory.setSandbox(sandbox);
-            userAccessHistory.setUser(user);
+            userAccessHistory.setSandboxId(sandbox.getSandboxId());
+            userAccessHistory.setSbmUserId(user.getSbmUserId());
             userAccessHistory.setAccessTimestamp(new Timestamp(System.currentTimeMillis()));
             userAccessHistoryRepository.save(userAccessHistory);
         }
     }
 
     public void deleteUserAccessInstancesForSandbox(Sandbox sandbox) {
-        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySandboxId(sandbox.getId());
+        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySandboxId(sandbox.getSandboxId());
         for (UserAccessHistory userAccessHistory: userAccessHistories) {
             userAccessHistoryRepository.delete(userAccessHistory.getId());
         }
     }
 
     public void deleteUserAccessInstancesForUser(User user) {
-        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findByUserId(user.getId());
+        List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserId(user.getSbmUserId());
         for (UserAccessHistory userAccessHistory: userAccessHistories) {
             userAccessHistoryRepository.delete(userAccessHistory.getId());
         }

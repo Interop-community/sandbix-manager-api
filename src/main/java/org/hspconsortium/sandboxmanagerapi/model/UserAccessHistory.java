@@ -10,8 +10,8 @@ public class UserAccessHistory {
 
     private Integer id;
     private Timestamp accessTimestamp;
-    private Sandbox sandbox;
-    private User user;
+    private String sandboxId;
+    private String sbmUserId;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,25 +31,20 @@ public class UserAccessHistory {
         this.accessTimestamp = accessTimestamp;
     }
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="sandbox_id")
-    @JsonIgnoreProperties(ignoreUnknown = true, allowSetters = true, value={"userRoles", "imports", "dataSet"})
-    public Sandbox getSandbox() {
-        return sandbox;
+    public String getSandboxId() {
+        return sandboxId;
     }
 
-    public void setSandbox(Sandbox sandbox) {
-        this.sandbox = sandbox;
+    public void setSandboxId(String sandboxId) {
+        this.sandboxId = sandboxId;
     }
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="user_id")
-    public User getUser() {
-        return user;
+    public String getSbmUserId() {
+        return sbmUserId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setSbmUserId(String sbmUserId) {
+        this.sbmUserId = sbmUserId;
     }
 
 }

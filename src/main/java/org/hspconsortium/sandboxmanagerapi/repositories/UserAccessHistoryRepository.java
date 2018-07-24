@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface UserAccessHistoryRepository extends CrudRepository<UserAccessHistory, Integer> {
-    List<UserAccessHistory> findBySandboxId(@Param("sandboxId") Integer sandboxId);
-    List<UserAccessHistory> findByUserId(@Param("userId") Integer userId);
-    List<UserAccessHistory> findByUserIdAndSandboxId(@Param("userId") Integer userId, @Param("sandboxId") Integer sandboxId);
+    List<UserAccessHistory> findBySandboxId(@Param("sandboxId") String sandboxId);
+    List<UserAccessHistory> findBySbmUserId(@Param("sbmUserId") String sbmUserId);
+    List<UserAccessHistory> findBySbmUserIdAndSandboxId(@Param("sbmUserId") String sbmUserId, @Param("sandboxId") String sandboxId);
 }

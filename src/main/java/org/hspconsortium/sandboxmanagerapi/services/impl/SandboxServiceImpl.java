@@ -320,8 +320,7 @@ public class SandboxServiceImpl implements SandboxService {
             if (newSandbox.getApps().equals(DataSet.DEFAULT)) {
                 cloneUserPersonas(savedSandbox, existingSandbox, user);
                 cloneApps(savedSandbox, existingSandbox, user);
-                // TODO: add launch scenarios after restructuring them
-//                cloneLaunchScenarios(savedSandbox, existingSandbox, user);
+                cloneLaunchScenarios(savedSandbox, existingSandbox, user);
             }
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             return savedSandbox;
@@ -821,7 +820,15 @@ public class SandboxServiceImpl implements SandboxService {
         for (LaunchScenario launchScenario: launchScenarios) {
             LaunchScenario newLaunchScenario = new LaunchScenario();
             newLaunchScenario.setSandbox(newSandbox);
-            newLaunchScenario.setApp(launchScenario.getApp());
+            newLaunchScenario.setSmartAppId(launchScenario.getSmartAppId());
+            newLaunchScenario.setPatient(launchScenario.getPatient());
+            newLaunchScenario.setPatientName(launchScenario.getPatientName());
+            newLaunchScenario.setNeedPatientBanner(launchScenario.getNeedPatientBanner());
+            newLaunchScenario.setLocation(launchScenario.getLocation());
+            newLaunchScenario.setEncounter(launchScenario.getEncounter());
+            newLaunchScenario.setIntent(launchScenario.getIntent());
+            newLaunchScenario.setResource(launchScenario.getResource());
+            newLaunchScenario.setSmartStyleUrl(launchScenario.getSmartStyleUrl());
             newLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
             List<ContextParams> contextParamsList = launchScenario.getContextParams();
             List<ContextParams> newContextParamsList = new ArrayList<>();
@@ -835,6 +842,7 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setCreatedBy(user);
             newLaunchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newLaunchScenario.setDescription(launchScenario.getDescription());
+            newLaunchScenario.setTitle(launchScenario.getTitle());
             newLaunchScenario.setLastLaunch(launchScenario.getLastLaunch());
             newLaunchScenario.setUserPersona(launchScenario.getUserPersona());
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
