@@ -9,6 +9,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -23,19 +24,39 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     private SandboxService sandboxService;
     private EmailService emailService;
     private SandboxActivityLogService sandboxActivityLogService;
+    private RuleService ruleService;
 
     @Autowired
-    public SandboxInviteServiceImpl(final SandboxInviteRepository repository, final UserService userService,
-                                    final SandboxService sandboxService, final EmailService emailService,
-                                    final SandboxActivityLogService sandboxActivityLogService) {
+    public SandboxInviteServiceImpl(final SandboxInviteRepository repository) {
         this.repository = repository;
-        this.userService = userService;
-        this.sandboxService = sandboxService;
-        this.emailService = emailService;
-        this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
     public SandboxInviteServiceImpl() {
+    }
+
+    @Inject
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Inject
+    public void setSandboxService(SandboxService sandboxService) {
+        this.sandboxService = sandboxService;
+    }
+
+    @Inject
+    public void setEmailService(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    @Inject
+    public void setRuleService(RuleService ruleService) {
+        this.ruleService = ruleService;
+    }
+
+    @Inject
+    public void setSandboxActivityLogService(SandboxActivityLogService sandboxActivityLogService) {
+        this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
     @Override
@@ -61,6 +82,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     public SandboxInvite create(final SandboxInvite sandboxInvite) throws IOException {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId());
         User invitedBy = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());
+        if (!ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())) {
+            return null;
+        }
         User checkInvitee = null;
         if (sandboxInvite.getInvitee().getSbmUserId() != null) {
             checkInvitee = userService.findBySbmUserId(sandboxInvite.getInvitee().getSbmUserId());

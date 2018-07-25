@@ -1,21 +1,16 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
-import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
-import org.hspconsortium.sandboxmanagerapi.model.User;
-import org.hspconsortium.sandboxmanagerapi.model.UserRole;
-import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
+import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.jeasy.rules.api.Rules;
-import org.jeasy.rules.mvel.MVELRuleFactory;
+import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.*;
 
 @RestController
@@ -26,19 +21,27 @@ public class AnalyticsController extends AbstractController {
     private UserService userService;
     private SandboxService sandboxService;
     private AppService appService;
-
+    private RuleService ruleService;
+    private UserPersonaService userPersonaService;
+    private UserAccessHistoryService userAccessHistoryService;
 
     @Inject
     public AnalyticsController(final AnalyticsService analyticsService,
                                final UserService userService,
                                final SandboxService sandboxService,
                                final AppService appService,
-                               final OAuthService oAuthService) {
+                               final OAuthService oAuthService,
+                               final RuleService ruleService,
+                               final UserPersonaService userPersonaService,
+                               final UserAccessHistoryService userAccessHistoryService) {
         super(oAuthService);
         this.analyticsService = analyticsService;
         this.userService = userService;
         this.sandboxService = sandboxService;
         this.appService = appService;
+        this.ruleService = ruleService;
+        this.userPersonaService = userPersonaService;
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @GetMapping(value = "/sandboxes", params = {"userId"})
@@ -51,7 +54,7 @@ public class AnalyticsController extends AbstractController {
         if (primaryUser == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
+        List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(primaryUser.getId());
         return userCreatedSandboxes.size();
     }
 
@@ -59,39 +62,22 @@ public class AnalyticsController extends AbstractController {
     public @ResponseBody HashMap<String, Integer> countUsersBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 //        checkUserAuthorization(request, userId);
-        User primaryUser = userService.findBySbmUserId(userId);
-        if (primaryUser == null) {
+        User user = userService.findBySbmUserId(userId);
+        if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        HashMap<String, Integer> sandboxUsers = new HashMap<>();
-        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
-        for (Sandbox sandbox: userCreatedSandboxes) {
-            List<UserRole> usersRoles = sandbox.getUserRoles();
-            Map<String, UserRole> uniqueUsers = new LinkedHashMap<>();
-            for (UserRole userRole : usersRoles) {
-                uniqueUsers.put(userRole.getUser().getEmail(), userRole);
-            }
-            sandboxUsers.put(sandbox.getSandboxId(), uniqueUsers.size());
-        }
-
-        return sandboxUsers;
+        return analyticsService.countUsersPerSandboxByUser(user);
     }
 
     @GetMapping(value = "/apps", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countAppsBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 //        checkUserAuthorization(request, userId);
-        User primaryUser = userService.findBySbmUserId(userId);
-        if (primaryUser == null) {
+        User user = userService.findBySbmUserId(userId);
+        if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        HashMap<String, Integer> sandboxApps = new HashMap<>();
-        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
-        for (Sandbox sandbox: userCreatedSandboxes) {
-            String sandboxId = sandbox.getSandboxId();
-            sandboxApps.put(sandboxId, appService.findBySandboxId(sandboxId).size());
-        }
-        return sandboxApps;
+        return analyticsService.countAppsPerSandboxByUser(user);
     }
 
     @GetMapping(value = "/memory", params = {"userId"})
@@ -99,31 +85,42 @@ public class AnalyticsController extends AbstractController {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 //        checkUserAuthorization(request, userId);
         Double memoryUseInMB = 0.0;
-        User primaryUser = userService.findBySbmUserId(userId);
-        if (primaryUser == null) {
+        User user = userService.findBySbmUserId(userId);
+        if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        List<Sandbox> userCreatedSandboxes = analyticsService.sandboxesCreatedByUser(primaryUser);
-        for (Sandbox sandbox: userCreatedSandboxes) {
-            memoryUseInMB += analyticsService.retrieveMemoryInSchema(sandbox.getSandboxId());
-        }
-
-        try{
-            ClassLoader classLoader = getClass().getClassLoader();
-            File file = new File(classLoader.getResource("buisness_logic.yml").getFile());
-            FileReader fileReader = new FileReader(file);
-            Rules rules = MVELRuleFactory.createRulesFrom(new FileReader(file));
-            System.out.print("yes");
-        } catch (Exception e) {
-            System.out.print(e);
-        }
-
-        return memoryUseInMB;
+       return analyticsService.retrieveTotalMemoryByUser(user);
     }
 
-    @PostMapping(value = "/transaction/{sandboxId}")
-    public void incrementTransactionNumber(@PathVariable String sandboxId) {
-        Integer count = 0;
-        count++;
+    @PostMapping(value = "/transaction")
+    public @ResponseBody
+    FhirTransaction handleFhirTransaction(final HttpServletRequest request, @RequestBody final HashMap transactionInfo) {
+        Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
+        String userId = transactionInfo.get("userId").toString();
+        User user;
+        if(transactionInfo.get("secured").toString().equals("true")) {
+            user = userService.findBySbmUserId(userId);
+            if (user != null) {
+                try {
+                    checkSystemUserCanMakeTransaction(sandbox, user);
+                } catch (UnauthorizedException e) {
+                    throw new UnauthorizedException("User does not have access to this sandbox");
+                }
+            } else if (transactionInfo.get("secured").equals("false")) {
+                // do nothing
+            } else {
+                try {
+                    UserPersona userPersona = userPersonaService.findByPersonaUserId(userId);
+                    checkIfPersonaAndHasAuthority(sandbox, userPersona);
+                } catch (UnauthorizedException e2) {
+                    throw new UnauthorizedException("Persona does not have access to this sandbox");
+                }
+            }
+
+        } else {
+            user = null;
+        }
+        return analyticsService.handleFhirTransaction(user, transactionInfo);
     }
+
 }

@@ -42,6 +42,7 @@ public class Sandbox extends AbstractItem {
     private List<SandboxImport> imports = new ArrayList<>();
     private String expirationMessage;
     private Date expirationDate;
+    private Integer payerUserId;
 
     /******************* Sandbox Property Getter/Setters ************************/
 
@@ -181,4 +182,11 @@ public class Sandbox extends AbstractItem {
 
     public void setExpirationDate(Date expirationDate) { this.expirationDate = expirationDate; }
 
+    public Integer getPayerUserId() {
+        return payerUserId;
+    }
+
+    public void setPayerUserId(Integer payerUserId) {
+        this.payerUserId = payerUserId;
+    }
 }

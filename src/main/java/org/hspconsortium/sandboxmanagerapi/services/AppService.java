@@ -15,7 +15,7 @@ public interface AppService {
 
     void delete(final App app);
 
-    App create(final App app);
+    App create(final App app, final Sandbox sandbox);
 
     App update(final App app);
 
@@ -33,5 +33,5 @@ public interface AppService {
 
     List<App> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy);
 
-    void registerDefaultApps(final Sandbox sandbox);
+//    void registerDefaultApps(final Sandbox sandbox);
 }

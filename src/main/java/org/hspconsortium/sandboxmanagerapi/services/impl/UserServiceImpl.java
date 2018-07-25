@@ -7,6 +7,7 @@ import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.repositories.UserRepository;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseAcceptanceService;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
+import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +21,28 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final TermsOfUseService termsOfUseService;
-    private final TermsOfUseAcceptanceService termsOfUseAcceptanceService;
+    private TermsOfUseService termsOfUseService;
+    private TermsOfUseAcceptanceService termsOfUseAcceptanceService;
+    private UserAccessHistoryService userAccessHistoryService;
 
     @Inject
-    public UserServiceImpl(final UserRepository repository,
-                           final TermsOfUseService termsOfUseService,
-                           final TermsOfUseAcceptanceService termsOfUseAcceptanceService) {
+    public UserServiceImpl(final UserRepository repository) {
         this.repository = repository;
+    }
+
+    @Inject
+    public void setTermsOfUseService(TermsOfUseService termsOfUseService) {
         this.termsOfUseService = termsOfUseService;
+    }
+
+    @Inject
+    public void setTermsOfUseAcceptanceService(TermsOfUseAcceptanceService termsOfUseAcceptanceService) {
         this.termsOfUseAcceptanceService = termsOfUseAcceptanceService;
+    }
+
+    @Inject
+    public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @Override
@@ -41,6 +54,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(final User user) {
+        userAccessHistoryService.deleteUserAccessInstancesForUser(user);
         repository.delete(user);
     }
 
@@ -56,6 +70,16 @@ public class UserServiceImpl implements UserService {
 
     public User findByUserEmail(final String email) {
         User user = repository.findByUserEmail(email);
+
+        if(user == null)
+            return null;
+
+        userHasAcceptedTermsOfUse(user);
+        return user;
+    }
+
+    public User findById(final Integer id) {
+        User user = repository.findById(id);
 
         if(user == null)
             return null;

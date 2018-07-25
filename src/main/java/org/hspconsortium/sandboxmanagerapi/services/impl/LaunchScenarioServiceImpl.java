@@ -15,23 +15,34 @@ import java.util.List;
 @Service
 public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
-    private final LaunchScenarioRepository repository;
-    private final ContextParamsService contextParamsService;
-    private final AppService appService;
-    private final PatientService patientService;
-    private final UserPersonaService userPersonaService;
-    private final UserLaunchService userLaunchService;
+    private LaunchScenarioRepository repository;
+    private ContextParamsService contextParamsService;
+    private AppService appService;
+    private UserPersonaService userPersonaService;
+    private UserLaunchService userLaunchService;
 
     @Inject
-    public LaunchScenarioServiceImpl(final LaunchScenarioRepository repository,
-                                     final ContextParamsService contextParamsService, final AppService appService,
-                                     final PatientService patientService, final UserPersonaService userPersonaService,
-                                     final UserLaunchService userLaunchService) {
-        this.repository = repository;
+    public LaunchScenarioServiceImpl(LaunchScenarioRepository launchScenarioRepository) {
+        this.repository = launchScenarioRepository;
+    }
+
+    @Inject
+    public void setContextParamsService(ContextParamsService contextParamsService) {
         this.contextParamsService = contextParamsService;
+    }
+
+    @Inject
+    public void setAppService(AppService appService) {
         this.appService = appService;
-        this.patientService = patientService;
+    }
+
+    @Inject
+    public void setUserPersonaService(UserPersonaService userPersonaService) {
         this.userPersonaService = userPersonaService;
+    }
+
+    @Inject
+    public void setUserLaunchService(UserLaunchService userLaunchService) {
         this.userLaunchService = userLaunchService;
     }
 
@@ -89,16 +100,6 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         }
         launchScenario.setUserPersona(userPersona);
 
-        if (launchScenario.getPatient() != null) {
-            Patient patient = patientService.findByFhirIdAndSandboxId(launchScenario.getPatient().getFhirId(), sandbox.getSandboxId());
-            if (patient == null) {
-                patient = launchScenario.getPatient();
-                patient.setSandbox(sandbox);
-                patient = patientService.save(patient);
-            }
-            launchScenario.setPatient(patient);
-        }
-
         if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
             // Create an anonymous App for a custom launch
             launchScenario.getApp().setSandbox(sandbox);
@@ -119,7 +120,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         if (updateLaunchScenario != null) {
             updateLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
             updateLaunchScenario.setDescription(launchScenario.getDescription());
-            updateLaunchScenario.setLaunchEmbedded(launchScenario.isLaunchEmbedded());
+            updateLaunchScenario.setNeedPatientBanner(launchScenario.getNeedPatientBanner());
             updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
             if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
                 // Create an anonymous App for a custom launch

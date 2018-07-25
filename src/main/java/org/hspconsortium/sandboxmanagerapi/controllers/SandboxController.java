@@ -21,12 +21,10 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
-import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxInviteService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -34,9 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -45,17 +41,23 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class SandboxController extends AbstractController {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxController.class.getName());
 
+    @Value("${hspc.platform.templateSandboxIds}")
+    private String[] templateSandboxIds;
+
     private final SandboxService sandboxService;
     private final UserService userService;
     private final SandboxInviteService sandboxInviteService;
+    private final UserAccessHistoryService userAccessHistoryService;
 
     @Inject
     public SandboxController(final SandboxService sandboxService, final UserService userService,
-                             final SandboxInviteService sandboxInviteService, final OAuthService oAuthService) {
+                             final SandboxInviteService sandboxInviteService, final OAuthService oAuthService,
+                             final UserAccessHistoryService userAccessHistoryService) {
         super(oAuthService);
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -66,12 +68,27 @@ public class SandboxController extends AbstractController {
         if (existingSandbox != null) {
             return existingSandbox;
         }
-
-        LOGGER.info("Creating sandbox: " + sandbox.getName());
         checkCreatedByIsCurrentUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
+        LOGGER.info("Creating sandbox: " + sandbox.getName());
         User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
         checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
         return sandboxService.create(sandbox, user, oAuthService.getBearerToken(request));
+    }
+
+    @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    @Transactional
+    public @ResponseBody Sandbox cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
+        Sandbox newSandbox = sandboxes.get("newSandbox");
+        Sandbox clonedSandbox = sandboxes.get("clonedSandbox");
+        // Don't need to check authorization of who created the template sandboxes
+        if (!Arrays.asList(templateSandboxIds).contains(clonedSandbox.getSandboxId())) {
+            checkCreatedByIsCurrentUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
+        }
+        checkCreatedByIsCurrentUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
+        LOGGER.info("Cloning sandbox " + clonedSandbox.getName() + " to sandbox: " + newSandbox.getName());
+        User user = userService.findBySbmUserId(clonedSandbox.getCreatedBy().getSbmUserId());
+        checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
+        return sandboxService.clone(newSandbox, clonedSandbox, user, oAuthService.getBearerToken(request));
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
@@ -100,8 +117,11 @@ public class SandboxController extends AbstractController {
             sandboxService.addMember(sandbox, user);
         }
         checkSandboxUserReadAuthorization(request, sandbox);
+        userAccessHistoryService.saveUserAccessInstance(sandbox, user);
         return sandbox;
     }
+
+//    public @ResponseBody List<SmartApp>
 
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
@@ -164,12 +184,15 @@ public class SandboxController extends AbstractController {
 
         User modifyUser = userService.findBySbmUserId(modifyUserId);
         // Don't allow the Sandbox creator to be modified
+        // TODO: either keep or get rid of the following if/else statement
         if (!modifyUser.equals(sandbox.getCreatedBy())) {
             if (add) {
                 sandboxService.addMemberRole(sandbox, modifyUser, role);
             } else {
                 sandboxService.removeMemberRole(sandbox, modifyUser, role);
             }
+        } else {
+            throw new UnsupportedEncodingException("Can't change role of Sandbox creator.");
         }
     }
 

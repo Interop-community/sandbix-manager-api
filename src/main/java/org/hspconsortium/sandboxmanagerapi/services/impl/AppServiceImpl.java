@@ -1,26 +1,28 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.json.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.AppRepository;
-import org.hspconsortium.sandboxmanagerapi.services.AppService;
-import org.hspconsortium.sandboxmanagerapi.services.AuthClientService;
-import org.hspconsortium.sandboxmanagerapi.services.ImageService;
-import org.hspconsortium.sandboxmanagerapi.services.OAuthClientService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,19 +32,64 @@ public class AppServiceImpl implements AppService {
     private static Logger LOGGER = LoggerFactory.getLogger(AppServiceImpl.class.getName());
 
     private final AppRepository repository;
-    private final AuthClientService authClientService;
-    private final ImageService imageService;
-    private final OAuthClientService oAuthClientService;
+    private AuthClientService authClientService;
+    private ImageService imageService;
+    private OAuthClientService oAuthClientService;
+    private ResourceLoader resourceLoader;
+    private RuleService ruleService;
+    private LaunchScenarioService launchScenarioService;
+    private UserLaunchService userLaunchService;
+    private SandboxService sandboxService;
+    private SmartAppService smartAppService;
 
     @Inject
-    public AppServiceImpl(final AppRepository repository,
-                          final AuthClientService authClientService,
-                          final ImageService imageService,
-                          final OAuthClientService oAuthClientService) {
+    public AppServiceImpl(final AppRepository repository) {
         this.repository = repository;
+    }
+
+    @Inject
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+
+    @Inject
+    public void setAuthClientService(AuthClientService authClientService) {
         this.authClientService = authClientService;
+    }
+
+    @Inject
+    public void setImageService(ImageService imageService) {
         this.imageService = imageService;
+    }
+
+    @Inject
+    public void setoAuthClientService(OAuthClientService oAuthClientService) {
         this.oAuthClientService = oAuthClientService;
+    }
+
+    @Inject
+    public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
+        this.launchScenarioService = launchScenarioService;
+    }
+
+    @Inject
+    public void setUserLaunchService(UserLaunchService userLaunchService) {
+        this.userLaunchService = userLaunchService;
+    }
+
+    @Inject
+    public void setLaunchScenarioServices(LaunchScenarioService launchScenarioService, UserLaunchService userLaunchService) {
+        this.launchScenarioService = launchScenarioService;
+    }
+
+    @Inject
+    public void setRuleService(RuleService ruleService) {
+        this.ruleService = ruleService;
+    }
+
+    @Inject
+    public void setSandboxService(SandboxService sandboxService) {
+        this.sandboxService = sandboxService;
     }
 
     @Override
@@ -64,11 +111,22 @@ public class AppServiceImpl implements AppService {
         Integer authDatabaseId = app.getAuthClient().getAuthDatabaseId();
         if (authDatabaseId != null) {
             try {
+                // TODO: don't delete in auth server if default app
+//                JSONArray apps = getDefaultAppList();
                 oAuthClientService.deleteOAuthClient(authDatabaseId);
             } catch (Exception ex) {
                 // Ignoring this error. Failure to delete client from Auth server
                 // shouldn't fail a sandbox delete.
             }
+        }
+
+        // Delete all associated Launch Scenarios
+        List<LaunchScenario> launchScenarios = launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+        for (LaunchScenario launchScenario: launchScenarios) {
+            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
+                userLaunchService.delete(userLaunch.getId());
+            }
+            launchScenarioService.delete(launchScenario.getId());
         }
 
         if (app.getLogo() != null) {
@@ -87,9 +145,13 @@ public class AppServiceImpl implements AppService {
     @Override
     @Transactional
     @PublishAtomicMetric
-    public App create(final App app) {
+    public App create(final App app, final Sandbox sandbox) {
         app.setLogo(null);
         app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+
+        if (!ruleService.checkIfUserCanCreateApp(sandbox.getPayerUserId(), findBySandboxId(sandbox.getSandboxId()).size())) {
+            return null;
+        }
 
         String entity = oAuthClientService.postOAuthClient(app.getClientJSON());
         try {
@@ -177,6 +239,51 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+//        List<SmartApp> smartApps = sandbox.getSmartApps();
+//        List<App> apps = new ArrayList<>();
+//        // TODO: the frontend should have to do this
+//        for (SmartApp smartApp: smartApps) {
+//            if (smartApp.getManifestUrl() != null) {
+//                try {
+//                    URL url = new URL(smartApp.getManifestUrl());
+//                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//                    con.setRequestMethod("GET");
+//                    BufferedReader in = new BufferedReader(
+//                            new InputStreamReader(con.getInputStream()));
+//                    String inputLine;
+//                    StringBuffer content = new StringBuffer();
+//                    while ((inputLine = in.readLine()) != null) {
+//                        content.append(inputLine);
+//                    }
+//                    JSONObject manifest = new JSONObject(content.toString());
+//                    in.close();
+//                    App app = new App();
+//                    String oAuthClient = oAuthClientService.getOAuthClientWithClientId(smartApp.getClientId());
+//                    JSONObject oAuthClientObject = new JSONObject(oAuthClient);
+//                    // TODO: get rid of Authclient object
+//                    AuthClient authclient = new AuthClient();
+//                    authclient.setClientName(oAuthClientObject.get("clientName").toString());
+//                    authclient.setAuthDatabaseId(Integer.parseInt(oAuthClientObject.get("id").toString()));
+//                    authclient.setClientId(oAuthClientObject.get("clientId").toString());
+//                    app.setAuthClient(authclient);
+//                    app.setLaunchUri(manifest.get("launch_url").toString());
+//                    app.setSandbox(sandbox);
+//                    app.setLogoUri(manifest.get("logo_uri").toString());
+//                    app.setAppManifestUri(smartApp.getManifestUrl());
+//                    app.setBriefDescription(smartApp.getBriefDescription());
+////                    app.setVisibility(smartApp.getVisibility());
+//
+//                    apps.add(app);
+//                } catch (Exception e) {
+//
+//                }
+//            }
+//
+//        }
+//        List<App> other_apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+//        apps.addAll(other_apps);
+//        return apps;
         return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
     }
 
@@ -185,84 +292,57 @@ public class AppServiceImpl implements AppService {
         return repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy);
     }
 
-    @Value("${default-apps-file}")
-    private String defaultAppsFile;
-
-    @Override
-    public void registerDefaultApps(final Sandbox sandbox) {
-        JSONParser parser = new JSONParser();
-        try {
-//            ClassLoader classLoader = getClass().getClassLoader();
-//            File file = new File(classLoader.getResource(defaultAppsFile).getFile());
-//            FileReader fileReader = new FileReader(file);
-//            JSONArray apps = (JSONArray) parser.parse(new FileReader(file));
-
-            InputStream in = getClass().getResourceAsStream(defaultAppsFile);
-            BufferedReader input = new BufferedReader(new InputStreamReader(in));
-            StringBuilder sb = new StringBuilder();
-
-            String line;
-            while ((line = input.readLine()) != null) {
-                sb.append(line);
-            }
-
-            JSONArray apps = new JSONArray(sb.toString());
-            for (int i = 0; i < apps.length(); ++i) {
-                JSONObject appInfoJson = apps.getJSONObject(i);
-                String clientId = appInfoJson.getJSONObject("authClient").getString("clientId");
-                String clientName = appInfoJson.getJSONObject("authClient").getString("clientName");
-                Integer authClientId = getAuthClientId(clientId);
-
-                AuthClient authClient = new AuthClient();
-                authClient.setClientId(clientId);
-                authClient.setClientName(clientName);
-                authClient.setLogoUri((String) appInfoJson.get("logoUri"));
-                authClient.setAuthDatabaseId(authClientId);
-                authClientService.save(authClient);
-
-                App app = new App();
-                app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-                app.setLogoUri((String) appInfoJson.get("logoUri"));
-                app.setLaunchUri((String) appInfoJson.get("launchUri"));
-                app.setBriefDescription((String) appInfoJson.get("briefDescription"));
-                app.setSandbox(sandbox);
-                app.setCreatedBy(sandbox.getCreatedBy());
-                app.setAuthClient(authClient);
-                save(app);
-            }
-        }
-        catch (Exception e) {
-            LOGGER.error("Error in registering default apps.", e);
-        }
-
-    }
-
-    @Value("${spring.datasource.base_url}")
-    private String databaseUrl;
-
-    @Value("${spring.datasource.username}")
-    private String databaseUserName;
-
-    @Value("${spring.datasource.password}")
-    private String databasePassword;
-
-    private Integer getAuthClientId(String clientId) {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
-            Statement stmt = conn.createStatement() ;
-            String query = "SELECT * FROM oic.client_details WHERE client_id='" + clientId + "';" ;
-            ResultSet rs = stmt.executeQuery(query);
-            Integer id = 0;
-            while (rs.next()) {
-                // Had to use this workaround to keep the id in scope
-                id += Integer.parseInt(rs.getString(1));
-            }
-            conn.close();
-            return id;
-        } catch (Exception e) {
-            throw new RuntimeException("Error getting Id for client " + clientId, e);
-        }
-    }
+//    @Value("${default-apps-file}")
+//    private String defaultAppsFile;
+//
+//    @Override
+//    public void registerDefaultApps(final Sandbox sandbox) {
+//
+//        JSONArray apps = getDefaultAppList();
+//
+//        for (int i = 0; i < apps.length(); ++i) {
+//            JSONObject appInfoJson = apps.getJSONObject(i);
+//            String clientId = appInfoJson.getJSONObject("authClient").getString("clientId");
+//            String clientName = appInfoJson.getJSONObject("authClient").getString("clientName");
+//            Integer authClientId = getAuthClientId(clientId);
+//
+//            AuthClient authClient = new AuthClient();
+//            authClient.setClientId(clientId);
+//            authClient.setClientName(clientName);
+//            authClient.setLogoUri((String) appInfoJson.get("logoUri"));
+//            authClient.setAuthDatabaseId(authClientId);
+//            authClientService.save(authClient);
+//
+//            App app = new App();
+//            app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+//            app.setLogoUri((String) appInfoJson.get("logoUri"));
+//            app.setLaunchUri((String) appInfoJson.get("launchUri"));
+//            app.setBriefDescription((String) appInfoJson.get("briefDescription"));
+//            app.setSandbox(sandbox);
+//            app.setCreatedBy(sandbox.getCreatedBy());
+//            app.setAuthClient(authClient);
+//            save(app);
+//        }
+//    }
+//
+//    private JSONArray getDefaultAppList() {
+//        try {
+//            Resource resource = resourceLoader.getResource(defaultAppsFile);
+//            InputStream in = resource.getInputStream();
+//            BufferedReader input = new BufferedReader(new InputStreamReader(in));
+//            StringBuilder sb = new StringBuilder();
+//
+//            String line;
+//            while ((line = input.readLine()) != null) {
+//                sb.append(line);
+//            }
+//
+//            return new JSONArray(sb.toString());
+//        } catch (Exception e) {
+//            LOGGER.error("Unable to load default app information.", e);
+//            return new JSONArray();
+//        }
+//    }
+//
 
 }

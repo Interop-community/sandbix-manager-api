@@ -1,22 +1,18 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
-import org.hspconsortium.sandboxmanagerapi.model.Role;
-import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
-import org.hspconsortium.sandboxmanagerapi.model.User;
-import org.hspconsortium.sandboxmanagerapi.model.UserRole;
-import org.hspconsortium.sandboxmanagerapi.services.AnalyticsService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
+import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
+import org.hspconsortium.sandboxmanagerapi.model.*;
+import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
+import org.hspconsortium.sandboxmanagerapi.services.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 @Service
 public class AnalyticsServiceImpl implements AnalyticsService {
@@ -30,13 +26,37 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Value("${spring.datasource.password}")
     private String databasePassword;
 
-    private final UserService userService;
-    private final SandboxService sandboxService;
+    private UserService userService;
+    private SandboxService sandboxService;
+    private FhirTransactionRepository fhirTransactionRepository;
+    private UserAccessHistoryRepository userAccessHistoryRepository;
+    private AppService appService;
+    private RuleService ruleService;
 
     @Inject
-    AnalyticsServiceImpl(final UserService userService, final SandboxService sandboxService) {
+    AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository, final UserAccessHistoryRepository userAccessHistoryRepository) {
+        this.fhirTransactionRepository = fhirTransactionRepository;
+        this.userAccessHistoryRepository = userAccessHistoryRepository;
+    }
+
+    @Inject
+    public void setUserService(UserService userService) {
         this.userService = userService;
+    }
+
+    @Inject
+    public void setSandboxService(SandboxService sandboxService) {
         this.sandboxService = sandboxService;
+    }
+
+    @Inject
+    public void setAppService(AppService appService) {
+        this.appService = appService;
+    }
+
+    @Inject
+    public void setRuleService(RuleService ruleService) {
+        this.ruleService = ruleService;
     }
 
     public Integer countSandboxesByUser(String userId) {
@@ -44,19 +64,66 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return 1;
     }
 
-    public List<Sandbox> sandboxesCreatedByUser(User user) {
-        List<Sandbox> userSandboxes = sandboxService.getAllowedSandboxes(user);
-        List<Sandbox> userCreatedSandboxes = new ArrayList<>();
-        for (Sandbox sandbox: userSandboxes) {
-            for (UserRole userRole: sandbox.getUserRoles()) {
-                if (userRole.getUser().getSbmUserId().equals(user.getSbmUserId())) {
-                    if (userRole.getRole().equals(Role.CREATE_SANDBOX)) {
-                        userCreatedSandboxes.add(sandbox);
-                    }
-                }
-            }
+    public HashMap<String, Integer> countAppsPerSandboxByUser(User user) {
+        HashMap<String, Integer> sandboxApps = new HashMap<>();
+        List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
+        for (Sandbox sandbox: userCreatedSandboxes) {
+            String sandboxId = sandbox.getSandboxId();
+            sandboxApps.put(sandboxId, appService.findBySandboxId(sandboxId).size());
         }
-        return userCreatedSandboxes;
+        return sandboxApps;
+    }
+
+    public HashMap<String, Integer> countUsersPerSandboxByUser(User user) {
+        HashMap<String, Integer> sandboxUsers = new HashMap<>();
+        List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
+        for (Sandbox sandbox: userCreatedSandboxes) {
+            List<UserRole> usersRoles = sandbox.getUserRoles();
+            Map<String, UserRole> uniqueUsers = new LinkedHashMap<>();
+            for (UserRole userRole : usersRoles) {
+                uniqueUsers.put(userRole.getUser().getEmail(), userRole);
+            }
+            sandboxUsers.put(sandbox.getSandboxId(), uniqueUsers.size());
+        }
+        return sandboxUsers;
+    }
+
+    public FhirTransaction handleFhirTransaction(User user, HashMap transactionInfo) {
+        Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
+        if (!ruleService.checkIfUserCanPerformTransaction(sandbox, transactionInfo.get("method").toString())) {
+            throw new UnauthorizedException("User has ran out of either transaction counts or storage. Cannot complete transaction.");
+        }
+        FhirTransaction fhirTransaction = new FhirTransaction();
+        if (user != null) {
+            fhirTransaction.setPerformedById(user.getId());
+        }
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        fhirTransaction.setTransactionTimestamp(timestamp);
+        fhirTransaction.setSandboxId(sandbox.getId());
+        fhirTransaction.setUrl(transactionInfo.get("url").toString());
+        fhirTransaction.setFhirResource(transactionInfo.get("resource").toString());
+        fhirTransaction.setMethod(transactionInfo.get("method").toString());
+        fhirTransaction.setDomain(transactionInfo.get("domain").toString());
+        fhirTransaction.setIpAddress(transactionInfo.get("ip_address").toString());
+        fhirTransaction.setResponseCode(Integer.parseInt(transactionInfo.get("response_code").toString()));
+        fhirTransaction.setSecured(Boolean.parseBoolean(transactionInfo.get("secured").toString()));
+        fhirTransaction.setPayerUserId(sandbox.getPayerUserId());
+        return fhirTransactionRepository.save(fhirTransaction);
+    }
+
+    public Integer countTransactionsByPayer(User payer) {
+        Integer count = 0;
+        List<FhirTransaction> fhirTransactions = fhirTransactionRepository.findByPayerUserId(payer.getId());
+        return fhirTransactions.size();
+    }
+
+    public Double retrieveTotalMemoryByUser(User user) {
+        Double memoryUseInMB = 0.0;
+        List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
+        for (Sandbox sandbox: userCreatedSandboxes) {
+            memoryUseInMB += retrieveMemoryInSchema(sandbox.getSandboxId());
+        }
+        return memoryUseInMB;
     }
 
     public Double retrieveMemoryInSchema(String schemaName) {
@@ -78,4 +145,5 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             throw new RuntimeException("Error getting memory information for " + schemaName, e);
         }
     }
+
 }

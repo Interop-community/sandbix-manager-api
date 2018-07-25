@@ -1,0 +1,1 @@
+ALTER TABLE user ADD tier_level INT(11);

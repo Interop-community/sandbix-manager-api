@@ -16,15 +16,25 @@ import java.util.Date;
 @Service
 public class AdminServiceImpl implements AdminService {
 
-    private final UserService userService;
-    private final SandboxService sandboxService;
-    private final SandboxActivityLogService sandboxActivityLogService;
+    private UserService userService;
+    private SandboxService sandboxService;
+    private SandboxActivityLogService sandboxActivityLogService;
 
     @Inject
-    public AdminServiceImpl(final UserService userService, final SandboxService sandboxService,
-                                    final SandboxActivityLogService sandboxActivityLogService) {
+    public AdminServiceImpl() { }
+
+    @Inject
+    public void setUserService(UserService userService) {
         this.userService = userService;
+    }
+
+    @Inject
+    public void setSandboxService(SandboxService sandboxService) {
         this.sandboxService = sandboxService;
+    }
+
+    @Inject
+    public void setSandboxActivityLogService(SandboxActivityLogService sandboxActivityLogService) {
         this.sandboxActivityLogService = sandboxActivityLogService;
     }
 

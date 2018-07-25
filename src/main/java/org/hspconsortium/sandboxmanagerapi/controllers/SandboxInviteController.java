@@ -61,12 +61,13 @@ public class SandboxInviteController extends AbstractController {
 
     @PutMapping(consumes = APPLICATION_JSON_VALUE)
     @Transactional
-    public @ResponseBody void createOrUpdateSandboxInvite(HttpServletRequest request, @RequestBody final SandboxInvite sandboxInvite) throws IOException {
+    public @ResponseBody SandboxInvite createOrUpdateSandboxInvite(HttpServletRequest request, @RequestBody final SandboxInvite sandboxInvite) throws IOException {
 
         // Make sure the inviter has rights to this sandbox
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId());
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
+        SandboxInvite sandboxInviteReturned = new SandboxInvite();
 
         // Check for an existing invite for this invitee
         List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeIdAndSandboxId(sandboxInvite.getInvitee().getSbmUserId(), sandboxInvite.getSandbox().getSandboxId());
@@ -78,7 +79,7 @@ public class SandboxInviteController extends AbstractController {
         if (!sandboxInvites.isEmpty() && !sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())) {
             SandboxInvite existingSandboxInvite = sandboxInvites.get(0);
             existingSandboxInvite.setStatus(InviteStatus.PENDING);
-            sandboxInviteService.save(existingSandboxInvite);
+            sandboxInviteReturned = sandboxInviteService.save(existingSandboxInvite);
 
             // Send an Email
             User inviter = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());
@@ -93,8 +94,9 @@ public class SandboxInviteController extends AbstractController {
             // Make sure the inviter is the authenticated user
             User invitedBy = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());
             checkUserAuthorization(request, invitedBy.getSbmUserId());
-            sandboxInviteService.create(sandboxInvite);
+            sandboxInviteReturned = sandboxInviteService.create(sandboxInvite);
         }
+        return sandboxInviteReturned;
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sbmUserId", "status"})

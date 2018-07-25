@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -19,10 +20,12 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -87,35 +90,79 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${expiration-date}")
     private String expirationDate;
 
-    private final UserService userService;
-    private final UserRoleService userRoleService;
-    private final UserPersonaService userPersonaService;
-    private final UserLaunchService userLaunchService;
-    private final AppService appService;
-    private final LaunchScenarioService launchScenarioService;
-    private final PatientService patientService;
-    private final SandboxImportService sandboxImportService;
-    private final SandboxActivityLogService sandboxActivityLogService;
+    @Value("${default-public-apps}")
+    private String[] defaultPublicApps;
+
+    private UserService userService;
+    private UserRoleService userRoleService;
+    private UserPersonaService userPersonaService;
+    private UserLaunchService userLaunchService;
+    private AppService appService;
+    private SmartAppService smartAppService;
+    private LaunchScenarioService launchScenarioService;
+    private SandboxImportService sandboxImportService;
+    private SandboxActivityLogService sandboxActivityLogService;
+    private RuleService ruleService;
+    private UserAccessHistoryService userAccessHistoryService;
 
     @Inject
-    public SandboxServiceImpl(final SandboxRepository repository, final UserService userService,
-                              final UserRoleService userRoleService, final AppService appService,
-                              final UserPersonaService userPersonaService,
-                              final UserLaunchService userLaunchService,
-                              final LaunchScenarioService launchScenarioService,
-                              final PatientService patientService,
-                              final SandboxImportService sandboxImportService,
-                              final SandboxActivityLogService sandboxActivityLogService) {
+    public SandboxServiceImpl(final SandboxRepository repository) {
         this.repository = repository;
+    }
+
+    @Inject
+    public void setUserService(UserService userService) {
         this.userService = userService;
+    }
+
+    @Inject
+    public void setUserRoleService(UserRoleService userRoleService) {
         this.userRoleService = userRoleService;
+    }
+
+    @Inject
+    public void setUserPersonaService(UserPersonaService userPersonaService) {
         this.userPersonaService = userPersonaService;
+    }
+
+    @Inject
+    public void setUserLaunchService(UserLaunchService userLaunchService) {
         this.userLaunchService = userLaunchService;
+    }
+
+    @Inject
+    public void setAppService(AppService appService) {
         this.appService = appService;
+    }
+
+    @Inject
+    public void setSmartAppService(SmartAppService smartAppService) {
+        this.smartAppService = smartAppService;
+    }
+
+    @Inject
+    public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
         this.launchScenarioService = launchScenarioService;
-        this.patientService = patientService;
+    }
+
+    @Inject
+    public void setSandboxImportService(SandboxImportService sandboxImportService) {
         this.sandboxImportService = sandboxImportService;
+    }
+
+    @Inject
+    public void setSandboxActivityLogService(SandboxActivityLogService sandboxActivityLogService) {
         this.sandboxActivityLogService = sandboxActivityLogService;
+    }
+
+    @Inject
+    public void setRuleService(RuleService ruleService) {
+        this.ruleService = ruleService;
+    }
+
+    @Inject
+    public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @Override
@@ -178,13 +225,6 @@ public class SandboxServiceImpl implements SandboxService {
             launchScenarioService.delete(launchScenario);
         }
 
-        //delete patient/personas for sandbox
-        List<Patient> patients = patientService.findBySandboxId(sandbox.getSandboxId());
-        for (Patient patient : patients) {
-            patientService.delete(patient);
-        }
-
-
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(sandbox.getSandboxId());
         for (UserPersona userPersona : userPersonas) {
             userPersonaService.delete(userPersona);
@@ -197,12 +237,23 @@ public class SandboxServiceImpl implements SandboxService {
             app.setSamplePatients(null);
             appService.save(app);
         }
+
+        List<SmartApp> smartApps = smartAppService.findBySandboxId(sandbox.getSandboxId());
+        for (SmartApp smartApp: smartApps) {
+            smartAppService.delete(smartApp);
+        }
+
+        userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
     @Override
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
+        if (!canCreate) {
+            return null;
+        }
         UserPersona userPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
 
         if (userPersona == null && callCreateOrUpdateSandboxAPI(sandbox, bearerToken)) {
@@ -215,15 +266,63 @@ public class SandboxServiceImpl implements SandboxService {
                 sandbox.setExpirationDate(formatDate());
             }
             if (sandbox.getApps().equals(DataSet.DEFAULT)) {
-                appService.registerDefaultApps(sandbox);
+                List<SmartApp> smartApps = smartAppService.findPublic();
+                List<String> defaultApps = Arrays.asList(defaultPublicApps);
+                for (SmartApp smartApp: smartApps) {
+//                    defaultApps.contains(smartApp.)
+                }
+
+
+
+                //appService.registerDefaultApps(sandbox);
             }
+            sandbox.setPayerUserId(user.getId());
             Sandbox savedSandbox = save(sandbox);
             addMember(savedSandbox, user, Role.ADMIN);
-            addMember(savedSandbox, user, Role.CREATE_SANDBOX);
             for (String roleName : defaultSandboxCreatorRoles) {
                 addMemberRole(sandbox, user, Role.valueOf(roleName));
             }
             sandboxActivityLogService.sandboxCreate(sandbox, user);
+            return savedSandbox;
+        }
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public Sandbox clone(final Sandbox newSandbox, final Sandbox clonedSandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
+        UserPersona initialUserPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
+        Sandbox newSandboxExists = findBySandboxId(newSandbox.getSandboxId());
+        if (newSandboxExists != null) {
+            throw new ResourceNotFoundException("Sandbox with id " + newSandbox.getSandboxId() + " already exists.");
+        }
+        Sandbox existingSandbox = findBySandboxId(clonedSandbox.getSandboxId());
+        if (existingSandbox == null) {
+            throw new ResourceNotFoundException("Cloned sandbox does not exist.");
+        }
+        if (initialUserPersona == null) {// && callCloneSandboxApi(newSandbox, existingSandbox, bearerToken)) {
+            newSandbox.setCreatedBy(user);
+            newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+            newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
+            // Set expiration date and message for R4 sandboxes
+            if (newSandbox.getApiEndpointIndex().equals("7")) {
+                newSandbox.setExpirationMessage(expirationMessage);
+                newSandbox.setExpirationDate(formatDate());
+            }
+
+            newSandbox.setPayerUserId(clonedSandbox.getPayerUserId());
+            Sandbox savedSandbox = save(newSandbox);
+            addMember(savedSandbox, user, Role.ADMIN);
+            for (String roleName : defaultSandboxCreatorRoles) {
+                addMemberRole(savedSandbox, user, Role.valueOf(roleName));
+            }
+            sandboxActivityLogService.sandboxCreate(newSandbox, user);
+            if (newSandbox.getApps().equals(DataSet.DEFAULT)) {
+                cloneUserPersonas(savedSandbox, existingSandbox, user);
+                cloneApps(savedSandbox, existingSandbox, user);
+                cloneLaunchScenarios(savedSandbox, existingSandbox, user);
+            }
+            callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             return savedSandbox;
         }
         return null;
@@ -435,6 +534,16 @@ public class SandboxServiceImpl implements SandboxService {
         return repository.intervalCount(intervalTime);
     }
 
+    @Override
+    public List<Sandbox> findByPayerId(Integer payerId) {
+        return repository.findByPayerUserId(payerId);
+    }
+
+    @Override
+    public String getSandboxApiURL(final Sandbox sandbox) {
+        return getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId();
+    }
+
     private void removeAllMembers(final Sandbox sandbox) {
 
         List<UserRole> userRoles = sandbox.getUserRoles();
@@ -445,10 +554,6 @@ public class SandboxServiceImpl implements SandboxService {
             userService.removeSandbox(sandbox, userRole.getUser());
             userRoleService.delete(userRole);
         }
-    }
-
-    public String getSandboxApiURL(final Sandbox sandbox) {
-        return getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId();
     }
 
     private String getApiSchemaURL(final String apiEndpointIndex) {
@@ -538,6 +643,71 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
+    private boolean callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
+        String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
+
+        HttpPut putRequest = new HttpPut(url);
+        putRequest.addHeader("Content-Type", "application/json");
+        StringEntity entity;
+
+        String jsonString = "{\"newSandbox\": {" +
+                "\"teamId\": \"" + newSandbox.getSandboxId() +
+                "\",\"allowOpenAccess\": \"" + newSandbox.isAllowOpenAccess() + "\"" +
+                "}," +
+                "\"clonedSandbox\": {" +
+                "\"teamId\": \"" + clonedSandbox.getSandboxId() +
+                "\",\"allowOpenAccess\": \"" + clonedSandbox.isAllowOpenAccess() + "\"" +
+                "}" +
+                "}";
+        entity = new StringEntity(jsonString);
+        putRequest.setEntity(entity);
+        putRequest.setHeader("Authorization", "BEARER " + bearerToken);
+
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
+        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+            LOGGER.error("Error loading ssl context", e);
+            throw new RuntimeException(e);
+        }
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        builder.setSSLSocketFactory(sslConnectionFactory);
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("https", sslConnectionFactory)
+                .register("http", new PlainConnectionSocketFactory())
+                .build();
+        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
+        builder.setConnectionManager(ccm);
+
+        CloseableHttpClient httpClient = builder.build();
+
+        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
+            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
+                HttpEntity rEntity = closeableHttpResponse.getEntity();
+                String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
+                String errorMsg = String.format("There was a problem cloning the sandbox.\n" +
+                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
+                        closeableHttpResponse.getStatusLine(),
+                        responseString,
+                        url);
+                LOGGER.error(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
+
+            return true;
+        } catch (IOException e) {
+            LOGGER.error("Error posting to " + url, e);
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                httpClient.close();
+            }catch (IOException e) {
+                LOGGER.error("Error closing HttpClient");
+            }
+        }
+    }
+
     private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken ) {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
 
@@ -600,6 +770,86 @@ public class SandboxServiceImpl implements SandboxService {
             return null;
         }
     }
+
+    private void cloneUserPersonas(Sandbox newSandbox, Sandbox existingSandbox, User user) {
+        List<UserPersona> userPersonas = userPersonaService.findBySandboxId(existingSandbox.getSandboxId());
+        for (UserPersona userPersona: userPersonas) {
+            UserPersona newUserPersona = new UserPersona();
+            newUserPersona.setPassword(userPersona.getPassword());
+            newUserPersona.setSandbox(newSandbox);
+            String[] personaSplit = userPersona.getPersonaUserId().split("@");
+            newUserPersona.setPersonaUserId(personaSplit[0] + "@" + newSandbox.getSandboxId());
+            newUserPersona.setCreatedBy(user);
+            newUserPersona.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+            newUserPersona.setVisibility(userPersona.getVisibility());
+            newUserPersona.setFhirId(userPersona.getFhirId());
+            newUserPersona.setFhirName(userPersona.getFhirName());
+            newUserPersona.setPersonaName(userPersona.getPersonaName());
+            newUserPersona.setResource(userPersona.getResource());
+            newUserPersona.setResourceUrl(userPersona.getResourceUrl());
+            userPersonaService.save(newUserPersona);
+        }
+    }
+
+    private void cloneApps(Sandbox newSandbox, Sandbox existingSandbox, User user) {
+        List<SmartApp> clonedSmartApps = smartAppService.findBySandboxId(existingSandbox.getSandboxId());
+        for (SmartApp smartApp: clonedSmartApps) {
+            SmartApp newSmartApp = new SmartApp();
+            newSmartApp.setSmartAppId(smartApp.getSmartAppId());
+            newSmartApp.setBriefDescription(smartApp.getBriefDescription());
+            newSmartApp.setClientId(smartApp.getClientId());
+            newSmartApp.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+            newSmartApp.setAuthor(smartApp.getAuthor());
+            newSmartApp.setInfo(smartApp.getInfo());
+            newSmartApp.setManifest(smartApp.getManifest());
+            newSmartApp.setManifestUrl(smartApp.getManifestUrl());
+            newSmartApp.setSamplePatients(smartApp.getSamplePatients());
+            newSmartApp.setOwnerId(user.getId());
+
+            newSmartApp.setSandboxId(newSandbox.getSandboxId());
+            newSmartApp.setVisibility(Visibility2.PRIVATE);
+            newSmartApp.setCopyType(CopyType.REPLICA);
+
+            smartAppService.save(newSmartApp);
+        }
+
+    }
+
+    private void cloneLaunchScenarios(Sandbox newSandbox, Sandbox existingSandbox, User user) {
+        List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(existingSandbox.getSandboxId());
+        for (LaunchScenario launchScenario: launchScenarios) {
+            LaunchScenario newLaunchScenario = new LaunchScenario();
+            newLaunchScenario.setSandbox(newSandbox);
+            newLaunchScenario.setSmartAppId(launchScenario.getSmartAppId());
+            newLaunchScenario.setPatient(launchScenario.getPatient());
+            newLaunchScenario.setPatientName(launchScenario.getPatientName());
+            newLaunchScenario.setNeedPatientBanner(launchScenario.getNeedPatientBanner());
+            newLaunchScenario.setLocation(launchScenario.getLocation());
+            newLaunchScenario.setEncounter(launchScenario.getEncounter());
+            newLaunchScenario.setIntent(launchScenario.getIntent());
+            newLaunchScenario.setResource(launchScenario.getResource());
+            newLaunchScenario.setSmartStyleUrl(launchScenario.getSmartStyleUrl());
+            newLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
+            List<ContextParams> contextParamsList = launchScenario.getContextParams();
+            List<ContextParams> newContextParamsList = new ArrayList<>();
+            for (ContextParams contextParams: contextParamsList) {
+                ContextParams newContextParams = new ContextParams();
+                newContextParams.setName(contextParams.getName());
+                newContextParams.setValue(contextParams.getValue());
+                newContextParamsList.add(newContextParams);
+            }
+            newLaunchScenario.setContextParams(newContextParamsList);
+            newLaunchScenario.setCreatedBy(user);
+            newLaunchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+            newLaunchScenario.setDescription(launchScenario.getDescription());
+            newLaunchScenario.setTitle(launchScenario.getTitle());
+            newLaunchScenario.setLastLaunch(launchScenario.getLastLaunch());
+            newLaunchScenario.setUserPersona(launchScenario.getUserPersona());
+            newLaunchScenario.setVisibility(launchScenario.getVisibility());
+            launchScenarioService.save(newLaunchScenario);
+        }
+    }
+
 }
 
 
