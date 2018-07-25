@@ -117,7 +117,6 @@ public class SandboxController extends AbstractController {
             sandboxService.addMember(sandbox, user);
         }
         checkSandboxUserReadAuthorization(request, sandbox);
-        userAccessHistoryService.saveUserAccessInstance(sandbox, user);
         return sandbox;
     }
 
@@ -201,6 +200,9 @@ public class SandboxController extends AbstractController {
     public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException{
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         checkUserAuthorization(request, userId);
+        Sandbox sandbox = sandboxService.findBySandboxId(id);
+        User user = userService.findBySbmUserId(userId);
+        userAccessHistoryService.saveUserAccessInstance(sandbox, user);
         sandboxService.sandboxLogin(id, userId);
     }
 
