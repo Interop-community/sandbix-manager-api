@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker build -t hspconsortium/hspc-sandbox-nginx-sandman-api:latest .
+docker build -t hspconsortium/sandman-api-nginx:latest .

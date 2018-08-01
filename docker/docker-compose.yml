@@ -20,7 +20,7 @@ services:
   sandman-api:
     depends_on:
       - sandman-api-db
-    image: hspconsortium/hspc-sandbox-manager-api:latest
+    image: hspconsortium/sandbox-manager-api:latest
     deploy:
       restart_policy:
         condition: on-failure
@@ -43,12 +43,14 @@ services:
       API-DSTU2_PORT: 8075
       API_STU3_HOST: api-stu3
       API-STU3_PORT: 8076
+      API_STU3_HOST: api-r4
+      API-STU3_PORT: 8077
       JAVA_OPTS: "-Xdebug -agentlib:jdwp=transport=dt_socket,address=12005,server=y,suspend=n"
 
   nginx-sandman-api:
     depends_on:
       - sandman-api
-    image: hspconsortium/hspc-sandbox-nginx-sandman-api:latest
+    image: hspconsortium/sandman-api-nginx:latest
     ports:
       - "12000:12000"
       - "12005:12005"
