@@ -1,0 +1,4 @@
+[submodule "ops"]
+	path = ops
+	url = git@bitbucket.org:interopion/ops.git
+	branch = develop
