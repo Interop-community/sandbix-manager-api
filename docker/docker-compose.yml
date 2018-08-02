@@ -37,13 +37,13 @@ services:
       DB_PASSWORD: password
       DB_NAME: sandman
       DB_PORT: 3306
-      AUTH_HOST: auth
+      AUTH_HOST: host.docker.internal
       AUTH_PORT: 8060
-      API_DSTU2_HOST: api-dstu2
+      API_DSTU2_HOST: host.docker.internal
       API-DSTU2_PORT: 8075
-      API_STU3_HOST: api-stu3
+      API_STU3_HOST: host.docker.internal
       API-STU3_PORT: 8076
-      API_STU3_HOST: api-r4
+      API_STU3_HOST: host.docker.internal
       API-STU3_PORT: 8077
       JAVA_OPTS: "-Xdebug -agentlib:jdwp=transport=dt_socket,address=12005,server=y,suspend=n"
 

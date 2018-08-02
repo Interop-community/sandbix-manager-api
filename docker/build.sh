@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-tag="hspconsortium/hspc-sandbox-manager-api:latest"
+tag="hspconsortium/sandbox-manager-api:latest"
 if [ $# -gt 0 ]; then
   tag=$1
 fi

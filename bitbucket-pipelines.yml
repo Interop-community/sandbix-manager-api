@@ -21,6 +21,7 @@ pipelines:
             - export CREDENTIALS=${ENC_PW_TEST}
             - cd ci
             - . ci-0-set-properties.sh
+            - [[ ! ${PROJECT_VERSION} =~ ${VERSION_SNAPSHOT_REGEX} ]] && echo "not a snapshot version" && exit 1;
             - . ci-1-prepare-sources.sh
             - . ci-2-build-project.sh
           artifacts:
@@ -58,6 +59,7 @@ pipelines:
             - export CREDENTIALS=${ENC_PW_PROD}
             - cd ci
             - . ci-0-set-properties.sh
+            - [[ ! ${PROJECT_VERSION} =~ ${VERSION_RELEASE_REGEX} ]] && echo "not a release version" && exit 1;
             - export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE},aws-metrics
             - . ci-1-prepare-sources.sh
             - . ci-2-build-project.sh
