@@ -25,6 +25,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -193,6 +194,19 @@ public class SandboxController extends AbstractController {
         } else {
             throw new UnsupportedEncodingException("Can't change role of Sandbox creator.");
         }
+    }
+
+    @PutMapping(value = "/{id}/changePayer", params = {"newPayerId"})
+    @Transactional
+    public void changePayerForSandbox(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "newPayerId") String newPayerIdEncoded) throws UnsupportedEncodingException {
+        Sandbox sandbox = sandboxService.findBySandboxId(id);
+        User newPayer = userService.findBySbmUserId(getSystemUserId(request));
+        if (!newPayer.getSbmUserId().equals(newPayerIdEncoded)) {
+            throw new UserDeniedAuthorizationException("User not authorized.");
+        }
+        checkSystemUserCanModifySandboxAuthorization(request, sandbox, newPayer);
+        sandboxService.changePayerForSandbox(sandbox, newPayer);
+
     }
 
     @PostMapping(value = "/{id}/login", params = {"userId"})

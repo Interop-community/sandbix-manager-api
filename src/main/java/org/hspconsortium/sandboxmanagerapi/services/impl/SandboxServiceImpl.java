@@ -444,6 +444,13 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
+    @Transactional
+    public void changePayerForSandbox(final Sandbox sandbox, final User payer) {
+        sandbox.setPayerUserId(payer.getId());
+        save(sandbox);
+    }
+
+    @Override
     public boolean hasMemberRole(final Sandbox sandbox, final User user, final Role role) {
         List<UserRole> userRoles = sandbox.getUserRoles();
         for(UserRole userRole : userRoles) {
@@ -801,10 +808,9 @@ public class SandboxServiceImpl implements SandboxService {
             newSmartApp.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newSmartApp.setAuthor(smartApp.getAuthor());
             newSmartApp.setInfo(smartApp.getInfo());
-            newSmartApp.setManifest(smartApp.getManifest());
             newSmartApp.setManifestUrl(smartApp.getManifestUrl());
             newSmartApp.setSamplePatients(smartApp.getSamplePatients());
-            newSmartApp.setOwnerId(user.getId());
+            newSmartApp.setOwner(user);
 
             newSmartApp.setSandboxId(newSandbox.getSandboxId());
             newSmartApp.setVisibility(Visibility2.PRIVATE);

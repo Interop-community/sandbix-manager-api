@@ -1,8 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
-import org.hspconsortium.sandboxmanagerapi.model.CopyType;
-import org.hspconsortium.sandboxmanagerapi.model.SmartApp;
-import org.hspconsortium.sandboxmanagerapi.model.Visibility2;
+import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
 import org.hspconsortium.sandboxmanagerapi.services.SmartAppService;
 import org.junit.Before;
@@ -78,9 +76,10 @@ public class SmartAppControllerTest {
 
     @Test
     public void getFoundTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
-                "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
-                Visibility2.PRIVATE, "samplePatients", "info", "briefDesc", "author", CopyType.MASTER);
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "clientName", "manifestUrl",
+                "clientId", new User(), new Timestamp(System.currentTimeMillis()),
+                Visibility2.PRIVATE, "samplePatients", "info", "briefDesc", "author", CopyType.MASTER,
+                "launchUri", "logoUri", "clientUri", new Image(), "clienJSON");
 
         String json = json(smartApp);
 
@@ -91,14 +90,15 @@ public class SmartAppControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(json));
-        ;
+
     }
 
     @Test
     public void saveTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
-                "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
-                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER);
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "clientName", "manifestUrl",
+                 "clientId", new User(), new Timestamp(System.currentTimeMillis()),
+                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER,
+                "launchUri", "logoUri", "clientUri", new Image(), "clienJSON");
 
         String json = json(smartApp);
 
@@ -116,9 +116,10 @@ public class SmartAppControllerTest {
 
     @Test
     public void deleteTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "manifestUrl",
-                "manifest", "clientId", 10, new Timestamp(System.currentTimeMillis()),
-                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER);
+        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "clientName", "manifestUrl",
+                "clientId", new User(), new Timestamp(System.currentTimeMillis()),
+                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER,
+                "launchUri", "logoUri", "clientUri", new Image(), "clienJSON");
 
         String json = json(smartApp);
 

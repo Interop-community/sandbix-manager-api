@@ -45,13 +45,14 @@ public class LaunchScenarioController extends AbstractController  {
     private final UserPersonaService userPersonaService;
     private final SandboxService sandboxService;
     private final UserLaunchService userLaunchService;
+    private final SmartAppService smartAppService;
 
     @Inject
     public LaunchScenarioController(final LaunchScenarioService launchScenarioService,
                                     final AppService appService, final UserService userService,
                                     final UserPersonaService userPersonaService,
                                     final SandboxService sandboxService, final OAuthService oAuthService,
-                                    final UserLaunchService userLaunchService) {
+                                    final UserLaunchService userLaunchService, final SmartAppService smartAppService) {
         super(oAuthService);
         this.launchScenarioService = launchScenarioService;
         this.userService = userService;
@@ -59,6 +60,7 @@ public class LaunchScenarioController extends AbstractController  {
         this.userPersonaService = userPersonaService;
         this.sandboxService = sandboxService;
         this.userLaunchService = userLaunchService;
+        this.smartAppService = smartAppService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -115,12 +117,20 @@ public class LaunchScenarioController extends AbstractController  {
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"appId"})
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
-                   @RequestParam(value = "appId") int appId) {
+                                                                           @RequestParam(value = "appId") int appId) {
 
         App app = appService.getById(appId);
         checkSandboxUserReadAuthorization(request, app.getSandbox());
 
         return launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+    }
+
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"smartAppId", "sandboxId"})
+    public @ResponseBody List<LaunchScenario> getLaunchScenariosForSmartApp(HttpServletRequest request,
+                                                                @RequestParam(value = "smartAppId") String smartAppId, @RequestParam(value = "sandboxId") String sandboxId) {
+        checkSandboxUserReadAuthorization(request, sandboxService.findBySandboxId(sandboxId));
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        return launchScenarioService.findBySmartAppIdAndSandboxId(smartAppId, sandbox.getId());
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userPersonaId"})

@@ -1,5 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,13 +22,17 @@ public class SmartApp {
     @Id
     private String sandboxId;
 
-    private String manifestUrl;
+    private String clientName;
 
-    private String manifest;
+    private String manifestUrl;
 
     private String clientId;
 
-    private Integer ownerId;
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name="owner_id")
+    @JsonIgnoreProperties(ignoreUnknown = true, allowSetters = true,
+            value={"sandboxes", "termsOfUseAcceptances", "systemRoles"})
+    private User owner;
 
     private Timestamp createdTimestamp;
 
@@ -43,5 +49,19 @@ public class SmartApp {
 
     @Enumerated(EnumType.STRING)
     private CopyType copyType;
+
+    private String launchUrl;
+
+    private String logoUri;
+
+    private String clientUri;
+
+    @OneToOne(cascade={CascadeType.ALL})
+    @JoinColumn(name="logo_id")
+    @JsonIgnore
+    private Image logo;
+
+    @Transient
+    private String clientJSON;
 
 }

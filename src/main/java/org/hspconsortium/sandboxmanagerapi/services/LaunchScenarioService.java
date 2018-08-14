@@ -29,6 +29,8 @@ public interface LaunchScenarioService {
 
     List<LaunchScenario> findByAppIdAndSandboxId(final int appId, final String sandboxId);
 
+    List<LaunchScenario> findBySmartAppIdAndSandboxId(final String smartappId, final Integer sandboxId);
+
     List<LaunchScenario> findByUserPersonaIdAndSandboxId(final int userPersonaId, final String sandboxId);
 
     List<LaunchScenario> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility);

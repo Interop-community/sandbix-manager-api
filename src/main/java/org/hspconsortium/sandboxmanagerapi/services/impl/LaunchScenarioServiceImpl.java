@@ -20,6 +20,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     private AppService appService;
     private UserPersonaService userPersonaService;
     private UserLaunchService userLaunchService;
+    private SmartAppService smartAppService;
 
     @Inject
     public LaunchScenarioServiceImpl(LaunchScenarioRepository launchScenarioRepository) {
@@ -44,6 +45,11 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Inject
     public void setUserLaunchService(UserLaunchService userLaunchService) {
         this.userLaunchService = userLaunchService;
+    }
+
+    @Inject
+    public void setSmartAppService(SmartAppService smartAppService) {
+        this.smartAppService = smartAppService;
     }
 
     @Override
@@ -99,15 +105,16 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             userPersona = userPersonaService.save(launchScenario.getUserPersona());
         }
         launchScenario.setUserPersona(userPersona);
-
-        if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
-            // Create an anonymous App for a custom launch
-            launchScenario.getApp().setSandbox(sandbox);
-            App app = appService.save(launchScenario.getApp());
-            launchScenario.setApp(app);
-        } else {
-            App app = appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getAuthClient().getClientId(), sandbox.getSandboxId());
-            launchScenario.setApp(app);
+        if (launchScenario.getApp().getAuthClient() != null) {
+            if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
+                // Create an anonymous App for a custom launch
+                launchScenario.getApp().setSandbox(sandbox);
+                App app = appService.save(launchScenario.getApp());
+                launchScenario.setApp(app);
+            } else {
+                App app = appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getAuthClient().getClientId(), sandbox.getSandboxId());
+                launchScenario.setApp(app);
+            }
         }
 
         return save(launchScenario);
@@ -120,7 +127,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         if (updateLaunchScenario != null) {
             updateLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
             updateLaunchScenario.setDescription(launchScenario.getDescription());
-            updateLaunchScenario.setNeedPatientBanner(launchScenario.getNeedPatientBanner());
+            updateLaunchScenario.setTitle(launchScenario.getTitle());
             updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
             if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
                 // Create an anonymous App for a custom launch
@@ -171,7 +178,17 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
     @Override
     public List<LaunchScenario> findBySandboxId(final String sandboxId) {
-        return  repository.findBySandboxId(sandboxId);
+        List<LaunchScenario> launchScenarios = repository.findBySandboxId(sandboxId);
+        List<LaunchScenario> newLaunchScenarios = new ArrayList<>();
+        for (LaunchScenario launchScenario: launchScenarios) {
+            if (launchScenario.getSmartAppId() != null) {
+                launchScenario.setSmartApp(smartAppService.getById(launchScenario.getSmartAppId(), launchScenario.getSandbox().getSandboxId()));
+                newLaunchScenarios.add(launchScenario);
+            } else {
+                newLaunchScenarios.add(launchScenario);
+            }
+        }
+        return  launchScenarios;
     }
 
     @Override
@@ -186,12 +203,27 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
     @Override
     public List<LaunchScenario> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
-        return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+        List<LaunchScenario> launchScenarios = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+        List<LaunchScenario> newLaunchScenarios = new ArrayList<>();
+        for (LaunchScenario launchScenario: launchScenarios) {
+            if (launchScenario.getSmartAppId() != null) {
+                launchScenario.setSmartApp(smartAppService.getById(launchScenario.getSmartAppId(), launchScenario.getSandbox().getSandboxId()));
+                newLaunchScenarios.add(launchScenario);
+            } else {
+                newLaunchScenarios.add(launchScenario);
+            }
+        }
+        return newLaunchScenarios;
     }
 
     @Override
     public List<LaunchScenario> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy) {
         return repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy);
+    }
+
+    @Override
+    public  List<LaunchScenario> findBySmartAppIdAndSandboxId(final String smartappId, final Integer sandboxId) {
+        return repository.findBySmartAppIdAndSandboxId(smartappId, sandboxId);
     }
 
     @Override

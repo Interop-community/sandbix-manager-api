@@ -32,6 +32,8 @@ public interface SandboxService {
 
     void removeMemberRole(final Sandbox sandbox, final User user, final Role role);
 
+    void changePayerForSandbox(final Sandbox sandbox, final User payer);
+
     boolean hasMemberRole(final Sandbox sandbox, final User user, final Role role);
 
     void addSandboxImport(final Sandbox sandbox, final SandboxImport sandboxImport);

@@ -1,7 +1,9 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
 import lombok.NonNull;
+import org.hspconsortium.sandboxmanagerapi.model.Image;
 import org.hspconsortium.sandboxmanagerapi.model.SmartApp;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -20,5 +22,7 @@ public interface SmartAppService {
     List<SmartApp> findBySandboxId(final String sandboxId);
 
     List<SmartApp> findPublic();
+
+    SmartApp updateAppImage(final SmartApp smartApp, final Image image);
 
 }

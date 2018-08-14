@@ -14,6 +14,9 @@ public interface LaunchScenarioRepository extends CrudRepository<LaunchScenario,
     List<LaunchScenario> findByAppIdAndSandboxId(@Param("appId") int appId,
                                                         @Param("sandboxId") String sandboxId);
 
+    List<LaunchScenario> findBySmartAppIdAndSandboxId(@Param("smartappId") String appId,
+                                                 @Param("sandboxId") Integer sandboxId);
+
     List<LaunchScenario> findByUserPersonaIdAndSandboxId(@Param("userPersonaId") int userPersonaId,
                                                                 @Param("sandboxId") String sandboxId);
 
