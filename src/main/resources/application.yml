@@ -79,7 +79,7 @@ hspc:
     # When a user creates a brand new sandbox, this is the default visibility of the new sandbox
     #    defaultSandboxVisibility: PUBLIC
     defaultSandboxVisibility: PRIVATE
-    templateSandboxIds: TempEmpty, TempDstu2SMART, TempStu3SMART, TempR4SMART, TempStu3Synthea
+    templateSandboxIds: MasterEmpty, MasterDstu2SMART, MasterStu3SMART, MasterR4SMART, MasterStu3Synthea
     authorization:
       url: http://${AUTH_HOST:localhost}:${AUTH_PORT:8060}
       tokenEndpoint: ${hspc.platform.authorization.url}/token

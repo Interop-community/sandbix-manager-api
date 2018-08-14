@@ -129,50 +129,50 @@ public class SmartAppRepositoryIntegTest {
                 .andExpect(content().json(json));
     }
 
-    @Test
-    @Rollback
-    public void saveTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
-                "manifest", "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
-                "info", "briefDesc", "author");
-
-        String json = json(smartApp);
-
-        // save it
-        mvc
-                .perform(
-                        put("/smartapp/" + smartApp.getId())
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
-
-        // verify created
-        SmartApp found = smartAppService.getById(smartApp.getId(), "testuser");
-        Assert.assertNotNull(found);
-    }
-
-    @Test
-    @Rollback
-    public void deleteTest() throws Exception {
-        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
-                "manifest", "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
-                "info", "briefDesc", "author");
-
-        String json = json(smartApp);
-
-        // save it
-        smartAppService.save(smartApp, "testuser");
-
-        mvc
-                .perform(delete("/smartapp/" + smartApp.getId()))
-                .andExpect(status().isOk());
-
-        // verify deleted
-        SmartApp found = smartAppService.getById(smartApp.getId(), "testuser");
-        Assert.assertNull(found);
-    }
+//    @Test
+//    @Rollback
+//    public void saveTest() throws Exception {
+//        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
+//                "manifest", "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
+//                "info", "briefDesc", "author");
+//
+//        String json = json(smartApp);
+//
+//        // save it
+//        mvc
+//                .perform(
+//                        put("/smartapp/" + smartApp.getId())
+//                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                                .content(json))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().json(json));
+//
+//        // verify created
+//        SmartApp found = smartAppService.getById(smartApp.getId(), "testuser");
+//        Assert.assertNotNull(found);
+//    }
+//
+//    @Test
+//    @Rollback
+//    public void deleteTest() throws Exception {
+//        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), testSandbox.getSandboxId(), "manifestUrl",
+//                "manifest", "clientId", testUser.getId(), new Timestamp(System.currentTimeMillis()), Visibility2.PRIVATE, "samplePatients",
+//                "info", "briefDesc", "author");
+//
+//        String json = json(smartApp);
+//
+//        // save it
+//        smartAppService.save(smartApp, "testuser");
+//
+//        mvc
+//                .perform(delete("/smartapp/" + smartApp.getId()))
+//                .andExpect(status().isOk());
+//
+//        // verify deleted
+//        SmartApp found = smartAppService.getById(smartApp.getId(), "testuser");
+//        Assert.assertNull(found);
+//    }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {

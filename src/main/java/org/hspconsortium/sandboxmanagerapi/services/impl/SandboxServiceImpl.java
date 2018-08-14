@@ -290,8 +290,9 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public Sandbox clone(final Sandbox newSandbox, final Sandbox clonedSandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
+    public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
         UserPersona initialUserPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
+        Sandbox clonedSandbox = findBySandboxId(clonedSandboxId);
         Sandbox newSandboxExists = findBySandboxId(newSandbox.getSandboxId());
         if (newSandboxExists != null) {
             throw new ResourceNotFoundException("Sandbox with id " + newSandbox.getSandboxId() + " already exists.");

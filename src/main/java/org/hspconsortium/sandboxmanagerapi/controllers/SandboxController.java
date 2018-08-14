@@ -89,7 +89,7 @@ public class SandboxController extends AbstractController {
         LOGGER.info("Cloning sandbox " + clonedSandbox.getName() + " to sandbox: " + newSandbox.getName());
         User user = userService.findBySbmUserId(clonedSandbox.getCreatedBy().getSbmUserId());
         checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
-        return sandboxService.clone(newSandbox, clonedSandbox, user, oAuthService.getBearerToken(request));
+        return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, oAuthService.getBearerToken(request));
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
