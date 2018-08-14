@@ -87,14 +87,18 @@ public class SmartAppServiceImpl implements SmartAppService {
 
         String client = oAuthClientService.putOAuthClientWithClientId(smartApp.getClientId(), smartApp.getClientJSON());
         smartApp.setClientJSON(client);
-        String logoUri = smartApp.getLogoUri() + "?sandboxId=" + smartApp.getSandboxId();
-        smartApp.setLogoUri(logoUri);
+        existingSmartApp.setLaunchUrl(smartApp.getLaunchUrl());
+        existingSmartApp.setLogoUri(smartApp.getLogoUri());
+        existingSmartApp.setSamplePatients(smartApp.getSamplePatients());
+        existingSmartApp.setBriefDescription(smartApp.getBriefDescription());
+        existingSmartApp.setAuthor(smartApp.getAuthor());
+        existingSmartApp.setClientJSON(smartApp.getClientJSON());
 
-        if (smartApp.getCreatedTimestamp() == null) {
-            smartApp.setCreatedTimestamp(new Timestamp(System.currentTimeMillis()));
+        if (existingSmartApp.getCreatedTimestamp() == null) {
+            existingSmartApp.setCreatedTimestamp(new Timestamp(System.currentTimeMillis()));
         }
 
-        return smartAppRepository.save(smartApp);
+        return smartAppRepository.save(existingSmartApp);
     }
 
     @Override
@@ -195,7 +199,7 @@ public class SmartAppServiceImpl implements SmartAppService {
             imageService.delete(smartApp.getLogo().getId());
         }
         smartApp.setLogo(image);
-        return save(smartApp);
+        return smartAppRepository.save(smartApp);
     }
 //    private String convertManifestToClientJSON(SmartApp smartApp) {
 //        JSONObject manifest = new JSONObject(smartApp.getManifest());

@@ -155,8 +155,7 @@ public class SmartAppController extends AbstractController {
 
         SmartApp smartApp = smartAppService.getById(smartAppId, sandboxId);
         checkSandboxUserModifySmartAppAuthorization(request, sandboxService.findBySandboxId(sandboxId), smartApp);
-        String logoUri = request.getRequestURL().toString() + "?sandboxId=" + sandboxId;
-        smartApp.setLogoUri(logoUri);
+        smartApp.setLogoUri(request.getRequestURL().toString() + "?sandboxId=" + smartApp.getSandboxId());
         smartAppService.save(smartApp);
         try {
             Image image = new Image();
