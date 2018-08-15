@@ -121,13 +121,13 @@ public class AppServiceImpl implements AppService {
         }
 
         // Delete all associated Launch Scenarios
-        List<LaunchScenario> launchScenarios = launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
-        for (LaunchScenario launchScenario: launchScenarios) {
-            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
-                userLaunchService.delete(userLaunch.getId());
-            }
-            launchScenarioService.delete(launchScenario.getId());
-        }
+//        List<LaunchScenario> launchScenarios = launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+//        for (LaunchScenario launchScenario: launchScenarios) {
+//            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
+//                userLaunchService.delete(userLaunch.getId());
+//            }
+//            launchScenarioService.delete(launchScenario.getId());
+//        }
 
         if (app.getLogo() != null) {
             int logoId = app.getLogo().getId();

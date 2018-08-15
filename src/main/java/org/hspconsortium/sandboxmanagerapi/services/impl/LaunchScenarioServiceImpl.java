@@ -67,13 +67,16 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     @Transactional
     public void delete(final LaunchScenario launchScenario) {
-
-        if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
-            // This is an anonymous App created for a custom launch
+        if (launchScenario.getApp() != null) {
             App app = launchScenario.getApp();
             launchScenario.setApp(null);
             save(launchScenario);
-            appService.delete(app);
+            if (launchScenario.getApp().getAuthClient() != null) {
+                if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
+                    // This is an anonymous App created for a custom launch
+                    appService.delete(app);
+                }
+            }
         }
 
         List<ContextParams> contextParamsList = launchScenario.getContextParams();
@@ -105,7 +108,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             userPersona = userPersonaService.save(launchScenario.getUserPersona());
         }
         launchScenario.setUserPersona(userPersona);
-        if (launchScenario.getApp().getAuthClient() != null) {
+        if (launchScenario.getApp().getAuthClient() != null && launchScenario.getSmartAppId().equals("")) {
             if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
                 // Create an anonymous App for a custom launch
                 launchScenario.getApp().setSandbox(sandbox);

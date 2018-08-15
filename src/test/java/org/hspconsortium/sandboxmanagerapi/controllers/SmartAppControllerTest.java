@@ -83,7 +83,7 @@ public class SmartAppControllerTest {
         SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "clientName", "manifestUrl",
                 "clientId", new User(), new Timestamp(System.currentTimeMillis()),
                 Visibility2.PRIVATE, "samplePatients", "info", "briefDesc", "author", CopyType.MASTER,
-                "launchUri", "logoUri", "clientUri", new Image(), "clienJSON");
+                "launchUri", "logoUri", "clientUri", "fhirVersions", new Image(), "clienJSON");
 
         String json = json(smartApp);
 
@@ -102,7 +102,7 @@ public class SmartAppControllerTest {
 //        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "clientName", "manifestUrl",
 //                 "clientId", new User(), new Timestamp(System.currentTimeMillis()),
 //                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER,
-//                "launchUri", "logoUri", "clientUri", new Image(), "clienJSON");
+//                "launchUri", "logoUri", "clientUri", "fhirVersions", new Image(), "clienJSON");
 //
 //        String json = json(smartApp);
 //
@@ -123,7 +123,7 @@ public class SmartAppControllerTest {
 //        SmartApp smartApp = SmartApp.of(UUID.randomUUID().toString(), "sandboxId", "clientName", "manifestUrl",
 //                "clientId", new User(), new Timestamp(System.currentTimeMillis()),
 //                Visibility2.PRIVATE, "samplePatients","info", "briefDesc", "author", CopyType.MASTER,
-//                "launchUri", "logoUri", "clientUri", new Image(), "clienJSON");
+//                "launchUri", "logoUri", "clientUri", "fhirVersions", new Image(), "clienJSON");
 //
 //        String json = json(smartApp);
 //

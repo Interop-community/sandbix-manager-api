@@ -40,7 +40,6 @@ public class Sandbox extends AbstractItem {
     private boolean allowOpenAccess;
     private List<UserRole> userRoles = new ArrayList<>();
     private List<SandboxImport> imports = new ArrayList<>();
-    private List<SmartApp> smartApps = new ArrayList<>();
     private String expirationMessage;
     private Date expirationDate;
     private Integer payerUserId;

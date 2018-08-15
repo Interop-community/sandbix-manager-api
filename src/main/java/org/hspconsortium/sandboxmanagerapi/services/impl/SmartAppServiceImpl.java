@@ -73,15 +73,17 @@ public class SmartAppServiceImpl implements SmartAppService {
             if (!ruleService.checkIfUserCanCreateApp(sandbox.getPayerUserId(), findBySandboxId(sandbox.getSandboxId()).size())) {
                 return null;
             }
-            String entity = oAuthClientService.postOAuthClient(smartApp.getClientJSON());
-            JSONObject entityObject = new JSONObject(entity);
-            smartApp.setClientId(entityObject.get("clientId").toString());
-            smartApp.setOwner(userService.findById(sandboxService.findBySandboxId(smartApp.getSandboxId()).getPayerUserId()));
-            if (smartApp.getCreatedTimestamp() == null) {
-                smartApp.setCreatedTimestamp(new Timestamp(System.currentTimeMillis()));
+            if (!smartApp.getCopyType().equals(CopyType.REPLICA)) {
+                String entity = oAuthClientService.postOAuthClient(smartApp.getClientJSON());
+                JSONObject entityObject = new JSONObject(entity);
+                smartApp.setClientId(entityObject.get("clientId").toString());
+                smartApp.setOwner(userService.findById(sandboxService.findBySandboxId(smartApp.getSandboxId()).getPayerUserId()));
+                if (smartApp.getCreatedTimestamp() == null) {
+                    smartApp.setCreatedTimestamp(new Timestamp(System.currentTimeMillis()));
+                }
+                smartApp.setCopyType(CopyType.MASTER);
+                smartApp.setVisibility(Visibility2.PRIVATE);
             }
-            smartApp.setCopyType(CopyType.MASTER);
-            smartApp.setVisibility(Visibility2.PRIVATE);
             return smartAppRepository.save(smartApp);
         }
 

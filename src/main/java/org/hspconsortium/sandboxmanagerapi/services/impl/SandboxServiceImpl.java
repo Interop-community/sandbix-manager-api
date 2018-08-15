@@ -812,6 +812,12 @@ public class SandboxServiceImpl implements SandboxService {
             newSmartApp.setManifestUrl(smartApp.getManifestUrl());
             newSmartApp.setSamplePatients(smartApp.getSamplePatients());
             newSmartApp.setOwner(user);
+            newSmartApp.setLogoUri(smartApp.getLogoUri());
+            newSmartApp.setLogo(smartApp.getLogo());
+            newSmartApp.setLaunchUrl(smartApp.getLaunchUrl());
+            newSmartApp.setClientName(smartApp.getClientName());
+            newSmartApp.setClientUri(smartApp.getClientUri());
+            newSmartApp.setFhirVersions(smartApp.getFhirVersions());
 
             newSmartApp.setSandboxId(newSandbox.getSandboxId());
             newSmartApp.setVisibility(Visibility2.PRIVATE);
@@ -837,6 +843,7 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setResource(launchScenario.getResource());
             newLaunchScenario.setSmartStyleUrl(launchScenario.getSmartStyleUrl());
             newLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
+            newLaunchScenario.setApp(launchScenario.getApp());
             List<ContextParams> contextParamsList = launchScenario.getContextParams();
             List<ContextParams> newContextParamsList = new ArrayList<>();
             for (ContextParams contextParams: contextParamsList) {

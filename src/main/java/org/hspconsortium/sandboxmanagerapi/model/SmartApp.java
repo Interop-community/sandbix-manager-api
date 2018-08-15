@@ -56,6 +56,8 @@ public class SmartApp {
 
     private String clientUri;
 
+    private String fhirVersions;
+
     @OneToOne(cascade={CascadeType.ALL})
     @JoinColumn(name="logo_id")
     @JsonIgnore

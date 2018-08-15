@@ -33,6 +33,7 @@ DECLARE n INT DEFAULT 0;
 DECLARE i INT DEFAULT 0;
 DECLARE created_timestamp_2 DATETIME(3);
 DECLARE created_by INT(11);
+DECLARE uuid VARCHAR(36);
 SELECT COUNT(*) INTO n FROM app;
 SET i=0;
 WHILE i<n DO
@@ -50,9 +51,11 @@ WHILE i<n DO
 			SET created_by = (SELECT created_by_id FROM sandbox WHERE id=(SELECT sandbox_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1)));
     END IF;
 
+    SET uuid = UUID();
+
     INSERT INTO smart_app (smart_app_id, sandbox_id, manifest_url, client_id, owner_id, created_timestamp, visibility, sample_patients, info, brief_description, author, copy_type,
                                   launch_url, logo_uri, client_name, fhir_versions, logo_id) VALUES (
-      UUID(),
+      uuid,
       (SELECT sandbox_id FROM sandbox WHERE id=(SELECT sandbox_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))),
       (SELECT app_manifest_uri FROM app WHERE id=(SELECT id FROM app LIMIT i,1)),
       (SELECT client_id FROM auth_client WHERE id=(SELECT auth_client_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))),
@@ -70,6 +73,7 @@ WHILE i<n DO
           (SELECT fhir_versions FROM app WHERE id=(SELECT id FROM app LIMIT i,1)),
           (SELECT logo_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))
     );
+    UPDATE launch_scenario SET smart_app_id=uuid WHERE app_id=(SELECT id FROM app LIMIT i,1);
   END IF;
   SET i = i + 1;
 END WHILE;
