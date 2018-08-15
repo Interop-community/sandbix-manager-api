@@ -24,6 +24,8 @@ UPDATE smart_app SET sandbox_id='MasterEmpty' WHERE sandbox_id='TempEmpty';
 UPDATE smart_app SET sandbox_id='MasterStu3Synthea' WHERE sandbox_id='TempStu3Synthea';
 UPDATE smart_app SET sandbox_id='MasterR4SMART' WHERE sandbox_id='TempR4SMART';
 
+SET GLOBAL log_bin_trust_function_creators = 1;
+
 DROP FUNCTION IF EXISTS FindCreatedById;
 DELIMITER //
 
@@ -179,7 +181,7 @@ BEGIN
 
       PREPARE Stmt FROM @SQLStmt;
       IF current_sandbox_id != 'hspc5' AND  current_sandbox_id != 'hspc6' AND current_sandbox_id != 'hspc7'
-        AND current_sandbox_id != 'hspc' AND current_sandbox_id != 'hspc3' AND current_sandbox_id != 'hspc4'
+        AND current_sandbox_id != 'hspc' AND current_sandbox_id != 'hspc3' AND current_sandbox_id != 'hspc4' AND current_sandbox_id != 'hspc1'
         AND current_sandbox_id != 'MasterDstu2SMART' AND current_sandbox_id != 'MasterEmpty' AND current_sandbox_id != 'MasterR4SMART'
         AND current_sandbox_id != 'MasterStu3SMART' AND current_sandbox_id != 'MasterStu3Synthea' THEN
 			  EXECUTE Stmt;
@@ -190,3 +192,4 @@ END;
 DELIMITER ;
 CALL AddDefaultAppsToAllSandboxes();
 
+SET GLOBAL log_bin_trust_function_creators = 0;
