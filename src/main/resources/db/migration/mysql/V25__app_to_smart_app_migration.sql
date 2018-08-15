@@ -24,59 +24,40 @@ UPDATE smart_app SET sandbox_id='MasterEmpty' WHERE sandbox_id='TempEmpty';
 UPDATE smart_app SET sandbox_id='MasterStu3Synthea' WHERE sandbox_id='TempStu3Synthea';
 UPDATE smart_app SET sandbox_id='MasterR4SMART' WHERE sandbox_id='TempR4SMART';
 
-SET GLOBAL log_bin_trust_function_creators = 1;
 
-DROP FUNCTION IF EXISTS FindCreatedById;
-DELIMITER //
-
-CREATE FUNCTION FindCreatedById(i INT)
-RETURNS INT(11)
-BEGIN
-	DECLARE created_by INT(11);
-		IF (SELECT created_by_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1)) IS NOT NULL THEN
-			SET created_by = (SELECT created_by_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1));
-        ELSE
-			SET created_by = (SELECT created_by_id FROM sandbox WHERE id=(SELECT sandbox_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1)));
-        END IF;
-        RETURN created_by;
-END; //
-DELIMITER ;
-
-DROP FUNCTION IF EXISTS FindCreatedTimeStamp;
-DELIMITER -/
-
-CREATE FUNCTION FindCreatedTimeStamp(i INT)
-RETURNS DATETIME(3)
-BEGIN
-	DECLARE created_timestamp_2 DATETIME(3);
-		IF (SELECT created_timestamp FROM app WHERE id=(SELECT id FROM app LIMIT i,1)) IS NOT NULL THEN
-			SET created_timestamp_2 = (SELECT created_timestamp FROM app WHERE id=(SELECT id FROM app LIMIT i,1));
-        ELSE
-			SET created_timestamp_2 = (SELECT created_timestamp FROM sandbox WHERE id=(SELECT sandbox_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1)));
-    END IF;
-    RETURN created_timestamp_2;
-END;
--/
-DELIMITER ;
-
-DROP PROCEDURE IF EXISTS ROWPERROW;
+DROP PROCEDURE IF EXISTS app_to_smart_app;
 DELIMITER ;;
-CREATE PROCEDURE ROWPERROW()
+CREATE PROCEDURE app_to_smart_app()
 BEGIN
 DECLARE n INT DEFAULT 0;
 DECLARE i INT DEFAULT 0;
+DECLARE created_timestamp_2 DATETIME(3);
+DECLARE created_by INT(11);
 SELECT COUNT(*) INTO n FROM app;
 SET i=0;
 WHILE i<n DO
   IF (SELECT auth_database_id FROM auth_client WHERE id=(SELECT auth_client_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))) IS NOT NULL THEN
+
+		IF (SELECT created_timestamp FROM app WHERE id=(SELECT id FROM app LIMIT i,1)) IS NOT NULL THEN
+			SET created_timestamp_2 = (SELECT created_timestamp FROM app WHERE id=(SELECT id FROM app LIMIT i,1));
+    ELSE
+			SET created_timestamp_2 = (SELECT created_timestamp FROM sandbox WHERE id=(SELECT sandbox_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1)));
+    END IF;
+
+		IF (SELECT created_by_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1)) IS NOT NULL THEN
+			SET created_by = (SELECT created_by_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1));
+    ELSE
+			SET created_by = (SELECT created_by_id FROM sandbox WHERE id=(SELECT sandbox_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1)));
+    END IF;
+
     INSERT INTO smart_app (smart_app_id, sandbox_id, manifest_url, client_id, owner_id, created_timestamp, visibility, sample_patients, info, brief_description, author, copy_type,
                                   launch_url, logo_uri, client_name, fhir_versions, logo_id) VALUES (
       UUID(),
       (SELECT sandbox_id FROM sandbox WHERE id=(SELECT sandbox_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))),
       (SELECT app_manifest_uri FROM app WHERE id=(SELECT id FROM app LIMIT i,1)),
       (SELECT client_id FROM auth_client WHERE id=(SELECT auth_client_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))),
-      FindCreatedById(i),
-      FindCreatedTimeStamp(i),
+      created_by,
+      created_timestamp_2,
       "PRIVATE",
       (SELECT sample_patients FROM app WHERE id=(SELECT id FROM app LIMIT i,1)),
       null,
@@ -88,7 +69,6 @@ WHILE i<n DO
       (SELECT client_name FROM auth_client WHERE id=(SELECT auth_client_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))),
           (SELECT fhir_versions FROM app WHERE id=(SELECT id FROM app LIMIT i,1)),
           (SELECT logo_id FROM app WHERE id=(SELECT id FROM app LIMIT i,1))
-
     );
   END IF;
   SET i = i + 1;
@@ -96,7 +76,7 @@ END WHILE;
 End;
 ;;
 DELIMITER ;
-CALL ROWPERROW();
+CALL app_to_smart_app();
 
 DROP PROCEDURE IF EXISTS AddDefaultAppsToAllSandboxes;
 DELIMITER ;;
@@ -191,5 +171,3 @@ END;
 ;;
 DELIMITER ;
 CALL AddDefaultAppsToAllSandboxes();
-
-SET GLOBAL log_bin_trust_function_creators = 0;
