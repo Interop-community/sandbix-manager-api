@@ -21,11 +21,12 @@ spring:
     initialSize: 1
     maxActive: 5
   jpa:
+    show-sql: false
     hibernate:
       # Do not commit with a different value (update, create, etc)
       # Instead, use flywaydb scripts at /src/main/resources/db/mysql/migrate
       ddl-auto: validate
-      show-sql: false
+
       dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
   mail:

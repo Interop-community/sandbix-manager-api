@@ -77,7 +77,8 @@ public class AppRegistrationController extends AbstractController {
     public @ResponseBody List<App> getApps(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         String sbmUserId = checkSandboxUserReadAuthorization(request, sandbox);
-        return appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+//        return appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        return appService.findBySandboxId(sandboxId);
     }
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)

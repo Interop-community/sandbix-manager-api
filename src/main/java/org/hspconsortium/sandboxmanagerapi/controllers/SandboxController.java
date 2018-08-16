@@ -121,8 +121,6 @@ public class SandboxController extends AbstractController {
         return sandbox;
     }
 
-//    public @ResponseBody List<SmartApp>
-
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {

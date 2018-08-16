@@ -40,7 +40,6 @@ public class AppServiceImpl implements AppService {
     private LaunchScenarioService launchScenarioService;
     private UserLaunchService userLaunchService;
     private SandboxService sandboxService;
-    private SmartAppService smartAppService;
 
     @Inject
     public AppServiceImpl(final AppRepository repository) {
@@ -108,12 +107,12 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public void delete(final App app) {
 
-        Integer authDatabaseId = app.getAuthClient().getAuthDatabaseId();
-        if (authDatabaseId != null) {
+        //Integer authDatabaseId = app.getAuthClient().getAuthDatabaseId();
+        if (app.getCopyType() == CopyType.MASTER) {
             try {
                 // TODO: don't delete in auth server if default app
 //                JSONArray apps = getDefaultAppList();
-                oAuthClientService.deleteOAuthClient(authDatabaseId);
+                oAuthClientService.deleteOAuthClientWithClientId(app.getClientId());
             } catch (Exception ex) {
                 // Ignoring this error. Failure to delete client from Auth server
                 // shouldn't fail a sandbox delete.
@@ -121,13 +120,13 @@ public class AppServiceImpl implements AppService {
         }
 
         // Delete all associated Launch Scenarios
-//        List<LaunchScenario> launchScenarios = launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
-//        for (LaunchScenario launchScenario: launchScenarios) {
-//            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
-//                userLaunchService.delete(userLaunch.getId());
-//            }
-//            launchScenarioService.delete(launchScenario.getId());
-//        }
+        List<LaunchScenario> launchScenarios = launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+        for (LaunchScenario launchScenario: launchScenarios) {
+            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
+                userLaunchService.delete(userLaunch.getId());
+            }
+            launchScenarioService.delete(launchScenario.getId());
+        }
 
         if (app.getLogo() != null) {
             int logoId = app.getLogo().getId();
@@ -135,10 +134,12 @@ public class AppServiceImpl implements AppService {
             imageService.delete(logoId);
         }
 
-        int authClientId = app.getAuthClient().getId();
-        app.setAuthClient(null);
-        save(app);
-        authClientService.delete(authClientId);
+        if (app.getAuthClient() != null) {
+            int authClientId = app.getAuthClient().getId();
+            app.setAuthClient(null);
+            save(app);
+            authClientService.delete(authClientId);
+        }
         delete(app.getId());
     }
 
@@ -156,11 +157,8 @@ public class AppServiceImpl implements AppService {
         String entity = oAuthClientService.postOAuthClient(app.getClientJSON());
         try {
             JSONObject jsonObject = new JSONObject(entity);
-            app.getAuthClient().setAuthDatabaseId((Integer)jsonObject.get("id"));
-            app.getAuthClient().setClientId((String)jsonObject.get("clientId"));
-            app.getAuthClient().setClientName((String)jsonObject.get("clientName"));
-            AuthClient authClient = authClientService.save(app.getAuthClient());
-            app.setAuthClient(authClient);
+            app.setClientId((String)jsonObject.get("clientId"));
+            app.setClientName((String)jsonObject.get("clientName"));
             return save(app);
         } catch (JSONException e) {
             LOGGER.error(JSON_ERROR_READING_ENTITY, entity, e);
@@ -173,13 +171,12 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public App update(final App app) {
         App existingApp = getById(app.getId());
-        String entity = oAuthClientService.putOAuthClient(existingApp.getAuthClient().getAuthDatabaseId(), app.getClientJSON());
+        String entity = oAuthClientService.putOAuthClientWithClientId(existingApp.getClientId(), app.getClientJSON());
 
         try {
             JSONObject jsonObject = new JSONObject(entity);
-            existingApp.getAuthClient().setClientName((String)jsonObject.get("clientName"));
-            existingApp.getAuthClient().setLogoUri(app.getLogoUri());
-            authClientService.save(existingApp.getAuthClient());
+            existingApp.setClientName((String)jsonObject.get("clientName"));
+            existingApp.setLogoUri(app.getLogoUri());
         } catch (JSONException e) {
             LOGGER.error(JSON_ERROR_READING_ENTITY, entity, e);
             throw new RuntimeException(e);
@@ -195,20 +192,22 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public App getClientJSON(final App app) {
-        if (app.getAuthClient().getAuthDatabaseId() != null) {
-            String clientJSON = oAuthClientService.getOAuthClient(app.getAuthClient().getAuthDatabaseId());
-            app.setClientJSON(clientJSON);
-        }
+        String clientJSON = oAuthClientService.getOAuthClientWithClientId(app.getClientId());
+//        if (app.getAuthClient().getAuthDatabaseId() != null) {
+//            String clientJSON = oAuthClientService.getOAuthClient(app.getAuthClient().getAuthDatabaseId());
+//            app.setClientJSON(clientJSON);
+//        }
+        app.setClientJSON(clientJSON);
         return app;
     }
 
     @Override
     public App updateAppImage(final App app, final Image image) {
-        String clientJSON = oAuthClientService.getOAuthClient(app.getAuthClient().getAuthDatabaseId());
+        String clientJSON = oAuthClientService.getOAuthClientWithClientId(app.getClientId());
         try {
             JSONObject jsonObject = new JSONObject(clientJSON);
             jsonObject.put("logoUri", app.getLogoUri());
-            oAuthClientService.putOAuthClient(app.getAuthClient().getAuthDatabaseId(), jsonObject.toString());
+            oAuthClientService.putOAuthClientWithClientId(app.getClientId(), jsonObject.toString());
         } catch (JSONException e) {
             LOGGER.error(JSON_ERROR_READING_ENTITY, clientJSON, e);
             throw new RuntimeException(e);
@@ -218,7 +217,7 @@ public class AppServiceImpl implements AppService {
             imageService.delete(app.getLogo().getId());
         }
         app.setLogo(image);
-        app.getAuthClient().setLogoUri(app.getLogoUri());
+        app.setLogoUri(app.getLogoUri());
         return save(app);
     }
 
@@ -239,51 +238,6 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
-        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-//        List<SmartApp> smartApps = sandbox.getSmartApps();
-//        List<App> apps = new ArrayList<>();
-//        // TODO: the frontend should have to do this
-//        for (SmartApp smartApp: smartApps) {
-//            if (smartApp.getManifestUrl() != null) {
-//                try {
-//                    URL url = new URL(smartApp.getManifestUrl());
-//                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-//                    con.setRequestMethod("GET");
-//                    BufferedReader in = new BufferedReader(
-//                            new InputStreamReader(con.getInputStream()));
-//                    String inputLine;
-//                    StringBuffer content = new StringBuffer();
-//                    while ((inputLine = in.readLine()) != null) {
-//                        content.append(inputLine);
-//                    }
-//                    JSONObject manifest = new JSONObject(content.toString());
-//                    in.close();
-//                    App app = new App();
-//                    String oAuthClient = oAuthClientService.getOAuthClientWithClientId(smartApp.getClientId());
-//                    JSONObject oAuthClientObject = new JSONObject(oAuthClient);
-//                    // TODO: get rid of Authclient object
-//                    AuthClient authclient = new AuthClient();
-//                    authclient.setClientName(oAuthClientObject.get("clientName").toString());
-//                    authclient.setAuthDatabaseId(Integer.parseInt(oAuthClientObject.get("id").toString()));
-//                    authclient.setClientId(oAuthClientObject.get("clientId").toString());
-//                    app.setAuthClient(authclient);
-//                    app.setLaunchUri(manifest.get("launch_url").toString());
-//                    app.setSandbox(sandbox);
-//                    app.setLogoUri(manifest.get("logo_uri").toString());
-//                    app.setAppManifestUri(smartApp.getManifestUrl());
-//                    app.setBriefDescription(smartApp.getBriefDescription());
-////                    app.setVisibility(smartApp.getVisibility());
-//
-//                    apps.add(app);
-//                } catch (Exception e) {
-//
-//                }
-//            }
-//
-//        }
-//        List<App> other_apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
-//        apps.addAll(other_apps);
-//        return apps;
         return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
     }
 

@@ -95,26 +95,6 @@ abstract class AbstractController {
         throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
-    String checkSandboxUserModifySmartAppAuthorization(final HttpServletRequest request, final Sandbox sandbox, final SmartApp smartApp) {
-        //Fast fail for non-sandbox members
-        String oauthUserId = checkSandboxUserReadAuthorization(request, sandbox);
-
-        if (smartApp.getVisibility() == Visibility2.PRIVATE) {
-            if (smartApp.getOwner().getSbmUserId().equalsIgnoreCase(oauthUserId)) {
-                return oauthUserId;
-            }
-        } else { // Item is PUBLIC
-            if (sandbox.getVisibility() == Visibility.PRIVATE) {
-                return checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
-            } else { // Sandbox is PUBLIC
-                if (checkUserHasSandboxRole(request, sandbox, Role.ADMIN)) {
-                    return oauthUserId;
-                }
-            }
-        }
-        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
-    }
-
     String checkSystemUserDeleteSandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 

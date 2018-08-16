@@ -11,21 +11,32 @@ import java.sql.Timestamp;
         // Used to retrieve a registered app when a new launch scenario is being created with the app
         @NamedQuery(name="App.findByLaunchUriAndClientIdAndSandboxId",
         query="SELECT c FROM App c WHERE c.launchUri = :launchUri and " +
-                "c.authClient.clientId = :clientId and c.sandbox.sandboxId = :sandboxId"),
+                "c.clientId = :clientId and c.sandbox.sandboxId = :sandboxId"),
         // Used to delete all registered apps when a sandbox is deleted
+//        @NamedQuery(name="App.findBySandboxId",
+//        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL " +
+//                "order by c.authClient.clientName"),
         @NamedQuery(name="App.findBySandboxId",
-        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL " +
-                "order by c.authClient.clientName"),
+        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 " +
+                "order by c.clientName"),
         // Used to retrieve all registered apps visible to a user of this a sandbox
+//        @NamedQuery(name="App.findBySandboxIdAndCreatedByOrVisibility",
+//        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
+//                "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility) " +
+//                "order by c.authClient.clientName"),
         @NamedQuery(name="App.findBySandboxIdAndCreatedByOrVisibility",
-        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
+        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 and " +
                 "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility) " +
-                "order by c.authClient.clientName"),
+                "order by c.clientName"),
         // Used to delete a user's PRIVATE registered apps when they are removed from a sandbox
+//        @NamedQuery(name="App.findBySandboxIdAndCreatedBy",
+//        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
+//                "c.createdBy.sbmUserId = :createdBy " +
+//                "order by c.authClient.clientName")
         @NamedQuery(name="App.findBySandboxIdAndCreatedBy",
-        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
+        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 and " +
                 "c.createdBy.sbmUserId = :createdBy " +
-                "order by c.authClient.clientName")
+                "order by c.clientName")
 })
 public class App extends AbstractSandboxItem {
 
@@ -39,6 +50,12 @@ public class App extends AbstractSandboxItem {
     private String samplePatients;
     private String clientJSON;
     private String info;
+    private String clientId;
+    private String clientName;
+    private String clientUri;
+    private String manifestUrl;
+    private CopyType copyType;
+    private boolean customApp;
 
     public String getInfo() {
         return info;
@@ -200,4 +217,52 @@ public class App extends AbstractSandboxItem {
         this.visibility = visibility;
     }
 
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getClientUri() {
+        return clientUri;
+    }
+
+    public void setClientUri(String clientUri) {
+        this.clientUri = clientUri;
+    }
+
+    @Enumerated(EnumType.STRING)
+    public CopyType getCopyType() {
+        return copyType;
+    }
+
+    public void setCopyType(CopyType copyType) {
+        this.copyType = copyType;
+    }
+
+    public String getManifestUrl() {
+        return manifestUrl;
+    }
+
+    public void setManifestUrl(String manifestUrl) {
+        this.manifestUrl = manifestUrl;
+    }
+
+    public boolean isCustomApp() {
+        return customApp;
+    }
+
+    public void setCustomApp(boolean customApp) {
+        this.customApp = customApp;
+    }
 }
