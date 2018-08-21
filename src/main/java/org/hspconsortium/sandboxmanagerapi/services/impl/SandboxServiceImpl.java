@@ -294,9 +294,11 @@ public class SandboxServiceImpl implements SandboxService {
                 addMemberRole(savedSandbox, user, Role.valueOf(roleName));
             }
             sandboxActivityLogService.sandboxCreate(newSandbox, user);
+            if (newSandbox.getDataSet().equals(DataSet.DEFAULT)) {
+                cloneUserPersonas(savedSandbox, clonedSandbox, user);
+            }
             if (newSandbox.getApps().equals(DataSet.DEFAULT)) {
                 if (newSandbox.getDataSet().equals(DataSet.DEFAULT)) {
-                    cloneUserPersonas(savedSandbox, clonedSandbox, user);
                     cloneApps(savedSandbox, clonedSandbox, user);
                     cloneLaunchScenarios(savedSandbox, clonedSandbox, user);
                 } else {
