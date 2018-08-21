@@ -1,8 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.json.JSONArray;
-import org.json.simple.parser.JSONParser;
 import org.hspconsortium.sandboxmanagerapi.metrics.PublishAtomicMetric;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.AppRepository;
@@ -11,18 +9,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -172,7 +164,7 @@ public class AppServiceImpl implements AppService {
     public App update(final App app) {
         App existingApp = getById(app.getId());
         if (app.getCopyType() == CopyType.MASTER) {
-            oAuthClientService.putOAuthClientWithClientId(existingApp.getClientId(), app.getClientJSON());
+            oAuthClientService.putOAuthClientWithClientId(app.getClientId(), app.getClientJSON());
             existingApp.setLaunchUri(app.getLaunchUri());
             try {
                 JSONObject jsonObject = new JSONObject(app.getClientJSON());
@@ -182,35 +174,25 @@ public class AppServiceImpl implements AppService {
                 } else {
                     existingApp.setClientName(clientName);
                 }
-                String clientUri = jsonObject.get("clientUri").toString();
-                if (clientUri.equals("null")) {
-                    existingApp.setClientUri(null);
-                } else {
-                    existingApp.setClientUri(clientUri);
-                }
             } catch (JSONException e) {
                 LOGGER.error(JSON_ERROR_READING_ENTITY, app.getClientJSON(), e);
                 throw new RuntimeException(e);
             }
-
             existingApp.setLogoUri(app.getLogoUri());
+
             existingApp.setSamplePatients(app.getSamplePatients());
             existingApp.setBriefDescription(app.getBriefDescription());
             existingApp.setAuthor(app.getAuthor());
             existingApp.setFhirVersions(app.getFhirVersions());
             existingApp.setManifestUrl(app.getManifestUrl());
-            existingApp.setClientJSON(app.getClientJSON());
+            return save(existingApp);
         }
-        return save(existingApp);
+        return app;
     }
 
     @Override
     public App getClientJSON(final App app) {
         String clientJSON = oAuthClientService.getOAuthClientWithClientId(app.getClientId());
-//        if (app.getAuthClient().getAuthDatabaseId() != null) {
-//            String clientJSON = oAuthClientService.getOAuthClient(app.getAuthClient().getAuthDatabaseId());
-//            app.setClientJSON(clientJSON);
-//        }
         app.setClientJSON(clientJSON);
         return app;
     }
@@ -234,6 +216,27 @@ public class AppServiceImpl implements AppService {
         app.setLogo(image);
         app.setLogoUri(app.getLogoUri());
         return save(app);
+    }
+
+    @Override
+    public App deleteAppImage(final App existingApp) {
+        if (existingApp.getCopyType() == CopyType.MASTER) {
+            try {
+                JSONObject jsonObject = new JSONObject(oAuthClientService.getOAuthClientWithClientId(existingApp.getClientId()));
+                jsonObject.put("logoUri", "null");
+                oAuthClientService.putOAuthClientWithClientId(existingApp.getClientId(), jsonObject.toString());
+            } catch (JSONException e) {
+                LOGGER.error(JSON_ERROR_READING_ENTITY, existingApp.getClientJSON(), e);
+                throw new RuntimeException(e);
+            }
+            if (existingApp.getLogo() != null) {
+                imageService.delete(existingApp.getLogo().getId());
+            }
+            existingApp.setLogoUri(null);
+            existingApp.setLogo(null);
+            return save(existingApp);
+        }
+        return existingApp;
     }
 
     @Override

@@ -23,6 +23,8 @@ public interface AppService {
 
     App updateAppImage(final App app, final Image image);
 
+    App deleteAppImage(final App app);
+
     App getById(final int id);
 
     App findByLaunchUriAndClientIdAndSandboxId(final String launchUri, final String clientId, final String sandboxId);
@@ -33,5 +35,4 @@ public interface AppService {
 
     List<App> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy);
 
-//    void registerDefaultApps(final Sandbox sandbox);
 }

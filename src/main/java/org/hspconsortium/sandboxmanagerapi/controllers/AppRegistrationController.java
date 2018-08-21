@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.apache.http.HttpStatus;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.AppService;
@@ -97,7 +98,6 @@ public class AppRegistrationController extends AbstractController {
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void deleteApp(final HttpServletRequest request, @PathVariable Integer id) {
-
         App app = appService.getById(id);
         checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
         appService.delete(app);
@@ -106,7 +106,6 @@ public class AppRegistrationController extends AbstractController {
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody App updateApp(final HttpServletRequest request, @PathVariable Integer id, @RequestBody App app) {
-
         App existingApp = appService.getById(id);
         if (existingApp == null || existingApp.getId().intValue() != id.intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
@@ -120,7 +119,6 @@ public class AppRegistrationController extends AbstractController {
 
     @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
     public @ResponseBody void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
-
         App app = appService.getById(id);
         try {
             response.setHeader("Content-Type", app.getLogo().getContentType());
@@ -133,8 +131,10 @@ public class AppRegistrationController extends AbstractController {
     @PostMapping(value = "/{id}/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE} )
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
-
         App app = appService.getById(id);
+        if (app == null) {
+            throw new ResourceNotFoundException("App does not exist. Cannot delete image.");
+        }
         checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
         app.setLogoUri(request.getRequestURL().toString());
         appService.save(app);
@@ -148,5 +148,16 @@ public class AppRegistrationController extends AbstractController {
                 LOGGER.error("Unable to update image", e);
             }
         }
+    }
+
+    @DeleteMapping(value = "/{id}/image")
+    @Transactional
+    public App deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {
+        App app = appService.getById(id);
+        if (app == null) {
+            throw new ResourceNotFoundException("App does not exist. Cannot delete image.");
+        }
+        checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
+        return appService.deleteAppImage(app);
     }
 }

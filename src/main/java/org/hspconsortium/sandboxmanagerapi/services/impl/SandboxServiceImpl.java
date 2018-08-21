@@ -839,10 +839,8 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newLaunchScenario.setDescription(launchScenario.getDescription());
             newLaunchScenario.setTitle(launchScenario.getTitle());
-            newLaunchScenario.setLastLaunch(launchScenario.getLastLaunch());
-            UserPersona userPersonaCopy = launchScenario.getUserPersona();
-            userPersonaCopy.setSandbox(newSandbox);
-            newLaunchScenario.setUserPersona(userPersonaCopy);
+            String personaId = launchScenario.getUserPersona().getPersonaUserId().split("@")[0] + "@" + newLaunchScenario.getSandbox().getSandboxId();
+            newLaunchScenario.setUserPersona(userPersonaService.findByPersonaUserIdAndSandboxId(personaId, newLaunchScenario.getSandbox().getSandboxId()));
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
             launchScenarioService.save(newLaunchScenario);
         }
