@@ -149,6 +149,7 @@ public class AppServiceImpl implements AppService {
     public App create(final App app, final Sandbox sandbox) {
         app.setLogo(null);
         app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+        app.setCopyType(CopyType.MASTER);
 
         if (!ruleService.checkIfUserCanCreateApp(sandbox.getPayerUserId(), findBySandboxId(sandbox.getSandboxId()).size())) {
             return null;
@@ -164,29 +165,42 @@ public class AppServiceImpl implements AppService {
             LOGGER.error(JSON_ERROR_READING_ENTITY, entity, e);
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
     @Transactional
     public App update(final App app) {
         App existingApp = getById(app.getId());
-        String entity = oAuthClientService.putOAuthClientWithClientId(existingApp.getClientId(), app.getClientJSON());
+        if (app.getCopyType() == CopyType.MASTER) {
+            oAuthClientService.putOAuthClientWithClientId(existingApp.getClientId(), app.getClientJSON());
+            existingApp.setLaunchUri(app.getLaunchUri());
+            try {
+                JSONObject jsonObject = new JSONObject(app.getClientJSON());
+                String clientName = jsonObject.get("clientName").toString();
+                if (clientName.equals("null")) {
+                    existingApp.setClientName(null);
+                } else {
+                    existingApp.setClientName(clientName);
+                }
+                String clientUri = jsonObject.get("clientUri").toString();
+                if (clientUri.equals("null")) {
+                    existingApp.setClientUri(null);
+                } else {
+                    existingApp.setClientUri(clientUri);
+                }
+            } catch (JSONException e) {
+                LOGGER.error(JSON_ERROR_READING_ENTITY, app.getClientJSON(), e);
+                throw new RuntimeException(e);
+            }
 
-        try {
-            JSONObject jsonObject = new JSONObject(entity);
-            existingApp.setClientName((String)jsonObject.get("clientName"));
             existingApp.setLogoUri(app.getLogoUri());
-        } catch (JSONException e) {
-            LOGGER.error(JSON_ERROR_READING_ENTITY, entity, e);
-            throw new RuntimeException(e);
+            existingApp.setSamplePatients(app.getSamplePatients());
+            existingApp.setBriefDescription(app.getBriefDescription());
+            existingApp.setAuthor(app.getAuthor());
+            existingApp.setFhirVersions(app.getFhirVersions());
+            existingApp.setManifestUrl(app.getManifestUrl());
+            existingApp.setClientJSON(app.getClientJSON());
         }
-        existingApp.setLaunchUri(app.getLaunchUri());
-        existingApp.setLogoUri(app.getLogoUri());
-        existingApp.setSamplePatients(app.getSamplePatients());
-        existingApp.setBriefDescription(app.getBriefDescription());
-        existingApp.setAuthor(app.getAuthor());
-        existingApp.setClientJSON(app.getClientJSON());
         return save(existingApp);
     }
 
@@ -203,16 +217,17 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public App updateAppImage(final App app, final Image image) {
-        String clientJSON = oAuthClientService.getOAuthClientWithClientId(app.getClientId());
-        try {
-            JSONObject jsonObject = new JSONObject(clientJSON);
-            jsonObject.put("logoUri", app.getLogoUri());
-            oAuthClientService.putOAuthClientWithClientId(app.getClientId(), jsonObject.toString());
-        } catch (JSONException e) {
-            LOGGER.error(JSON_ERROR_READING_ENTITY, clientJSON, e);
-            throw new RuntimeException(e);
+        if (app.getCopyType() == CopyType.MASTER) {
+            String clientJSON = oAuthClientService.getOAuthClientWithClientId(app.getClientId());
+            try {
+                JSONObject jsonObject = new JSONObject(clientJSON);
+                jsonObject.put("logoUri", app.getLogoUri());
+                oAuthClientService.putOAuthClientWithClientId(app.getClientId(), jsonObject.toString());
+            } catch (JSONException e) {
+                LOGGER.error(JSON_ERROR_READING_ENTITY, clientJSON, e);
+                throw new RuntimeException(e);
+            }
         }
-
         if (app.getLogo() != null) {
             imageService.delete(app.getLogo().getId());
         }

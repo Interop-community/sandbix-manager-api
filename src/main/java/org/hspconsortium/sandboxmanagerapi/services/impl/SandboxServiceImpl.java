@@ -20,12 +20,10 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
-import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -276,8 +274,7 @@ public class SandboxServiceImpl implements SandboxService {
         if (newSandboxExists != null) {
             throw new ResourceNotFoundException("Sandbox with id " + newSandbox.getSandboxId() + " already exists.");
         }
-        Sandbox existingSandbox = findBySandboxId(clonedSandbox.getSandboxId());
-        if (existingSandbox == null) {
+        if (clonedSandbox == null) {
             throw new ResourceNotFoundException("Cloned sandbox does not exist.");
         }
         if (initialUserPersona == null) {// && callCloneSandboxApi(newSandbox, existingSandbox, bearerToken)) {
@@ -298,9 +295,17 @@ public class SandboxServiceImpl implements SandboxService {
             }
             sandboxActivityLogService.sandboxCreate(newSandbox, user);
             if (newSandbox.getApps().equals(DataSet.DEFAULT)) {
-                cloneUserPersonas(savedSandbox, existingSandbox, user);
-                cloneApps(savedSandbox, existingSandbox, user);
-                cloneLaunchScenarios(savedSandbox, existingSandbox, user);
+                if (newSandbox.getDataSet().equals(DataSet.DEFAULT)) {
+                    cloneUserPersonas(savedSandbox, clonedSandbox, user);
+                    cloneApps(savedSandbox, clonedSandbox, user);
+                    cloneLaunchScenarios(savedSandbox, clonedSandbox, user);
+                } else {
+                    //Clone only the apps if the dataset is empty
+                    cloneApps(savedSandbox, clonedSandbox, user);
+                }
+
+
+
             }
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             return savedSandbox;
@@ -835,7 +840,9 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setDescription(launchScenario.getDescription());
             newLaunchScenario.setTitle(launchScenario.getTitle());
             newLaunchScenario.setLastLaunch(launchScenario.getLastLaunch());
-            newLaunchScenario.setUserPersona(launchScenario.getUserPersona());
+            UserPersona userPersonaCopy = launchScenario.getUserPersona();
+            userPersonaCopy.setSandbox(newSandbox);
+            newLaunchScenario.setUserPersona(userPersonaCopy);
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
             launchScenarioService.save(newLaunchScenario);
         }

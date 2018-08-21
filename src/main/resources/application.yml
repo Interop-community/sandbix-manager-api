@@ -18,8 +18,9 @@ spring:
     driverClassName: com.mysql.jdbc.Driver
     validation-query: SELECT 1
     test-on-borrow: true
-    initialSize: 1
-    maxActive: 5
+    tomcat:
+      initialSize: 1
+      maxActive: 5
   jpa:
     show-sql: false
     hibernate:
@@ -80,7 +81,7 @@ hspc:
     # When a user creates a brand new sandbox, this is the default visibility of the new sandbox
     #    defaultSandboxVisibility: PUBLIC
     defaultSandboxVisibility: PRIVATE
-    templateSandboxIds: MasterEmpty, MasterDstu2SMART, MasterStu3SMART, MasterR4SMART, MasterStu3Synthea
+    templateSandboxIds: MasterDstu2Empty, MasterDstu2Smart, MasterStu3Empty, MasterStu3Smart, MasterR4Empty, MasterR4Smart, MasterStu3Synthea
     authorization:
       url: http://${AUTH_HOST:localhost}:${AUTH_PORT:8060}
       tokenEndpoint: ${hspc.platform.authorization.url}/token
