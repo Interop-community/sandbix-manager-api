@@ -25,6 +25,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -86,9 +87,9 @@ public class SandboxController extends AbstractController {
         }
         checkCreatedByIsCurrentUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
         LOGGER.info("Cloning sandbox " + clonedSandbox.getName() + " to sandbox: " + newSandbox.getName());
-        User user = userService.findBySbmUserId(clonedSandbox.getCreatedBy().getSbmUserId());
+        User user = userService.findBySbmUserId(newSandbox.getCreatedBy().getSbmUserId());
         checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
-        return sandboxService.clone(newSandbox, clonedSandbox, user, oAuthService.getBearerToken(request));
+        return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, oAuthService.getBearerToken(request));
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
@@ -117,11 +118,8 @@ public class SandboxController extends AbstractController {
             sandboxService.addMember(sandbox, user);
         }
         checkSandboxUserReadAuthorization(request, sandbox);
-        userAccessHistoryService.saveUserAccessInstance(sandbox, user);
         return sandbox;
     }
-
-//    public @ResponseBody List<SmartApp>
 
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
@@ -196,11 +194,27 @@ public class SandboxController extends AbstractController {
         }
     }
 
+    @PutMapping(value = "/{id}/changePayer", params = {"newPayerId"})
+    @Transactional
+    public void changePayerForSandbox(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "newPayerId") String newPayerIdEncoded) throws UnsupportedEncodingException {
+        Sandbox sandbox = sandboxService.findBySandboxId(id);
+        User newPayer = userService.findBySbmUserId(getSystemUserId(request));
+        if (!newPayer.getSbmUserId().equals(newPayerIdEncoded)) {
+            throw new UserDeniedAuthorizationException("User not authorized.");
+        }
+        checkSystemUserCanModifySandboxAuthorization(request, sandbox, newPayer);
+        sandboxService.changePayerForSandbox(sandbox, newPayer);
+
+    }
+
     @PostMapping(value = "/{id}/login", params = {"userId"})
     @Transactional
     public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException{
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         checkUserAuthorization(request, userId);
+        Sandbox sandbox = sandboxService.findBySandboxId(id);
+        User user = userService.findBySbmUserId(userId);
+        userAccessHistoryService.saveUserAccessInstance(sandbox, user);
         sandboxService.sandboxLogin(id, userId);
     }
 

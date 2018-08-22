@@ -18,14 +18,16 @@ spring:
     driverClassName: com.mysql.jdbc.Driver
     validation-query: SELECT 1
     test-on-borrow: true
-    initialSize: 1
-    maxActive: 5
+    tomcat:
+      initialSize: 1
+      maxActive: 5
   jpa:
+    show-sql: false
     hibernate:
       # Do not commit with a different value (update, create, etc)
       # Instead, use flywaydb scripts at /src/main/resources/db/mysql/migrate
       ddl-auto: validate
-      show-sql: false
+
       dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
   mail:
@@ -79,7 +81,7 @@ hspc:
     # When a user creates a brand new sandbox, this is the default visibility of the new sandbox
     #    defaultSandboxVisibility: PUBLIC
     defaultSandboxVisibility: PRIVATE
-    templateSandboxIds: TempEmpty, TempDstu2SMART, TempStu3SMART, TempR4SMART, TempStu3Synthea
+    templateSandboxIds: MasterDstu2Empty, MasterDstu2Smart, MasterStu3Empty, MasterStu3Smart, MasterR4Empty, MasterR4Smart, MasterStu3Synthea
     authorization:
       url: http://${AUTH_HOST:localhost}:${AUTH_PORT:8060}
       tokenEndpoint: ${hspc.platform.authorization.url}/token
@@ -137,8 +139,8 @@ cloud:
     stack:
       auto: false
 
-expiration-message: FHIR R4 DFC available on trial basis. This sandbox will be unavailable after Aug 31, 2018.
-expiration-date: 2018-09-01
+expiration-message: FHIR R4 DFC available on trial basis. This sandbox will be unavailable after Dec 15, 2018.
+expiration-date: 2018-12-15
 
 default-public-apps: cds-hooks-sandbox, hspc-bilirubin-risk-chart, hspc-my-web-app
 

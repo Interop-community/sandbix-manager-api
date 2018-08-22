@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  sandman-api-db:
+    image: mysql:5.7
+    volumes:
+      - sandman-api-db-data:/var/lib/mysql
+    deploy:
+      restart_policy:
+        condition: on-failure
+      resources:
+        reservations:
+          memory: 20M
+    environment:
+      MYSQL_ROOT_PASSWORD: "password"
+      MYSQL_DATABASE: "sandman"
+      MYSQL_USER: "sandmanusr"
+      MYSQL_PASSWORD: "password"
+
+  sandman-api:
+    depends_on:
+      - sandman-api-db
+    image: hspconsortium/sandbox-manager-api:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    environment:
+      DB_HOST: sandman-api-db
+      DB_USER: sandmanusr
+      DB_PASSWORD: password
+      DB_NAME: sandman
+      DB_PORT: 3306
+      AUTH_HOST: host.docker.internal
+      AUTH_PORT: 8060
+      API_DSTU2_HOST: host.docker.internal
+      API-DSTU2_PORT: 8075
+      API_STU3_HOST: host.docker.internal
+      API-STU3_PORT: 8076
+      API_STU3_HOST: host.docker.internal
+      API-STU3_PORT: 8077
+      JAVA_OPTS: "-Xdebug -agentlib:jdwp=transport=dt_socket,address=12005,server=y,suspend=n"
+
+  nginx-sandman-api:
+    depends_on:
+      - sandman-api
+    image: hspconsortium/sandman-api-nginx:latest
+    ports:
+      - "12000:12000"
+      - "12005:12005"
+    deploy:
+      restart_policy:
+        condition: on-failure
+      resources:
+        reservations:
+          memory: 64M
+
+volumes:
+  sandman-api-db-data:

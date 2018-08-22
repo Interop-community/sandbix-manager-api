@@ -8,14 +8,29 @@ Welcome to the HSPC Sandbox Manager API!
 
 [HSPC Sandbox](https://sandbox.hspconsortium.org)
 
-### How do I get set up? ###
+### How do I get set up?
 
-### Prerequisites ###
+#### Prerequisites
  * build "sandman" schema in local mysql. Check application.yml that name has not changed.
 
-#### Build and Deploy ####
-    mvn clean package
+#### Maven Build
+
+    mvn package
+    
+#### Run locally
+
     ./run-local.sh
+
+#### Docker Install
+
+    cd docker/nginx
+    ./build.sh
+    cd ..
+    ./build.sh
+    docker-compose up
+    
+The service is available at: 
+    http://localhost:12000/health
 
 #### Configuration ####
 

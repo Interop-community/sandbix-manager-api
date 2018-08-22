@@ -62,7 +62,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Transactional
     public void delete(final LaunchScenario launchScenario) {
 
-        if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
+        if (launchScenario.getApp().isCustomApp()) {
             // This is an anonymous App created for a custom launch
             App app = launchScenario.getApp();
             launchScenario.setApp(null);
@@ -100,13 +100,13 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         }
         launchScenario.setUserPersona(userPersona);
 
-        if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
+        if (launchScenario.getApp().isCustomApp()) {
             // Create an anonymous App for a custom launch
             launchScenario.getApp().setSandbox(sandbox);
             App app = appService.save(launchScenario.getApp());
             launchScenario.setApp(app);
         } else {
-            App app = appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getAuthClient().getClientId(), sandbox.getSandboxId());
+            App app = appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getClientId(), sandbox.getSandboxId());
             launchScenario.setApp(app);
         }
 
@@ -121,8 +121,18 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             updateLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
             updateLaunchScenario.setDescription(launchScenario.getDescription());
             updateLaunchScenario.setNeedPatientBanner(launchScenario.getNeedPatientBanner());
+            updateLaunchScenario.setTitle(launchScenario.getTitle());
+            updateLaunchScenario.setSmartStyleUrl(launchScenario.getSmartStyleUrl());
+            updateLaunchScenario.setResource(launchScenario.getResource());
+            updateLaunchScenario.setApp(launchScenario.getApp());
+            updateLaunchScenario.setIntent(launchScenario.getIntent());
+            updateLaunchScenario.setEncounter(launchScenario.getEncounter());
+            updateLaunchScenario.setLocation(launchScenario.getLocation());
+            updateLaunchScenario.setPatientName(launchScenario.getPatientName());
+            updateLaunchScenario.setPatient(launchScenario.getPatient());
+            updateLaunchScenario.setUserPersona(launchScenario.getUserPersona());
             updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
-            if (launchScenario.getApp().getAuthClient().getAuthDatabaseId() == null) {
+            if (launchScenario.getApp().isCustomApp()) {
                 // Create an anonymous App for a custom launch
                 App app = appService.getById(launchScenario.getApp().getId());
                 app.setLaunchUri(launchScenario.getApp().getLaunchUri());

@@ -4,24 +4,28 @@
         <title data-th-remove="all">Sandbox Invitation</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <style>
-            .accept a {
-                display: inline-block;
-                margin-bottom: 0;
-                text-align: center;
-                text-decoration: none;
-                vertical-align: middle;
+
+            .btn {
+                position: relative;
+                display: block;
+                margin: 0 auto;
+                padding: 10px 16px 10px 16px;
+                overflow: hidden;
+                border-width: 0;
+                outline: none;
+                border-radius: 2px;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
+                background-color: rgb(14, 86, 118);
+                color: rgb(255, 255, 255);
                 cursor: pointer;
-                background-image: none;
-                border: 1px solid transparent;
-                white-space: nowrap;
-                border-radius: 4px;
-                color: #fff;
-                background-color: #10759D;
-                font-weight: 300;
-                font-size: 12px;
-                margin-top: 15px;
-                padding: 6px 6px 6px 6px;
+                font-size: 16px;
             }
+
+            .btn span {
+                display: block;
+                padding: 12px 24px;
+            }
+
         </style>
 
     </head>
@@ -29,23 +33,23 @@
             <div style="padding: 10px;">
                 <div style="text-align: center; min-width: 200px; margin: 0 auto 0 auto">
                     <div style="background-color: #ffffff; padding: 4px 4px 2px 4px;">
-                        <img style="height: 32px; width: 204px; margin: 0 auto 0 auto" src="https://sandbox-test.hspconsortium.org/static/images/hspc-sndbx-logo.png" />
+                        <img style="height: auto; width: 300px; margin: 0 auto 0 auto" src="http://sandbox-test.hspconsortium.org/static/images/hspc-sndbx-logo.png" />
                     </div>
-                    <div style="padding: 15px 15px 30px 15px; font-family: Verdana, Arial, Helvetica, sans-serif; font-size:1em; background-color: #fff; color:#333;">
+                    <div style="padding: 15px 15px 30px 15px; font-family: Trebuchet, Arial, sans-serif; font-size:16px; background-color: #fff; color:rgba(0, 0, 0, 0.87);">
                         <p>
-                            <b th:text="${inviter}">John Doe</b> has invited you to join <b th:text="${sandboxName}">John's Sandbox</b> HSPC Sandbox.
+                            <strong th:text="${inviter}">John Doe</strong> has invited you to join <strong th:text="${sandboxName}">John's Sandbox</strong> HSPC Sandbox.
                         </p>
                         <br />
                         <p>
-                            <div class="accept"><a href='https://sandbox.hspconsortium.org' target="_blank">Accept Invitation</a></div>
+                            <button class="btn" type="button" onclick="window.open('https://sandbox.hspconsortium.org','_blank')">Accept Invitation</button>
                         </p>
                         <br />
                         <p>
-                            Be sure to sign-in/sign-up with <b th:text="${inviteeEmail}">user@gmail.com</b>.
+                            Be sure to sign-in/sign-up with <strong th:text="${inviteeEmail}">user@gmail.com</strong>.
                         </p>
                         <br />
                         <p>
-                            Learn more about <a href='http://www.developers.hspconsortium.org/' target="_blank">HSPC Developers</a>.
+                            Learn more about <a href='https://www.developers.hspconsortium.org/' target="_blank">HSPC Developers</a>.
                         </p>
                     </div>
                 </div>

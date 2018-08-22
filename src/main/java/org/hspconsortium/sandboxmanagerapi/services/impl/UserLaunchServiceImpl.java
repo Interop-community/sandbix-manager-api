@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.hspconsortium.sandboxmanagerapi.model.LaunchScenario;
 import org.hspconsortium.sandboxmanagerapi.model.UserLaunch;
 import org.hspconsortium.sandboxmanagerapi.repositories.UserLaunchRepository;
 import org.hspconsortium.sandboxmanagerapi.services.UserLaunchService;

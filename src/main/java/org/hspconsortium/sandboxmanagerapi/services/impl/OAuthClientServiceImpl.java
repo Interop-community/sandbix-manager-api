@@ -64,6 +64,17 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     }
 
     @Override
+    public String putOAuthClientWithClientId(String clientId, String clientJSON) {
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
+
+        ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "?clientId=" + clientId, HttpMethod.PUT, requestEntity, String.class);
+        return requestEntity.getBody();
+    }
+
+    @Override
     public String getOAuthClient(Integer id) {
 
         HttpHeaders requestHeaders = new HttpHeaders();
@@ -87,5 +98,10 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Override
     public void deleteOAuthClient(Integer id) {
         restTemplate.delete(oauthClientEndpointURL + "/" + id);
+    }
+
+    @Override
+    public void deleteOAuthClientWithClientId(String clientId) {
+        restTemplate.delete(oauthClientEndpointURL + "?clientId=" + clientId);
     }
 }

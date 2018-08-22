@@ -102,6 +102,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         fhirTransaction.setSandboxId(sandbox.getId());
         fhirTransaction.setUrl(transactionInfo.get("url").toString());
         fhirTransaction.setFhirResource(transactionInfo.get("resource").toString());
+        if (fhirTransaction.getFhirResource().equals("Practitioner")) {
+
+        }
         fhirTransaction.setMethod(transactionInfo.get("method").toString());
         fhirTransaction.setDomain(transactionInfo.get("domain").toString());
         fhirTransaction.setIpAddress(transactionInfo.get("ip_address").toString());

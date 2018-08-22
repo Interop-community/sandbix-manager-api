@@ -115,7 +115,7 @@ public class LaunchScenarioController extends AbstractController  {
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"appId"})
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
-                   @RequestParam(value = "appId") int appId) {
+                                                                           @RequestParam(value = "appId") int appId) {
 
         App app = appService.getById(appId);
         checkSandboxUserReadAuthorization(request, app.getSandbox());
