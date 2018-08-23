@@ -44,6 +44,7 @@ public class LaunchScenario extends AbstractSandboxItem {
     private String smartStyleUrl;
     private String title;
     private String needPatientBanner;
+    private String smartAppId;
 
 
     /******************* Launch Scenario Property Getter/Setters ************************/
@@ -230,5 +231,13 @@ public class LaunchScenario extends AbstractSandboxItem {
 
     public void setNeedPatientBanner(String needPatientBanner) {
         this.needPatientBanner = needPatientBanner;
+    }
+
+    public String getSmartAppId() {
+        return smartAppId;
+    }
+
+    public void setSmartAppId(String smartAppId) {
+        this.smartAppId = smartAppId;
     }
 }
