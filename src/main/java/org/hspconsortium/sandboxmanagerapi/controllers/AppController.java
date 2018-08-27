@@ -44,16 +44,16 @@ import static org.springframework.http.MediaType.*;
 
 @RestController
 @RequestMapping({"/app"})
-public class AppRegistrationController extends AbstractController {
-    private static Logger LOGGER = LoggerFactory.getLogger(AppRegistrationController.class.getName());
+public class AppController extends AbstractController {
+    private static Logger LOGGER = LoggerFactory.getLogger(AppController.class.getName());
 
     private final AppService appService;
     private final SandboxService sandboxService;
     private final UserService userService;
 
     @Inject
-    public AppRegistrationController(final AppService appService, final OAuthService oAuthService,
-                                     final SandboxService sandboxService, final UserService userService) {
+    public AppController(final AppService appService, final OAuthService oAuthService,
+                         final SandboxService sandboxService, final UserService userService) {
         super(oAuthService);
         this.appService = appService;
         this.sandboxService = sandboxService;
@@ -83,14 +83,12 @@ public class AppRegistrationController extends AbstractController {
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody App getApp(final HttpServletRequest request, @PathVariable Integer id) {
-        try {
-            App app = appService.getById(id);
+        App app = appService.getById(id);
+        if (app != null) {
             checkSandboxUserReadAuthorization(request, app.getSandbox());
             return appService.getClientJSON(app);
-        } catch (Exception e) {
-            // not being handled by global exception handler?
-            LOGGER.error("Error retrieving app", e);
-            throw new RuntimeException(e);
+        } else {
+            throw new ResourceNotFoundException("Could not find app.");
         }
     }
 

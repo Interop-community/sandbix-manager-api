@@ -36,9 +36,13 @@ public class NewsItemController {
     }
 
     @PostMapping(value = "/save", produces = APPLICATION_JSON_VALUE)
-    public void saveNewsItem(@RequestBody NewsItem newsItem) {
+    public NewsItem saveNewsItem(@RequestBody NewsItem newsItem) {
+        return newsItemService.save(newsItem);
+    }
 
-        newsItemService.save(newsItem);
+    @PutMapping(value = "/update/{id}", produces = APPLICATION_JSON_VALUE)
+    public NewsItem updateNewsItem(@RequestBody NewsItem newsItem) {
+        return newsItemService.update(newsItem);
     }
 
 

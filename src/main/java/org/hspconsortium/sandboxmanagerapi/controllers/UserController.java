@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import org.apache.http.HttpStatus;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.model.UserPersona;
@@ -27,15 +28,18 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import javax.websocket.server.PathParam;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
@@ -88,6 +92,20 @@ public class UserController extends AbstractController {
         }
 
         return userService.findBySbmUserId(sbmUserId);
+    }
+
+    @GetMapping(value = "/all", params = {"sbmUserId"})
+    @Transactional
+    public @ResponseBody
+    Iterable<User> getAllUsers(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
+        checkUserAuthorization(request, sbmUserId);
+        User user = userService.findBySbmUserId(sbmUserId);
+        Boolean isSystemAdmin = checkUserHasSystemRole(user, SystemRole.ADMIN);
+        if (isSystemAdmin) {
+            return userService.findAllUsers();
+        } else {
+            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
+        }
     }
 
     @PostMapping(value = "/acceptterms", params = {"sbmUserId", "termsId"})
