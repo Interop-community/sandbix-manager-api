@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RuleServiceImpl implements RuleService {
@@ -17,6 +18,7 @@ public class RuleServiceImpl implements RuleService {
     private SandboxService sandboxService;
     private UserService userService;
     private AnalyticsService analyticsService;
+    private AppService appService;
 
     public RuleServiceImpl() { }
 
@@ -33,6 +35,11 @@ public class RuleServiceImpl implements RuleService {
     @Inject
     public void setAnalyticsService(AnalyticsService analyticsService) {
         this.analyticsService = analyticsService;
+    }
+
+    @Inject
+    public void setAppService(AppService appService) {
+        this.appService = appService;
     }
 
     public Boolean checkIfUserCanCreateSandbox(User user) {
@@ -52,19 +59,23 @@ public class RuleServiceImpl implements RuleService {
         return false;
     }
 
-    public Boolean checkIfUserCanCreateApp(Integer payerId, Integer appsInSandbox) {
+    public Boolean checkIfUserCanCreateApp(Sandbox sandbox) {
+        Integer payerId = sandbox.getPayerUserId();
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
         if (payerId == null) {
             return true;
         }
+        List<App> apps = appService.findBySandboxId(sandbox.getSandboxId());
+        List<App> masterApps = apps.stream()
+                .filter(p -> p.getCopyType() == CopyType.MASTER).collect(Collectors.toList());
         User user = userService.findById(payerId);
         Rule rules = findRulesByUser(user);
         if (rules == null) {
             return true;
         }
-        return rules.getApps() > appsInSandbox;
+        return rules.getApps() > masterApps.size();
     }
 
     public Boolean checkIfUserCanBeAdded(String sandBoxId) {

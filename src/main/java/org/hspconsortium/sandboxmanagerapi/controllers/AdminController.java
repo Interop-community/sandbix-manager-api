@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SandboxInvite;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
@@ -67,6 +68,9 @@ public class AdminController extends AbstractController {
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkUserSystemRole(user, SystemRole.ADMIN);
 

@@ -143,10 +143,6 @@ public class AppServiceImpl implements AppService {
         app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
         app.setCopyType(CopyType.MASTER);
 
-        if (!ruleService.checkIfUserCanCreateApp(sandbox.getPayerUserId(), findBySandboxId(sandbox.getSandboxId()).size())) {
-            return null;
-        }
-
         String entity = oAuthClientService.postOAuthClient(app.getClientJSON());
         try {
             JSONObject jsonObject = new JSONObject(entity);

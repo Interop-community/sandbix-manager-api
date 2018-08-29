@@ -23,7 +23,7 @@ public class NewsItemController {
         this.newsItemService = newsItemService;
     }
 
-    @GetMapping("/all")
+    @GetMapping(value = "/all", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
     List<NewsItem> findAllNewsItems(HttpServletRequest request){
         return newsItemService.findAll();
@@ -35,7 +35,8 @@ public class NewsItemController {
         newsItemService.delete(id);
     }
 
-    @PostMapping(value = "/save", produces = APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/save")
+    @Transactional
     public NewsItem saveNewsItem(@RequestBody NewsItem newsItem) {
         return newsItemService.save(newsItem);
     }

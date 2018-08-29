@@ -23,14 +23,10 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 import org.hspconsortium.sandboxmanagerapi.model.ConfigType;
 import org.hspconsortium.sandboxmanagerapi.model.Config;
 import org.hspconsortium.sandboxmanagerapi.services.ConfigService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import java.util.List;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/config")
@@ -43,8 +39,8 @@ public class ConfigController {
         this.configurationService = configurationService;
     }
 
-    @GetMapping(value = "/{type}", produces = APPLICATION_JSON_VALUE)
-    public List<Config> getConfigValuesByType(@PathVariable int type) {
+    @GetMapping(value = "/{type}")
+    public @ResponseBody List<Config> getConfigValuesByType(@PathVariable int type) {
         ConfigType configType = ConfigType.fromInt(type);
         return configurationService.findByConfigType(configType);
     }

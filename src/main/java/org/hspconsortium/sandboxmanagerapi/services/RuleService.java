@@ -10,7 +10,7 @@ public interface RuleService {
 
     Boolean checkIfUserCanCreateSandbox(User user);
 
-    Boolean checkIfUserCanCreateApp(Integer payerId, Integer appsInSandbox);
+    Boolean checkIfUserCanCreateApp(Sandbox sandbox);
 
     Boolean checkIfUserCanBeAdded(String sandBoxId);
 
