@@ -18,12 +18,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class NewsItemController {
     private final NewsItemService newsItemService;
 
+    //TODO implement security
     @Inject
     public NewsItemController(NewsItemService newsItemService){
         this.newsItemService = newsItemService;
     }
 
-    @GetMapping(value = "/all", produces = APPLICATION_JSON_VALUE)
+    @GetMapping("all")
     public @ResponseBody
     List<NewsItem> findAllNewsItems(HttpServletRequest request){
         return newsItemService.findAll();
@@ -35,8 +36,7 @@ public class NewsItemController {
         newsItemService.delete(id);
     }
 
-    @PostMapping(value = "/save")
-    @Transactional
+    @PostMapping(value = "/save", produces = APPLICATION_JSON_VALUE)
     public NewsItem saveNewsItem(@RequestBody NewsItem newsItem) {
         return newsItemService.save(newsItem);
     }
