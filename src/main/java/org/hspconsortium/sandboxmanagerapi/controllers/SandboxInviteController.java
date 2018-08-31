@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
@@ -65,6 +66,9 @@ public class SandboxInviteController extends AbstractController {
 
         // Make sure the inviter has rights to this sandbox
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId());
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
         SandboxInvite sandboxInviteReturned = new SandboxInvite();
@@ -106,17 +110,17 @@ public class SandboxInviteController extends AbstractController {
             @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         String sbmUserId = java.net.URLDecoder.decode(sbmUserIdEncoded, StandardCharsets.UTF_8.name());
         checkUserAuthorization(request, sbmUserId);
-        if (status == null) {
-            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeId(sbmUserId);
-            if (sandboxInvites != null) {
-                return sandboxInvites;
-            }
-        } else {
-            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeIdAndStatus(sbmUserId, status);
-            if (sandboxInvites != null) {
-                return sandboxInvites;
-            }
+//        if (status == null) {
+//            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeId(sbmUserId);
+//            if (sandboxInvites != null) {
+//                return sandboxInvites;
+//            }
+//        } else {
+        List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeIdAndStatus(sbmUserId, status);
+        if (sandboxInvites != null) {
+            return sandboxInvites;
         }
+//        }
 
         return Collections.emptyList();
     }
@@ -127,20 +131,23 @@ public class SandboxInviteController extends AbstractController {
     List<SandboxInvite> getSandboxInvitesBySandbox(HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId,
            @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
 
-        if (status == null) {
-            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandboxId);
-            if (sandboxInvites != null) {
-                return sandboxInvites;
-            }
-        } else {
-            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxIdAndStatus(sandboxId, status);
-            if (sandboxInvites != null) {
-                return sandboxInvites;
-            }
+//        if (status == null) {
+//            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandboxId);
+//            if (sandboxInvites != null) {
+//                return sandboxInvites;
+//            }
+//        } else {
+        List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxIdAndStatus(sandboxId, status);
+        if (sandboxInvites != null) {
+            return sandboxInvites;
         }
+//        }
 
         return Collections.emptyList();
     }
@@ -155,6 +162,9 @@ public class SandboxInviteController extends AbstractController {
 
             // Only invitee can accept or reject
             User invitee = userService.findBySbmUserId(sandboxInvite.getInvitee().getSbmUserId());
+            if (invitee == null) {
+                throw new ResourceNotFoundException("Invitee not found.");
+            }
             checkUserAuthorization(request, invitee.getSbmUserId());
 
             if (status == InviteStatus.REJECTED) {

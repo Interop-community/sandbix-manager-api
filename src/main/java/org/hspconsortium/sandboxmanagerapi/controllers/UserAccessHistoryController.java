@@ -32,18 +32,18 @@ public class UserAccessHistoryController extends AbstractController {
         this.userService = userService;
     }
 
-    @GetMapping(value = "", params = {"sandboxId"})
+    @GetMapping(params = {"sandboxId"})
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSandboxId(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        checkSandboxUserReadAuthorization(request, sandbox);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
+        checkSandboxUserReadAuthorization(request, sandbox);
         return userAccessHistoryService.getLatestUserAccessHistoryInsancesWithSandbox(sandbox);
     }
 
-    @GetMapping(value = "", params = {"sbmUserId"})
+    @GetMapping(params = {"sbmUserId"})
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSbmUserId(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
@@ -55,18 +55,21 @@ public class UserAccessHistoryController extends AbstractController {
         return userAccessHistoryService.getLatestUserAccessHistoryInsancesWithSbmUser(user);
     }
 
-    @GetMapping(value = "", params = {"sbmUserId", "sandboxId"})
+    @GetMapping(params = {"sbmUserId", "sandboxId"})
     public @ResponseBody
     Timestamp getLastSandboxAccess(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded,
                                    @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
-        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        checkSandboxUserReadAuthorization(request, sandbox);
-        if (user == null || sandbox == null) {
-            throw new ResourceNotFoundException("User and/or sandbox not found.");
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found.");
         }
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
+        checkSandboxUserReadAuthorization(request, sandbox);
         return userAccessHistoryService.getLatestUserAccessHistoryInsance(sandbox, user);
     }
 }

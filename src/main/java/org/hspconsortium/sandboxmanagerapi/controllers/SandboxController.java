@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import jdk.management.resource.ResourceRequestDeniedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
@@ -67,7 +68,7 @@ public class SandboxController extends AbstractController {
 
         Sandbox existingSandbox = sandboxService.findBySandboxId(sandbox.getSandboxId());
         if (existingSandbox != null) {
-            return existingSandbox;
+            throw new ResourceRequestDeniedException("Sandbox with id " + sandbox.getSandboxId() + " already exists.");
         }
         checkCreatedByIsCurrentUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
         LOGGER.info("Creating sandbox: " + sandbox.getName());
@@ -92,7 +93,7 @@ public class SandboxController extends AbstractController {
         return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, oAuthService.getBearerToken(request));
     }
 
-    @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
+    @GetMapping(params = {"lookUpId"})
     public @ResponseBody String checkForSandboxById(@RequestParam(value = "lookUpId")  String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {
@@ -101,7 +102,7 @@ public class SandboxController extends AbstractController {
         return null;
     }
 
-    @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
+    @GetMapping(params = {"sandboxId"})
     public @ResponseBody String getSandboxById(@RequestParam(value = "sandboxId")  String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {

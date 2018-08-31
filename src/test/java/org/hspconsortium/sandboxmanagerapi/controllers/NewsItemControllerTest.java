@@ -88,31 +88,31 @@ public class NewsItemControllerTest {
                 .andExpect(status().isOk());
     }
 
-//    @Test
-//    public void saveNewsItemTest() throws Exception {
-//        String json = json(newsItem);
-//        when(newsItemService.save(newsItem)).thenReturn(newsItem);
-//        mvc
-//                .perform(post("/newsItem/save")
-//                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-//                        .content(json))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-//                .andExpect(content().json(json));
-//    }
-//
-//    @Test
-//    public void updateNewsItemTest() throws Exception {
-//        String json = json(newsItem);
-//        when(newsItemService.update(newsItem)).thenReturn(newsItem);
-//        mvc
-//                .perform(put("/newsItem/update/" + newsItem.getId())
-//                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                        .content(json))
-//                .andExpect(status().isOk())
-////                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-//                .andExpect(content().json(json));
-//    }
+    @Test
+    public void saveNewsItemTest() throws Exception {
+        String json = json(newsItem);
+        when(newsItemService.save(any())).thenReturn(newsItem);
+        mvc
+                .perform(post("/newsItem/save")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test
+    public void updateNewsItemTest() throws Exception {
+        String json = json(newsItem);
+        when(newsItemService.update(any())).thenReturn(newsItem);
+        mvc
+                .perform(put("/newsItem/update/" + newsItem.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
