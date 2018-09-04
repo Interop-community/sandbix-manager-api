@@ -36,13 +36,12 @@ public class NotificationController extends AbstractController {
         checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         return notificationService.getAllNotificationsByUser(user);
-//        return notificationService.getAllNotificationsByUser(user);
     }
 
     @PostMapping(value = "", params = {"userId"})
     public void createNotificationsForAllUsers(HttpServletRequest request, @RequestParam(value = "userId") String userId, @RequestBody final NewsItem newsItem) {
-        User user = userService.findBySbmUserId(userId);
         checkUserAuthorization(request, userId);
+        User user = userService.findBySbmUserId(userId);
         Boolean isSystemAdmin = checkUserHasSystemRole(user, SystemRole.ADMIN);
         if (isSystemAdmin) {
             notificationService.createNotificationsForAllUsers(newsItem);
@@ -74,16 +73,18 @@ public class NotificationController extends AbstractController {
         return notificationService.update(notification);
     }
 
-//    @DeleteMapping(value = "/{id}", params = {"userId"})
-//    public void deleteNotification(HttpServletRequest request, @PathVariable Integer id, @RequestParam(value = "userId") String userIdEncoded, @RequestBody final Notification notification) throws UnsupportedEncodingException {
-//        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
-//
-//    }
     @DeleteMapping(value = "", params = {"userId", "newsItemId"})
     public void deleteNotificationForAllUsers(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded, @RequestParam(value = "newsItemId") Integer newsItemId) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         checkUserAuthorization(request, userId);
         notificationService.deleteNotificationForAllUsers(newsItemId);
     }
+
+//    @DeleteMapping(value = "/{id}", params = {"userId"})
+//    public void deleteNotification(HttpServletRequest request, @PathVariable Integer id, @RequestParam(value = "userId") String userIdEncoded, @RequestBody final Notification notification) throws UnsupportedEncodingException {
+//        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
+//        checkUserAuthorization(request, userId);
+//
+//    }
+
 }

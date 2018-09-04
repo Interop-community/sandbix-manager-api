@@ -135,6 +135,9 @@ public class SandboxInviteController extends AbstractController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found.");
+        }
         checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
 
 //        if (status == null) {
@@ -157,7 +160,9 @@ public class SandboxInviteController extends AbstractController {
     @SuppressWarnings("unchecked")
     void updateSandboxInvite(HttpServletRequest request, @PathVariable Integer id, @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         SandboxInvite sandboxInvite = sandboxInviteService.getById(id);
-
+        if (sandboxInvite == null) {
+            throw new ResourceNotFoundException("SandboxInvite not found.");
+        }
         if (sandboxInvite.getStatus() == InviteStatus.PENDING && (status == InviteStatus.ACCEPTED || status == InviteStatus.REJECTED)) {
 
             // Only invitee can accept or reject

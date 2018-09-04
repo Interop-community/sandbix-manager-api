@@ -1,6 +1,8 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import org.hspconsortium.sandboxmanagerapi.model.Role;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
+import org.hspconsortium.sandboxmanagerapi.model.UserPersona;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.junit.Before;
@@ -16,13 +18,16 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -67,15 +72,13 @@ public class UserControllerTest {
                 this.mappingJackson2HttpMessageConverter);
     }
 
-    private Semaphore semaphore;
     private User user;
     private List<User> userList;
+    private UserPersona userPersona;
 
     @Before
     public void setup() {
         when(oAuthService.getOAuthUserId(any())).thenReturn("me");
-
-        semaphore = new Semaphore(1);
         user = new User();
         user.setSbmUserId("me");
         user.setName("user");
@@ -86,6 +89,7 @@ public class UserControllerTest {
         Set<SystemRole> systemRoles = new HashSet<>();
         systemRoles.add(SystemRole.ADMIN);
         user.setSystemRoles(systemRoles);
+        userPersona = new UserPersona();
     }
 
     @Test
@@ -101,8 +105,79 @@ public class UserControllerTest {
     }
 
     @Test
+    public void getUserTestUsingEmail() throws Exception {
+        String json = json(user);
+        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
+        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        when(userService.findByUserEmail(user.getEmail())).thenReturn(user);
+        mvc
+                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+        verify(userService).findByUserEmail(user.getEmail());
+    }
+
+    @Test
+    public void getUserTestCreateUserWhoDoesntExist() throws Exception {
+        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
+        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        when(userService.findByUserEmail(user.getEmail())).thenReturn(null);
+        mvc
+                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+        verify(userPersonaService).findByPersonaUserId(user.getSbmUserId());
+        verify(sandboxActivityLogService).systemUserCreated(any(), any());
+        verify(userService).save(any());
+    }
+
+    @Test
+    public void getUserTestCreateUserEmptyFields() throws Exception {
+        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
+        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
+        user.setName(null);
+        user.setEmail("otherEmail@email");
+        user.setSystemRoles(new HashSet<>());
+        mvc
+                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+        verify(sandboxActivityLogService).systemUserRoleChange(user, SystemRole.USER, true);
+        verify(sandboxActivityLogService).systemUserRoleChange(user, SystemRole.CREATE_SANDBOX, true);
+        verify(sandboxInviteService).mergeSandboxInvites(user, user.getEmail());
+        verify(userService).save(any());
+    }
+
+    @Test
+    public void getUserTestIsPersona() throws Exception {
+        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
+        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(userPersona);
+        mvc
+                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
+    }
+
+    @Test
     public void getAllUsersTest() throws Exception {
         String json = json(userList);
+        when(userService.findAllUsers()).thenReturn(userList);
+        mvc
+                .perform(get("/user/all?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void getAllUsersTestNotAuthorized() throws Exception {
+        String json = json(userList);
+        user.setSystemRoles(new HashSet<>());
         when(userService.findAllUsers()).thenReturn(userList);
         mvc
                 .perform(get("/user/all?sbmUserId=" + user.getSbmUserId()))

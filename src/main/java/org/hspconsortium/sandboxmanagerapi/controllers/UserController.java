@@ -78,10 +78,10 @@ public class UserController extends AbstractController {
         checkUserAuthorization(request, sbmUserId);
         String oauthUsername = oAuthService.getOAuthUserName(request);
         String oauthUserEmail = oAuthService.getOAuthUserEmail(request);
-
+        User user = null;
         try {
             semaphore.acquire();
-            createUserIfNotExists(sbmUserId, oauthUsername, oauthUserEmail);
+            user = createUserIfNotExists(sbmUserId, oauthUsername, oauthUserEmail);
         } catch (InterruptedException e) {
             LOGGER.error("User create thread interrupted.", e);
         } catch(Exception e) {
@@ -90,8 +90,7 @@ public class UserController extends AbstractController {
             // thread will be released in the event of an exception or successful user return
             semaphore.release();
         }
-
-        return userService.findBySbmUserId(sbmUserId);
+        return user;
     }
 
     @GetMapping(value = "/all", params = {"sbmUserId"})
@@ -118,7 +117,7 @@ public class UserController extends AbstractController {
         userService.acceptTermsOfUse(user, termsId);
     }
 
-    private void createUserIfNotExists(String sbmUserId, String oauthUsername, String oauthUserEmail) {
+    private User createUserIfNotExists(String sbmUserId, String oauthUsername, String oauthUserEmail) {
         User user = userService.findBySbmUserId(sbmUserId);
         if (user == null) {
             user = userService.findByUserEmail(oauthUserEmail);
@@ -131,7 +130,7 @@ public class UserController extends AbstractController {
             UserPersona userPersona = userPersonaService.findByPersonaUserId(sbmUserId);
             if (userPersona != null) {
                 //This is a user persona. A user persona cannot be a sandbox user also
-                return;
+                return null;
             }
 
             user = new User();
@@ -174,5 +173,6 @@ public class UserController extends AbstractController {
             user.setEmail(oauthUserEmail);
             userService.save(user);
         }
+        return user;
     }
 }

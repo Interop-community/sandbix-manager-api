@@ -21,8 +21,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import org.hspconsortium.sandboxmanagerapi.services.OAuthClientService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -42,24 +40,12 @@ public class OAuthClientServiceImpl implements OAuthClientService {
 
     @Override
     public String postOAuthClient(String clientJSON) {
-
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL, HttpMethod.POST, requestEntity, String.class);
-        return responseEntity.getBody();
-    }
-
-    @Override
-    public String putOAuthClient(Integer id, String clientJSON) {
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "/" + id, HttpMethod.PUT, requestEntity, String.class);
         return responseEntity.getBody();
     }
 
@@ -71,17 +57,6 @@ public class OAuthClientServiceImpl implements OAuthClientService {
         HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "?clientId=" + clientId, HttpMethod.PUT, requestEntity, String.class);
-        return requestEntity.getBody();
-    }
-
-    @Override
-    public String getOAuthClient(Integer id) {
-
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> requestEntity = new HttpEntity<>(requestHeaders);
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "/" + id, HttpMethod.GET, requestEntity, String.class);
         return responseEntity.getBody();
     }
 
@@ -93,11 +68,6 @@ public class OAuthClientServiceImpl implements OAuthClientService {
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "?clientId=" + clientId, HttpMethod.GET, requestEntity, String.class);
         return responseEntity.getBody();
-    }
-
-    @Override
-    public void deleteOAuthClient(Integer id) {
-        restTemplate.delete(oauthClientEndpointURL + "/" + id);
     }
 
     @Override

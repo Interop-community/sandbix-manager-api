@@ -23,10 +23,10 @@ import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -77,14 +77,17 @@ public class SandboxControllerTest {
         user = new User();
         sandbox = new Sandbox();
         user.setSbmUserId("me");
+        user.setId(1);
         UserRole userRole = new UserRole();
         userRole.setUser(user);
+        userRole.setRole(Role.ADMIN);
         List<UserRole> userRoles = new ArrayList<>();
         userRoles.add(userRole);
         sandbox.setUserRoles(userRoles);
-        sandbox.setVisibility(Visibility.PUBLIC);
+        sandbox.setVisibility(Visibility.PRIVATE);
         sandbox.setSandboxId("sandbox");
         sandbox.setCreatedBy(user);
+        sandbox.setId(1);
         Set<SystemRole> systemRoles = new HashSet<>();
         systemRoles.add(SystemRole.ADMIN);
         systemRoles.add(SystemRole.CREATE_SANDBOX);
@@ -158,42 +161,197 @@ public class SandboxControllerTest {
 
     @Test
     public void getSandboxByIdTest() throws Exception {
+        String response = "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
+        mvc
+                .perform(get("/sandbox?sandboxId=" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().string(response));
+    }
 
+    @Test
+    public void getSandboxByIdTestSandboxNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(get("/sandbox?sandboxId=" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    public void getSandboxByIdTest2() throws Exception {
+        String json = json(sandbox);
+        mvc
+                .perform(get("/sandbox/" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void getSandboxByIdTest2SandboxNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(get("/sandbox/" + sandbox.getId()));
     }
 
     @Test
     public void deleteSandboxByIdTest() throws Exception {
+        List<SandboxInvite> sandboxInvites = new ArrayList<>();
+        SandboxInvite sandboxInvite = new SandboxInvite();
+        sandboxInvites.add(sandboxInvite);
+        when(sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId())).thenReturn(sandboxInvites);
+        mvc
+                .perform(delete("/sandbox/" + sandbox.getSandboxId()))
+                .andExpect(status().isOk());
+        verify(sandboxInviteService).delete(sandboxInvite);
+        verify(sandboxService).delete(any(), any());
+    }
 
+    @Test
+    public void deleteSandboxByIdTestEmptyInviteList() throws Exception {
+        List<SandboxInvite> sandboxInvites = new ArrayList<>();
+        SandboxInvite sandboxInvite = new SandboxInvite();
+        when(sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId())).thenReturn(sandboxInvites);
+        mvc
+                .perform(delete("/sandbox/" + sandbox.getSandboxId()))
+                .andExpect(status().isOk());
+        verify(sandboxInviteService, never()).delete(sandboxInvite);
+        verify(sandboxService).delete(any(), any());
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void deleteSandboxByIdTestSandboxNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(delete("/sandbox/" + sandbox.getSandboxId()));
     }
 
     @Test
     public void updateSandboxByIdTest() throws Exception {
-
+        String json = json(sandbox);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk());
+        verify(sandboxService).update(any(), any(), any());
     }
 
     @Test
     public void getSandboxesByMemberTest() throws Exception {
+        List<Sandbox> sandboxes = new ArrayList<>();
+        sandboxes.add(sandbox);
+        String json = json(sandboxes);
+        when(sandboxService.getAllowedSandboxes(user)).thenReturn(sandboxes);
+        mvc
+                .perform(get("/sandbox?userId=" + user.getSbmUserId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
 
+    @Test(expected = NestedServletException.class)
+    public void getSandboxesByMemberTestUserNotFound() throws Exception {
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        mvc
+                .perform(get("/sandbox?userId=" + user.getSbmUserId()));
     }
 
     @Test
     public void removeSandboxMemberTest() throws Exception {
+        String json = json(sandbox);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?removeUserId=" + user.getSbmUserId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk());
+    }
 
+    @Test(expected = NestedServletException.class)
+    public void removeSandboxMemberTestSandboxNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        String json = json(sandbox);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?removeUserId=" + user.getSbmUserId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void removeSandboxMemberTestUserNotFound() throws Exception {
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        String json = json(sandbox);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?removeUserId=" + user.getSbmUserId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk());
     }
 
     @Test
     public void updateSandboxMemberRoleTest() throws Exception {
+        String json = json(sandbox);
+        sandbox.setCreatedBy(new User());
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?editUserRole=" + user.getSbmUserId() + "&role=ADMIN&add=true")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk());
+        verify(sandboxService).addMemberRole(any(), any(), any());
+    }
 
+    @Test
+    public void updateSandboxMemberRoleTestAddIsFalse() throws Exception {
+        String json = json(sandbox);
+        sandbox.setCreatedBy(new User());
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?editUserRole=" + user.getSbmUserId() + "&role=ADMIN&add=false")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk());
+        verify(sandboxService).removeMemberRole(any(), any(), any());
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void updateSandboxMemberRoleTestSandboxNotFound() throws Exception {
+        String json = json(sandbox);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?editUserRole=" + user.getSbmUserId() + "&role=ADMIN&add=true")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json));
     }
 
     @Test
     public void changePayerForSandboxTest() throws Exception {
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "/changePayer?newPayerId=" + user.getSbmUserId()))
+                .andExpect(status().isOk());
+        verify(sandboxService).changePayerForSandbox(any(), any());
+    }
 
+    @Test(expected = NestedServletException.class)
+    public void changePayerForSandboxTestSandboxNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "/changePayer?newPayerId=" + user.getSbmUserId()));
     }
 
     @Test
     public void sandboxLoginTest() throws Exception {
+        mvc
+                .perform(post("/sandbox/" + sandbox.getSandboxId() + "/login?userId=" + user.getSbmUserId()))
+                .andExpect(status().isOk());
+        verify(userAccessHistoryService).saveUserAccessInstance(any(), any());
+        verify(sandboxService).sandboxLogin(any(), any());
+    }
 
+    @Test(expected = NestedServletException.class)
+    public void sandboxLoginTestSandboxNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(post("/sandbox/" + sandbox.getSandboxId() + "/login?userId=" + user.getSbmUserId()));
     }
 
     @SuppressWarnings("unchecked")
