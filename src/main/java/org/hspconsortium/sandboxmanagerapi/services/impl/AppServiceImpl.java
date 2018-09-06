@@ -27,20 +27,12 @@ public class AppServiceImpl implements AppService {
     private AuthClientService authClientService;
     private ImageService imageService;
     private OAuthClientService oAuthClientService;
-    private ResourceLoader resourceLoader;
-    private RuleService ruleService;
     private LaunchScenarioService launchScenarioService;
     private UserLaunchService userLaunchService;
-    private SandboxService sandboxService;
 
     @Inject
     public AppServiceImpl(final AppRepository repository) {
         this.repository = repository;
-    }
-
-    @Inject
-    public void setResourceLoader(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
     }
 
     @Inject
@@ -71,16 +63,6 @@ public class AppServiceImpl implements AppService {
     @Inject
     public void setLaunchScenarioServices(LaunchScenarioService launchScenarioService, UserLaunchService userLaunchService) {
         this.launchScenarioService = launchScenarioService;
-    }
-
-    @Inject
-    public void setRuleService(RuleService ruleService) {
-        this.ruleService = ruleService;
-    }
-
-    @Inject
-    public void setSandboxService(SandboxService sandboxService) {
-        this.sandboxService = sandboxService;
     }
 
     @Override
@@ -126,6 +108,7 @@ public class AppServiceImpl implements AppService {
             imageService.delete(logoId);
         }
 
+        // TODO: remove, skip testing
         if (app.getAuthClient() != null) {
             int authClientId = app.getAuthClient().getId();
             app.setAuthClient(null);

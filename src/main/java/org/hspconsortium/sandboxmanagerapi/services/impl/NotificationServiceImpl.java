@@ -101,20 +101,18 @@ public class NotificationServiceImpl implements NotificationService {
         NewsItem newsItem = newsItemService.findById(newsItemId);
         if (newsItem == null) {
             throw new ResourceNotFoundException("NewsItem not found.");
-        } else {
-            List<Notification> notifications = notificationRepository.findByNewsItemId(newsItemId);
-            for (Notification notification: notifications) {
-                delete(notification.getId());
-            }
         }
-
+        List<Notification> notifications = notificationRepository.findByNewsItemId(newsItemId);
+        for (Notification notification: notifications) {
+            delete(notification.getId());
+        }
     }
 
-    private Notification save(Notification notification) {
+    public Notification save(Notification notification) {
         return notificationRepository.save(notification);
     }
 
-    private void delete(Integer id) {
+    public void delete(Integer id) {
         notificationRepository.delete(id);
     }
 }

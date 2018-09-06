@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Service
 public class RuleServiceImpl implements RuleService {
 
-    @Autowired
+
     private RulesList rulesList;
 
     private SandboxService sandboxService;
@@ -42,6 +42,11 @@ public class RuleServiceImpl implements RuleService {
         this.appService = appService;
     }
 
+    @Inject
+    public void setRulesList(RulesList rulesList) {
+        this.rulesList = rulesList;
+    }
+
     public Boolean checkIfUserCanCreateSandbox(User user) {
         if (rulesList.getTierRuleList() == null) {
             return true;
@@ -52,7 +57,7 @@ public class RuleServiceImpl implements RuleService {
         }
         List<Sandbox> sandboxes = sandboxService.findByPayerId(user.getId());
         if (rules.getSandboxes() > sandboxes.size()) {
-            if(rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user)) {
+            if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user)) {
                 return true;
             }
         }

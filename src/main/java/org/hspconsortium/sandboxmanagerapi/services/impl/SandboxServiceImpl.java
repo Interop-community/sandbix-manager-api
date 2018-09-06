@@ -24,6 +24,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -101,6 +102,7 @@ public class SandboxServiceImpl implements SandboxService {
     private SandboxActivityLogService sandboxActivityLogService;
     private RuleService ruleService;
     private UserAccessHistoryService userAccessHistoryService;
+    private CloseableHttpClient httpClient;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -155,6 +157,32 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
         this.userAccessHistoryService = userAccessHistoryService;
+    }
+
+    @Inject
+    public void setHttpClient(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    @Bean
+    public CloseableHttpClient httpClient() {
+        SSLContext sslContext;
+        try {
+            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
+        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+            LOGGER.error("Error loading ssl context", e);
+            throw new RuntimeException(e);
+        }
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        builder.setSSLSocketFactory(sslConnectionFactory);
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("https", sslConnectionFactory)
+                .register("http", new PlainConnectionSocketFactory())
+                .build();
+        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
+        builder.setConnectionManager(ccm);
+        return builder.build();
     }
 
     @Override
@@ -233,6 +261,7 @@ public class SandboxServiceImpl implements SandboxService {
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
+    // TODO: create no longer used
     @Override
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
@@ -305,9 +334,6 @@ public class SandboxServiceImpl implements SandboxService {
                     //Clone only the apps if the dataset is empty
                     cloneApps(savedSandbox, clonedSandbox, user);
                 }
-
-
-
             }
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             return savedSandbox;
@@ -577,7 +603,7 @@ public class SandboxServiceImpl implements SandboxService {
         return url;
     }
 
-    private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException{
+    private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
         if (!sandbox.getDataSet().equals(DataSet.NA)){
             url = getSandboxApiURL(sandbox) + "/sandbox?dataSet=" + sandbox.getDataSet();
@@ -591,25 +617,6 @@ public class SandboxServiceImpl implements SandboxService {
         entity = new StringEntity(jsonString);
         putRequest.setEntity(entity);
         putRequest.setHeader("Authorization", "BEARER " + bearerToken);
-
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
@@ -657,25 +664,6 @@ public class SandboxServiceImpl implements SandboxService {
         putRequest.setEntity(entity);
         putRequest.setHeader("Authorization", "BEARER " + bearerToken);
 
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
-
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
@@ -707,25 +695,6 @@ public class SandboxServiceImpl implements SandboxService {
 
         HttpDelete deleteRequest = new HttpDelete(url);
         deleteRequest.addHeader("Authorization", "BEARER " + bearerToken);
-
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(deleteRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {

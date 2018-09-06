@@ -124,13 +124,13 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             updateLaunchScenario.setTitle(launchScenario.getTitle());
             updateLaunchScenario.setSmartStyleUrl(launchScenario.getSmartStyleUrl());
             updateLaunchScenario.setResource(launchScenario.getResource());
-            updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
             updateLaunchScenario.setIntent(launchScenario.getIntent());
             updateLaunchScenario.setEncounter(launchScenario.getEncounter());
             updateLaunchScenario.setLocation(launchScenario.getLocation());
             updateLaunchScenario.setPatientName(launchScenario.getPatientName());
             updateLaunchScenario.setPatient(launchScenario.getPatient());
             updateLaunchScenario.setUserPersona(userPersonaService.getById(launchScenario.getUserPersona().getId()));
+            updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
             updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
             if (launchScenario.getApp().isCustomApp()) {
                 // Create an anonymous App for a custom launch
@@ -176,7 +176,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
     @Override
     public LaunchScenario getById(final int id) {
-        return  repository.findOne(id);
+        return repository.findOne(id);
     }
 
     @Override
