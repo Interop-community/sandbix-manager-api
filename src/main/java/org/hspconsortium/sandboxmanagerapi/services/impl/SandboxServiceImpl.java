@@ -102,7 +102,8 @@ public class SandboxServiceImpl implements SandboxService {
     private SandboxActivityLogService sandboxActivityLogService;
     private RuleService ruleService;
     private UserAccessHistoryService userAccessHistoryService;
-    private CloseableHttpClient httpClient;
+//    private CloseableHttpClient httpClient;
+    private HttpClientBuilder builder;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -160,30 +161,24 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Inject
-    public void setHttpClient(CloseableHttpClient httpClient) {
-        this.httpClient = httpClient;
+    public void setBuilder(HttpClientBuilder builder) {
+        this.builder = builder;
     }
 
-    @Bean
-    public CloseableHttpClient httpClient() {
-        SSLContext sslContext;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-        return builder.build();
+//    @Inject
+//    public void setHttpClient(CloseableHttpClient httpClient) {
+//        this.httpClient = httpClient;
+//    }
+
+    @Bean HttpClientBuilder builder() {
+        return HttpClientBuilder.create();
     }
+//    @Bean
+//    public CloseableHttpClient httpClient() {
+//        // Need to initialize the client
+//        HttpClientBuilder builder = HttpClientBuilder.create();
+//        return builder.build();
+//    }
 
     @Override
     public void delete(final int id) {
@@ -297,6 +292,10 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
+        if (!canCreate) {
+            return null;
+        }
         UserPersona initialUserPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
         Sandbox clonedSandbox = findBySandboxId(clonedSandboxId);
         Sandbox newSandboxExists = findBySandboxId(newSandbox.getSandboxId());
@@ -618,6 +617,8 @@ public class SandboxServiceImpl implements SandboxService {
         putRequest.setEntity(entity);
         putRequest.setHeader("Authorization", "BEARER " + bearerToken);
 
+        CloseableHttpClient httpClient = createBuilder().build();
+
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
@@ -664,6 +665,8 @@ public class SandboxServiceImpl implements SandboxService {
         putRequest.setEntity(entity);
         putRequest.setHeader("Authorization", "BEARER " + bearerToken);
 
+        CloseableHttpClient httpClient = createBuilder().build();
+
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
@@ -696,6 +699,8 @@ public class SandboxServiceImpl implements SandboxService {
         HttpDelete deleteRequest = new HttpDelete(url);
         deleteRequest.addHeader("Authorization", "BEARER " + bearerToken);
 
+        CloseableHttpClient httpClient = createBuilder().build();
+
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(deleteRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
@@ -711,7 +716,7 @@ public class SandboxServiceImpl implements SandboxService {
 
             return true;
         } catch (IOException e) {
-            LOGGER.error("Error posting to " + url, e);
+            LOGGER.error("Error deleting to " + url, e);
             throw new RuntimeException(e);
         } finally {
             try {
@@ -720,6 +725,27 @@ public class SandboxServiceImpl implements SandboxService {
                 LOGGER.error("Error closing HttpClient");
             }
         }
+    }
+
+    private HttpClientBuilder createBuilder() {
+        SSLContext sslContext;
+        try {
+            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
+        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+            LOGGER.error("Error loading ssl context", e);
+            throw new RuntimeException(e);
+        }
+
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        builder.setSSLSocketFactory(sslConnectionFactory);
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("https", sslConnectionFactory)
+                .register("http", new PlainConnectionSocketFactory())
+                .build();
+        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
+        builder.setConnectionManager(ccm);
+        return builder;
     }
 
     private java.sql.Date formatDate() {
