@@ -92,9 +92,9 @@ public class SandboxServiceTest {
 
         statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "FINE!");
 
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
-        when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        when(builder.create()).thenReturn(built);
+//        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+//        when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+//        when(builder.create()).thenReturn(built);
     }
 
     @Test
