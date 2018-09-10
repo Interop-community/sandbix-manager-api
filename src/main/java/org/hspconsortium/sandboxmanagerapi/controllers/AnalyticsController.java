@@ -4,6 +4,7 @@ import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
+import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -95,12 +96,19 @@ public class AnalyticsController extends AbstractController {
        return analyticsService.retrieveTotalMemoryByUser(user);
     }
 
+    // TODO: remove after beta testing
     @GetMapping(value = "/beta-use", params = {"userId"})
     public @ResponseBody List<SandboxActivityLog> getBetaSandboxUsages(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
+        checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
-        checkUserHasSystemRole(user, SystemRole.ADMIN);
-        return sandboxActivityLogService.findBySandboxActivity(SandboxActivity.LOGGED_IN_BETA);
+        Boolean isAdmin = checkUserHasSystemRole(user, SystemRole.ADMIN);
+        if (isAdmin) {
+            return sandboxActivityLogService.findBySandboxActivity(SandboxActivity.LOGGED_IN_BETA);
+        } else {
+            throw new UserDeniedAuthorizationException("User denied access.");
+        }
+
     }
 
     @PostMapping(value = "/transaction")
