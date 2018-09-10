@@ -50,16 +50,18 @@ public class SandboxController extends AbstractController {
     private final UserService userService;
     private final SandboxInviteService sandboxInviteService;
     private final UserAccessHistoryService userAccessHistoryService;
+    private final SandboxActivityLogService sandboxActivityLogService;
 
     @Inject
     public SandboxController(final SandboxService sandboxService, final UserService userService,
                              final SandboxInviteService sandboxInviteService, final OAuthService oAuthService,
-                             final UserAccessHistoryService userAccessHistoryService) {
+                             final UserAccessHistoryService userAccessHistoryService, final SandboxActivityLogService sandboxActivityLogService) {
         super(oAuthService);
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
         this.userAccessHistoryService = userAccessHistoryService;
+        this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -238,6 +240,7 @@ public class SandboxController extends AbstractController {
         }
         User user = userService.findBySbmUserId(userId);
         userAccessHistoryService.saveUserAccessInstance(sandbox, user);
+        sandboxActivityLogService.sandboxLoginBeta(sandbox, user, request.getHeader("origin"));
         sandboxService.sandboxLogin(id, userId);
     }
 

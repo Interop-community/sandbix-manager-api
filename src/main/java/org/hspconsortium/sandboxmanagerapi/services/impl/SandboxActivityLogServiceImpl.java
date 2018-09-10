@@ -186,6 +186,17 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
         return this.save(sandboxActivityLog);
     }
 
+    // TODO: remove after beta testing is over. This is for temporary analytics
+    @Override
+    public SandboxActivityLog sandboxLoginBeta(final Sandbox sandbox, final User user, final String originUrl) {
+        if (originUrl.toLowerCase().contains("-beta") || originUrl.toLowerCase().contains("3001")) {
+            SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
+            sandboxActivityLog.setActivity(SandboxActivity.LOGGED_IN_BETA);
+            return this.save(sandboxActivityLog);
+        }
+        return null;
+    }
+
     @Override
     public List<SandboxActivityLog> findBySandboxId(String sandboxId) {
         return repository.findBySandboxId(sandboxId);

@@ -24,6 +24,7 @@ public class AnalyticsController extends AbstractController {
     private RuleService ruleService;
     private UserPersonaService userPersonaService;
     private UserAccessHistoryService userAccessHistoryService;
+    private SandboxActivityLogService sandboxActivityLogService;
 
     @Inject
     public AnalyticsController(final AnalyticsService analyticsService,
@@ -33,7 +34,8 @@ public class AnalyticsController extends AbstractController {
                                final OAuthService oAuthService,
                                final RuleService ruleService,
                                final UserPersonaService userPersonaService,
-                               final UserAccessHistoryService userAccessHistoryService) {
+                               final UserAccessHistoryService userAccessHistoryService,
+                               final SandboxActivityLogService sandboxActivityLogService) {
         super(oAuthService);
         this.analyticsService = analyticsService;
         this.userService = userService;
@@ -42,6 +44,7 @@ public class AnalyticsController extends AbstractController {
         this.ruleService = ruleService;
         this.userPersonaService = userPersonaService;
         this.userAccessHistoryService = userAccessHistoryService;
+        this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
     @GetMapping(value = "/sandboxes", params = {"userId"})
@@ -90,6 +93,14 @@ public class AnalyticsController extends AbstractController {
             throw new ResourceNotFoundException("User not found.");
         }
        return analyticsService.retrieveTotalMemoryByUser(user);
+    }
+
+    @GetMapping(value = "/beta-use", params = {"userId"})
+    public @ResponseBody List<SandboxActivityLog> getBetaSandboxUsages(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
+        User user = userService.findBySbmUserId(userId);
+        checkUserHasSystemRole(user, SystemRole.ADMIN);
+        return sandboxActivityLogService.findBySandboxActivity(SandboxActivity.LOGGED_IN_BETA);
     }
 
     @PostMapping(value = "/transaction")
