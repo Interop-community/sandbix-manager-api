@@ -27,6 +27,7 @@ import org.springframework.http.*;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Inject;
 import java.util.Collections;
 
 @Service
@@ -35,8 +36,13 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Value("${hspc.platform.api.oauthClientEndpointURL}")
     String oauthClientEndpointURL;
 
-    @Autowired
+
     private OAuth2RestOperations restTemplate;
+
+    @Inject
+    public void setRestTemplate(OAuth2RestOperations restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Override
     public String postOAuthClient(String clientJSON) {

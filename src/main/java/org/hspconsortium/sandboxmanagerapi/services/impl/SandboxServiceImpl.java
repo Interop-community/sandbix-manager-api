@@ -592,6 +592,7 @@ public class SandboxServiceImpl implements SandboxService {
             url = getSandboxApiURL(sandbox) + "/sandbox?dataSet=" + sandbox.getDataSet();
         }
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpPut putRequest = new HttpPut(url);
         putRequest.addHeader("Content-Type", "application/json");
         StringEntity entity;
@@ -630,6 +631,7 @@ public class SandboxServiceImpl implements SandboxService {
     private boolean callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
         String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpPut putRequest = new HttpPut(url);
         putRequest.addHeader("Content-Type", "application/json");
         StringEntity entity;
@@ -676,6 +678,7 @@ public class SandboxServiceImpl implements SandboxService {
     private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken ) {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpDelete deleteRequest = new HttpDelete(url);
         deleteRequest.addHeader("Authorization", "BEARER " + bearerToken);
 

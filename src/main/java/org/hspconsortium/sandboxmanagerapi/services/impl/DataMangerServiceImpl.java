@@ -208,6 +208,7 @@ public class DataMangerServiceImpl implements DataManagerService {
     private String queryFHIRServer(final String endpoint, final String query)  {
         String url = endpoint + query;
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpGet getRequest = new HttpGet(url);
         getRequest.setHeader("Accept", "application/json");
 
@@ -258,6 +259,7 @@ public class DataMangerServiceImpl implements DataManagerService {
     private boolean postToSandbox(final Sandbox sandbox, final String jsonString, final String requestStr, final String bearerToken ) throws UnsupportedEncodingException {
         String url = sandboxService.getSandboxApiURL(sandbox) + requestStr;
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpPost postRequest = new HttpPost(url);
         postRequest.addHeader("Content-Type", "application/json");
         if (jsonString != null) {

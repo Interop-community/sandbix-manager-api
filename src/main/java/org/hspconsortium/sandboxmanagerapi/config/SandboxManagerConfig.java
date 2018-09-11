@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
 import java.security.KeyManagementException;
@@ -47,5 +48,10 @@ public class SandboxManagerConfig {
         HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
         builder.setConnectionManager(ccm);
         return builder.build();
+    }
+
+    @Bean
+    public RestTemplate simpleRestTemplate() {
+        return new RestTemplate();
     }
 }
