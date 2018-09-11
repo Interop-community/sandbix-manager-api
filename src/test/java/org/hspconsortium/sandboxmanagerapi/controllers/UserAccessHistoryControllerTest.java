@@ -94,7 +94,7 @@ public class UserAccessHistoryControllerTest {
     public void getLastSandboxAccessWithSandboxIdTest() throws Exception {
         String json = json(userAccessHistoryList);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        when(userAccessHistoryService.getLatestUserAccessHistoryInsancesWithSandbox(sandbox)).thenReturn(userAccessHistoryList);
+        when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSandbox(sandbox)).thenReturn(userAccessHistoryList);
         mvc
                 .perform(get("/sandbox-access?sandboxId=" + sandbox.getSandboxId()))
                 .andExpect(status().isOk())
@@ -106,7 +106,7 @@ public class UserAccessHistoryControllerTest {
     public void getLastSandboxAccessWithSbmUserIdTest() throws Exception {
         String json = json(userAccessHistoryList);
         when(userService.findBySbmUserId(any())).thenReturn(user);
-        when(userAccessHistoryService.getLatestUserAccessHistoryInsancesWithSbmUser(user)).thenReturn(userAccessHistoryList);
+        when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSbmUser(user)).thenReturn(userAccessHistoryList);
         mvc
                 .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId()))
                 .andExpect(status().isOk())
@@ -119,7 +119,7 @@ public class UserAccessHistoryControllerTest {
         Timestamp timestamp = new Timestamp(new Date().getTime());
         when(userService.findBySbmUserId(any())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        when(userAccessHistoryService.getLatestUserAccessHistoryInsance(sandbox, user)).thenReturn(timestamp);
+        when(userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user)).thenReturn(timestamp);
         mvc
                 .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId() + "&sandboxId=" + sandbox.getSandboxId()))
                 .andExpect(status().isOk())

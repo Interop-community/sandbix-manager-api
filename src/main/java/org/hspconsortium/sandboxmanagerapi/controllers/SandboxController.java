@@ -240,7 +240,9 @@ public class SandboxController extends AbstractController {
         }
         User user = userService.findBySbmUserId(userId);
         userAccessHistoryService.saveUserAccessInstance(sandbox, user);
+        //TODO: remove after beta testing
         sandboxActivityLogService.sandboxLoginBeta(sandbox, user, request.getHeader("origin"));
+
         sandboxService.sandboxLogin(id, userId);
     }
 

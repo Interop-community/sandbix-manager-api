@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -46,7 +47,7 @@ public class DataMangerServiceImpl implements DataManagerService {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
 
     private SandboxService sandboxService;
-
+    private CloseableHttpClient httpClient;
 
     public DataMangerServiceImpl() {
     }
@@ -54,6 +55,11 @@ public class DataMangerServiceImpl implements DataManagerService {
     @Inject
     public void setSandboxService(SandboxService sandboxService) {
         this.sandboxService = sandboxService;
+    }
+
+    @Inject
+    public void setHttpClient(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 
     @Override
@@ -205,25 +211,6 @@ public class DataMangerServiceImpl implements DataManagerService {
         HttpGet getRequest = new HttpGet(url);
         getRequest.setHeader("Accept", "application/json");
 
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
-
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(getRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
@@ -243,11 +230,11 @@ public class DataMangerServiceImpl implements DataManagerService {
             LOGGER.error("Error posting to " + url, e);
             throw new RuntimeException(e);
         } finally {
-            try {
-                httpClient.close();
-            }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient", e);
-            }
+//            try {
+//                httpClient.close();
+//            }catch (IOException e) {
+//                LOGGER.error("Error closing HttpClient", e);
+//            }
         }
     }
 
@@ -280,25 +267,6 @@ public class DataMangerServiceImpl implements DataManagerService {
         }
         postRequest.setHeader("Authorization", "BEARER " + bearerToken);
 
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
-
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
@@ -317,11 +285,11 @@ public class DataMangerServiceImpl implements DataManagerService {
             LOGGER.error("Error posting to {}", url, e);
             throw new RuntimeException(e);
         } finally {
-            try {
-                httpClient.close();
-            }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient", e);
-            }
+//            try {
+//                httpClient.close();
+//            }catch (IOException e) {
+//                LOGGER.error("Error closing HttpClient", e);
+//            }
         }
     }
 

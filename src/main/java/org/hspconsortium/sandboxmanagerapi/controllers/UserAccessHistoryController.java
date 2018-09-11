@@ -40,7 +40,7 @@ public class UserAccessHistoryController extends AbstractController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         checkSandboxUserReadAuthorization(request, sandbox);
-        return userAccessHistoryService.getLatestUserAccessHistoryInsancesWithSandbox(sandbox);
+        return userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSandbox(sandbox);
     }
 
     @GetMapping(params = {"sbmUserId"})
@@ -52,7 +52,7 @@ public class UserAccessHistoryController extends AbstractController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        return userAccessHistoryService.getLatestUserAccessHistoryInsancesWithSbmUser(user);
+        return userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSbmUser(user);
     }
 
     @GetMapping(params = {"sbmUserId", "sandboxId"})
@@ -70,6 +70,6 @@ public class UserAccessHistoryController extends AbstractController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         checkSandboxUserReadAuthorization(request, sandbox);
-        return userAccessHistoryService.getLatestUserAccessHistoryInsance(sandbox, user);
+        return userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user);
     }
 }
