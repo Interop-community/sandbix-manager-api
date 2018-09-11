@@ -11,6 +11,8 @@ public interface UserService {
 
     void delete(final User user);
 
+    Iterable<User> findAllUsers();
+
     User findBySbmUserId(final String sbmUserId);
 
     User findByUserEmail(final String email);

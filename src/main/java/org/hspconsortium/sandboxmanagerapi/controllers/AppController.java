@@ -23,10 +23,7 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.apache.http.HttpStatus;
 import org.hspconsortium.sandboxmanagerapi.model.*;
-import org.hspconsortium.sandboxmanagerapi.services.AppService;
-import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -44,26 +41,35 @@ import static org.springframework.http.MediaType.*;
 
 @RestController
 @RequestMapping({"/app"})
-public class AppRegistrationController extends AbstractController {
-    private static Logger LOGGER = LoggerFactory.getLogger(AppRegistrationController.class.getName());
+public class AppController extends AbstractController {
+    private static Logger LOGGER = LoggerFactory.getLogger(AppController.class.getName());
 
     private final AppService appService;
     private final SandboxService sandboxService;
     private final UserService userService;
+    private final RuleService ruleService;
 
     @Inject
-    public AppRegistrationController(final AppService appService, final OAuthService oAuthService,
-                                     final SandboxService sandboxService, final UserService userService) {
+    public AppController(final AppService appService, final OAuthService oAuthService,
+                         final SandboxService sandboxService, final UserService userService,
+                         final RuleService ruleService) {
         super(oAuthService);
         this.appService = appService;
         this.sandboxService = sandboxService;
         this.userService = userService;
+        this.ruleService = ruleService;
     }
 
     @PostMapping
     @Transactional
     public @ResponseBody App createApp(final HttpServletRequest request, @RequestBody App app) {
         Sandbox sandbox = sandboxService.findBySandboxId(app.getSandbox().getSandboxId());
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox specified in app not found.");
+        }
+        if (!ruleService.checkIfUserCanCreateApp(sandbox)) {
+            return null;
+        }
         String sbmUserId = checkSandboxUserCreateAuthorization(request, sandbox);
         checkCreatedByIsCurrentUserAuthorization(request, app.getCreatedBy().getSbmUserId());
 
@@ -77,20 +83,21 @@ public class AppRegistrationController extends AbstractController {
     @GetMapping(params = {"sandboxId"})
     public @ResponseBody List<App> getApps(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         String sbmUserId = checkSandboxUserReadAuthorization(request, sandbox);
         return appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
     }
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody App getApp(final HttpServletRequest request, @PathVariable Integer id) {
-        try {
-            App app = appService.getById(id);
+        App app = appService.getById(id);
+        if (app != null) {
             checkSandboxUserReadAuthorization(request, app.getSandbox());
             return appService.getClientJSON(app);
-        } catch (Exception e) {
-            // not being handled by global exception handler?
-            LOGGER.error("Error retrieving app", e);
-            throw new RuntimeException(e);
+        } else {
+            throw new ResourceNotFoundException("Could not find app.");
         }
     }
 
@@ -98,8 +105,12 @@ public class AppRegistrationController extends AbstractController {
     @Transactional
     public @ResponseBody void deleteApp(final HttpServletRequest request, @PathVariable Integer id) {
         App app = appService.getById(id);
-        checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
-        appService.delete(app);
+        if (app != null) {
+            checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
+            appService.delete(app);
+        } else {
+            throw new ResourceNotFoundException("Could not find app.");
+        }
     }
 
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
@@ -119,6 +130,9 @@ public class AppRegistrationController extends AbstractController {
     @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
     public @ResponseBody void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
         App app = appService.getById(id);
+        if (app == null) {
+            throw new ResourceNotFoundException("App not found.");
+        }
         try {
             response.setHeader("Content-Type", app.getLogo().getContentType());
             response.getOutputStream().write(app.getLogo().getBytes());
@@ -132,7 +146,7 @@ public class AppRegistrationController extends AbstractController {
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
         App app = appService.getById(id);
         if (app == null) {
-            throw new ResourceNotFoundException("App does not exist. Cannot delete image.");
+            throw new ResourceNotFoundException("App does not exist. Cannot upload image.");
         }
         checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
         app.setLogoUri(request.getRequestURL().toString());

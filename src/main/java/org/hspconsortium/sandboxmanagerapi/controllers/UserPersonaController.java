@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.controllers.dto.UserPersonaCredentials;
 import org.hspconsortium.sandboxmanagerapi.controllers.dto.UserPersonaDto;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
@@ -62,6 +63,9 @@ public class UserPersonaController extends AbstractController {
     public @ResponseBody UserPersona createUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
         Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         String sbmUserId = checkSandboxUserCreateAuthorization(request, sandbox);
         userPersona.setSandbox(sandbox);
         User user = userService.findBySbmUserId(sbmUserId);
@@ -75,6 +79,9 @@ public class UserPersonaController extends AbstractController {
     public @ResponseBody UserPersona updateUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
         Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         checkSandboxUserModifyAuthorization(request, sandbox, userPersona);
         return userPersonaService.update(userPersona);
     }
@@ -86,6 +93,9 @@ public class UserPersonaController extends AbstractController {
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         checkSandboxUserReadAuthorization(request, sandbox);
         return userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
@@ -97,6 +107,9 @@ public class UserPersonaController extends AbstractController {
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         checkSandboxUserReadAuthorization(request, sandbox);
         return userPersonaService.findDefaultBySandboxId(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
@@ -111,14 +124,17 @@ public class UserPersonaController extends AbstractController {
     @Transactional
     public void deleteSandboxUserPersona(HttpServletRequest request, @PathVariable Integer id) {
         UserPersona userPersona = userPersonaService.getById(id);
+        if (userPersona == null) {
+            throw new ResourceNotFoundException("UserPersona not found.");
+        }
         checkSandboxUserModifyAuthorization(request, userPersona.getSandbox(), userPersona);
 
         userPersonaService.delete(userPersona);
     }
 
-    @GetMapping(value = "/{username}", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody UserPersonaDto readUserPersona(HttpServletResponse response, @PathVariable String username) {
-        UserPersona userPersona = userPersonaService.findByPersonaUserId(username);
+    @GetMapping(value = "/{personaUserId}", produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody UserPersonaDto readUserPersona(HttpServletResponse response, @PathVariable String personaUserId) {
+        UserPersona userPersona = userPersonaService.findByPersonaUserId(personaUserId);
         if(userPersona == null) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
             return null;

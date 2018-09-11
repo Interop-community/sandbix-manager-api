@@ -98,10 +98,19 @@ abstract class AbstractController {
     String checkSystemUserDeleteSandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
-        // If the sandbox is PRIVATE, only the creator can delete.
+        Boolean isAdmin = false;
+        for (UserRole userRole: sandbox.getUserRoles()) {
+            if (userRole.getUser().getSbmUserId().equals(oauthUserId)) {
+                if (userRole.getRole() == Role.ADMIN) {
+                    isAdmin = true;
+                }
+            }
+        }
+        // If the sandbox is PRIVATE, only an admin can delete.
         // If the sandbox is PUBLIC, a system sandbox creator or system admin can delete.
         if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user) &&
-                (sandbox.getVisibility() == Visibility.PRIVATE && sandbox.getCreatedBy().getSbmUserId().equalsIgnoreCase(oauthUserId))) {
+                (sandbox.getVisibility() == Visibility.PRIVATE && isAdmin)) {
+//                (sandbox.getVisibility() == Visibility.PRIVATE && sandbox.getCreatedBy().getSbmUserId().equalsIgnoreCase(oauthUserId))) {
             return oauthUserId;
         }
         throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
@@ -227,7 +236,7 @@ abstract class AbstractController {
         throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
-    private boolean checkUserHasSystemRole(final User user, final SystemRole role) {
+    boolean checkUserHasSystemRole(final User user, final SystemRole role) {
         for(SystemRole systemRole : user.getSystemRoles()) {
             if (systemRole == role) {
                 return true;

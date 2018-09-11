@@ -58,6 +58,10 @@ public class UserServiceImpl implements UserService {
         repository.delete(user);
     }
 
+    public Iterable<User> findAllUsers() {
+        return repository.findAll();
+    }
+
     public User findBySbmUserId(final String sbmUserId) {
         User user = repository.findBySbmUserId(sbmUserId);
 

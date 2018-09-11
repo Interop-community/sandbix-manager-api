@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
@@ -61,6 +62,9 @@ public class DataManagerController extends AbstractController {
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkUserAuthorization(request, user.getSbmUserId());
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         checkSandboxUserReadAuthorization(request, sandbox);
 
         return sandbox.getImports();
@@ -92,6 +96,9 @@ public class DataManagerController extends AbstractController {
     public @ResponseBody String reset(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "dataSet") DataSet dataSet)  throws UnsupportedEncodingException {
 
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
         User user = userService.findBySbmUserId(getSystemUserId(request));
         checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
 

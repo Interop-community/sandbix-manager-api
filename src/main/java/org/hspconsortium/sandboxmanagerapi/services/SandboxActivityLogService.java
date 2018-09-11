@@ -43,6 +43,8 @@ public interface SandboxActivityLogService {
 
     SandboxActivityLog userDelete(final User user);
 
+    SandboxActivityLog sandboxLoginBeta(final Sandbox sandbox, final User user, final String originUrl);
+
     List<SandboxActivityLog> findBySandboxId(final String sandboxId);
 
     List<SandboxActivityLog> findByUserSbmUserId(final String sbmUserId);

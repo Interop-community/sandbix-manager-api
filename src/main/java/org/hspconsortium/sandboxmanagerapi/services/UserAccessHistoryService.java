@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface UserAccessHistoryService {
 
-    Timestamp getLatestUserAccessHistoryInsance(Sandbox sandbox, User user);
+    Timestamp getLatestUserAccessHistoryInstance(Sandbox sandbox, User user);
 
-    List<UserAccessHistory> getLatestUserAccessHistoryInsancesWithSandbox(Sandbox sandbox);
+    List<UserAccessHistory> getLatestUserAccessHistoryInstancesWithSandbox(Sandbox sandbox);
 
-    List<UserAccessHistory> getLatestUserAccessHistoryInsancesWithSbmUser(User user);
+    List<UserAccessHistory> getLatestUserAccessHistoryInstancesWithSbmUser(User user);
 
     void saveUserAccessInstance(Sandbox sandbox, User user);
 

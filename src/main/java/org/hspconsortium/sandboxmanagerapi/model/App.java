@@ -13,26 +13,15 @@ import java.sql.Timestamp;
         query="SELECT c FROM App c WHERE c.launchUri = :launchUri and " +
                 "c.clientId = :clientId and c.sandbox.sandboxId = :sandboxId"),
         // Used to delete all registered apps when a sandbox is deleted
-//        @NamedQuery(name="App.findBySandboxId",
-//        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL " +
-//                "order by c.authClient.clientName"),
         @NamedQuery(name="App.findBySandboxId",
         query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 " +
                 "order by c.clientName"),
         // Used to retrieve all registered apps visible to a user of this a sandbox
-//        @NamedQuery(name="App.findBySandboxIdAndCreatedByOrVisibility",
-//        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
-//                "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility) " +
-//                "order by c.authClient.clientName"),
         @NamedQuery(name="App.findBySandboxIdAndCreatedByOrVisibility",
         query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 and " +
                 "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility) " +
                 "order by c.clientName"),
         // Used to delete a user's PRIVATE registered apps when they are removed from a sandbox
-//        @NamedQuery(name="App.findBySandboxIdAndCreatedBy",
-//        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.authClient.authDatabaseId IS NOT NULL and " +
-//                "c.createdBy.sbmUserId = :createdBy " +
-//                "order by c.authClient.clientName")
         @NamedQuery(name="App.findBySandboxIdAndCreatedBy",
         query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 and " +
                 "c.createdBy.sbmUserId = :createdBy " +
@@ -93,7 +82,6 @@ public class App extends AbstractSandboxItem {
     public String getLaunchUri() {
         return launchUri;
     }
-
 
     public String getAppManifestUri() {
         return appManifestUri;

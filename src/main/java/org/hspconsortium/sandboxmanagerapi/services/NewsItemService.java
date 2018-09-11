@@ -8,8 +8,12 @@ public interface NewsItemService {
 
     NewsItem save(NewsItem newsItem);
 
+    NewsItem update(NewsItem newsItem);
+
     void delete(int id);
 
     List<NewsItem> findAll();
+
+    NewsItem findById(Integer id);
 
 }

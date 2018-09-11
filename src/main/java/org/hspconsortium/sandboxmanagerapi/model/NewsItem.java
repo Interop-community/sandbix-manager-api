@@ -2,10 +2,12 @@ package org.hspconsortium.sandboxmanagerapi.model;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.sql.Timestamp;
 
 @Entity
 public class NewsItem {
     private Integer id;
+    private Timestamp createdTimestamp;
     private String title;
     private String description;
     private String link;
@@ -21,6 +23,14 @@ public class NewsItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer getId() {
         return id;
+    }
+
+    public Timestamp getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    public void setCreatedTimestamp(Timestamp createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
     }
 
     public String getTitle() {

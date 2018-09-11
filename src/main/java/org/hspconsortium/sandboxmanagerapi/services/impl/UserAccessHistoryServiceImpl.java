@@ -19,7 +19,7 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
         this.userAccessHistoryRepository = userAccessHistoryRepository;
     }
 
-    public Timestamp getLatestUserAccessHistoryInsance(Sandbox sandbox, User user) {
+    public Timestamp getLatestUserAccessHistoryInstance(Sandbox sandbox, User user) {
         List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserIdAndSandboxId(user.getSbmUserId(), sandbox.getSandboxId());
         if (userAccessHistories.size() > 0) {
             return userAccessHistories.get(0).getAccessTimestamp();
@@ -27,11 +27,11 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
         return null;
     }
 
-    public List<UserAccessHistory> getLatestUserAccessHistoryInsancesWithSandbox(Sandbox sandbox) {
+    public List<UserAccessHistory> getLatestUserAccessHistoryInstancesWithSandbox(Sandbox sandbox) {
         return userAccessHistoryRepository.findBySandboxId(sandbox.getSandboxId());
     }
 
-    public List<UserAccessHistory> getLatestUserAccessHistoryInsancesWithSbmUser(User user) {
+    public List<UserAccessHistory> getLatestUserAccessHistoryInstancesWithSbmUser(User user) {
         return userAccessHistoryRepository.findBySbmUserId(user.getSbmUserId());
     }
 

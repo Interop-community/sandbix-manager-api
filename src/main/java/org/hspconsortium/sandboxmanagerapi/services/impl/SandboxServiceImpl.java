@@ -24,6 +24,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -101,6 +102,7 @@ public class SandboxServiceImpl implements SandboxService {
     private SandboxActivityLogService sandboxActivityLogService;
     private RuleService ruleService;
     private UserAccessHistoryService userAccessHistoryService;
+    private CloseableHttpClient httpClient;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -155,6 +157,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
         this.userAccessHistoryService = userAccessHistoryService;
+    }
+
+    @Inject
+    public void setHttpClient(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 
     @Override
@@ -233,6 +240,7 @@ public class SandboxServiceImpl implements SandboxService {
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
+    // TODO: create no longer used
     @Override
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
@@ -268,6 +276,10 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
+        if (!canCreate) {
+            return null;
+        }
         UserPersona initialUserPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
         Sandbox clonedSandbox = findBySandboxId(clonedSandboxId);
         Sandbox newSandboxExists = findBySandboxId(newSandbox.getSandboxId());
@@ -305,9 +317,6 @@ public class SandboxServiceImpl implements SandboxService {
                     //Clone only the apps if the dataset is empty
                     cloneApps(savedSandbox, clonedSandbox, user);
                 }
-
-
-
             }
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             return savedSandbox;
@@ -577,12 +586,13 @@ public class SandboxServiceImpl implements SandboxService {
         return url;
     }
 
-    private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException{
+    private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
         if (!sandbox.getDataSet().equals(DataSet.NA)){
             url = getSandboxApiURL(sandbox) + "/sandbox?dataSet=" + sandbox.getDataSet();
         }
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpPut putRequest = new HttpPut(url);
         putRequest.addHeader("Content-Type", "application/json");
         StringEntity entity;
@@ -591,25 +601,6 @@ public class SandboxServiceImpl implements SandboxService {
         entity = new StringEntity(jsonString);
         putRequest.setEntity(entity);
         putRequest.setHeader("Authorization", "BEARER " + bearerToken);
-
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
@@ -629,17 +620,18 @@ public class SandboxServiceImpl implements SandboxService {
             LOGGER.error("Error posting to " + url, e);
             throw new RuntimeException(e);
         } finally {
-            try {
-                httpClient.close();
-            }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient");
-            }
+//            try {
+//                httpClient.close();
+//            }catch (IOException e) {
+//                LOGGER.error("Error closing HttpClient");
+//            }
         }
     }
 
     private boolean callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
         String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpPut putRequest = new HttpPut(url);
         putRequest.addHeader("Content-Type", "application/json");
         StringEntity entity;
@@ -656,25 +648,6 @@ public class SandboxServiceImpl implements SandboxService {
         entity = new StringEntity(jsonString);
         putRequest.setEntity(entity);
         putRequest.setHeader("Authorization", "BEARER " + bearerToken);
-
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
@@ -694,38 +667,20 @@ public class SandboxServiceImpl implements SandboxService {
             LOGGER.error("Error posting to " + url, e);
             throw new RuntimeException(e);
         } finally {
-            try {
-                httpClient.close();
-            }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient");
-            }
+//            try {
+//                httpClient.close();
+//            } catch (IOException e) {
+//                LOGGER.error("Error closing HttpClient");
+//            }
         }
     }
 
     private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken ) {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
 
+        // TODO: change to using 'simpleRestTemplate'
         HttpDelete deleteRequest = new HttpDelete(url);
         deleteRequest.addHeader("Authorization", "BEARER " + bearerToken);
-
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useSSL().build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            LOGGER.error("Error loading ssl context", e);
-            throw new RuntimeException(e);
-        }
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        builder.setSSLSocketFactory(sslConnectionFactory);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("https", sslConnectionFactory)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-        builder.setConnectionManager(ccm);
-
-        CloseableHttpClient httpClient = builder.build();
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(deleteRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
@@ -742,14 +697,14 @@ public class SandboxServiceImpl implements SandboxService {
 
             return true;
         } catch (IOException e) {
-            LOGGER.error("Error posting to " + url, e);
+            LOGGER.error("Error deleting to " + url, e);
             throw new RuntimeException(e);
         } finally {
-            try {
-                httpClient.close();
-            }catch (IOException e) {
-                LOGGER.error("Error closing HttpClient");
-            }
+//            try {
+//                httpClient.close();
+//            }catch (IOException e) {
+//                LOGGER.error("Error closing HttpClient");
+//            }
         }
     }
 
