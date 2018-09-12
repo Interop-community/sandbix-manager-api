@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 public class OAuthClientServiceTest {
 
     private OAuth2RestOperations restTemplate = mock(OAuth2RestOperations.class);
-    ResponseEntity<String> responseEntity;
+    private ResponseEntity<String> responseEntity;
 
     private OAuthClientServiceImpl oAuthClientService = new OAuthClientServiceImpl();
 

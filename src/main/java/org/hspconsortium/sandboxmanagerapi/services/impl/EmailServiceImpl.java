@@ -23,6 +23,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import javax.imageio.ImageIO;
+import javax.inject.Inject;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.awt.image.BufferedImage;
@@ -44,11 +45,18 @@ public class EmailServiceImpl implements EmailService {
     @Value("${hspc.platform.messaging.sendEmail}")
     private boolean sendEmail;
 
-    @Autowired
     private JavaMailSender mailSender;
-
-    @Autowired
     private SpringTemplateEngine templateEngine;
+
+    @Inject
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    @Inject
+    public void setTemplateEngine(SpringTemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
+    }
 
     @Override
     @PublishAtomicMetric
