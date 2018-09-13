@@ -1,42 +1,35 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
+import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.DataSet;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SandboxImport;
 import org.hspconsortium.sandboxmanagerapi.services.DataManagerService;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -60,6 +53,13 @@ public class DataMangerServiceImpl implements DataManagerService {
     @Inject
     public void setHttpClient(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    private RestTemplate simpleRestTemplate;
+
+    @Inject
+    public void setRestTemplate(RestTemplate simpleRestTemplate) {
+        this.simpleRestTemplate = simpleRestTemplate;
     }
 
     @Override
@@ -259,39 +259,23 @@ public class DataMangerServiceImpl implements DataManagerService {
     private boolean postToSandbox(final Sandbox sandbox, final String jsonString, final String requestStr, final String bearerToken ) throws UnsupportedEncodingException {
         String url = sandboxService.getSandboxApiURL(sandbox) + requestStr;
 
-        // TODO: change to using 'simpleRestTemplate'
-        HttpPost postRequest = new HttpPost(url);
-        postRequest.addHeader("Content-Type", "application/json");
-        if (jsonString != null) {
-            StringEntity entity = new StringEntity(jsonString);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "BEARER " + bearerToken);
+        headers.set("Content-Type", "application/json");
 
-            postRequest.setEntity(entity);
-        }
-        postRequest.setHeader("Authorization", "BEARER " + bearerToken);
+        org.springframework.http.HttpEntity entity = new org.springframework.http.HttpEntity(jsonString, headers);
 
-        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(postRequest)) {
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                HttpEntity rEntity = closeableHttpResponse.getEntity();
-                String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
-                String errorMsg = String.format("There was a problem posting to the sandbox.\n" +
-                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                        closeableHttpResponse.getStatusLine(),
-                        responseString,
-                        url);
-                LOGGER.error(errorMsg);
-                throw new RuntimeException(errorMsg);
-            }
-
+        try {
+            simpleRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
             return true;
-        } catch (IOException e) {
-            LOGGER.error("Error posting to {}", url, e);
-            throw new RuntimeException(e);
-        } finally {
-//            try {
-//                httpClient.close();
-//            }catch (IOException e) {
-//                LOGGER.error("Error closing HttpClient", e);
-//            }
+        } catch (HttpClientErrorException e) {
+            if (e.getRawStatusCode() == 401) {
+                throw new UnauthorizedException(String.format("Response Status : %s.\n" +
+                                "Response Detail : User not authorized to perform this action."
+                        , HttpStatus.SC_UNAUTHORIZED));
+            } else {
+                throw new UnknownError("There was a problem posting to the sandbox.");
+            }
         }
     }
 

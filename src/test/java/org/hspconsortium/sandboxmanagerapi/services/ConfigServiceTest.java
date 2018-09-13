@@ -1,4 +1,4 @@
-package org.hspconsorotium.sandboxmanagerapi.services;
+package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.controllers.ConfigController;
 import org.hspconsortium.sandboxmanagerapi.model.Config;

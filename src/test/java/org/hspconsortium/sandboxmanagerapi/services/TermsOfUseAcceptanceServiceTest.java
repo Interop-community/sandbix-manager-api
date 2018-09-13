@@ -1,4 +1,4 @@
-package org.hspconsorotium.sandboxmanagerapi.services;
+package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.TermsOfUseAcceptance;
 import org.hspconsortium.sandboxmanagerapi.repositories.TermsOfUseAcceptanceRepository;

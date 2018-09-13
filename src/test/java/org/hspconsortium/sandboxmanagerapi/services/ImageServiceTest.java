@@ -1,4 +1,4 @@
-package org.hspconsorotium.sandboxmanagerapi.services;
+package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.Image;
 import org.hspconsortium.sandboxmanagerapi.repositories.ImageRepository;

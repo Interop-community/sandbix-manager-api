@@ -1,4 +1,4 @@
-package org.hspconsorotium.sandboxmanagerapi.services;
+package org.hspconsortium.sandboxmanagerapi.services;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.NewsItem;

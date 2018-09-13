@@ -1,4 +1,4 @@
-package org.hspconsorotium.sandboxmanagerapi.services;
+package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.services.impl.OAuthClientServiceImpl;
 import org.junit.Before;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 public class OAuthClientServiceTest {
 
     private OAuth2RestOperations restTemplate = mock(OAuth2RestOperations.class);
-    ResponseEntity<String> responseEntity;
+    private ResponseEntity<String> responseEntity;
 
     private OAuthClientServiceImpl oAuthClientService = new OAuthClientServiceImpl();
 

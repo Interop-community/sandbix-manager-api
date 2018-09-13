@@ -71,7 +71,7 @@ public class OAuthServiceImpl implements OAuthService {
             if (jsonObject != null) {
                 return (String) jsonObject.get("sub");
             }
-        } catch (JSONException e) {
+        } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
         return null;
@@ -84,7 +84,7 @@ public class OAuthServiceImpl implements OAuthService {
             if (jsonObject != null) {
                 return (String) jsonObject.get("name");
             }
-        } catch (JSONException e) {
+        } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
         return null;
@@ -98,7 +98,7 @@ public class OAuthServiceImpl implements OAuthService {
                 //TODO change to email when FireBase starts sending email
                 return (String) jsonObject.get("preferred_username");
             }
-        } catch (JSONException e) {
+        } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
         return null;

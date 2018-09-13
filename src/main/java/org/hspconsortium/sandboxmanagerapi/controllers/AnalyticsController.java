@@ -3,7 +3,6 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,8 +10,10 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping({"/analytics"})
@@ -140,6 +141,13 @@ public class AnalyticsController extends AbstractController {
             user = null;
         }
         return analyticsService.handleFhirTransaction(user, transactionInfo);
+    }
+
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"interval"})
+    public @ResponseBody String getSandboxStatistics(HttpServletRequest request, @RequestParam(value = "interval") String intervalDays) throws UnsupportedEncodingException {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.getSandboxStatistics(intervalDays);
     }
 
 }
