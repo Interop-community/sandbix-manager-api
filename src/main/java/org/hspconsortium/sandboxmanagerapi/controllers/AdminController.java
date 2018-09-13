@@ -26,12 +26,14 @@ import org.hspconsortium.sandboxmanagerapi.model.SandboxInvite;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -54,13 +56,6 @@ public class AdminController extends AbstractController {
         this.sandboxService = sandboxService;
         this.sandboxInviteService = sandboxInviteService;
         this.adminService = adminService;
-    }
-
-    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"interval"})
-    public @ResponseBody String getSandboxStatistics(HttpServletRequest request, @RequestParam(value = "interval") String intervalDays) throws UnsupportedEncodingException {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkUserSystemRole(user, SystemRole.ADMIN);
-        return adminService.getSandboxStatistics(intervalDays);
     }
 
     // Admin Level Sandbox Delete (originally for cleaning up orphaned sandboxes

@@ -2,8 +2,8 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
-import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.hspconsortium.sandboxmanagerapi.model.User;
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,13 +15,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -60,16 +61,6 @@ public class AdminControllerTest {
         user.setSystemRoles(systemRoles);
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandbox");
-    }
-
-    @Test
-    public void getSandboxStatisticsTest() throws Exception {
-        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        String intervalDays = "44-44";
-        when(adminService.getSandboxStatistics(intervalDays)).thenReturn("stats");
-        mvc
-                .perform(get("/admin?interval=" + intervalDays))
-                .andExpect(status().isOk());
     }
 
     @Test
