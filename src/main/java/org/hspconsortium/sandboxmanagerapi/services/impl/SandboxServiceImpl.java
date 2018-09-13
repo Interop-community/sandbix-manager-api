@@ -745,7 +745,7 @@ public class SandboxServiceImpl implements SandboxService {
             newApp.setFhirVersions(app.getFhirVersions());
 
             newApp.setSandbox(newSandbox);
-            newApp.setVisibility(Visibility.PRIVATE);
+            newApp.setVisibility(Visibility.PUBLIC);
             newApp.setCopyType(CopyType.REPLICA);
 
             appService.save(newApp);
