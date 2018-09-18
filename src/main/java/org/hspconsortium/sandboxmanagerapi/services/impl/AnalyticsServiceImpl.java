@@ -159,6 +159,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         private String schema2Sandboxes;
         private String schema3Sandboxes;
         private String schema4Sandboxes;
+        private String schema5Sandboxes;
         private String sandboxesInInterval;
 
         private String fullUserCount;
@@ -237,6 +238,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         void setActiveUserInInterval(String activeUserInInterval) {
             this.activeUserInInterval = activeUserInInterval;
         }
+
+        public String getSchema5Sandboxes() {
+            return schema5Sandboxes;
+        }
+
+        public void setSchema5Sandboxes(String schema5Sandboxes) {
+            this.schema5Sandboxes = schema5Sandboxes;
+        }
     }
 
     @Override
@@ -260,7 +269,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         int fourTotal = apiEndpoint4 + apiEndpoint6;
         statistics.setSchema4Sandboxes(Integer.toString(fourTotal));
         statistics.setSandboxesInInterval(sandboxService.intervalCount(timestamp));
-
+        int apiEndpoint7 = Integer.parseInt(sandboxService.schemaCount("7"));
+        statistics.setSchema5Sandboxes(Integer.toString(apiEndpoint7));
         statistics.setFullUserCount(userService.fullCount());
         statistics.setNewUsersInInterval(userService.intervalCount(timestamp));
 
