@@ -53,5 +53,7 @@ public interface SandboxActivityLogService {
 
     List<SandboxActivityLog> findBySandboxActivity(final SandboxActivity sandboxActivity);
 
+    Iterable<SandboxActivityLog> findAll();
+
     String intervalActive(final Timestamp intervalTime);
 }
