@@ -23,4 +23,6 @@ public interface AnalyticsService {
 
     String getSandboxStatistics(final String intervalDays);
 
+    String activeUserCount(Integer intervalDays);
+
 }

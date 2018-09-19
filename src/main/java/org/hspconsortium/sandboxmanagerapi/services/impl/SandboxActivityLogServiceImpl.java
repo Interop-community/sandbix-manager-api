@@ -218,6 +218,11 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    public Iterable<SandboxActivityLog> findAll() {
+        return repository.findAll();
+    }
+
+    @Override
     public String intervalActive(final Timestamp intervalTime) {
         return repository.intervalActive(intervalTime);
     }

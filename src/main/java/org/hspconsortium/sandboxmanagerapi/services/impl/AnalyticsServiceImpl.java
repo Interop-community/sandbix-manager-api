@@ -17,6 +17,8 @@ import java.lang.reflect.Type;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class AnalyticsServiceImpl implements AnalyticsService {
@@ -36,6 +38,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private UserAccessHistoryRepository userAccessHistoryRepository;
     private AppService appService;
     private RuleService ruleService;
+    private SandboxActivityLogService sandboxActivityLogService;
 
     @Inject
     AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository, final UserAccessHistoryRepository userAccessHistoryRepository) {
@@ -61,6 +64,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Inject
     public void setRuleService(RuleService ruleService) {
         this.ruleService = ruleService;
+    }
+
+    @Inject
+    public void setSandboxActivityLogService(SandboxActivityLogService sandboxActivityLogService) {
+        this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
     public Integer countSandboxesByUser(String userId) {
@@ -151,6 +159,16 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         } catch (Exception e) {
             throw new RuntimeException("Error getting memory information for " + schemaName, e);
         }
+    }
+
+    public String activeUserCount(Integer intervalDays) {
+        Iterable<SandboxActivityLog> sandboxActivityLogs = sandboxActivityLogService.findAll();
+        List<SandboxActivityLog> sandboxActivityLogList = new ArrayList<>();
+        sandboxActivityLogs.forEach(sandboxActivityLogList::add);
+        List<SandboxActivityLog> sandboxActivityLogListInterfalFilter = sandboxActivityLogList.stream().filter(x -> new Date().getTime() - x.getTimestamp().getTime() < TimeUnit.DAYS.toMillis(intervalDays)).collect(Collectors.toList());
+        HashSet<Object> seen=new HashSet<>();
+        sandboxActivityLogListInterfalFilter.removeIf(e->!seen.add(e.getUser().getId()));
+        return Integer.toString(seen.size());
     }
 
     private class Statistics {
@@ -273,6 +291,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         statistics.setSchema5Sandboxes(Integer.toString(apiEndpoint7));
         statistics.setFullUserCount(userService.fullCount());
         statistics.setNewUsersInInterval(userService.intervalCount(timestamp));
+        statistics.setActiveUserInInterval(activeUserCount(intDays));
 
         return toJson(statistics);
     }
