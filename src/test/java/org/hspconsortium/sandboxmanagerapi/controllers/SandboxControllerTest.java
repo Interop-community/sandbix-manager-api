@@ -15,9 +15,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
 
@@ -57,6 +59,9 @@ public class SandboxControllerTest {
 
     @MockBean
     private SandboxActivityLogService sandboxActivityLogService;
+
+    @Inject
+    private SandboxController sandboxController;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -100,6 +105,7 @@ public class SandboxControllerTest {
         sandboxHashMap.put("newSandbox", sandbox);
         when(userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        ReflectionTestUtils.setField(sandboxController, "templateSandboxIds", new String[1]);
     }
 
     @Test

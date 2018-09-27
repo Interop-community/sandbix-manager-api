@@ -42,10 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.websocket.server.PathParam;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 
 @RestController
@@ -54,6 +51,9 @@ public class UserController extends AbstractController {
 
     @Value("${hspc.platform.defaultSystemRoles}")
     private String[] defaultSystemRoles;
+
+    @Value("${hspc.platform.templateSandboxIds}")
+    private String[] templateSandboxIds;
 
     private static Logger LOGGER = LoggerFactory.getLogger(UserController.class.getName());
 
@@ -138,6 +138,9 @@ public class UserController extends AbstractController {
             JSONObject sandboxJSON = new JSONObject(sandboxJSONString);
             String sandboxId = sandboxJSON.getString("sandbox");
             sandbox = sandboxService.findBySandboxId(sandboxId);
+            if (Arrays.asList(templateSandboxIds).contains(sandboxId)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.OK).body("No need to authorize.");
+            }
             if (sandbox == null) {
                 throw new ResourceNotFoundException("Sandbox not found.");
             }
