@@ -1,10 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
-import org.hspconsortium.sandboxmanagerapi.model.Role;
-import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
-import org.hspconsortium.sandboxmanagerapi.model.UserPersona;
+import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,11 +12,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -60,6 +59,9 @@ public class UserControllerTest {
     @MockBean
     private SandboxActivityLogService sandboxActivityLogService;
 
+    @MockBean
+    private SandboxService sandboxService;
+
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 
@@ -75,6 +77,8 @@ public class UserControllerTest {
     private User user;
     private List<User> userList;
     private UserPersona userPersona;
+    private Sandbox sandbox;
+    private HttpServletRequest request;
 
     @Before
     public void setup() {
@@ -90,6 +94,9 @@ public class UserControllerTest {
         systemRoles.add(SystemRole.ADMIN);
         user.setSystemRoles(systemRoles);
         userPersona = new UserPersona();
+        sandbox = new Sandbox();
+        sandbox.setSandboxId("sandboxId");
+        request = new MockHttpServletRequest();
     }
 
     @Test
@@ -194,6 +201,66 @@ public class UserControllerTest {
                 .andExpect(status().isOk());
         verify(userService).acceptTermsOfUse(user, termsId);
     }
+
+    @Test
+    public void authorizeUserForReferenceApiTest() throws Exception {
+        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        mvc
+                .perform(post("/user/authorize")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void authorizeUserForReferenceApiTestUserNotFound() throws Exception {
+        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        mvc
+                .perform(post("/user/authorize")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void authorizeUserForReferenceApiTestSandboxNotFound() throws Exception {
+        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(post("/user/authorize")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"));
+    }
+
+    @Test
+    public void authorizeUserForReferenceApiTestNotAuthorized() throws Exception {
+        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        user.setSystemRoles(new HashSet<>());
+        mvc
+                .perform(post("/user/authorize")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void authorizeUserForReferenceApiTestBadJSONObject() throws Exception {
+        String jsonString = "not an object";
+        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(post("/user/authorize")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(jsonString));
+    }
+
+
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {

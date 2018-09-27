@@ -20,15 +20,20 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.apache.http.HttpStatus;
+import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.model.UserPersona;
 import org.hspconsortium.sandboxmanagerapi.services.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +61,7 @@ public class UserController extends AbstractController {
     private final SandboxInviteService sandboxInviteService;
     private final UserPersonaService userPersonaService;
     private final SandboxActivityLogService sandboxActivityLogService;
+    private final SandboxService sandboxService;
 
     private static Semaphore semaphore = new Semaphore(1);
 
@@ -63,12 +69,13 @@ public class UserController extends AbstractController {
     public UserController(final OAuthService oAuthService, final UserService userService,
                           final SandboxActivityLogService sandboxActivityLogService,
                           final SandboxInviteService sandboxInviteService,
-                          final UserPersonaService userPersonaService) {
+                          final UserPersonaService userPersonaService, final SandboxService sandboxService) {
         super(oAuthService);
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
         this.userPersonaService = userPersonaService;
         this.sandboxActivityLogService = sandboxActivityLogService;
+        this.sandboxService = sandboxService;
     }
 
     @GetMapping(params = {"sbmUserId"})
@@ -115,6 +122,35 @@ public class UserController extends AbstractController {
         checkUserAuthorization(request, sbmUserId);
         User user = userService.findBySbmUserId(sbmUserId);
         userService.acceptTermsOfUse(user, termsId);
+    }
+
+    @PostMapping(value = "/authorize")
+    @Transactional
+    public ResponseEntity authorizeUserForReferenceApi(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
+        String userId = oAuthService.getOAuthUserId(request);
+        User user = userService.findBySbmUserId(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found.");
+        }
+        Sandbox sandbox;
+
+        try {
+            JSONObject sandboxJSON = new JSONObject(sandboxJSONString);
+            String sandboxId = sandboxJSON.getString("sandbox");
+            sandbox = sandboxService.findBySandboxId(sandboxId);
+            if (sandbox == null) {
+                throw new ResourceNotFoundException("Sandbox not found.");
+            }
+        } catch (JSONException e) {
+            LOGGER.error("JSON Error reading entity: " + sandboxJSONString, e);
+            throw new RuntimeException(e);
+        }
+        try {
+            checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body("User is not authorized.");
+        }
+        return ResponseEntity.status(org.springframework.http.HttpStatus.OK).body("User is authorized.");
     }
 
     private User createUserIfNotExists(String sbmUserId, String oauthUsername, String oauthUserEmail) {
