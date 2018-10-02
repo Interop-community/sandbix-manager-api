@@ -222,7 +222,7 @@ public class SandboxServiceTest {
         sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
     }
 
-    @Test(expected = ResourceNotFoundException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void cloneTestNewSandboxAlreadyExists() throws IOException {
         when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
         when(repository.findBySandboxId(newSandbox.getSandboxId())).thenReturn(newSandbox);

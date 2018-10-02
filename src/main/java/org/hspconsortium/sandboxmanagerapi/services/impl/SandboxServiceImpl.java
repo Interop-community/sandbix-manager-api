@@ -8,6 +8,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
@@ -269,7 +270,7 @@ public class SandboxServiceImpl implements SandboxService {
         Sandbox clonedSandbox = findBySandboxId(clonedSandboxId);
         Sandbox newSandboxExists = findBySandboxId(newSandbox.getSandboxId());
         if (newSandboxExists != null) {
-            throw new ResourceNotFoundException("Sandbox with id " + newSandbox.getSandboxId() + " already exists.");
+            throw new IllegalArgumentException("Sandbox with id " + newSandbox.getSandboxId() + " already exists.");
         }
         if (clonedSandbox == null) {
             throw new ResourceNotFoundException("Cloned sandbox does not exist.");
