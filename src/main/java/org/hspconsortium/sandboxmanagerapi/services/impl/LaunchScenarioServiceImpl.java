@@ -115,6 +115,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
     @Override
     @Transactional
+
     public LaunchScenario update(final LaunchScenario launchScenario) {
         LaunchScenario updateLaunchScenario = getById(launchScenario.getId());
         if (updateLaunchScenario != null) {
@@ -131,7 +132,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             updateLaunchScenario.setPatient(launchScenario.getPatient());
             updateLaunchScenario.setUserPersona(userPersonaService.getById(launchScenario.getUserPersona().getId()));
             updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
-            updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
+            if (launchScenario.getContextParams() != null) {
+                updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
+            }
             if (launchScenario.getApp().isCustomApp()) {
                 // Create an anonymous App for a custom launch
                 App app = appService.getById(launchScenario.getApp().getId());

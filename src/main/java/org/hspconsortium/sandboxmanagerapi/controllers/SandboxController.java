@@ -89,7 +89,6 @@ public class SandboxController extends AbstractController {
             checkCreatedByIsCurrentUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
         }
         checkCreatedByIsCurrentUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
-        LOGGER.info("Cloning sandbox " + clonedSandbox.getName() + " to sandbox: " + newSandbox.getName());
         User user = userService.findBySbmUserId(newSandbox.getCreatedBy().getSbmUserId());
         checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
         return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, oAuthService.getBearerToken(request));
