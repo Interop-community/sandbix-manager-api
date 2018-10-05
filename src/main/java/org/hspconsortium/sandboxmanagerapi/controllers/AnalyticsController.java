@@ -150,4 +150,18 @@ public class AnalyticsController extends AbstractController {
         return analyticsService.getSandboxStatistics(intervalDays);
     }
 
+    @GetMapping(value="/transaction/stats", params = {"interval"})
+    public HashMap<String, Double> transactionStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays) {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.transactionStats(intervalDays);
+    }
+
+    @GetMapping(value="/sandboxMemory/stats", params = {"interval"})
+    public HashMap<String, Double> sandboxMemoryStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays) {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.sandboxMemoryStats(intervalDays);
+    }
+
 }

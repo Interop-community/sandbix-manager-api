@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface FhirTransactionRepository extends CrudRepository<FhirTransaction, Integer> {
     List<FhirTransaction> findByPayerUserId(@Param("payerUserId") Integer payerUserId);
+    List<FhirTransaction> findBySandboxId(@Param("sandboxId") Integer sandboxId);
 }

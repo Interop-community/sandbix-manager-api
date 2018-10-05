@@ -303,4 +303,96 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return gson.toJson(statistics, type);
     }
 
+    public HashMap<String, Double> transactionStats(Integer interval) {
+
+        List<Integer> ids = new ArrayList<>();
+        List<Double> fhirTransactions = new ArrayList<>();
+        HashMap<String, Double> stats = new HashMap<>();
+
+        Set<String> sandboxIds = activeSandboxes(interval);
+        for (String sandboxId: sandboxIds) {
+            ids.add(sandboxService.findBySandboxId(sandboxId).getId());
+        }
+
+        for (Integer id: ids) {
+            List<FhirTransaction> fhirTransactionList = fhirTransactionRepository.findBySandboxId(id).stream().filter(x -> new Date().getTime() - x.getTransactionTimestamp().getTime() < TimeUnit.DAYS.toMillis(30)).collect(Collectors.toList());
+            fhirTransactions.add(new Double(fhirTransactionList.size()));
+        }
+        Collections.sort(fhirTransactions);
+        Double median;
+        if (fhirTransactions.size() % 2 == 0)
+            median = ((double)fhirTransactions.get(fhirTransactions.size()/2) + (double)fhirTransactions.get(fhirTransactions.size()/2 - 1))/2;
+        else
+            median = (double) fhirTransactions.get(fhirTransactions.size()/2);
+        stats.put("Median", median);
+        stats.put("Mean", calculateAverage(fhirTransactions));
+
+        return stats;
+    }
+
+    public HashMap<String, Double> sandboxMemoryStats(Integer interval) {
+        Set<String> sandboxIds = activeSandboxes(interval);
+        List<String> fullSandboxIds = new ArrayList<>();
+        List<Double> sandboxMemorySizes = new ArrayList<>();
+        HashMap<String, Double> stats = new HashMap<>();
+        for (String sandboxId: sandboxIds) {
+            Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+            if (sandbox.getApiEndpointIndex().equals("5") || sandbox.getApiEndpointIndex().equals("6") || sandbox.getApiEndpointIndex().equals("7")) {
+                fullSandboxIds.add("hspc_5_" + sandboxId);
+            } else {
+                fullSandboxIds.add("hspc_" + sandbox.getApiEndpointIndex() + "_" + sandboxId);
+            }
+
+        }
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
+            Statement stmt = conn.createStatement() ;
+            String query = "select table_schema, sum((data_length+index_length)/1024/1024) AS MB from information_schema.tables group by 1;" ;
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                if (fullSandboxIds.contains(rs.getString(1))) {
+                    sandboxMemorySizes.add(Double.parseDouble(rs.getString(2)));
+                }
+
+            }
+            conn.close();
+            Collections.sort(sandboxMemorySizes);
+            Double median;
+            if (sandboxMemorySizes.size() % 2 == 0)
+                median = ((double) sandboxMemorySizes.get(sandboxMemorySizes.size()/2) + (double)sandboxMemorySizes.get(sandboxMemorySizes.size()/2 - 1))/2;
+            else
+                median = (double) sandboxMemorySizes.get(sandboxMemorySizes.size()/2);
+
+            stats.put("Median", median);
+            stats.put("Mean", calculateAverage(sandboxMemorySizes));
+
+            return stats;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting memory information for median");
+        }
+    }
+
+    private Set<String> activeSandboxes(Integer interval) {
+        Iterable<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findAll();
+        Set<String> sandboxIds = new HashSet<>();
+        for (UserAccessHistory userAccessHistory: userAccessHistories) {
+            if (userAccessHistory.getAccessTimestamp().getTime() > (new Date().getTime() - TimeUnit.DAYS.toMillis(interval))) {
+                sandboxIds.add(userAccessHistory.getSandboxId());
+            }
+        }
+        return sandboxIds;
+    }
+
+    private double calculateAverage(List <Double> marks) {
+        Double sum = 0.0;
+        if(!marks.isEmpty()) {
+            for (Double mark : marks) {
+                sum += mark;
+            }
+            return sum / marks.size();
+        }
+        return sum;
+    }
+
 }

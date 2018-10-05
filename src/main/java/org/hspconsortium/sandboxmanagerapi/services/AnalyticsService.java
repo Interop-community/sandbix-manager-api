@@ -25,4 +25,8 @@ public interface AnalyticsService {
 
     String activeUserCount(Integer intervalDays);
 
+    HashMap<String, Double> transactionStats(Integer interval);
+
+    HashMap<String, Double> sandboxMemoryStats(Integer interval);
+
 }
