@@ -369,7 +369,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
             return stats;
         } catch (Exception e) {
-            throw new RuntimeException("Error getting memory information for median");
+            throw new RuntimeException("Error getting memory information for median", e);
         }
     }
 

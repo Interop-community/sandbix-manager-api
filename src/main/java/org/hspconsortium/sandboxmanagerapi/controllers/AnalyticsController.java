@@ -146,6 +146,9 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"interval"})
     public @ResponseBody String getSandboxStatistics(HttpServletRequest request, @RequestParam(value = "interval") String intervalDays) throws UnsupportedEncodingException {
         User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
         checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.getSandboxStatistics(intervalDays);
     }
@@ -153,6 +156,9 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value="/transaction/stats", params = {"interval"})
     public HashMap<String, Double> transactionStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays) {
         User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
         checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.transactionStats(intervalDays);
     }
@@ -160,6 +166,9 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value="/sandboxMemory/stats", params = {"interval"})
     public HashMap<String, Double> sandboxMemoryStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays) {
         User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
         checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.sandboxMemoryStats(intervalDays);
     }

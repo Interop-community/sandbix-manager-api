@@ -59,4 +59,6 @@ public interface SandboxService {
     String intervalCount(final Timestamp intervalTime);
 
     List<Sandbox> findByPayerId(Integer payerId);
+
+    Iterable<Sandbox> findAll();
 }

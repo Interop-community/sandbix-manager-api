@@ -533,6 +533,11 @@ public class SandboxServiceImpl implements SandboxService {
         return getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId();
     }
 
+    @Override
+    public Iterable<Sandbox> findAll() {
+        return repository.findAll();
+    }
+
     private void removeAllMembers(final Sandbox sandbox) {
 
         List<UserRole> userRoles = sandbox.getUserRoles();
