@@ -6,7 +6,11 @@ import org.hspconsortium.sandboxmanagerapi.services.SandboxActivityLogService;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import java.sql.Connection;
@@ -34,6 +38,8 @@ public class AdminServiceImpl implements AdminService {
     private SandboxService sandboxService;
     private SandboxActivityLogService sandboxActivityLogService;
 
+    private RestTemplate simpleRestTemplate;
+
     @Inject
     public AdminServiceImpl() { }
 
@@ -50,6 +56,11 @@ public class AdminServiceImpl implements AdminService {
     @Inject
     public void setSandboxActivityLogService(SandboxActivityLogService sandboxActivityLogService) {
         this.sandboxActivityLogService = sandboxActivityLogService;
+    }
+
+    @Inject
+    public void setRestTemplate(RestTemplate simpleRestTemplate) {
+        this.simpleRestTemplate = simpleRestTemplate;
     }
 
     public HashMap<String, Object> syncSandboxManagerandReferenceApi(Boolean fix, String request) {
@@ -91,14 +102,41 @@ public class AdminServiceImpl implements AdminService {
             returnedDict.put("missing_in_sandbox_manager", missingInSandboxManager);
             returnedDict.put("missing_in_reference_api", missingInReferenceApi);
             if (fix) {
-                for (String sandbox: missingInReferenceApi) {
-                    sandboxService.delete(sandboxService.findBySandboxId(sandbox), request);
+                for (String sandboxString: missingInReferenceApi) {
+                    sandboxService.delete(sandboxService.findBySandboxId(sandboxString.substring(7)), request, null, true);
+                }
+                for (String sandboxString: missingInSandboxManager) {
+                    Sandbox sandbox = new Sandbox();
+                    sandbox.setSandboxId(sandboxString.substring(7));
+                    sandbox.setApiEndpointIndex(String.valueOf(sandboxString.charAt(5)));
+                    callDeleteSandboxAPI(sandbox, request);
                 }
             }
 
             return returnedDict;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void callDeleteSandboxAPI(Sandbox sandbox, String request) {
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.set("Authorization", "Bearer " + request);
+        HttpEntity<String> httpEntity = new HttpEntity<>(requestHeaders);
+        try {
+            simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandbox)  + "/sandbox?sync=true", HttpMethod.DELETE, httpEntity, String.class);
+        } catch (Exception e) {
+            try {
+                sandbox.setApiEndpointIndex("6");
+                simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandbox)  + "/sandbox?sync=true", HttpMethod.DELETE, httpEntity, String.class);
+            } catch (Exception e2) {
+                try {
+                    sandbox.setApiEndpointIndex("7");
+                    simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandbox)  + "/sandbox?sync=true", HttpMethod.DELETE, httpEntity, String.class);
+                } catch (Exception e3) {
+                    throw new RuntimeException("Error deleting sandbox " + sandbox.getSandboxId(), e3);
+                }
+            }
         }
     }
 }

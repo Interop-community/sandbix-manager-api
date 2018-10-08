@@ -71,7 +71,7 @@ public class AdminController extends AbstractController {
         List<SandboxInvite> invites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
         invites.forEach(sandboxInviteService::delete);
 
-        sandboxService.delete(sandbox, oAuthService.getBearerToken(request), user);
+        sandboxService.delete(sandbox, oAuthService.getBearerToken(request), user, false);
     }
 
     @GetMapping(value = "/$list", produces = APPLICATION_JSON_VALUE)

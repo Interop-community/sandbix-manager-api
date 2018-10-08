@@ -36,7 +36,6 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Value("${hspc.platform.api.oauthClientEndpointURL}")
     String oauthClientEndpointURL;
 
-
     private OAuth2RestOperations restTemplate;
 
     @Inject

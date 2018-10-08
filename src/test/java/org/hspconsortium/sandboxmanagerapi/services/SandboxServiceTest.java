@@ -153,7 +153,7 @@ public class SandboxServiceTest {
     public void deleteTestAll() throws IOException {
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
-        sandboxService.delete(sandbox, bearerToken, user);
+        sandboxService.delete(sandbox, bearerToken, user, false);
         verify(sandboxImportService).delete(sandboxImport);
         verify(sandboxActivityLogService).sandboxDelete(sandbox, user);
     }
@@ -162,7 +162,7 @@ public class SandboxServiceTest {
     public void deleteTestAllAdminIsNull() throws IOException {
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
-        sandboxService.delete(sandbox, bearerToken, null);
+        sandboxService.delete(sandbox, bearerToken, null, false);
         verify(sandboxActivityLogService).sandboxDelete(sandbox, sandbox.getCreatedBy());
     }
 
@@ -173,7 +173,7 @@ public class SandboxServiceTest {
         when(launchScenarioService.findBySandboxId(sandbox.getSandboxId())).thenReturn(launchScenarios);
         when(userPersonaService.findBySandboxId(sandbox.getSandboxId())).thenReturn(userPersonas);
         when(appService.findBySandboxId(sandbox.getSandboxId())).thenReturn(apps);
-        sandboxService.delete(sandbox, bearerToken, user);
+        sandboxService.delete(sandbox, bearerToken, user, false);
         verify(launchScenarioService).delete(launchScenario);
         verify(userPersonaService).delete(userPersona);
         verify(appService).delete(app);
@@ -188,7 +188,7 @@ public class SandboxServiceTest {
         statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_UNAUTHORIZED, "NOT FINE!");
         when(response.getStatusLine()).thenReturn(statusLine);
         when(response.getEntity()).thenReturn(mock(HttpEntity.class));
-        sandboxService.delete(sandbox, bearerToken, user);
+        sandboxService.delete(sandbox, bearerToken, user, false);
     }
 
     @Test(expected = RuntimeException.class)
@@ -196,7 +196,7 @@ public class SandboxServiceTest {
         when(launchScenarioService.findBySandboxId(sandbox.getSandboxId())).thenReturn(launchScenarios);
         when(userPersonaService.findBySandboxId(sandbox.getSandboxId())).thenReturn(userPersonas);
         when(httpClient.execute(any())).thenThrow(IOException.class);
-        sandboxService.delete(sandbox, bearerToken, user);
+        sandboxService.delete(sandbox, bearerToken, user, false);
     }
 
     @Test

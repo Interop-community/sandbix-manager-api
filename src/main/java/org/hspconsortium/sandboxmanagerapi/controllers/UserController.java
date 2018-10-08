@@ -139,15 +139,15 @@ public class UserController extends AbstractController {
             if (Arrays.asList(templateSandboxIds).contains(sandboxId)) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.OK).body("No need to authorize.");
             }
-            if (sandbox == null) {
-                throw new ResourceNotFoundException("Sandbox not found.");
-            }
         } catch (JSONException e) {
             LOGGER.error("JSON Error reading entity: " + sandboxJSONString, e);
             throw new RuntimeException(e);
         }
         try {
-            checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+            if (!checkUserHasSystemRole(user, SystemRole.ADMIN)) {
+                checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+            }
+
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body("User is not authorized.");
         }

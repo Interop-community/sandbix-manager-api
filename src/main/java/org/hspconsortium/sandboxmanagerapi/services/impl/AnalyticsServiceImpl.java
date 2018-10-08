@@ -345,7 +345,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
             return compileStats(sandboxMemorySizes, n);
         } catch (Exception e) {
-            throw new RuntimeException("Error getting memory information for median", e);
+            throw new RuntimeException(e);
         }
     }
 

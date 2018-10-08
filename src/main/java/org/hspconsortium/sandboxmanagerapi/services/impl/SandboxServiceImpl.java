@@ -157,7 +157,15 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public void delete(final Sandbox sandbox, final String bearerToken, final User admin) {
+    public void delete(final Sandbox sandbox, final String bearerToken, final User admin, final boolean sync) {
+        if (!sync) {
+            // Want this done first in case there's an error with Reference API so that everything else doesn't get deleted
+            try {
+                callDeleteSandboxAPI(sandbox, bearerToken);
+            } catch (Exception ex) {
+                throw new SandboxDeleteFailedException(String.format("Failed to delete sandbox: %s %n %s", sandbox.getSandboxId(), ex.getMessage()), ex);
+            }
+        }
 
         deleteAllSandboxItems(sandbox, bearerToken);
 
@@ -177,18 +185,12 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxActivityLogService.sandboxDelete(sandbox, sandbox.getCreatedBy());
         }
         delete(sandbox.getId());
-
-        try {
-            callDeleteSandboxAPI(sandbox, bearerToken);
-        } catch (Exception ex) {
-            throw new SandboxDeleteFailedException(String.format("Failed to delete sandbox: %s %n %s", sandbox.getSandboxId(), ex.getMessage()), ex);
-        }
     }
 
     @Override
     @Transactional
     public void delete(final Sandbox sandbox, final String bearerToken) {
-        delete(sandbox, bearerToken, null);
+        delete(sandbox, bearerToken, null, false);
     }
 
     private void deleteAllSandboxItems(final Sandbox sandbox, final String bearerToken) {
