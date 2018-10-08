@@ -90,12 +90,15 @@ public class AdminServiceImpl implements AdminService {
             }
             returnedDict.put("missing_in_sandbox_manager", missingInSandboxManager);
             returnedDict.put("missing_in_reference_api", missingInReferenceApi);
-            for (String sandbox: missingInReferenceApi) {
-                sandboxService.delete(sandboxService.findBySandboxId(sandbox), request);
+            if (fix) {
+                for (String sandbox: missingInReferenceApi) {
+                    sandboxService.delete(sandboxService.findBySandboxId(sandbox), request);
+                }
             }
+
             return returnedDict;
         } catch (Exception e) {
-            throw new RuntimeException("Error getting memory information for median");
+            throw new RuntimeException(e);
         }
     }
 }
