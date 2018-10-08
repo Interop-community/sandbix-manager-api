@@ -221,17 +221,6 @@ public class UserControllerTest {
                         .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"));
     }
 
-    @Test(expected = NestedServletException.class)
-    public void authorizeUserForReferenceApiTestSandboxNotFound() throws Exception {
-        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
-        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        mvc
-                .perform(post("/user/authorize")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"));
-    }
-
     @Test
     public void authorizeUserForReferenceApiTestNotAuthorized() throws Exception {
         when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
