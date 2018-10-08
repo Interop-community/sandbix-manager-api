@@ -4,6 +4,7 @@ import org.hspconsortium.sandboxmanagerapi.model.FhirTransaction;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 
 import java.util.HashMap;
+import java.util.List;
 
 public interface AnalyticsService {
 
@@ -25,8 +26,12 @@ public interface AnalyticsService {
 
     String activeUserCount(Integer intervalDays);
 
-    HashMap<String, Double> transactionStats(Integer interval);
+    HashMap<String, Object> transactionStats(Integer interval, Integer n);
 
-    HashMap<String, Double> sandboxMemoryStats(Integer interval);
+    HashMap<String, Object> sandboxMemoryStats(Integer interval, Integer n);
+
+    HashMap<String, Object> usersPerSandboxStats(Integer interval, Integer n);
+
+    HashMap<String, Object> sandboxesPerUserStats(Integer interval, Integer n);
 
 }

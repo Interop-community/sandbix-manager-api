@@ -1,6 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
+import com.sun.istack.internal.Nullable;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
@@ -153,24 +154,44 @@ public class AnalyticsController extends AbstractController {
         return analyticsService.getSandboxStatistics(intervalDays);
     }
 
-    @GetMapping(value="/transaction/stats", params = {"interval"})
-    public HashMap<String, Double> transactionStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays) {
+    @GetMapping(value="/overallStats/transactions", params = {"interval"})
+    public HashMap<String, Object> transactionStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
         User user = userService.findBySbmUserId(getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
         checkUserSystemRole(user, SystemRole.ADMIN);
-        return analyticsService.transactionStats(intervalDays);
+        return analyticsService.transactionStats(intervalDays, n);
     }
 
-    @GetMapping(value="/sandboxMemory/stats", params = {"interval"})
-    public HashMap<String, Double> sandboxMemoryStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays) {
+    @GetMapping(value="/overallStats/sandboxMemory", params = {"interval"})
+    public HashMap<String, Object> sandboxMemoryStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
         User user = userService.findBySbmUserId(getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
         checkUserSystemRole(user, SystemRole.ADMIN);
-        return analyticsService.sandboxMemoryStats(intervalDays);
+        return analyticsService.sandboxMemoryStats(intervalDays, n);
+    }
+
+    @GetMapping(value="/overallStats/usersPerSandbox", params = {"interval"})
+    public HashMap<String, Object> usersPerSandboxStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.usersPerSandboxStats(intervalDays, n);
+    }
+
+    @GetMapping(value="/overallStats/sandboxesPerUser", params = {"interval"})
+    public HashMap<String, Object> sandboxesPerUserStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.sandboxesPerUserStats(intervalDays, n);
     }
 
 }

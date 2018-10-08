@@ -77,12 +77,23 @@ public class AdminController extends AbstractController {
     @GetMapping(value = "/$list", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public HashMap<String, Object> listSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
-//        User user = userService.findBySbmUserId(getSystemUserId(request));
-//        if (user == null) {
-//            throw new ResourceNotFoundException("User not found in authorization header.");
-//        }
-//        checkUserSystemRole(user, SystemRole.ADMIN);
-        return adminService.syncSandboxManagerandReferenceApi(false);
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return adminService.syncSandboxManagerandReferenceApi(false, "");
+    }
+
+    @GetMapping(value = "/$sync", produces = APPLICATION_JSON_VALUE)
+    @Transactional
+    public HashMap<String, Object> syncSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return adminService.syncSandboxManagerandReferenceApi(true, oAuthService.getBearerToken(request));
     }
 
 }

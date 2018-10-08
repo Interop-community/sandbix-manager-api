@@ -43,7 +43,7 @@ public class NotificationServiceImpl implements NotificationService {
         if (existingNewsItem == null) {
             throw new ResourceNotFoundException("NewsItem does not exist.");
         }
-        Iterable<User> users = userService.findAllUsers();
+        Iterable<User> users = userService.findAll();
         for (User user : users) {
             Notification notification = new Notification();
             notification.setSeen(false);

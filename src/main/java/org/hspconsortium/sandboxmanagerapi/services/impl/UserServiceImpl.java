@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
         repository.delete(user);
     }
 
-    public Iterable<User> findAllUsers() {
+    public Iterable<User> findAll() {
         return repository.findAll();
     }
 

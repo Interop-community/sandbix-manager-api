@@ -52,7 +52,7 @@ public class AdminServiceImpl implements AdminService {
         this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
-    public HashMap<String, Object> syncSandboxManagerandReferenceApi(Boolean fix) {
+    public HashMap<String, Object> syncSandboxManagerandReferenceApi(Boolean fix, String request) {
         List<String> sandboxes = new ArrayList<>();
         List<String> fullSandboxIds = new ArrayList<>();
         Iterable<Sandbox> sandboxesIterable = sandboxService.findAll();
@@ -90,6 +90,9 @@ public class AdminServiceImpl implements AdminService {
             }
             returnedDict.put("missing_in_sandbox_manager", missingInSandboxManager);
             returnedDict.put("missing_in_reference_api", missingInReferenceApi);
+            for (String sandbox: missingInReferenceApi) {
+                sandboxService.delete(sandboxService.findBySandboxId(sandbox), request);
+            }
             return returnedDict;
         } catch (Exception e) {
             throw new RuntimeException("Error getting memory information for median");

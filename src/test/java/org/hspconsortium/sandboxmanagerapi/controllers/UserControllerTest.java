@@ -20,13 +20,10 @@ import org.springframework.web.util.NestedServletException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.Semaphore;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -173,7 +170,7 @@ public class UserControllerTest {
     @Test
     public void getAllUsersTest() throws Exception {
         String json = json(userList);
-        when(userService.findAllUsers()).thenReturn(userList);
+        when(userService.findAll()).thenReturn(userList);
         mvc
                 .perform(get("/user/all?sbmUserId=" + user.getSbmUserId()))
                 .andExpect(status().isOk())
@@ -185,7 +182,7 @@ public class UserControllerTest {
     public void getAllUsersTestNotAuthorized() throws Exception {
         String json = json(userList);
         user.setSystemRoles(new HashSet<>());
-        when(userService.findAllUsers()).thenReturn(userList);
+        when(userService.findAll()).thenReturn(userList);
         mvc
                 .perform(get("/user/all?sbmUserId=" + user.getSbmUserId()))
                 .andExpect(status().isOk())

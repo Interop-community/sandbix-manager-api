@@ -11,7 +11,7 @@ public interface UserService {
 
     void delete(final User user);
 
-    Iterable<User> findAllUsers();
+    Iterable<User> findAll();
 
     User findBySbmUserId(final String sbmUserId);
 

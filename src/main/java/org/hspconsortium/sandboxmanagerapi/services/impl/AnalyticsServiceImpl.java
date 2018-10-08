@@ -1,6 +1,5 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
-import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
@@ -8,7 +7,6 @@ import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
 import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -303,38 +301,25 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return gson.toJson(statistics, type);
     }
 
-    public HashMap<String, Double> transactionStats(Integer interval) {
-
-        List<Integer> ids = new ArrayList<>();
-        List<Double> fhirTransactions = new ArrayList<>();
-        HashMap<String, Double> stats = new HashMap<>();
-
+    public HashMap<String, Object> transactionStats(Integer interval, Integer n) {
+        HashMap<String, Double> fhirTransactions = new HashMap<>();
         Set<String> sandboxIds = activeSandboxes(interval);
+
         for (String sandboxId: sandboxIds) {
-            ids.add(sandboxService.findBySandboxId(sandboxId).getId());
+            List<FhirTransaction> fhirTransactionList = fhirTransactionRepository.findBySandboxId(sandboxService.findBySandboxId(sandboxId).getId()).stream()
+                    .filter(x -> new Date().getTime() - x.getTransactionTimestamp().getTime() < TimeUnit.DAYS.toMillis(30))
+                    .collect(Collectors.toList());
+            fhirTransactions.put(sandboxId, (double) fhirTransactionList.size());
         }
 
-        for (Integer id: ids) {
-            List<FhirTransaction> fhirTransactionList = fhirTransactionRepository.findBySandboxId(id).stream().filter(x -> new Date().getTime() - x.getTransactionTimestamp().getTime() < TimeUnit.DAYS.toMillis(30)).collect(Collectors.toList());
-            fhirTransactions.add(new Double(fhirTransactionList.size()));
-        }
-        Collections.sort(fhirTransactions);
-        Double median;
-        if (fhirTransactions.size() % 2 == 0)
-            median = ((double)fhirTransactions.get(fhirTransactions.size()/2) + (double)fhirTransactions.get(fhirTransactions.size()/2 - 1))/2;
-        else
-            median = (double) fhirTransactions.get(fhirTransactions.size()/2);
-        stats.put("Median", median);
-        stats.put("Mean", calculateAverage(fhirTransactions));
-
-        return stats;
+        return compileStats(fhirTransactions, n);
     }
 
-    public HashMap<String, Double> sandboxMemoryStats(Integer interval) {
+    public HashMap<String, Object> sandboxMemoryStats(Integer interval, Integer n) {
         Set<String> sandboxIds = activeSandboxes(interval);
         List<String> fullSandboxIds = new ArrayList<>();
-        List<Double> sandboxMemorySizes = new ArrayList<>();
-        HashMap<String, Double> stats = new HashMap<>();
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+
         for (String sandboxId: sandboxIds) {
             Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
             if (sandbox.getApiEndpointIndex().equals("5") || sandbox.getApiEndpointIndex().equals("6") || sandbox.getApiEndpointIndex().equals("7")) {
@@ -352,25 +337,60 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 if (fullSandboxIds.contains(rs.getString(1))) {
-                    sandboxMemorySizes.add(Double.parseDouble(rs.getString(2)));
+                    sandboxMemorySizes.put(rs.getString(1), Double.parseDouble(rs.getString(2)));
                 }
 
             }
             conn.close();
-            Collections.sort(sandboxMemorySizes);
-            Double median;
-            if (sandboxMemorySizes.size() % 2 == 0)
-                median = ((double) sandboxMemorySizes.get(sandboxMemorySizes.size()/2) + (double)sandboxMemorySizes.get(sandboxMemorySizes.size()/2 - 1))/2;
-            else
-                median = (double) sandboxMemorySizes.get(sandboxMemorySizes.size()/2);
 
-            stats.put("Median", median);
-            stats.put("Mean", calculateAverage(sandboxMemorySizes));
-
-            return stats;
+            return compileStats(sandboxMemorySizes, n);
         } catch (Exception e) {
             throw new RuntimeException("Error getting memory information for median", e);
         }
+    }
+
+    public HashMap<String, Object> usersPerSandboxStats(Integer interval, Integer n) {
+        Iterable<Sandbox> sandboxIterable = sandboxService.findAll();
+        HashMap<String, Double> countsMap = new HashMap<>();
+        for (Sandbox sandbox: sandboxIterable) {
+            List<UserRole> userRoles = sandbox.getUserRoles();
+            Set<String> set = new HashSet<>();
+            Integer count = userRoles.stream().filter(p -> set.add(p.getUser().getSbmUserId())).collect(Collectors.toList()).size();
+            countsMap.put(sandbox.getSandboxId(), (double) count);
+        }
+        return compileStats(countsMap, n);
+    }
+
+    public HashMap<String, Object> sandboxesPerUserStats(Integer interval, Integer n) {
+        HashMap<String, Double> countsMap = new HashMap<>();
+        Iterable<User> users = userService.findAll();
+        for (User user: users) {
+            if (user.getSandboxes().size() < 10) {
+                if (user.getSandboxes().size() !=0) {
+                    countsMap.put(user.getEmail(), (double) user.getSandboxes().size());
+                }
+            }
+        }
+        return compileStats(countsMap, n);
+    }
+
+    private HashMap<String, Object> compileStats(HashMap<String, Double> valuesMap, Integer n) {
+        HashMap<String, Object> stats = new HashMap<>();
+
+        Map<String, Double> topValues = valuesMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+        stats.put("median", calculateMedian(new ArrayList<>(topValues.values())));
+        stats.put("mean", calculateAverage(new ArrayList<>(topValues.values())));
+        if (n != null) {
+            topValues = valuesMap.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .limit(n)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        }
+        stats.put("top_values", topValues);
+        return stats;
     }
 
     private Set<String> activeSandboxes(Integer interval) {
@@ -384,15 +404,22 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return sandboxIds;
     }
 
-    private double calculateAverage(List <Double> marks) {
+    private double calculateAverage(List <Double> values) {
         Double sum = 0.0;
-        if(!marks.isEmpty()) {
-            for (Double mark : marks) {
+        if(!values.isEmpty()) {
+            for (Double mark : values) {
                 sum += mark;
             }
-            return sum / marks.size();
+            return sum / values.size();
         }
         return sum;
+    }
+
+    private double calculateMedian(List <Double> values) {
+        if (values.size() % 2 == 0)
+            return ((double) values.get(values.size()/2) + values.get(values.size()/2 - 1))/2;
+        else
+            return values.get(values.size()/2);
     }
 
 }

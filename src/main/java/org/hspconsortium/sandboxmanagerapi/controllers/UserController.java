@@ -32,7 +32,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +39,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import javax.websocket.server.PathParam;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Semaphore;
@@ -108,7 +106,7 @@ public class UserController extends AbstractController {
         User user = userService.findBySbmUserId(sbmUserId);
         Boolean isSystemAdmin = checkUserHasSystemRole(user, SystemRole.ADMIN);
         if (isSystemAdmin) {
-            return userService.findAllUsers();
+            return userService.findAll();
         } else {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }

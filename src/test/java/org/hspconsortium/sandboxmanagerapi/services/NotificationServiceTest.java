@@ -3,8 +3,6 @@ package org.hspconsortium.sandboxmanagerapi.services;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.NotificationRepository;
-import org.hspconsortium.sandboxmanagerapi.services.NewsItemService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.hspconsortium.sandboxmanagerapi.services.impl.NotificationServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +50,7 @@ public class NotificationServiceTest {
     @Test
     public void createNotificationsForAllUsersTest() {
         when(newsItemService.findById(newsItem.getId())).thenReturn(newsItem);
-        when(userService.findAllUsers()).thenReturn(users);
+        when(userService.findAll()).thenReturn(users);
         notificationService.createNotificationsForAllUsers(newsItem);
     }
 

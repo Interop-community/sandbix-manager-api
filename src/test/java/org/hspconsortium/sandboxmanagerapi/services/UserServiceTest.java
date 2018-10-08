@@ -5,9 +5,6 @@ import org.hspconsortium.sandboxmanagerapi.model.TermsOfUse;
 import org.hspconsortium.sandboxmanagerapi.model.TermsOfUseAcceptance;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.repositories.UserRepository;
-import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseAcceptanceService;
-import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
-import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.hspconsortium.sandboxmanagerapi.services.impl.UserServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,7 +64,7 @@ public class UserServiceTest {
     @Test
     public void findAllUsersTest() {
         when(repository.findAll()).thenReturn(users);
-        Iterable<User> returnedUsers = userService.findAllUsers();
+        Iterable<User> returnedUsers = userService.findAll();
         assertEquals(users, returnedUsers);
     }
 
