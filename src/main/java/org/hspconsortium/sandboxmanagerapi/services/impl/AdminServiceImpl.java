@@ -74,16 +74,12 @@ public class AdminServiceImpl implements AdminService {
             sandboxesInSM.add(sandbox.getSandboxId());
         }
 
-        Sandbox sandboxExample = new Sandbox();
-        sandboxExample.setApiEndpointIndex("5");
-        sandboxExample.setSandboxId("sandbox");
-
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.set("Authorization", "Bearer " + request);
         HttpEntity<String> httpEntity = new HttpEntity(requestHeaders);
 
         try {
-            sandboxesInRAPI = simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandboxExample)  + "/sandbox/all", HttpMethod.GET, httpEntity, List.class).getBody();
+            sandboxesInRAPI = simpleRestTemplate.exchange(sandboxService.getSystemSandboxApiURL() + "/sandbox", HttpMethod.GET, httpEntity, List.class).getBody();
             for (String sandbox: sandboxesInRAPI) {
                 if (!sandboxesInSM.contains(sandbox)) {
                     missingInSandboxManager.add(sandbox);

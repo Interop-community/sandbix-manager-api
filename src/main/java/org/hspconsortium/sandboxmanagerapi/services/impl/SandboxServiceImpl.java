@@ -233,7 +233,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
-        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
         }
@@ -264,7 +264,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
-        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
         }
@@ -533,6 +533,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String getSandboxApiURL(final Sandbox sandbox) {
         return getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId();
+    }
+
+    @Override
+    public String getSystemSandboxApiURL() {
+        return getApiSchemaURL("5") + "/system";
     }
 
     @Override

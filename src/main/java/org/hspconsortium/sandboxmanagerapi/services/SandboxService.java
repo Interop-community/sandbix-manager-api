@@ -46,6 +46,8 @@ public interface SandboxService {
 
     String getSandboxApiURL(final Sandbox sandbox);
 
+    String getSystemSandboxApiURL();
+
     List<Sandbox> getAllowedSandboxes(final User user);
 
     Sandbox findBySandboxId(final String sandboxId);

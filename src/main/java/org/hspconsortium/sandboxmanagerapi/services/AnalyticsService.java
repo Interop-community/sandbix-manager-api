@@ -16,11 +16,11 @@ public interface AnalyticsService {
 
     Integer countTransactionsByPayer(User payer);
 
-    FhirTransaction handleFhirTransaction(User user, HashMap transactionInfo);
+    FhirTransaction handleFhirTransaction(User user, HashMap transactionInfo, String bearerToken);
 
-    Double retrieveTotalMemoryByUser(User user);
+    Double retrieveTotalMemoryByUser(User user, String request);
 
-    Double retrieveMemoryInSchema(String schemaName);
+    Double retrieveMemoryInSchemas(List<String> schemaNames, String request);
 
     String getSandboxStatistics(final String intervalDays);
 
@@ -28,7 +28,7 @@ public interface AnalyticsService {
 
     HashMap<String, Object> transactionStats(Integer interval, Integer n);
 
-    HashMap<String, Object> sandboxMemoryStats(Integer interval, Integer n);
+    HashMap<String, Object> sandboxMemoryStats(Integer interval, Integer n, String request);
 
     HashMap<String, Object> usersPerSandboxStats(Integer interval, Integer n);
 

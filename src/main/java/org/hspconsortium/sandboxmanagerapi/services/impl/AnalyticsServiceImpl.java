@@ -8,7 +8,11 @@ import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepositor
 import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import java.lang.reflect.Type;
@@ -37,6 +41,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private AppService appService;
     private RuleService ruleService;
     private SandboxActivityLogService sandboxActivityLogService;
+
+    private RestTemplate simpleRestTemplate;
 
     @Inject
     AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository, final UserAccessHistoryRepository userAccessHistoryRepository) {
@@ -69,6 +75,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         this.sandboxActivityLogService = sandboxActivityLogService;
     }
 
+    @Inject
+    public void setRestTemplate(RestTemplate simpleRestTemplate) {
+        this.simpleRestTemplate = simpleRestTemplate;
+    }
+
     public Integer countSandboxesByUser(String userId) {
         User user = userService.findBySbmUserId(userId);
         return 1;
@@ -98,9 +109,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return sandboxUsers;
     }
 
-    public FhirTransaction handleFhirTransaction(User user, HashMap transactionInfo) {
+    public FhirTransaction handleFhirTransaction(User user, HashMap transactionInfo, String bearerToken) {
         Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
-        if (!ruleService.checkIfUserCanPerformTransaction(sandbox, transactionInfo.get("method").toString())) {
+        if (!ruleService.checkIfUserCanPerformTransaction(sandbox, transactionInfo.get("method").toString(), bearerToken)) {
             throw new UnauthorizedException("User has ran out of either transaction counts or storage. Cannot complete transaction.");
         }
         FhirTransaction fhirTransaction = new FhirTransaction();
@@ -130,42 +141,28 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return fhirTransactions.size();
     }
 
-    public Double retrieveTotalMemoryByUser(User user) {
+    public Double retrieveTotalMemoryByUser(User user, String request) {
         Double memoryUseInMB = 0.0;
         List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
+        List<String> sandboxIds = new ArrayList<>();
         for (Sandbox sandbox: userCreatedSandboxes) {
-            memoryUseInMB += retrieveMemoryInSchema(sandbox.getSandboxId());
+            sandboxIds.add(sandbox.getSandboxId());
         }
-        return memoryUseInMB;
+        return retrieveMemoryInSchemas(sandboxIds, request);
     }
 
-    public Double retrieveMemoryInSchema(String schemaName) {
-        Connection conn = null;
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
-            Statement stmt = conn.createStatement() ;
-            String query = "SELECT table_name AS 'Table', ROUND(((data_length + index_length) / 1024 / 1024), 2) AS 'Size (MB)'\n" +
-                    "FROM information_schema.TABLES WHERE table_schema REGEXP 'hspc_[0-9]_" + schemaName + "';" ;
-            ResultSet rs = stmt.executeQuery(query);
-            Double count = 0.0;
-            while (rs.next()) {
-                count += Double.parseDouble(rs.getString(2));
-            }
+    public Double retrieveMemoryInSchemas(List<String> schemaNames, String request) {
+        HashMap<String, Double> sandboxMemorySizes;
+        Double count = 0.0;
 
-            return count;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error getting memory information for " + schemaName, e);
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-//                    LOGGER.error("Error closing connection pool", e);
-                }
-            }
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.set("Authorization", "Bearer " + request);
+        HttpEntity<List<String>> httpEntity = new HttpEntity(schemaNames, requestHeaders);
+        sandboxMemorySizes = simpleRestTemplate.exchange(sandboxService.getSystemSandboxApiURL() + "/memory/user", HttpMethod.PUT, httpEntity, HashMap.class).getBody();
+        for (Double memory: new ArrayList<>(sandboxMemorySizes.values())) {
+            count += memory;
         }
+        return count;
     }
 
     public String activeUserCount(Integer intervalDays) {
@@ -324,10 +321,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return compileStats(fhirTransactions, n);
     }
 
-    public HashMap<String, Object> sandboxMemoryStats(Integer interval, Integer n) {
+    public HashMap<String, Object> sandboxMemoryStats(Integer interval, Integer n, String request) {
         Set<String> sandboxIds = activeSandboxes(interval);
         List<String> fullSandboxIds = new ArrayList<>();
-        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        HashMap<String, Double> sandboxMemorySizes;
 
         for (String sandboxId: sandboxIds) {
             Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
@@ -338,24 +335,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
 
         }
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
-            Statement stmt = conn.createStatement();
-            String query = "select table_schema, sum((data_length+index_length)/1024/1024) AS MB from information_schema.tables group by 1;" ;
-            ResultSet rs = stmt.executeQuery(query);
-            while (rs.next()) {
-                if (fullSandboxIds.contains(rs.getString(1))) {
-                    sandboxMemorySizes.put(rs.getString(1), Double.parseDouble(rs.getString(2)));
-                }
-
-            }
-            conn.close();
-
-            return compileStats(sandboxMemorySizes, n);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.set("Authorization", "Bearer " + request);
+        HttpEntity<String> httpEntity = new HttpEntity(fullSandboxIds, requestHeaders);
+        sandboxMemorySizes = simpleRestTemplate.exchange(sandboxService.getSystemSandboxApiURL() + "/memory", HttpMethod.PUT, httpEntity, HashMap.class).getBody();
+        return compileStats(sandboxMemorySizes, n);
     }
 
     public HashMap<String, Object> usersPerSandboxStats(Integer interval, Integer n) {

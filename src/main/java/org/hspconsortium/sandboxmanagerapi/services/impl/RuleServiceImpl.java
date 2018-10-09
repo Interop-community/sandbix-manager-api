@@ -47,7 +47,7 @@ public class RuleServiceImpl implements RuleService {
         this.rulesList = rulesList;
     }
 
-    public Boolean checkIfUserCanCreateSandbox(User user) {
+    public Boolean checkIfUserCanCreateSandbox(User user, String bearerToken) {
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
@@ -57,7 +57,7 @@ public class RuleServiceImpl implements RuleService {
         }
         List<Sandbox> sandboxes = sandboxService.findByPayerId(user.getId());
         if (rules.getSandboxes() > sandboxes.size()) {
-            if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user)) {
+            if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user, bearerToken)) {
                 return true;
             }
         }
@@ -105,7 +105,7 @@ public class RuleServiceImpl implements RuleService {
         return rules.getUsers() > uniqueUsers.size();
     }
 
-    public Boolean checkIfUserCanPerformTransaction(Sandbox sandbox, String operation) {
+    public Boolean checkIfUserCanPerformTransaction(Sandbox sandbox, String operation, String bearerToken) {
         if (rulesList.getTierRuleList() == null) {
             return true;
         }
@@ -121,7 +121,7 @@ public class RuleServiceImpl implements RuleService {
         if (rules.getTransactions() > analyticsService.countTransactionsByPayer(user)) {
             if (!operation.equals("GET") && !operation.equals("DELETE")) {
                 // Don't need to check memory for these operations
-                if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user)) {
+                if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user, bearerToken)) {
                     return true;
                 }
             } else {
