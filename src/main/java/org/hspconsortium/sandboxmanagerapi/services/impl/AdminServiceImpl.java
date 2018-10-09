@@ -70,25 +70,27 @@ public class AdminServiceImpl implements AdminService {
         HashMap<String, Object> returnedDict = new HashMap<>();
         List<String> missingInSandboxManager = new ArrayList<>();
         List<String> missingInReferenceApi = new ArrayList<>();
-        for (Sandbox sandbox : sandboxesIterable) {
-            if (sandbox.getApiEndpointIndex().equals("5") || sandbox.getApiEndpointIndex().equals("6") || sandbox.getApiEndpointIndex().equals("7")) {
-                sandboxes.add("hspc_5_" + sandbox.getSandboxId());
-            } else {
-                sandboxes.add("hspc_" + sandbox.getApiEndpointIndex() + "_" + sandbox.getSandboxId());
-            }
-        }
+
+//        try {
+//            Class.forName("com.mysql.jdbc.Driver");
+//            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
+//            Statement stmt = conn.createStatement() ;
+//            String query = "select table_schema from information_schema.tables group by 1;";
+//            ResultSet rs = stmt.executeQuery(query);
+//            while (rs.next()) {
+//                if (rs.getString(1).startsWith("hspc_")) {
+//                    fullSandboxIds.add(rs.getString(1));
+//                }
+//            }
+//            conn.close();
+        Sandbox sandboxExample = new Sandbox();
+        sandboxExample.setApiEndpointIndex("5");
+        sandboxExample.setSandboxId("sandbox");
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.set("Authorization", "Bearer " + request);
+        HttpEntity<String> httpEntity = new HttpEntity(requestHeaders);
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
-            Statement stmt = conn.createStatement() ;
-            String query = "select table_schema from information_schema.tables group by 1;" ;
-            ResultSet rs = stmt.executeQuery(query);
-            while (rs.next()) {
-                if (rs.getString(1).startsWith("hspc_")) {
-                    fullSandboxIds.add(rs.getString(1));
-                }
-            }
-            conn.close();
+            fullSandboxIds = simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandboxExample)  + "/sandbox/all", HttpMethod.GET, httpEntity, List.class).getBody();
             for (String sandbox: fullSandboxIds) {
                 if (!sandboxes.contains(sandbox)) {
                     missingInSandboxManager.add(sandbox);

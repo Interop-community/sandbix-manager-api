@@ -127,6 +127,7 @@ public class AppServiceImpl implements AppService {
         app.setCopyType(CopyType.MASTER);
 
         String entity = oAuthClientService.postOAuthClient(app.getClientJSON());
+        app.setClientJSON(entity);
         try {
             JSONObject jsonObject = new JSONObject(entity);
             app.setClientId((String)jsonObject.get("clientId"));

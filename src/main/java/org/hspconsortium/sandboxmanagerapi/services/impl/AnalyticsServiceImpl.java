@@ -332,7 +332,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
-            Statement stmt = conn.createStatement() ;
+            Statement stmt = conn.createStatement();
             String query = "select table_schema, sum((data_length+index_length)/1024/1024) AS MB from information_schema.tables group by 1;" ;
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {

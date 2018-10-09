@@ -82,7 +82,7 @@ public class AdminController extends AbstractController {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
         checkUserSystemRole(user, SystemRole.ADMIN);
-        return adminService.syncSandboxManagerandReferenceApi(false, "");
+        return adminService.syncSandboxManagerandReferenceApi(false, oAuthService.getBearerToken(request));
     }
 
     @GetMapping(value = "/$sync", produces = APPLICATION_JSON_VALUE)
