@@ -140,9 +140,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     public Double retrieveMemoryInSchema(String schemaName) {
+        Connection conn = null;
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
+            conn = DriverManager.getConnection(databaseUrl, databaseUserName, databasePassword);
             Statement stmt = conn.createStatement() ;
             String query = "SELECT table_name AS 'Table', ROUND(((data_length + index_length) / 1024 / 1024), 2) AS 'Size (MB)'\n" +
                     "FROM information_schema.TABLES WHERE table_schema REGEXP 'hspc_[0-9]_" + schemaName + "';" ;
@@ -151,11 +152,19 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             while (rs.next()) {
                 count += Double.parseDouble(rs.getString(2));
             }
-            conn.close();
+
             return count;
 
         } catch (Exception e) {
             throw new RuntimeException("Error getting memory information for " + schemaName, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+//                    LOGGER.error("Error closing connection pool", e);
+                }
+            }
         }
     }
 
