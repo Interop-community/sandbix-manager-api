@@ -157,7 +157,15 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public void delete(final Sandbox sandbox, final String bearerToken, final User admin) {
+    public void delete(final Sandbox sandbox, final String bearerToken, final User admin, final boolean sync) {
+        if (!sync) {
+            // Want this done first in case there's an error with Reference API so that everything else doesn't get deleted
+            try {
+                callDeleteSandboxAPI(sandbox, bearerToken);
+            } catch (Exception ex) {
+                throw new SandboxDeleteFailedException(String.format("Failed to delete sandbox: %s %n %s", sandbox.getSandboxId(), ex.getMessage()), ex);
+            }
+        }
 
         deleteAllSandboxItems(sandbox, bearerToken);
 
@@ -177,18 +185,12 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxActivityLogService.sandboxDelete(sandbox, sandbox.getCreatedBy());
         }
         delete(sandbox.getId());
-
-        try {
-            callDeleteSandboxAPI(sandbox, bearerToken);
-        } catch (Exception ex) {
-            throw new SandboxDeleteFailedException(String.format("Failed to delete sandbox: %s %n %s", sandbox.getSandboxId(), ex.getMessage()), ex);
-        }
     }
 
     @Override
     @Transactional
     public void delete(final Sandbox sandbox, final String bearerToken) {
-        delete(sandbox, bearerToken, null);
+        delete(sandbox, bearerToken, null, false);
     }
 
     private void deleteAllSandboxItems(final Sandbox sandbox, final String bearerToken) {
@@ -196,7 +198,7 @@ public class SandboxServiceImpl implements SandboxService {
         deleteSandboxItemsExceptApps(sandbox, bearerToken);
 
         //delete all registered app, authClients, images
-        List<App> apps = appService.findBySandboxId(sandbox.getSandboxId());
+        List<App> apps = appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId());
         for (App app : apps) {
             appService.delete(app);
         }
@@ -215,14 +217,6 @@ public class SandboxServiceImpl implements SandboxService {
             userPersonaService.delete(userPersona);
         }
 
-
-        //remove sample patients from all apps
-        List<App> apps = appService.findBySandboxId(sandbox.getSandboxId());
-        for (App app : apps) {
-            app.setSamplePatients(null);
-            appService.save(app);
-        }
-
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
@@ -231,7 +225,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
-        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
         }
@@ -262,7 +256,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
-        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user);
+        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
         }
@@ -531,6 +525,16 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String getSandboxApiURL(final Sandbox sandbox) {
         return getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId();
+    }
+
+    @Override
+    public String getSystemSandboxApiURL() {
+        return getApiSchemaURL("5") + "/system";
+    }
+
+    @Override
+    public Iterable<Sandbox> findAll() {
+        return repository.findAll();
     }
 
     private void removeAllMembers(final Sandbox sandbox) {

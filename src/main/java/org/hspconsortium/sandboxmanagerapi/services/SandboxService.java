@@ -14,7 +14,7 @@ public interface SandboxService {
 
     void delete(final Sandbox sandbox, final String bearerToken);
 
-    void delete(final Sandbox sandbox, final String bearerToken, final User isAdmin);
+    void delete(final Sandbox sandbox, final String bearerToken, final User isAdmin, final boolean sync);
 
     Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException;
 
@@ -46,6 +46,8 @@ public interface SandboxService {
 
     String getSandboxApiURL(final Sandbox sandbox);
 
+    String getSystemSandboxApiURL();
+
     List<Sandbox> getAllowedSandboxes(final User user);
 
     Sandbox findBySandboxId(final String sandboxId);
@@ -59,4 +61,6 @@ public interface SandboxService {
     String intervalCount(final Timestamp intervalTime);
 
     List<Sandbox> findByPayerId(Integer payerId);
+
+    Iterable<Sandbox> findAll();
 }

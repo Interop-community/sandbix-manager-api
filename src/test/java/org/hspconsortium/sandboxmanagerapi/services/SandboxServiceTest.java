@@ -10,7 +10,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
-import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +60,7 @@ public class SandboxServiceTest {
     private List<UserRole> userRoles;
     private List<Sandbox> sandboxes;
     private Role role = Role.ADMIN;
+    private String token = "token";
 
     @Before
     public void setup() {
@@ -137,7 +137,7 @@ public class SandboxServiceTest {
         ReflectionTestUtils.setField(sandboxService, "apiBaseURL_6", "apiBaseURL_6");
         ReflectionTestUtils.setField(sandboxService, "apiBaseURL_7", "apiBaseURL_7");
 
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(repository.save(newSandbox)).thenReturn(newSandbox);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
@@ -153,7 +153,7 @@ public class SandboxServiceTest {
     public void deleteTestAll() throws IOException {
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
-        sandboxService.delete(sandbox, bearerToken, user);
+        sandboxService.delete(sandbox, bearerToken, user, false);
         verify(sandboxImportService).delete(sandboxImport);
         verify(sandboxActivityLogService).sandboxDelete(sandbox, user);
     }
@@ -162,7 +162,7 @@ public class SandboxServiceTest {
     public void deleteTestAllAdminIsNull() throws IOException {
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
-        sandboxService.delete(sandbox, bearerToken, null);
+        sandboxService.delete(sandbox, bearerToken, null, false);
         verify(sandboxActivityLogService).sandboxDelete(sandbox, sandbox.getCreatedBy());
     }
 
@@ -172,8 +172,8 @@ public class SandboxServiceTest {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(launchScenarioService.findBySandboxId(sandbox.getSandboxId())).thenReturn(launchScenarios);
         when(userPersonaService.findBySandboxId(sandbox.getSandboxId())).thenReturn(userPersonas);
-        when(appService.findBySandboxId(sandbox.getSandboxId())).thenReturn(apps);
-        sandboxService.delete(sandbox, bearerToken, user);
+        when(appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId())).thenReturn(apps);
+        sandboxService.delete(sandbox, bearerToken, user, false);
         verify(launchScenarioService).delete(launchScenario);
         verify(userPersonaService).delete(userPersona);
         verify(appService).delete(app);
@@ -188,7 +188,7 @@ public class SandboxServiceTest {
         statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_UNAUTHORIZED, "NOT FINE!");
         when(response.getStatusLine()).thenReturn(statusLine);
         when(response.getEntity()).thenReturn(mock(HttpEntity.class));
-        sandboxService.delete(sandbox, bearerToken, user);
+        sandboxService.delete(sandbox, bearerToken, user, false);
     }
 
     @Test(expected = RuntimeException.class)
@@ -196,12 +196,12 @@ public class SandboxServiceTest {
         when(launchScenarioService.findBySandboxId(sandbox.getSandboxId())).thenReturn(launchScenarios);
         when(userPersonaService.findBySandboxId(sandbox.getSandboxId())).thenReturn(userPersonas);
         when(httpClient.execute(any())).thenThrow(IOException.class);
-        sandboxService.delete(sandbox, bearerToken, user);
+        sandboxService.delete(sandbox, bearerToken, user, false);
     }
 
     @Test
     public void cloneTest() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
@@ -217,14 +217,14 @@ public class SandboxServiceTest {
 
     @Test(expected = ResourceNotFoundException.class)
     public void cloneTestExistingSandboxDoesntExist() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
         sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void cloneTestNewSandboxAlreadyExists() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(repository.findBySandboxId(newSandbox.getSandboxId())).thenReturn(newSandbox);
         sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
     }
@@ -232,7 +232,7 @@ public class SandboxServiceTest {
     @Test
     public void cloneTestCloneUserPersonas() throws IOException {
         newSandbox.setDataSet(DataSet.DEFAULT);
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
@@ -245,7 +245,7 @@ public class SandboxServiceTest {
     public void cloneTestCloneAppsAndLaunchScenarios() throws IOException {
         newSandbox.setApps(DataSet.DEFAULT);
         newSandbox.setDataSet(DataSet.DEFAULT);
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
@@ -262,7 +262,7 @@ public class SandboxServiceTest {
     @Test
     public void cloneTestCloneAppsOnly() throws IOException {
         newSandbox.setApps(DataSet.DEFAULT);
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
@@ -275,7 +275,7 @@ public class SandboxServiceTest {
 
     @Test
     public void cloneTestInitialPersonaNotNull() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(userPersona);
         Sandbox returnedSandbox = sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
         assertEquals(null, returnedSandbox);
@@ -283,7 +283,7 @@ public class SandboxServiceTest {
 
     @Test
     public void cloneTestCantClone() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(false);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(false);
         Sandbox returnedSandbox = sandboxService.clone(sandbox, sandbox.getSandboxId(), user, bearerToken);
         assertEquals(null, returnedSandbox);
     }
@@ -291,7 +291,7 @@ public class SandboxServiceTest {
     @Test(expected = RuntimeException.class)
     public void cloneTestErrorInCallToReferenceApi() throws IOException {
         statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_UNAUTHORIZED, "NOT FINE!");
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
@@ -301,7 +301,7 @@ public class SandboxServiceTest {
 
     @Test(expected = RuntimeException.class)
     public void cloneTestThrowsExceptionInApiCall() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user)).thenReturn(true);
+        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
         when(httpClient.execute(any())).thenThrow(IOException.class);
         sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);

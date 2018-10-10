@@ -14,8 +14,12 @@ import java.sql.Timestamp;
                 "c.clientId = :clientId and c.sandbox.sandboxId = :sandboxId"),
         // Used to delete all registered apps when a sandbox is deleted
         @NamedQuery(name="App.findBySandboxId",
-        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 " +
+        query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0" +
                 "order by c.clientName"),
+        // Used to delete all registered apps when a sandbox is deleted
+        @NamedQuery(name="App.findBySandboxIdIncludingCustomApps",
+                query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId " +
+                        "order by c.clientName"),
         // Used to retrieve all registered apps visible to a user of this a sandbox
         @NamedQuery(name="App.findBySandboxIdAndCreatedByOrVisibility",
         query="SELECT c FROM App c WHERE c.sandbox.sandboxId = :sandboxId and c.customApp = 0 and " +

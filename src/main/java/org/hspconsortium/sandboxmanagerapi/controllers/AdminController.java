@@ -26,14 +26,12 @@ import org.hspconsortium.sandboxmanagerapi.model.SandboxInvite;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -73,7 +71,29 @@ public class AdminController extends AbstractController {
         List<SandboxInvite> invites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
         invites.forEach(sandboxInviteService::delete);
 
-        sandboxService.delete(sandbox, oAuthService.getBearerToken(request), user);
+        sandboxService.delete(sandbox, oAuthService.getBearerToken(request), user, false);
+    }
+
+    @GetMapping(value = "/$list", produces = APPLICATION_JSON_VALUE)
+    @Transactional
+    public HashMap<String, Object> listSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return adminService.syncSandboxManagerandReferenceApi(false, oAuthService.getBearerToken(request));
+    }
+
+    @GetMapping(value = "/$sync", produces = APPLICATION_JSON_VALUE)
+    @Transactional
+    public HashMap<String, Object> syncSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
+        User user = userService.findBySbmUserId(getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        checkUserSystemRole(user, SystemRole.ADMIN);
+        return adminService.syncSandboxManagerandReferenceApi(true, oAuthService.getBearerToken(request));
     }
 
 }

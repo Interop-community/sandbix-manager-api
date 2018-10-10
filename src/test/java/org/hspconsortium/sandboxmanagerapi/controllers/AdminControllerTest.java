@@ -69,7 +69,7 @@ public class AdminControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId())).thenReturn(new ArrayList<>());
         when(oAuthService.getBearerToken(any())).thenReturn("token");
-        doNothing().when(sandboxService).delete(sandbox, "token", user);
+        doNothing().when(sandboxService).delete(sandbox, "token", user, false);
         mvc
                 .perform(delete("/admin/sandbox/" + sandbox.getSandboxId()))
                 .andExpect(status().isOk());

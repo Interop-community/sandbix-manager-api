@@ -27,6 +27,7 @@ public class RuleServiceTest {
     private Sandbox sandbox;
     private User user;
     private User userNoTier;
+    private String token = "token";
 
     @Before
     public void setup() {
@@ -60,21 +61,21 @@ public class RuleServiceTest {
     @Test
     public void checkIfUserCanCreateSandboxTest() {
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
-        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user);
+        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user, token);
         assertEquals(true, bool);
     }
 
     @Test
     public void checkIfUserCanCreateSandboxTestNoRules() {
         when(rulesList.getTierRuleList()).thenReturn(null);
-        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user);
+        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user, token);
         assertEquals(true, bool);
     }
 
     @Test
     public void checkIfUserCanCreateSandboxTestNoTier() {
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(userNoTier);
-        Boolean bool = ruleService.checkIfUserCanCreateSandbox(userNoTier);
+        Boolean bool = ruleService.checkIfUserCanCreateSandbox(userNoTier, token);
         assertEquals(true, bool);
     }
 
@@ -82,8 +83,8 @@ public class RuleServiceTest {
     public void checkIfUserCanCreateSandboxTestNotEnoughMemory() {
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
         Double storage = new Double(rulesList.getTierRuleList().get("FREE").getStorage() + 1);
-        when(analyticsService.retrieveTotalMemoryByUser(user)).thenReturn(storage);
-        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user);
+        when(analyticsService.retrieveTotalMemoryByUser(user, token)).thenReturn(storage);
+        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user, token);
         assertEquals(false, bool);
     }
 
@@ -95,7 +96,7 @@ public class RuleServiceTest {
         }
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
         when(sandboxService.findByPayerId(user.getId())).thenReturn(sandboxList);
-        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user);
+        Boolean bool = ruleService.checkIfUserCanCreateSandbox(user, token);
         assertEquals(false, bool);
     }
 
@@ -191,21 +192,21 @@ public class RuleServiceTest {
     @Test
     public void checkIfUserCanPerformTransactionTest() {
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
-        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST");
+        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
         assertEquals(true, bool);
     }
 
     @Test
     public void checkIfUserCanPerformTransactionTestNoRules() {
         when(rulesList.getTierRuleList()).thenReturn(null);
-        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST");
+        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
         assertEquals(true, bool);
     }
 
     @Test
     public void checkIfUserCanPerformTransactionTestNoTier() {
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(userNoTier);
-        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST");
+        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
         assertEquals(true, bool);
     }
 
@@ -213,7 +214,7 @@ public class RuleServiceTest {
     public void checkIfUserCanPerformTransactionTestNoPayer() {
         sandbox.setPayerUserId(null);
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
-        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST");
+        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
         assertEquals(true, bool);
     }
 
@@ -221,8 +222,8 @@ public class RuleServiceTest {
     public void checkIfUserCanPerformTransactionTestNotInfoStorage() {
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
         Double storage = new Double(rulesList.getTierRuleList().get("FREE").getStorage() + 1);
-        when(analyticsService.retrieveTotalMemoryByUser(user)).thenReturn(storage);
-        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST");
+        when(analyticsService.retrieveTotalMemoryByUser(user, token)).thenReturn(storage);
+        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
         assertEquals(false, bool);
     }
 
@@ -231,7 +232,7 @@ public class RuleServiceTest {
         when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
         Integer transactions = rulesList.getTierRuleList().get("FREE").getTransactions() + 1;
         when(analyticsService.countTransactionsByPayer(user)).thenReturn(transactions);
-        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST");
+        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
         assertEquals(false, bool);
     }
 }

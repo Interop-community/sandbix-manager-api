@@ -127,6 +127,7 @@ public class AppServiceImpl implements AppService {
         app.setCopyType(CopyType.MASTER);
 
         String entity = oAuthClientService.postOAuthClient(app.getClientJSON());
+        app.setClientJSON(entity);
         try {
             JSONObject jsonObject = new JSONObject(entity);
             app.setClientId((String)jsonObject.get("clientId"));
@@ -231,6 +232,12 @@ public class AppServiceImpl implements AppService {
     @Override
     public List<App> findBySandboxId(final String sandboxId){
         return repository.findBySandboxId(sandboxId);
+    }
+
+    //TODO: remove after release of new sandbox manager and custom apps are dead
+    @Override
+    public List<App> findBySandboxIdIncludingCustomApps(final String sandboxId) {
+        return repository.findBySandboxIdIncludingCustomApps(sandboxId);
     }
 
     @Override
