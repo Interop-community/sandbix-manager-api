@@ -217,14 +217,6 @@ public class SandboxServiceImpl implements SandboxService {
             userPersonaService.delete(userPersona);
         }
 
-
-        //remove sample patients from all apps
-        List<App> apps = appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId());
-        for (App app : apps) {
-            app.setSamplePatients(null);
-            appService.save(app);
-        }
-
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 

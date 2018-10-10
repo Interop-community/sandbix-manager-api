@@ -10,7 +10,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
-import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -173,7 +172,7 @@ public class SandboxServiceTest {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(launchScenarioService.findBySandboxId(sandbox.getSandboxId())).thenReturn(launchScenarios);
         when(userPersonaService.findBySandboxId(sandbox.getSandboxId())).thenReturn(userPersonas);
-        when(appService.findBySandboxId(sandbox.getSandboxId())).thenReturn(apps);
+        when(appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId())).thenReturn(apps);
         sandboxService.delete(sandbox, bearerToken, user, false);
         verify(launchScenarioService).delete(launchScenario);
         verify(userPersonaService).delete(userPersona);
