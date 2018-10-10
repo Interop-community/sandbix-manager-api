@@ -82,7 +82,7 @@ public class AppServiceImpl implements AppService {
     public void delete(final App app) {
 
         //Integer authDatabaseId = app.getAuthClient().getAuthDatabaseId();
-        if (app.getCopyType() == CopyType.MASTER) {
+        if (app.getCopyType() == CopyType.MASTER && !app.isCustomApp()) {
             try {
                 // TODO: don't delete in auth server if default app
 //                JSONArray apps = getDefaultAppList();
