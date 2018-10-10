@@ -198,7 +198,7 @@ public class SandboxServiceImpl implements SandboxService {
         deleteSandboxItemsExceptApps(sandbox, bearerToken);
 
         //delete all registered app, authClients, images
-        List<App> apps = appService.findBySandboxId(sandbox.getSandboxId());
+        List<App> apps = appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId());
         for (App app : apps) {
             appService.delete(app);
         }
@@ -219,7 +219,7 @@ public class SandboxServiceImpl implements SandboxService {
 
 
         //remove sample patients from all apps
-        List<App> apps = appService.findBySandboxId(sandbox.getSandboxId());
+        List<App> apps = appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId());
         for (App app : apps) {
             app.setSamplePatients(null);
             appService.save(app);

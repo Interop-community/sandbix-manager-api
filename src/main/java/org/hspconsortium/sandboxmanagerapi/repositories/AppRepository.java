@@ -16,6 +16,8 @@ public interface AppRepository extends CrudRepository<App, Integer> {
 
     List<App> findBySandboxId(@Param("sandboxId") String sandboxId);
 
+    List<App> findBySandboxIdIncludingCustomApps(@Param("sandboxId") String sandboxId);
+
     List<App> findBySandboxIdAndCreatedByOrVisibility(@Param("sandboxId") String sandboxId,
                                                              @Param("createdBy") String createdBy,
                                                              @Param("visibility") Visibility visibility);

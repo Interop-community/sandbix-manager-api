@@ -31,6 +31,9 @@ public interface AppService {
 
     List<App> findBySandboxId(final String sandboxId);
 
+    //TODO: remove after release of new sandbox manager and custom apps are dead
+    List<App> findBySandboxIdIncludingCustomApps(final String sandboxId);
+
     List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility);
 
     List<App> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy);

@@ -234,6 +234,12 @@ public class AppServiceImpl implements AppService {
         return repository.findBySandboxId(sandboxId);
     }
 
+    //TODO: remove after release of new sandbox manager and custom apps are dead
+    @Override
+    public List<App> findBySandboxIdIncludingCustomApps(final String sandboxId) {
+        return repository.findBySandboxIdIncludingCustomApps(sandboxId);
+    }
+
     @Override
     public List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
         return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
