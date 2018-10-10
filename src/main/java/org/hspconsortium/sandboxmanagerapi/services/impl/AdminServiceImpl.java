@@ -5,7 +5,6 @@ import org.hspconsortium.sandboxmanagerapi.services.AdminService;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxActivityLogService;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,12 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -32,6 +26,9 @@ public class AdminServiceImpl implements AdminService {
 
     @Value("${spring.datasource.password}")
     private String databasePassword;
+
+    @Value("${hspc.platform.dontDeleteInSync}")
+    private String[] dontDeleteInSync;
 
     private UserService userService;
     private SandboxService sandboxService;
@@ -64,7 +61,7 @@ public class AdminServiceImpl implements AdminService {
 
     public HashMap<String, Object> syncSandboxManagerandReferenceApi(Boolean fix, String request) {
         List<String> sandboxesInSM = new ArrayList<>();
-        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        Collection<LinkedHashMap> sandboxesInRAPI;
         Iterable<Sandbox> sandboxesIterable = sandboxService.findAll();
         HashMap<String, Object> returnedDict = new HashMap<>();
         List<Sandbox> missingInSandboxManager = new ArrayList<>();
@@ -86,7 +83,7 @@ public class AdminServiceImpl implements AdminService {
                 String sandboxId = sandboxJSON.get("teamId").toString();
                 sandboxesInRAPINames.add(sandboxId);
 
-                if (!sandboxesInSM.contains(sandboxId)) {
+                if (!sandboxesInSM.contains(sandboxId) && !Arrays.stream(dontDeleteInSync).anyMatch(sandboxId::equals)) {
                     Sandbox sandbox = new Sandbox();
                     sandbox.setSandboxId(sandboxId);
                     sandbox.setApiEndpointIndex(sandboxJSON.get("schemaVersion").toString());

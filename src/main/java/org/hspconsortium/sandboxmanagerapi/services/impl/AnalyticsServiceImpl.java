@@ -136,13 +136,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     public Integer countTransactionsByPayer(User payer) {
-        Integer count = 0;
         List<FhirTransaction> fhirTransactions = fhirTransactionRepository.findByPayerUserId(payer.getId());
         return fhirTransactions.size();
     }
 
     public Double retrieveTotalMemoryByUser(User user, String request) {
-        Double memoryUseInMB = 0.0;
         List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
         List<String> sandboxIds = new ArrayList<>();
         for (Sandbox sandbox: userCreatedSandboxes) {
