@@ -74,7 +74,7 @@ public class AdminController extends AbstractController {
         sandboxService.delete(sandbox, oAuthService.getBearerToken(request), user, false);
     }
 
-    @GetMapping(value = "/$list", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/sandbox-differences/$list", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public HashMap<String, Object> listSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
         User user = userService.findBySbmUserId(getSystemUserId(request));
@@ -85,7 +85,7 @@ public class AdminController extends AbstractController {
         return adminService.syncSandboxManagerandReferenceApi(false, oAuthService.getBearerToken(request));
     }
 
-    @GetMapping(value = "/$sync", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/sandbox-differences/$sync", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public HashMap<String, Object> syncSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
         User user = userService.findBySbmUserId(getSystemUserId(request));
