@@ -80,15 +80,16 @@ public class AdminServiceImpl implements AdminService {
             sandboxesInRAPI = simpleRestTemplate.exchange(sandboxService.getSystemSandboxApiURL() + "/sandboxObjects", HttpMethod.GET, httpEntity, Collection.class).getBody();
 
             for (LinkedHashMap sandboxJSON: sandboxesInRAPI) {
-                String sandboxId = sandboxJSON.get("teamId").toString();
-                sandboxesInRAPINames.add(sandboxId);
-
-                if (!sandboxesInSM.contains(sandboxId) && !Arrays.stream(dontDeleteInSync).anyMatch(sandboxId::equals)) {
-                    Sandbox sandbox = new Sandbox();
-                    sandbox.setSandboxId(sandboxId);
-                    sandbox.setApiEndpointIndex(sandboxJSON.get("schemaVersion").toString());
-                    missingInSandboxManager.add(sandbox);
-                    missingInSandboxManagerIds.add(sandbox.getSandboxId());
+                if (sandboxJSON != null) {
+                    String sandboxId = sandboxJSON.get("teamId").toString();
+                    sandboxesInRAPINames.add(sandboxId);
+                    if (!sandboxesInSM.contains(sandboxId) && !Arrays.stream(dontDeleteInSync).anyMatch(sandboxId::equals)) {
+                        Sandbox sandbox = new Sandbox();
+                        sandbox.setSandboxId(sandboxId);
+                        sandbox.setApiEndpointIndex(sandboxJSON.get("schemaVersion").toString());
+                        missingInSandboxManager.add(sandbox);
+                        missingInSandboxManagerIds.add(sandbox.getSandboxId());
+                    }
                 }
             }
             for (String sandbox: sandboxesInSM) {
@@ -96,6 +97,8 @@ public class AdminServiceImpl implements AdminService {
                     missingInReferenceApi.add(sandbox);
                 }
             }
+            missingInSandboxManagerIds.sort(String::compareToIgnoreCase);
+            missingInReferenceApi.sort(String::compareToIgnoreCase);
             returnedDict.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
             returnedDict.put("missing_in_reference_api", missingInReferenceApi);
             if (fix) {
