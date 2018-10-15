@@ -18,7 +18,6 @@ public class AppServiceTest {
 
     private AppRepository appRepository = mock(AppRepository.class);
 
-    private AuthClientService authClientService = mock(AuthClientService.class);
 
     private ImageService imageService = mock(ImageService.class);
 
@@ -41,7 +40,6 @@ public class AppServiceTest {
 
     @Before
     public void setup() throws Exception {
-        appService.setAuthClientService(authClientService);
         appService.setLaunchScenarioService(launchScenarioService);
         appService.setoAuthClientService(oAuthClientService);
         appService.setImageService(imageService);

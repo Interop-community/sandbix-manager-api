@@ -97,21 +97,6 @@ public class AnalyticsController extends AbstractController {
        return analyticsService.retrieveTotalMemoryByUser(user, oAuthService.getBearerToken(request));
     }
 
-    // TODO: remove after beta testing
-    @GetMapping(value = "/beta-use", params = {"userId"})
-    public @ResponseBody List<SandboxActivityLog> getBetaSandboxUsages(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
-        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-        checkUserAuthorization(request, userId);
-        User user = userService.findBySbmUserId(userId);
-        Boolean isAdmin = checkUserHasSystemRole(user, SystemRole.ADMIN);
-        if (isAdmin) {
-            return sandboxActivityLogService.findBySandboxActivity(SandboxActivity.LOGGED_IN_BETA);
-        } else {
-            throw new UserDeniedAuthorizationException("User denied access.");
-        }
-
-    }
-
     @PostMapping(value = "/transaction")
     public @ResponseBody
     FhirTransaction handleFhirTransaction(final HttpServletRequest request, @RequestBody final HashMap transactionInfo) {

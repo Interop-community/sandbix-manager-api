@@ -353,7 +353,6 @@ public class SandboxControllerTest {
                 .perform(post("/sandbox/" + sandbox.getSandboxId() + "/login?userId=" + user.getSbmUserId()))
                 .andExpect(status().isOk());
         verify(userAccessHistoryService).saveUserAccessInstance(any(), any());
-        verify(sandboxActivityLogService).sandboxLoginBeta(any(), any(), any());
         verify(sandboxService).sandboxLogin(any(), any());
     }
 
