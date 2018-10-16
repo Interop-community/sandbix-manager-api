@@ -27,6 +27,7 @@ public class AnalyticsController extends AbstractController {
     private UserPersonaService userPersonaService;
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxActivityLogService sandboxActivityLogService;
+    private AuthorizationService authorizationService;
 
     @Inject
     public AnalyticsController(final AnalyticsService analyticsService,
@@ -37,7 +38,8 @@ public class AnalyticsController extends AbstractController {
                                final RuleService ruleService,
                                final UserPersonaService userPersonaService,
                                final UserAccessHistoryService userAccessHistoryService,
-                               final SandboxActivityLogService sandboxActivityLogService) {
+                               final SandboxActivityLogService sandboxActivityLogService,
+                               final AuthorizationService authorizationService) {
         super(oAuthService);
         this.analyticsService = analyticsService;
         this.userService = userService;
@@ -47,13 +49,14 @@ public class AnalyticsController extends AbstractController {
         this.userPersonaService = userPersonaService;
         this.userAccessHistoryService = userAccessHistoryService;
         this.sandboxActivityLogService = sandboxActivityLogService;
+        this.authorizationService = authorizationService;
     }
 
     @GetMapping(value = "/sandboxes", params = {"userId"})
     public @ResponseBody
     Integer countSandboxesByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+//        authorizationService.checkUserAuthorization(request, userId);
 
         User primaryUser = userService.findBySbmUserId(userId);
         if (primaryUser == null) {
@@ -66,7 +69,7 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value = "/users", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countUsersBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+//        authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -77,7 +80,7 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value = "/apps", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countAppsBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+//        authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -88,7 +91,7 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value = "/memory", params = {"userId"})
     public @ResponseBody Double memoryUsedByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+//        authorizationService.checkUserAuthorization(request, userId);
         Double memoryUseInMB = 0.0;
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
@@ -136,7 +139,7 @@ public class AnalyticsController extends AbstractController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.getSandboxStatistics(intervalDays);
     }
 
@@ -146,7 +149,7 @@ public class AnalyticsController extends AbstractController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.transactionStats(intervalDays, n);
     }
 
@@ -156,7 +159,7 @@ public class AnalyticsController extends AbstractController {
 //        if (user == null) {
 //            throw new ResourceNotFoundException("User not found in authorization header.");
 //        }
-//        checkUserSystemRole(user, SystemRole.ADMIN);
+//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.sandboxMemoryStats(intervalDays, n, oAuthService.getBearerToken(request));
     }
 
@@ -166,7 +169,7 @@ public class AnalyticsController extends AbstractController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.usersPerSandboxStats(intervalDays, n);
     }
 
@@ -176,7 +179,7 @@ public class AnalyticsController extends AbstractController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.sandboxesPerUserStats(intervalDays, n);
     }
 

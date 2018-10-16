@@ -44,16 +44,18 @@ public class AdminController extends AbstractController {
     private final SandboxService sandboxService;
     private final AdminService adminService;
     private final SandboxInviteService sandboxInviteService;
+    private final AuthorizationService authorizationService;
 
     @Inject
     public AdminController(final UserService userService, final OAuthService oAuthService,
                            final AdminService adminService, final SandboxService sandboxService,
-                           final SandboxInviteService sandboxInviteService) {
+                           final SandboxInviteService sandboxInviteService, final AuthorizationService authorizationService) {
         super(oAuthService);
         this.userService = userService;
         this.sandboxService = sandboxService;
         this.sandboxInviteService = sandboxInviteService;
         this.adminService = adminService;
+        this.authorizationService = authorizationService;
     }
 
     // Admin Level Sandbox Delete (originally for cleaning up orphaned sandboxes
@@ -65,7 +67,7 @@ public class AdminController extends AbstractController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
 
         //delete sandbox invites
         List<SandboxInvite> invites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
@@ -81,7 +83,7 @@ public class AdminController extends AbstractController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return adminService.syncSandboxManagerandReferenceApi(false, oAuthService.getBearerToken(request));
     }
 
@@ -92,7 +94,7 @@ public class AdminController extends AbstractController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return adminService.syncSandboxManagerandReferenceApi(true, oAuthService.getBearerToken(request));
     }
 
