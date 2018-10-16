@@ -38,7 +38,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/launchScenario")
-public class LaunchScenarioController extends AbstractController  {
+public class LaunchScenarioController {
 
     private final LaunchScenarioService launchScenarioService;
     private final UserService userService;
@@ -46,20 +46,23 @@ public class LaunchScenarioController extends AbstractController  {
     private final UserPersonaService userPersonaService;
     private final SandboxService sandboxService;
     private final UserLaunchService userLaunchService;
+    private final OAuthService oAuthService;
+    private final AuthorizationService authorizationService;
 
     @Inject
     public LaunchScenarioController(final LaunchScenarioService launchScenarioService,
                                     final AppService appService, final UserService userService,
                                     final UserPersonaService userPersonaService,
                                     final SandboxService sandboxService, final OAuthService oAuthService,
-                                    final UserLaunchService userLaunchService) {
-        super(oAuthService);
+                                    final UserLaunchService userLaunchService, final AuthorizationService authorizationService) {
+        this.oAuthService = oAuthService;
         this.launchScenarioService = launchScenarioService;
         this.userService = userService;
         this.appService = appService;
         this.userPersonaService = userPersonaService;
         this.sandboxService = sandboxService;
         this.userLaunchService = userLaunchService;
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -74,12 +77,12 @@ public class LaunchScenarioController extends AbstractController  {
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        checkSandboxUserCreateAuthorization(request, sandbox);
-        checkCreatedByIsCurrentUserAuthorization(request, launchScenario.getCreatedBy().getSbmUserId());
+        authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
+        authorizationService.checkUserAuthorization(request, launchScenario.getCreatedBy().getSbmUserId());
 
         launchScenario.setSandbox(sandbox);
 
-        launchScenario.setVisibility(getDefaultVisibility(user, sandbox));
+        launchScenario.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
         launchScenario.setCreatedBy(user);
 
         LaunchScenario createdLaunchScenario = launchScenarioService.create(launchScenario);
@@ -100,7 +103,7 @@ public class LaunchScenarioController extends AbstractController  {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserModifyAuthorization(request, sandbox, launchScenario);
+        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, launchScenario);
         return launchScenarioService.update(launchScenario);
     }
 
@@ -117,10 +120,10 @@ public class LaunchScenarioController extends AbstractController  {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
-        UserLaunch userLaunch = userLaunchService.findByUserIdAndLaunchScenarioId(getSystemUserId(request), existingLaunchScenario.getId());
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
+        UserLaunch userLaunch = userLaunchService.findByUserIdAndLaunchScenarioId(authorizationService.getSystemUserId(request), existingLaunchScenario.getId());
         if (userLaunch == null) {
-            User user = userService.findBySbmUserId(getSystemUserId(request));
+            User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
             userLaunchService.create(new UserLaunch(user, existingLaunchScenario, new Timestamp(new Date().getTime())));
         } else {
             userLaunchService.update(userLaunch);
@@ -134,7 +137,7 @@ public class LaunchScenarioController extends AbstractController  {
         if (app == null) {
             throw new ResourceNotFoundException("App not found.");
         }
-        checkSandboxUserReadAuthorization(request, app.getSandbox());
+        authorizationService.checkSandboxUserReadAuthorization(request, app.getSandbox());
 
         return launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
     }
@@ -147,7 +150,7 @@ public class LaunchScenarioController extends AbstractController  {
         if (userPersona == null) {
             throw new ResourceNotFoundException("UserPersona not found.");
         }
-        checkSandboxUserReadAuthorization(request, userPersona.getSandbox());
+        authorizationService.checkSandboxUserReadAuthorization(request, userPersona.getSandbox());
 
         return launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
     }
@@ -163,7 +166,7 @@ public class LaunchScenarioController extends AbstractController  {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserModifyAuthorization(request, sandbox, launchScenario);
+        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, launchScenario);
         launchScenarioService.delete(launchScenario);
     }
 
@@ -177,7 +180,7 @@ public class LaunchScenarioController extends AbstractController  {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, oauthUserId, Visibility.PUBLIC);
         // Modify the lastLaunchSeconds field of each launch scenario to match when this user last launched each launch scenario
         return launchScenarioService.updateLastLaunchForCurrentUser(launchScenarios, userService.findBySbmUserId(oauthUserId));

@@ -45,7 +45,7 @@ import java.util.concurrent.Semaphore;
 
 @RestController
 @RequestMapping({"/user"})
-public class UserController extends AbstractController {
+public class UserController {
 
     @Value("${hspc.platform.defaultSystemRoles}")
     private String[] defaultSystemRoles;
@@ -57,6 +57,7 @@ public class UserController extends AbstractController {
 
     private final UserService userService;
     private final SandboxInviteService sandboxInviteService;
+    private final AuthorizationService authorizationService;
     private final UserPersonaService userPersonaService;
     private final SandboxActivityLogService sandboxActivityLogService;
     private final SandboxService sandboxService;
@@ -64,14 +65,13 @@ public class UserController extends AbstractController {
     private static Semaphore semaphore = new Semaphore(1);
 
     @Inject
-    public UserController(final OAuthService oAuthService, final UserService userService,
-                          final SandboxActivityLogService sandboxActivityLogService,
-                          final SandboxInviteService sandboxInviteService,
+    public UserController(final UserService userService, final SandboxActivityLogService sandboxActivityLogService,
+                          final SandboxInviteService sandboxInviteService, final AuthorizationService authorizationService,
                           final UserPersonaService userPersonaService, final SandboxService sandboxService) {
-        super(oAuthService);
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
         this.userPersonaService = userPersonaService;
+        this.authorizationService = authorizationService;
         this.sandboxActivityLogService = sandboxActivityLogService;
         this.sandboxService = sandboxService;
     }
@@ -80,9 +80,9 @@ public class UserController extends AbstractController {
     @Transactional
     public @ResponseBody
     User getUser(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
-        checkUserAuthorization(request, sbmUserId);
-        String oauthUsername = oAuthService.getOAuthUserName(request);
-        String oauthUserEmail = oAuthService.getOAuthUserEmail(request);
+        authorizationService.checkUserAuthorization(request, sbmUserId);
+        String oauthUsername = authorizationService.getUserName(request);
+        String oauthUserEmail = authorizationService.getEmail(request);
         User user = null;
         try {
             semaphore.acquire();
@@ -102,13 +102,13 @@ public class UserController extends AbstractController {
     @Transactional
     public @ResponseBody
     Iterable<User> getAllUsers(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
-        checkUserAuthorization(request, sbmUserId);
+        authorizationService.checkUserAuthorization(request, sbmUserId);
         User user = userService.findBySbmUserId(sbmUserId);
-        Boolean isSystemAdmin = checkUserHasSystemRole(user, SystemRole.ADMIN);
+        Boolean isSystemAdmin = authorizationService.checkUserHasSystemRole(user, SystemRole.ADMIN);
         if (isSystemAdmin) {
             return userService.findAll();
         } else {
-            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
+            throw new UnauthorizedException(String.format(authorizationService.UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
     }
 
@@ -117,7 +117,7 @@ public class UserController extends AbstractController {
     public void acceptTermsOfUse(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId,
                                  @RequestParam(value = "termsId") String termsId) {
 
-        checkUserAuthorization(request, sbmUserId);
+        authorizationService.checkUserAuthorization(request, sbmUserId);
         User user = userService.findBySbmUserId(sbmUserId);
         userService.acceptTermsOfUse(user, termsId);
     }
@@ -125,7 +125,7 @@ public class UserController extends AbstractController {
     @PostMapping(value = "/authorize")
     @Transactional
     public ResponseEntity authorizeUserForReferenceApi(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
-        String userId = oAuthService.getOAuthUserId(request);
+        String userId = authorizationService.getSystemUserId(request);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -144,8 +144,8 @@ public class UserController extends AbstractController {
             throw new RuntimeException(e);
         }
         try {
-            if (!checkUserHasSystemRole(user, SystemRole.ADMIN)) {
-                checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+            if (!authorizationService.checkUserHasSystemRole(user, SystemRole.ADMIN)) {
+                authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
             }
 
         } catch (UnauthorizedException e) {

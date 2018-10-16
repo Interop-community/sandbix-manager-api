@@ -42,20 +42,22 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/userPersona")
-public class UserPersonaController extends AbstractController {
+public class UserPersonaController {
     private final SandboxService sandboxService;
     private final UserService userService;
     private final UserPersonaService userPersonaService;
     private final JwtService jwtService;
+    private final AuthorizationService authorizationService;
 
     @Inject
     public UserPersonaController(final SandboxService sandboxService, final UserPersonaService userPersonaService,
-                                 final UserService userService, final OAuthService oAuthService, final JwtService jwtService) {
-        super(oAuthService);
+                                 final UserService userService,
+                                 final JwtService jwtService, final AuthorizationService authorizationService) {
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.userPersonaService = userPersonaService;
         this.jwtService = jwtService;
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -66,10 +68,10 @@ public class UserPersonaController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        String sbmUserId = checkSandboxUserCreateAuthorization(request, sandbox);
+        String sbmUserId = authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
         userPersona.setSandbox(sandbox);
         User user = userService.findBySbmUserId(sbmUserId);
-        userPersona.setVisibility(getDefaultVisibility(user, sandbox));
+        userPersona.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
         userPersona.setCreatedBy(user);
         return userPersonaService.create(userPersona);
     }
@@ -82,7 +84,7 @@ public class UserPersonaController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserModifyAuthorization(request, sandbox, userPersona);
+        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, userPersona);
         return userPersonaService.update(userPersona);
     }
 
@@ -91,12 +93,12 @@ public class UserPersonaController extends AbstractController {
     public @ResponseBody Iterable<UserPersona> getSandboxUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
 
-        String oauthUserId = oAuthService.getOAuthUserId(request);
+        String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         return userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
 
@@ -105,12 +107,12 @@ public class UserPersonaController extends AbstractController {
     public @ResponseBody UserPersona getSandboxDefaultUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
 
-        String oauthUserId = oAuthService.getOAuthUserId(request);
+        String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         return userPersonaService.findDefaultBySandboxId(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
 
@@ -127,7 +129,7 @@ public class UserPersonaController extends AbstractController {
         if (userPersona == null) {
             throw new ResourceNotFoundException("UserPersona not found.");
         }
-        checkSandboxUserModifyAuthorization(request, userPersona.getSandbox(), userPersona);
+        authorizationService.checkSandboxUserModifyAuthorization(request, userPersona.getSandbox(), userPersona);
 
         userPersonaService.delete(userPersona);
     }

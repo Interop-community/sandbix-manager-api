@@ -51,7 +51,7 @@ public class NotificationControllerTest {
     private NotificationService notificationService;
 
     @Autowired
-    private NotificationController notificationController = new NotificationController(oAuthService, notificationService, userService);
+    private NotificationController notificationController = new NotificationController(notificationService, userService);
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {

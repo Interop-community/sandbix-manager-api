@@ -6,15 +6,20 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface AuthorizationService {
 
+    String UNAUTHORIZED_ERROR = "Response Status : %s.\n" +
+            "Response Detail : User not authorized to perform this action.";
+
     void checkUserAuthorization(final HttpServletRequest request, String userId);
 
     String getSystemUserId(final HttpServletRequest request);
 
-    void checkCreatedByIsCurrentUserAuthorization(final HttpServletRequest request, String createdBySbmUserId);
+    String getUserName(final HttpServletRequest request);
+
+    String getEmail(final HttpServletRequest request);
+
+    String getBearerToken(final HttpServletRequest request);
 
     String checkSandboxUserReadAuthorization(final HttpServletRequest request, final Sandbox sandbox);
-
-    String checkSandboxUserCreateAuthorization(final HttpServletRequest request, final Sandbox sandbox);
 
     String checkSandboxUserModifyAuthorization(final HttpServletRequest request, final Sandbox sandbox, final AbstractSandboxItem abstractSandboxItem);
 
@@ -26,14 +31,16 @@ public interface AuthorizationService {
 
     String checkSystemUserCanManageSandboxUsersAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user);
 
-    void checkUserSystemRole(final User user, final SystemRole role);
+    String checkSandboxUserNotReadOnlyAuthorization(final HttpServletRequest request, final Sandbox sandbox);
 
-    void checkUserSandboxRole(final HttpServletRequest request, final Sandbox sandbox, final Role role);
+    void checkUserSystemRole(final User user, final SystemRole role);
 
     void checkSystemUserCanMakeTransaction(Sandbox sandbox, User user);
 
     void checkIfPersonaAndHasAuthority(Sandbox sandbox, UserPersona userPersona);
 
     Visibility getDefaultVisibility(final User user, final Sandbox sandbox);
+
+    boolean checkUserHasSystemRole(final User user, final SystemRole role);
 
 }
