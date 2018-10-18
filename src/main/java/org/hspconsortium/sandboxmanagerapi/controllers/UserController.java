@@ -104,12 +104,8 @@ public class UserController {
     Iterable<User> getAllUsers(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
         authorizationService.checkUserAuthorization(request, sbmUserId);
         User user = userService.findBySbmUserId(sbmUserId);
-        Boolean isSystemAdmin = authorizationService.checkUserHasSystemRole(user, SystemRole.ADMIN);
-        if (isSystemAdmin) {
-            return userService.findAll();
-        } else {
-            throw new UnauthorizedException(String.format(authorizationService.UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
-        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return userService.findAll();
     }
 
     @PostMapping(value = "/acceptterms", params = {"sbmUserId", "termsId"})

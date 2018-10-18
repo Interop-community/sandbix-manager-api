@@ -43,9 +43,6 @@ public class NotificationControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private UserService userService;
 
     @MockBean
@@ -53,9 +50,6 @@ public class NotificationControllerTest {
 
     @MockBean
     private AuthorizationService authorizationService;
-
-    @Autowired
-    private NotificationController notificationController = new NotificationController(notificationService, userService, authorizationService);
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -73,12 +67,9 @@ public class NotificationControllerTest {
     private User user;
     private Notification notification;
     private List<Notification> notifications;
-    private MockHttpServletRequest request;
-    private AbstractSandboxItem abstractSandboxItem = mock(AbstractSandboxItem.class);
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandbox");
         user = new User();
@@ -92,6 +83,7 @@ public class NotificationControllerTest {
         user.setSystemRoles(systemRoles);
 
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.getBearerToken(any())).thenReturn(user.getSbmUserId());
     }
 
     @Test
@@ -122,6 +114,7 @@ public class NotificationControllerTest {
         NewsItem newsItem = new NewsItem();
         String json = json(newsItem);
         user.setSystemRoles(new HashSet<>());
+        doThrow(UnauthorizedException.class).when(authorizationService).checkUserSystemRole(user, SystemRole.ADMIN);
         mvc
                 .perform(post("/notification?userId=" + user.getSbmUserId())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)

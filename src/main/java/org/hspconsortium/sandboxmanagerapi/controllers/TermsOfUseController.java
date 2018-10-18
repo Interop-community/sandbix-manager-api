@@ -20,6 +20,7 @@
 
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
 import org.hspconsortium.sandboxmanagerapi.model.TermsOfUse;
 import org.hspconsortium.sandboxmanagerapi.model.User;
@@ -70,6 +71,9 @@ public class TermsOfUseController  {
     @PostMapping(produces = APPLICATION_JSON_VALUE)
     public TermsOfUse createTermsOfUse(HttpServletRequest request, @RequestBody final TermsOfUse termsOfUse) {
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
         authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
 
         termsOfUse.setCreatedTimestamp(new Timestamp(new Date().getTime()));

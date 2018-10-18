@@ -46,16 +46,14 @@ public class LaunchScenarioController {
     private final UserPersonaService userPersonaService;
     private final SandboxService sandboxService;
     private final UserLaunchService userLaunchService;
-    private final OAuthService oAuthService;
     private final AuthorizationService authorizationService;
 
     @Inject
     public LaunchScenarioController(final LaunchScenarioService launchScenarioService,
                                     final AppService appService, final UserService userService,
                                     final UserPersonaService userPersonaService,
-                                    final SandboxService sandboxService, final OAuthService oAuthService,
+                                    final SandboxService sandboxService,
                                     final UserLaunchService userLaunchService, final AuthorizationService authorizationService) {
-        this.oAuthService = oAuthService;
         this.launchScenarioService = launchScenarioService;
         this.userService = userService;
         this.appService = appService;
@@ -175,7 +173,7 @@ public class LaunchScenarioController {
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenarios(HttpServletRequest request,
         @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException{
 
-        String oauthUserId = oAuthService.getOAuthUserId(request);
+        String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");

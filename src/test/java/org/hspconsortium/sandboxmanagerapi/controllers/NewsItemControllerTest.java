@@ -1,8 +1,11 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.NewsItem;
+import org.hspconsortium.sandboxmanagerapi.model.User;
+import org.hspconsortium.sandboxmanagerapi.services.AuthorizationService;
 import org.hspconsortium.sandboxmanagerapi.services.NewsItemService;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
+import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,10 +44,13 @@ public class NewsItemControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
+    private NewsItemService newsItemService;
 
     @MockBean
-    private NewsItemService newsItemService;
+    private AuthorizationService authorizationService;
+
+    @MockBean
+    private UserService userService;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -60,14 +66,20 @@ public class NewsItemControllerTest {
 
     private NewsItem newsItem;
     private List<NewsItem> newsItemList;
+
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
+        User user = new User();
+        user.setSbmUserId("userId");
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         newsItem = new NewsItem();
         newsItem.setId(1);
         newsItemList = new ArrayList<>();
         newsItemList.add(newsItem);
     }
+
+    // TODO: Test when user = null and when user isn't an ADMIN
 
     @Test
     public void findAllNewsItemsTest() throws Exception {

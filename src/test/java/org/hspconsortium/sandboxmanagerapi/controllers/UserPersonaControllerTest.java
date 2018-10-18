@@ -43,9 +43,6 @@ public class UserPersonaControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private SandboxService sandboxService;
 
     @MockBean
@@ -56,6 +53,9 @@ public class UserPersonaControllerTest {
 
     @MockBean
     private JwtService jwtService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -77,7 +77,6 @@ public class UserPersonaControllerTest {
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
         sandbox = new Sandbox();
         user = new User();
         userPersona = new UserPersona();
@@ -104,6 +103,7 @@ public class UserPersonaControllerTest {
         userPersonaDto.setResourceUrl(userPersona.getResourceUrl());
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
     }
 
     @Test

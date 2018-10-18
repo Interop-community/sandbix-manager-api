@@ -39,9 +39,6 @@ public class DataManagerControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private SandboxService sandboxService;
 
     @MockBean
@@ -52,6 +49,9 @@ public class DataManagerControllerTest {
 
     @MockBean
     private DataManagerService dataManagerService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -70,7 +70,7 @@ public class DataManagerControllerTest {
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
+
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandbox");
         user = new User();
@@ -87,6 +87,7 @@ public class DataManagerControllerTest {
         Set<SystemRole> systemRoles = new HashSet<>();
         systemRoles.add(SystemRole.ADMIN);
         user.setSystemRoles(systemRoles);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
     }
 
     @Test
@@ -105,7 +106,7 @@ public class DataManagerControllerTest {
     public void resetTest() throws Exception {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        when(oAuthService.getBearerToken(any())).thenReturn("token");
+        when(authorizationService.getBearerToken(any())).thenReturn("token");
         when(dataManagerService.reset(sandbox, "token")).thenReturn("SUCCESS");
         mvc
                 .perform(post("/fhirdata/reset?sandboxId=" + sandbox.getSandboxId() + "&dataSet=DEFAULT"))
