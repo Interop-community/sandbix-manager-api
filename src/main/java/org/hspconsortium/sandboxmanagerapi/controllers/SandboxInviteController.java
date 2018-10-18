@@ -40,24 +40,26 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/sandboxinvite")
-public class SandboxInviteController extends AbstractController {
+public class SandboxInviteController {
 
     private final SandboxInviteService sandboxInviteService;
     private final UserService userService;
     private final SandboxService sandboxService;
     private final EmailService emailService;
     private final SandboxActivityLogService sandboxActivityLogService;
+    private final AuthorizationService authorizationService;
 
     @Inject
     public SandboxInviteController(final SandboxInviteService sandboxInviteService, final UserService userService,
-                                   final SandboxService sandboxService, final OAuthService oAuthService,
-                                   final EmailService emailService, final SandboxActivityLogService sandboxActivityLogService) {
-        super(oAuthService);
+                                   final SandboxService sandboxService,
+                                   final EmailService emailService, final SandboxActivityLogService sandboxActivityLogService,
+                                   final AuthorizationService authorizationService) {
         this.sandboxInviteService = sandboxInviteService;
         this.userService = userService;
         this.sandboxService = sandboxService;
         this.emailService = emailService;
         this.sandboxActivityLogService = sandboxActivityLogService;
+        this.authorizationService = authorizationService;
     }
 
     @PutMapping(consumes = APPLICATION_JSON_VALUE)
@@ -69,8 +71,8 @@ public class SandboxInviteController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
         SandboxInvite sandboxInviteReturned = new SandboxInvite();
 
         // Check for an existing invite for this invitee
@@ -97,7 +99,7 @@ public class SandboxInviteController extends AbstractController {
         } else if (sandboxInvites.isEmpty()) { // Create
             // Make sure the inviter is the authenticated user
             User invitedBy = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());
-            checkUserAuthorization(request, invitedBy.getSbmUserId());
+            authorizationService.checkUserAuthorization(request, invitedBy.getSbmUserId());
             sandboxInviteReturned = sandboxInviteService.create(sandboxInvite);
         }
         return sandboxInviteReturned;
@@ -109,7 +111,7 @@ public class SandboxInviteController extends AbstractController {
     List<SandboxInvite> getSandboxInvitesByInvitee(HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserIdEncoded,
             @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         String sbmUserId = java.net.URLDecoder.decode(sbmUserIdEncoded, StandardCharsets.UTF_8.name());
-        checkUserAuthorization(request, sbmUserId);
+        authorizationService.checkUserAuthorization(request, sbmUserId);
 //        if (status == null) {
 //            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeId(sbmUserId);
 //            if (sandboxInvites != null) {
@@ -134,11 +136,11 @@ public class SandboxInviteController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
+        authorizationService.checkSystemUserCanManageSandboxUsersAuthorization(request, sandbox, user);
 
 //        if (status == null) {
 //            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandboxId);
@@ -170,7 +172,7 @@ public class SandboxInviteController extends AbstractController {
             if (invitee == null) {
                 throw new ResourceNotFoundException("Invitee not found.");
             }
-            checkUserAuthorization(request, invitee.getSbmUserId());
+            authorizationService.checkUserAuthorization(request, invitee.getSbmUserId());
 
             if (status == InviteStatus.REJECTED) {
                 sandboxActivityLogService.sandboxUserInviteRejected(sandboxInvite.getSandbox(), sandboxInvite.getInvitee());
@@ -190,8 +192,8 @@ public class SandboxInviteController extends AbstractController {
         } else if ((sandboxInvite.getStatus() == InviteStatus.PENDING || sandboxInvite.getStatus() == InviteStatus.REJECTED) && status == InviteStatus.REVOKED ) {
 
             // Revoking Invite
-            User user = userService.findBySbmUserId(getSystemUserId(request));
-            checkSystemUserCanManageSandboxUsersAuthorization(request, sandboxInvite.getSandbox(), user);
+            User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+            authorizationService.checkSystemUserCanManageSandboxUsersAuthorization(request, sandboxInvite.getSandbox(), user);
             sandboxActivityLogService.sandboxUserInviteRevoked(sandboxInvite.getSandbox(), user);
             sandboxInvite.setStatus(status);
             sandboxInviteService.save(sandboxInvite);

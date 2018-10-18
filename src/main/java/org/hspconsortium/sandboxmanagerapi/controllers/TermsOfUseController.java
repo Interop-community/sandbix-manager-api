@@ -23,6 +23,7 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 import org.hspconsortium.sandboxmanagerapi.model.SystemRole;
 import org.hspconsortium.sandboxmanagerapi.model.TermsOfUse;
 import org.hspconsortium.sandboxmanagerapi.model.User;
+import org.hspconsortium.sandboxmanagerapi.services.AuthorizationService;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
@@ -41,18 +42,19 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/termsofuse")
-public class TermsOfUseController extends AbstractController  {
+public class TermsOfUseController  {
     private static Logger LOGGER = LoggerFactory.getLogger(TermsOfUseController.class.getName());
 
     private final TermsOfUseService termsOfUseService;
     private final UserService userService;
+    private final AuthorizationService authorizationService;
 
     @Inject
-    public TermsOfUseController(final TermsOfUseService termsOfUseService, final OAuthService oAuthService,
+    public TermsOfUseController(final TermsOfUseService termsOfUseService, final AuthorizationService authorizationService,
                                 final UserService userService) {
-        super(oAuthService);
         this.termsOfUseService = termsOfUseService;
         this.userService = userService;
+        this.authorizationService = authorizationService;
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
@@ -67,8 +69,8 @@ public class TermsOfUseController extends AbstractController  {
 
     @PostMapping(produces = APPLICATION_JSON_VALUE)
     public TermsOfUse createTermsOfUse(HttpServletRequest request, @RequestBody final TermsOfUse termsOfUse) {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
 
         termsOfUse.setCreatedTimestamp(new Timestamp(new Date().getTime()));
         return termsOfUseService.save(termsOfUse);

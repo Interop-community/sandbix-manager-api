@@ -1,6 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
+import org.hspconsortium.sandboxmanagerapi.services.AuthorizationService;
 import org.hspconsortium.sandboxmanagerapi.services.NotificationService;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
@@ -50,8 +51,11 @@ public class NotificationControllerTest {
     @MockBean
     private NotificationService notificationService;
 
+    @MockBean
+    private AuthorizationService authorizationService;
+
     @Autowired
-    private NotificationController notificationController = new NotificationController(oAuthService, notificationService, userService);
+    private NotificationController notificationController = new NotificationController(notificationService, userService, authorizationService);
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {

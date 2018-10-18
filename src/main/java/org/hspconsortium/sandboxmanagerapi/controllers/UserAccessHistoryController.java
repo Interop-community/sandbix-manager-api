@@ -4,10 +4,7 @@ import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.model.UserAccessHistory;
-import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
-import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,18 +15,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping({"/sandbox-access"})
-public class UserAccessHistoryController extends AbstractController {
+public class UserAccessHistoryController {
 
     private SandboxService sandboxService;
     private UserAccessHistoryService userAccessHistoryService;
     private UserService userService;
+    private AuthorizationService authorizationService;
 
     public UserAccessHistoryController(final SandboxService sandboxService, final UserAccessHistoryService userAccessHistoryService,
-                                       final UserService userService, final OAuthService oAuthService) {
-        super(oAuthService);
+                                       final UserService userService, final AuthorizationService authorizationService) {
         this.sandboxService = sandboxService;
         this.userAccessHistoryService = userAccessHistoryService;
         this.userService = userService;
+        this.authorizationService = authorizationService;
     }
 
     @GetMapping(params = {"sandboxId"})
@@ -39,7 +37,7 @@ public class UserAccessHistoryController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         return userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSandbox(sandbox);
     }
 
@@ -47,7 +45,7 @@ public class UserAccessHistoryController extends AbstractController {
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSbmUserId(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -60,7 +58,7 @@ public class UserAccessHistoryController extends AbstractController {
     Timestamp getLastSandboxAccess(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded,
                                    @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -69,7 +67,7 @@ public class UserAccessHistoryController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         return userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user);
     }
 }

@@ -48,6 +48,9 @@ public class AdminControllerTest {
     @MockBean
     private SandboxInviteService sandboxInviteService;
 
+    @MockBean
+    private AuthorizationService authorizationService;
+
     private User user;
     private Sandbox sandbox;
 

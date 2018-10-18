@@ -40,7 +40,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/sandbox")
-public class SandboxController extends AbstractController {
+public class SandboxController {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxController.class.getName());
 
     @Value("${hspc.platform.templateSandboxIds}")
@@ -51,17 +51,19 @@ public class SandboxController extends AbstractController {
     private final SandboxInviteService sandboxInviteService;
     private final UserAccessHistoryService userAccessHistoryService;
     private final SandboxActivityLogService sandboxActivityLogService;
+    private final AuthorizationService authorizationService;
 
     @Inject
     public SandboxController(final SandboxService sandboxService, final UserService userService,
-                             final SandboxInviteService sandboxInviteService, final OAuthService oAuthService,
-                             final UserAccessHistoryService userAccessHistoryService, final SandboxActivityLogService sandboxActivityLogService) {
-        super(oAuthService);
+                             final SandboxInviteService sandboxInviteService,
+                             final UserAccessHistoryService userAccessHistoryService, final SandboxActivityLogService sandboxActivityLogService,
+                             final AuthorizationService authorizationService) {
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
         this.userAccessHistoryService = userAccessHistoryService;
         this.sandboxActivityLogService = sandboxActivityLogService;
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -72,11 +74,11 @@ public class SandboxController extends AbstractController {
         if (existingSandbox != null) {
             throw new IllegalArgumentException("Sandbox with id " + sandbox.getSandboxId() + " already exists.");
         }
-        checkCreatedByIsCurrentUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
+        authorizationService.checkUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
         LOGGER.info("Creating sandbox: " + sandbox.getName());
         User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
-        checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
-        return sandboxService.create(sandbox, user, oAuthService.getBearerToken(request));
+        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
+        return sandboxService.create(sandbox, user, authorizationService.getBearerToken(request));
     }
 
     @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -86,12 +88,12 @@ public class SandboxController extends AbstractController {
         Sandbox clonedSandbox = sandboxes.get("clonedSandbox");
         // Don't need to check authorization of who created the template sandboxes
         if (!Arrays.asList(templateSandboxIds).contains(clonedSandbox.getSandboxId())) {
-            checkCreatedByIsCurrentUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
+            authorizationService.checkUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
         }
-        checkCreatedByIsCurrentUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
+        authorizationService.checkUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
         User user = userService.findBySbmUserId(newSandbox.getCreatedBy().getSbmUserId());
-        checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
-        return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, oAuthService.getBearerToken(request));
+        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
+        return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, authorizationService.getBearerToken(request));
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
@@ -118,11 +120,11 @@ public class SandboxController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (!sandboxService.isSandboxMember(sandbox, user) && sandbox.getVisibility() == Visibility.PUBLIC ) {
             sandboxService.addMember(sandbox, user);
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         return sandbox;
     }
 
@@ -133,8 +135,8 @@ public class SandboxController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkSystemUserDeleteSandboxAuthorization(request, sandbox, user);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkSystemUserDeleteSandboxAuthorization(request, sandbox, user);
 
         //delete sandbox invites
         List<SandboxInvite> invites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
@@ -142,15 +144,15 @@ public class SandboxController extends AbstractController {
             sandboxInviteService.delete(invite);
         }
 
-        sandboxService.delete(sandbox, oAuthService.getBearerToken(request));
+        sandboxService.delete(sandbox, authorizationService.getBearerToken(request));
     }
 
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void updateSandboxById(HttpServletRequest request, @PathVariable String id, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
-        sandboxService.update(sandbox, user, oAuthService.getBearerToken(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+        sandboxService.update(sandbox, user, authorizationService.getBearerToken(request));
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userId"})
@@ -158,7 +160,7 @@ public class SandboxController extends AbstractController {
     @SuppressWarnings("unchecked")
     List<Sandbox> getSandboxesByMember(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -173,15 +175,15 @@ public class SandboxController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
         String removeUserId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         User removedUser = userService.findBySbmUserId(removeUserId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
         if(canRemoveUser(sandbox, removedUser)){
-            sandboxService.removeMember(sandbox, removedUser, oAuthService.getBearerToken(request));
+            sandboxService.removeMember(sandbox, removedUser, authorizationService.getBearerToken(request));
         }
     }
 
@@ -194,8 +196,8 @@ public class SandboxController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
         String modifyUserId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
 
         User modifyUser = userService.findBySbmUserId(modifyUserId);
@@ -219,12 +221,12 @@ public class SandboxController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User newPayer = userService.findBySbmUserId(getSystemUserId(request));
+        User newPayer = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         // TODO: maybe any admin can perform this task, not just the operating user
         if (!newPayer.getSbmUserId().equals(newPayerIdEncoded)) {
             throw new UserDeniedAuthorizationException("User not authorized.");
         }
-        checkSystemUserCanModifySandboxAuthorization(request, sandbox, newPayer);
+        authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, newPayer);
         sandboxService.changePayerForSandbox(sandbox, newPayer);
     }
 
@@ -232,7 +234,7 @@ public class SandboxController extends AbstractController {
     @Transactional
     public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException{
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");

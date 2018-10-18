@@ -38,22 +38,23 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/admin")
-public class AdminController extends AbstractController {
+public class AdminController {
 
     private final UserService userService;
     private final SandboxService sandboxService;
     private final AdminService adminService;
     private final SandboxInviteService sandboxInviteService;
+    private final AuthorizationService authorizationService;
 
     @Inject
-    public AdminController(final UserService userService, final OAuthService oAuthService,
+    public AdminController(final UserService userService,
                            final AdminService adminService, final SandboxService sandboxService,
-                           final SandboxInviteService sandboxInviteService) {
-        super(oAuthService);
+                           final SandboxInviteService sandboxInviteService, final AuthorizationService authorizationService) {
         this.userService = userService;
         this.sandboxService = sandboxService;
         this.sandboxInviteService = sandboxInviteService;
         this.adminService = adminService;
+        this.authorizationService = authorizationService;
     }
 
     // Admin Level Sandbox Delete (originally for cleaning up orphaned sandboxes
@@ -64,36 +65,36 @@ public class AdminController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
 
         //delete sandbox invites
         List<SandboxInvite> invites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
         invites.forEach(sandboxInviteService::delete);
 
-        sandboxService.delete(sandbox, oAuthService.getBearerToken(request), user, false);
+        sandboxService.delete(sandbox, authorizationService.getBearerToken(request), user, false);
     }
 
     @GetMapping(value = "/sandbox-differences/$list", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public HashMap<String, Object> listSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
-        return adminService.syncSandboxManagerandReferenceApi(false, oAuthService.getBearerToken(request));
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return adminService.syncSandboxManagerandReferenceApi(false, authorizationService.getBearerToken(request));
     }
 
     @GetMapping(value = "/sandbox-differences/$sync", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public HashMap<String, Object> syncSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
-        return adminService.syncSandboxManagerandReferenceApi(true, oAuthService.getBearerToken(request));
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return adminService.syncSandboxManagerandReferenceApi(true, authorizationService.getBearerToken(request));
     }
 
 }

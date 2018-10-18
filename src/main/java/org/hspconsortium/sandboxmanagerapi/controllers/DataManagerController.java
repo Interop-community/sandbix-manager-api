@@ -36,22 +36,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping({"/fhirdata"})
-public class DataManagerController extends AbstractController {
+public class DataManagerController {
 
     private final SandboxService sandboxService;
     private final UserService userService;
     private final DataManagerService dataManagerService;
     private final SandboxActivityLogService sandboxActivityLogService;
+    private final AuthorizationService authorizationService;
 
     @Inject
-    public DataManagerController(final OAuthService oAuthService, final UserService userService,
+    public DataManagerController(final UserService userService,
                                  final SandboxService sandboxService, final DataManagerService dataManagerService,
-                                 final SandboxActivityLogService sandboxActivityLogService) {
-        super(oAuthService);
+                                 final SandboxActivityLogService sandboxActivityLogService, final AuthorizationService authorizationService) {
         this.userService = userService;
         this.sandboxActivityLogService = sandboxActivityLogService;
         this.sandboxService = sandboxService;
         this.dataManagerService = dataManagerService;
+        this.authorizationService = authorizationService;
     }
 
     @GetMapping(value = "/import", params = {"sandboxId"})
@@ -59,13 +60,13 @@ public class DataManagerController extends AbstractController {
     public @ResponseBody
     List<SandboxImport> getSandboxImports(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId)  throws UnsupportedEncodingException {
 
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkUserAuthorization(request, user.getSbmUserId());
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkUserAuthorization(request, user.getSbmUserId());
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        checkSandboxUserReadAuthorization(request, sandbox);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
 
         return sandbox.getImports();
     }
@@ -78,17 +79,17 @@ public class DataManagerController extends AbstractController {
                                                      @RequestParam(value = "fhirIdPrefix") String fhirIdPrefix,
                                                      @RequestParam(value = "endpoint") String encodedEndpoint)  throws UnsupportedEncodingException {
 
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkUserAuthorization(request, user.getSbmUserId());
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkUserAuthorization(request, user.getSbmUserId());
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        checkSystemUserCanManageSandboxDataAuthorization(request, sandbox, user);
+        authorizationService.checkSystemUserCanManageSandboxDataAuthorization(request, sandbox, user);
         sandboxActivityLogService.sandboxImport(sandbox, user);
         String endpoint = null;
         if (encodedEndpoint != null) {
             endpoint = java.net.URLDecoder.decode(encodedEndpoint, StandardCharsets.UTF_8.name());
         }
 
-        return dataManagerService.importPatientData(sandbox, oAuthService.getBearerToken(request), endpoint, patientId, fhirIdPrefix);
+        return dataManagerService.importPatientData(sandbox, authorizationService.getBearerToken(request), endpoint, patientId, fhirIdPrefix);
     }
 
     @PostMapping(value = "/reset", params = {"sandboxId", "dataSet"})
@@ -99,11 +100,11 @@ public class DataManagerController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(getSystemUserId(request));
-        checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
 
         sandboxActivityLogService.sandboxReset(sandbox, user);
         sandbox.setDataSet(dataSet);
-        return dataManagerService.reset(sandbox, oAuthService.getBearerToken(request));
+        return dataManagerService.reset(sandbox, authorizationService.getBearerToken(request));
     }
 }
