@@ -3,6 +3,7 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,6 +30,9 @@ public class AnalyticsController {
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxActivityLogService sandboxActivityLogService;
     private AuthorizationService authorizationService;
+
+    @Value("${hspc.platform.sandboxesAllUsersCanAccess}")
+    private String[] sandboxesAllUsersCanAccess;
 
     @Inject
     public AnalyticsController(final AnalyticsService analyticsService, final UserService userService,
@@ -100,7 +105,7 @@ public class AnalyticsController {
         Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
         String userId = transactionInfo.get("userId").toString();
         User user;
-        if(transactionInfo.get("secured").toString().equals("true")) {
+        if(transactionInfo.get("secured").toString().equals("true") && !Arrays.asList(sandboxesAllUsersCanAccess).contains(transactionInfo.get("tenant").toString())) {
             user = userService.findBySbmUserId(userId);
             if (user != null) {
                 try {

@@ -17,7 +17,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     private OAuthService oAuthService;
 
     @Inject
-    AuthorizationServiceImpl() {}
+    public AuthorizationServiceImpl() {}
 
     @Inject
     public void setoAuthService(OAuthService oAuthService) {
