@@ -18,7 +18,6 @@ public class AppServiceTest {
 
     private AppRepository appRepository = mock(AppRepository.class);
 
-
     private ImageService imageService = mock(ImageService.class);
 
     private OAuthClientService oAuthClientService = mock(OAuthClientService.class);
