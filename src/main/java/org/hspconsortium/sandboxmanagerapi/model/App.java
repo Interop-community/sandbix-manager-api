@@ -34,12 +34,10 @@ import java.sql.Timestamp;
 public class App extends AbstractSandboxItem {
 
     private String launchUri;
-    private String appManifestUri;
     private String softwareId;
     private String fhirVersions;
     private String logoUri;
     private Image logo;
-    private AuthClient authClient;
     private String samplePatients;
     private String clientJSON;
     private String info;
@@ -87,14 +85,6 @@ public class App extends AbstractSandboxItem {
         return launchUri;
     }
 
-    public String getAppManifestUri() {
-        return appManifestUri;
-    }
-
-    public void setAppManifestUri(String appManifestUri) {
-        this.appManifestUri = appManifestUri;
-    }
-
     public String getSoftwareId() {
         return softwareId;
     }
@@ -128,16 +118,6 @@ public class App extends AbstractSandboxItem {
 
     public void setLogo(Image logo) {
         this.logo = logo;
-    }
-
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="auth_client_id")
-    public AuthClient getAuthClient() {
-        return authClient;
-    }
-
-    public void setAuthClient(AuthClient authClient) {
-        this.authClient = authClient;
     }
 
     public String getSamplePatients() {

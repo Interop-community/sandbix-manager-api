@@ -60,6 +60,9 @@ public class SandboxControllerTest {
     @MockBean
     private SandboxActivityLogService sandboxActivityLogService;
 
+    @MockBean
+    private AuthorizationService authorizationService;
+
     @Inject
     private SandboxController sandboxController;
 
@@ -270,6 +273,7 @@ public class SandboxControllerTest {
     @Test
     public void removeSandboxMemberTest() throws Exception {
         String json = json(sandbox);
+        when(userService.findBySbmUserId(any())).thenReturn(user);
         mvc
                 .perform(put("/sandbox/" + sandbox.getSandboxId() + "?removeUserId=" + user.getSbmUserId())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -334,6 +338,7 @@ public class SandboxControllerTest {
 
     @Test
     public void changePayerForSandboxTest() throws Exception {
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         mvc
                 .perform(put("/sandbox/" + sandbox.getSandboxId() + "/changePayer?newPayerId=" + user.getSbmUserId()))
                 .andExpect(status().isOk());
@@ -353,7 +358,6 @@ public class SandboxControllerTest {
                 .perform(post("/sandbox/" + sandbox.getSandboxId() + "/login?userId=" + user.getSbmUserId()))
                 .andExpect(status().isOk());
         verify(userAccessHistoryService).saveUserAccessInstance(any(), any());
-        verify(sandboxActivityLogService).sandboxLoginBeta(any(), any(), any());
         verify(sandboxService).sandboxLogin(any(), any());
     }
 

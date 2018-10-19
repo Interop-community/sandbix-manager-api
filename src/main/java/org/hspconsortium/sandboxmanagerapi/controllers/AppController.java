@@ -41,19 +41,20 @@ import static org.springframework.http.MediaType.*;
 
 @RestController
 @RequestMapping({"/app"})
-public class AppController extends AbstractController {
+public class AppController {
     private static Logger LOGGER = LoggerFactory.getLogger(AppController.class.getName());
 
     private final AppService appService;
     private final SandboxService sandboxService;
     private final UserService userService;
     private final RuleService ruleService;
+    private final AuthorizationService authorizationService;
 
     @Inject
-    public AppController(final AppService appService, final OAuthService oAuthService,
-                         final SandboxService sandboxService, final UserService userService,
-                         final RuleService ruleService) {
-        super(oAuthService);
+    public AppController(final AppService appService, final SandboxService sandboxService,
+                         final UserService userService, final RuleService ruleService,
+                         final AuthorizationService authorizationService) {
+        this.authorizationService = authorizationService;
         this.appService = appService;
         this.sandboxService = sandboxService;
         this.userService = userService;
@@ -70,12 +71,12 @@ public class AppController extends AbstractController {
         if (!ruleService.checkIfUserCanCreateApp(sandbox)) {
             return null;
         }
-        String sbmUserId = checkSandboxUserCreateAuthorization(request, sandbox);
-        checkCreatedByIsCurrentUserAuthorization(request, app.getCreatedBy().getSbmUserId());
+        String sbmUserId = authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
+        authorizationService.checkUserAuthorization(request, app.getCreatedBy().getSbmUserId());
 
         app.setSandbox(sandbox);
         User user = userService.findBySbmUserId(sbmUserId);
-        app.setVisibility(getDefaultVisibility(user, sandbox));
+        app.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
         app.setCreatedBy(user);
         return appService.create(app, sandbox);
     }
@@ -86,7 +87,7 @@ public class AppController extends AbstractController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        String sbmUserId = checkSandboxUserReadAuthorization(request, sandbox);
+        String sbmUserId = authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         return appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
     }
 
@@ -94,7 +95,7 @@ public class AppController extends AbstractController {
     public @ResponseBody App getApp(final HttpServletRequest request, @PathVariable Integer id) {
         App app = appService.getById(id);
         if (app != null) {
-            checkSandboxUserReadAuthorization(request, app.getSandbox());
+            authorizationService.checkSandboxUserReadAuthorization(request, app.getSandbox());
             return appService.getClientJSON(app);
         } else {
             throw new ResourceNotFoundException("Could not find app.");
@@ -106,7 +107,7 @@ public class AppController extends AbstractController {
     public @ResponseBody void deleteApp(final HttpServletRequest request, @PathVariable Integer id) {
         App app = appService.getById(id);
         if (app != null) {
-            checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
+            authorizationService.checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
             appService.delete(app);
         } else {
             throw new ResourceNotFoundException("Could not find app.");
@@ -122,7 +123,7 @@ public class AppController extends AbstractController {
                             "Response Detail : App Id doesn't match Id in JSON body."
                     , HttpStatus.SC_BAD_REQUEST));
         }
-        checkSandboxUserModifyAuthorization(request, existingApp.getSandbox(), existingApp);
+        authorizationService.checkSandboxUserModifyAuthorization(request, existingApp.getSandbox(), existingApp);
         return appService.update(app);
     }
 
@@ -148,7 +149,7 @@ public class AppController extends AbstractController {
         if (app == null) {
             throw new ResourceNotFoundException("App does not exist. Cannot upload image.");
         }
-        checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
+        authorizationService.checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
         app.setLogoUri(request.getRequestURL().toString());
         appService.save(app);
         try {
@@ -170,7 +171,7 @@ public class AppController extends AbstractController {
         if (app == null) {
             throw new ResourceNotFoundException("App does not exist. Cannot delete image.");
         }
-        checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
+        authorizationService.checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
         return appService.deleteAppImage(app);
     }
 }

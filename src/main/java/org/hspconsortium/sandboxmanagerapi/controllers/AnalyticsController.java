@@ -17,7 +17,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping({"/analytics"})
-public class AnalyticsController extends AbstractController {
+public class AnalyticsController {
 
     private AnalyticsService analyticsService;
     private UserService userService;
@@ -27,18 +27,14 @@ public class AnalyticsController extends AbstractController {
     private UserPersonaService userPersonaService;
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxActivityLogService sandboxActivityLogService;
+    private AuthorizationService authorizationService;
 
     @Inject
-    public AnalyticsController(final AnalyticsService analyticsService,
-                               final UserService userService,
-                               final SandboxService sandboxService,
-                               final AppService appService,
-                               final OAuthService oAuthService,
+    public AnalyticsController(final AnalyticsService analyticsService, final UserService userService,
+                               final SandboxService sandboxService, final AppService appService,
                                final RuleService ruleService,
-                               final UserPersonaService userPersonaService,
-                               final UserAccessHistoryService userAccessHistoryService,
-                               final SandboxActivityLogService sandboxActivityLogService) {
-        super(oAuthService);
+                               final UserPersonaService userPersonaService, final UserAccessHistoryService userAccessHistoryService,
+                               final SandboxActivityLogService sandboxActivityLogService, final AuthorizationService authorizationService) {
         this.analyticsService = analyticsService;
         this.userService = userService;
         this.sandboxService = sandboxService;
@@ -47,13 +43,14 @@ public class AnalyticsController extends AbstractController {
         this.userPersonaService = userPersonaService;
         this.userAccessHistoryService = userAccessHistoryService;
         this.sandboxActivityLogService = sandboxActivityLogService;
+        this.authorizationService = authorizationService;
     }
 
     @GetMapping(value = "/sandboxes", params = {"userId"})
     public @ResponseBody
     Integer countSandboxesByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
 
         User primaryUser = userService.findBySbmUserId(userId);
         if (primaryUser == null) {
@@ -66,7 +63,7 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value = "/users", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countUsersBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -77,7 +74,7 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value = "/apps", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countAppsBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
@@ -88,28 +85,13 @@ public class AnalyticsController extends AbstractController {
     @GetMapping(value = "/memory", params = {"userId"})
     public @ResponseBody Double memoryUsedByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-//        checkUserAuthorization(request, userId);
+        authorizationService.checkUserAuthorization(request, userId);
         Double memoryUseInMB = 0.0;
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-       return analyticsService.retrieveTotalMemoryByUser(user, oAuthService.getBearerToken(request));
-    }
-
-    // TODO: remove after beta testing
-    @GetMapping(value = "/beta-use", params = {"userId"})
-    public @ResponseBody List<SandboxActivityLog> getBetaSandboxUsages(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
-        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-        checkUserAuthorization(request, userId);
-        User user = userService.findBySbmUserId(userId);
-        Boolean isAdmin = checkUserHasSystemRole(user, SystemRole.ADMIN);
-        if (isAdmin) {
-            return sandboxActivityLogService.findBySandboxActivity(SandboxActivity.LOGGED_IN_BETA);
-        } else {
-            throw new UserDeniedAuthorizationException("User denied access.");
-        }
-
+       return analyticsService.retrieveTotalMemoryByUser(user, authorizationService.getBearerToken(request));
     }
 
     @PostMapping(value = "/transaction")
@@ -122,7 +104,7 @@ public class AnalyticsController extends AbstractController {
             user = userService.findBySbmUserId(userId);
             if (user != null) {
                 try {
-                    checkSystemUserCanMakeTransaction(sandbox, user);
+                    authorizationService.checkSystemUserCanMakeTransaction(sandbox, user);
                 } catch (UnauthorizedException e) {
                     throw new UnauthorizedException("User does not have access to this sandbox");
                 }
@@ -131,7 +113,7 @@ public class AnalyticsController extends AbstractController {
             } else {
                 try {
                     UserPersona userPersona = userPersonaService.findByPersonaUserId(userId);
-                    checkIfPersonaAndHasAuthority(sandbox, userPersona);
+                    authorizationService.checkIfPersonaAndHasAuthority(sandbox, userPersona);
                 } catch (UnauthorizedException e2) {
                     throw new UnauthorizedException("Persona does not have access to this sandbox");
                 }
@@ -140,58 +122,58 @@ public class AnalyticsController extends AbstractController {
         } else {
             user = null;
         }
-        return analyticsService.handleFhirTransaction(user, transactionInfo, oAuthService.getBearerToken(request));
+        return analyticsService.handleFhirTransaction(user, transactionInfo, authorizationService.getBearerToken(request));
     }
 
     //TODO: make interval not required such that interval=null means to use all sandboxes
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"interval"})
     public @ResponseBody String getSandboxStatistics(HttpServletRequest request, @RequestParam(value = "interval") String intervalDays) throws UnsupportedEncodingException {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.getSandboxStatistics(intervalDays);
     }
 
     @GetMapping(value="/overallStats/transactions", params = {"interval"})
     public HashMap<String, Object> transactionStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.transactionStats(intervalDays, n);
     }
 
     @GetMapping(value="/overallStats/sandboxMemory", params = {"interval"})
     public HashMap<String, Object> sandboxMemoryStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
-//        User user = userService.findBySbmUserId(getSystemUserId(request));
-//        if (user == null) {
-//            throw new ResourceNotFoundException("User not found in authorization header.");
-//        }
-//        checkUserSystemRole(user, SystemRole.ADMIN);
-        return analyticsService.sandboxMemoryStats(intervalDays, n, oAuthService.getBearerToken(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.sandboxMemoryStats(intervalDays, n, authorizationService.getBearerToken(request));
     }
 
     @GetMapping(value="/overallStats/usersPerSandbox", params = {"interval"})
     public HashMap<String, Object> usersPerSandboxStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.usersPerSandboxStats(intervalDays, n);
     }
 
     @GetMapping(value="/overallStats/sandboxesPerUser", params = {"interval"})
     public HashMap<String, Object> sandboxesPerUserStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
-        User user = userService.findBySbmUserId(getSystemUserId(request));
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-        checkUserSystemRole(user, SystemRole.ADMIN);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.sandboxesPerUserStats(intervalDays, n);
     }
 

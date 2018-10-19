@@ -24,6 +24,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -42,9 +43,6 @@ public class UserControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private UserService userService;
 
     @MockBean
@@ -58,6 +56,9 @@ public class UserControllerTest {
 
     @MockBean
     private SandboxService sandboxService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -79,12 +80,10 @@ public class UserControllerTest {
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
         user = new User();
         user.setSbmUserId("me");
         user.setName("user");
         user.setEmail("user@email");
-        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         userList = new ArrayList<>();
         userList.add(user);
         Set<SystemRole> systemRoles = new HashSet<>();
@@ -94,13 +93,15 @@ public class UserControllerTest {
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandboxId");
         request = new MockHttpServletRequest();
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.getUserName(any())).thenReturn(user.getName());
+        when(authorizationService.getEmail(any())).thenReturn(user.getEmail());
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
     }
 
     @Test
     public void getUserTest() throws Exception {
         String json = json(user);
-        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
-        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
         mvc
                 .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
                 .andExpect(status().isOk())
@@ -111,8 +112,6 @@ public class UserControllerTest {
     @Test
     public void getUserTestUsingEmail() throws Exception {
         String json = json(user);
-        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
-        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
         when(userService.findByUserEmail(user.getEmail())).thenReturn(user);
         mvc
@@ -125,8 +124,6 @@ public class UserControllerTest {
 
     @Test
     public void getUserTestCreateUserWhoDoesntExist() throws Exception {
-        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
-        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
         when(userService.findByUserEmail(user.getEmail())).thenReturn(null);
         mvc
@@ -140,8 +137,6 @@ public class UserControllerTest {
 
     @Test
     public void getUserTestCreateUserEmptyFields() throws Exception {
-        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
-        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
         user.setName(null);
         user.setEmail("otherEmail@email");
         user.setSystemRoles(new HashSet<>());
@@ -157,8 +152,6 @@ public class UserControllerTest {
 
     @Test
     public void getUserTestIsPersona() throws Exception {
-        when(oAuthService.getOAuthUserName(any())).thenReturn(user.getName());
-        when(oAuthService.getOAuthUserEmail(any())).thenReturn(user.getEmail());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(userPersona);
         mvc
@@ -181,8 +174,8 @@ public class UserControllerTest {
     @Test(expected = NestedServletException.class)
     public void getAllUsersTestNotAuthorized() throws Exception {
         String json = json(userList);
-        user.setSystemRoles(new HashSet<>());
         when(userService.findAll()).thenReturn(userList);
+        doThrow(UnauthorizedException.class).when(authorizationService).checkUserSystemRole(user, SystemRole.ADMIN);
         mvc
                 .perform(get("/user/all?sbmUserId=" + user.getSbmUserId()))
                 .andExpect(status().isOk())
@@ -201,7 +194,7 @@ public class UserControllerTest {
 
     @Test
     public void authorizeUserForReferenceApiTest() throws Exception {
-        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         mvc
@@ -213,7 +206,6 @@ public class UserControllerTest {
 
     @Test(expected = NestedServletException.class)
     public void authorizeUserForReferenceApiTestUserNotFound() throws Exception {
-        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
         mvc
                 .perform(post("/user/authorize")
@@ -223,9 +215,9 @@ public class UserControllerTest {
 
     @Test
     public void authorizeUserForReferenceApiTestNotAuthorized() throws Exception {
-        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        doThrow(UnauthorizedException.class).when(authorizationService).checkSystemUserCanModifySandboxAuthorization(any(), any(), any());
         user.setSystemRoles(new HashSet<>());
         mvc
                 .perform(post("/user/authorize")
@@ -237,7 +229,6 @@ public class UserControllerTest {
     @Test(expected = NestedServletException.class)
     public void authorizeUserForReferenceApiTestBadJSONObject() throws Exception {
         String jsonString = "not an object";
-        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
         mvc

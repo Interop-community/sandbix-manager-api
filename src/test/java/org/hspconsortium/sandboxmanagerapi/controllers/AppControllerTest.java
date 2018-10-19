@@ -48,9 +48,6 @@ public class AppControllerTest {
     private AppService appService;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private UserService userService;
 
     @MockBean
@@ -58,6 +55,9 @@ public class AppControllerTest {
 
     @MockBean
     private RuleService ruleService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -79,7 +79,6 @@ public class AppControllerTest {
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
         app = new App();
         app.setId(1);
         user = new User();
@@ -129,6 +128,7 @@ public class AppControllerTest {
         String json = json(apps);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.checkSandboxUserReadAuthorization(any(), any())).thenReturn(user.getSbmUserId());
         when(appService.findBySandboxIdAndCreatedByOrVisibility(sandbox.getSandboxId(), user.getSbmUserId(), Visibility.PUBLIC)).thenReturn(apps);
         mvc
                 .perform(get("/app?sandboxId=" + sandbox.getSandboxId()))

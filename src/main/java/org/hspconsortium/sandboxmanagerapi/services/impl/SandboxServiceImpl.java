@@ -772,7 +772,7 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setResource(launchScenario.getResource());
             newLaunchScenario.setSmartStyleUrl(launchScenario.getSmartStyleUrl());
             newLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
-            newLaunchScenario.setApp(launchScenario.getApp());
+            newLaunchScenario.setApp(appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getClientId(), newSandbox.getSandboxId()));
             List<ContextParams> contextParamsList = launchScenario.getContextParams();
             List<ContextParams> newContextParamsList = new ArrayList<>();
             for (ContextParams contextParams: contextParamsList) {

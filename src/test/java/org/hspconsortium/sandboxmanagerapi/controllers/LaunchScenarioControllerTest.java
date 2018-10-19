@@ -61,6 +61,9 @@ public class LaunchScenarioControllerTest {
     @MockBean
     private UserLaunchService userLaunchService;
 
+    @MockBean
+    private AuthorizationService authorizationService;
+
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 
@@ -298,6 +301,7 @@ public class LaunchScenarioControllerTest {
     public void getLaunchScenariosTest() throws Exception {
         String json = json(launchScenarios);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(sandbox);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandbox.getSandboxId(), user.getSbmUserId(), Visibility.PUBLIC)).thenReturn(launchScenarios);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(launchScenarioService.updateLastLaunchForCurrentUser(launchScenarios, user)).thenReturn(launchScenarios);

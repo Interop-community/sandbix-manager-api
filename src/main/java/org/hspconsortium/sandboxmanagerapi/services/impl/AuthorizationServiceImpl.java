@@ -1,46 +1,32 @@
-/*
- * #%L
- *
- * %%
- * Copyright (C) 2014 - 2015 Healthcare Services Platform Consortium
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-package org.hspconsortium.sandboxmanagerapi.controllers;
+package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import org.apache.http.HttpStatus;
+import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
+import org.hspconsortium.sandboxmanagerapi.services.AuthorizationService;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
-import org.hspconsortium.sandboxmanagerapi.services.UserPersonaService;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-abstract class AbstractController {
-    public static final String UNAUTHORIZED_ERROR = "Response Status : %s.\n" +
-                    "Response Detail : User not authorized to perform this action.";
-    final OAuthService oAuthService;
+@Service
+public class AuthorizationServiceImpl implements AuthorizationService {
+
+    private OAuthService oAuthService;
 
     @Inject
-    public AbstractController(final OAuthService oAuthService) {
+    AuthorizationServiceImpl() {}
+
+    @Inject
+    public void setoAuthService(OAuthService oAuthService) {
         this.oAuthService = oAuthService;
     }
 
     // Check that the userId matches the authorized user in the request
-    void checkUserAuthorization(final HttpServletRequest request, String userId) {
+    @Override
+    public void checkUserAuthorization(final HttpServletRequest request, String userId) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
         if (!userId.equalsIgnoreCase(oauthUserId)) {
@@ -49,22 +35,33 @@ abstract class AbstractController {
     }
 
     // Return userId of the authorized user in the request
-    String getSystemUserId(final HttpServletRequest request) {
+    @Override
+    public String getSystemUserId(final HttpServletRequest request) {
         return oAuthService.getOAuthUserId(request);
     }
 
-    void checkCreatedByIsCurrentUserAuthorization(final HttpServletRequest request, String createdBySbmUserId) {
-        checkUserAuthorization(request, createdBySbmUserId);
+    // Return email of the authorized user in the request
+    @Override
+    public String getUserName(final HttpServletRequest request) {
+        return oAuthService.getOAuthUserName(request);
+    }
+
+    // Return user name of the authorized user in the request
+    @Override
+    public String getEmail(final HttpServletRequest request) {
+        return oAuthService.getOAuthUserEmail(request);
+    }
+
+    // Return bearer token of the authorized user in the request
+    @Override
+    public String getBearerToken(final HttpServletRequest request) {
+        return oAuthService.getBearerToken(request);
     }
 
     // Checks to see if the authorized User is a member of the Sandbox
-    String checkSandboxUserReadAuthorization(final HttpServletRequest request, final Sandbox sandbox) {
+    @Override
+    public String checkSandboxUserReadAuthorization(final HttpServletRequest request, final Sandbox sandbox) {
         return checkSandboxMember(sandbox, oAuthService.getOAuthUserId(request));
-    }
-
-    // Checks to see if a User has can create a Sandbox Item
-    String checkSandboxUserCreateAuthorization(final HttpServletRequest request, final Sandbox sandbox) {
-        return checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
     }
 
     // Can a User modify a given Item in a given Sandbox
@@ -74,7 +71,8 @@ abstract class AbstractController {
     //    b) If the Item is Public
     //       i) If the Sandbox is Private, the User must have non-read-only rights to the Sandbox
     //       ii) If the Sandbox is Public, the User mush be a Sandbox Admin
-    String checkSandboxUserModifyAuthorization(final HttpServletRequest request, final Sandbox sandbox, final AbstractSandboxItem abstractSandboxItem) {
+    @Override
+    public String checkSandboxUserModifyAuthorization(final HttpServletRequest request, final Sandbox sandbox, final AbstractSandboxItem abstractSandboxItem) {
 
         //Fast fail for non-sandbox members
         String oauthUserId = checkSandboxUserReadAuthorization(request, sandbox);
@@ -95,7 +93,8 @@ abstract class AbstractController {
         throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
-    String checkSystemUserDeleteSandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
+    @Override
+    public String checkSystemUserDeleteSandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
         Boolean isAdmin = false;
@@ -117,7 +116,8 @@ abstract class AbstractController {
     }
 
     // Sandbox Admin rights
-    String checkSystemUserCanModifySandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
+    @Override
+    public String checkSystemUserCanModifySandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
         // If the Sandbox is PRIVATE, only an Admin can modify.
@@ -129,7 +129,8 @@ abstract class AbstractController {
         throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
-    String checkSystemUserCanManageSandboxDataAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
+    @Override
+    public String checkSystemUserCanManageSandboxDataAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
         // If the Sandbox is PRIVATE, only an Admin or data manager can manage data.
@@ -144,7 +145,8 @@ abstract class AbstractController {
 
     // Can manage user's is for inviting users to a sandbox
     // Only Admin's can delete Users
-    String checkSystemUserCanManageSandboxUsersAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
+    @Override
+    public String checkSystemUserCanManageSandboxUsersAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
         // If the Sandbox is PRIVATE, only an Admin or data manager can manage users.
@@ -157,28 +159,24 @@ abstract class AbstractController {
         throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
-    void checkUserSystemRole(final User user, final SystemRole role) {
+    @Override
+    public void checkUserSystemRole(final User user, final SystemRole role) {
         if (!checkUserHasSystemRole(user, role)) {
 
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
     }
 
-    void checkUserSandboxRole(final HttpServletRequest request, final Sandbox sandbox, final Role role) {
-        if (!checkUserHasSandboxRole(request, sandbox, role)) {
-
-            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
-        }
-    }
-
-    void checkSystemUserCanMakeTransaction(Sandbox sandbox, User user) {
+    @Override
+    public void checkSystemUserCanMakeTransaction(Sandbox sandbox, User user) {
         List<Sandbox> sandboxes = user.getSandboxes();
         if (!sandboxes.contains(sandbox)) {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
     }
 
-    void checkIfPersonaAndHasAuthority(Sandbox sandbox, UserPersona userPersona) {
+    @Override
+    public void checkIfPersonaAndHasAuthority(Sandbox sandbox, UserPersona userPersona) {
         if (!sandbox.equals(userPersona.getSandbox())) {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
@@ -198,15 +196,37 @@ abstract class AbstractController {
 //            |                       |                           |                                 |
 //            *-------------------------------------------------------------------------------------*
 
-    Visibility getDefaultVisibility(final User user, final Sandbox sandbox) {
+    @Override
+    public Visibility getDefaultVisibility(final User user, final Sandbox sandbox) {
 
         // For a PRIVATE sandbox, non-readonly user's default visibility is PUBLIC.
         // For a PUBLIC sandbox, only ADMIN's have default visibility of PUBLIC.
         if ((sandbox.getVisibility() == Visibility.PRIVATE && !checkUserHasSandboxRole(user.getSbmUserId(), sandbox, Role.READONLY)) ||
-            checkUserHasSandboxRole(user.getSbmUserId(), sandbox, Role.ADMIN)) {
+                checkUserHasSandboxRole(user.getSbmUserId(), sandbox, Role.ADMIN)) {
             return Visibility.PUBLIC;
         }
         return Visibility.PRIVATE;
+    }
+
+    @Override
+    public boolean checkUserHasSystemRole(final User user, final SystemRole role) {
+        for(SystemRole systemRole : user.getSystemRoles()) {
+            if (systemRole == role) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String checkSandboxUserNotReadOnlyAuthorization(final HttpServletRequest request, final Sandbox sandbox) {
+
+        String oauthUserId = oAuthService.getOAuthUserId(request);
+        if (!checkUserHasSandboxRole(oauthUserId, sandbox, Role.READONLY)) {
+            return oauthUserId;
+        }
+
+        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
     }
 
     private boolean checkSystemUserCanModifySandbox(final String oauthUserId, final Sandbox sandbox, final User user) {
@@ -217,16 +237,6 @@ abstract class AbstractController {
                         checkUserHasSystemRole(user, SystemRole.ADMIN)));
     }
 
-    private String checkSandboxUserNotReadOnlyAuthorization(final HttpServletRequest request, final Sandbox sandbox) {
-
-        String oauthUserId = oAuthService.getOAuthUserId(request);
-        if (!checkUserHasSandboxRole(oauthUserId, sandbox, Role.READONLY)) {
-            return oauthUserId;
-        }
-
-        throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
-    }
-
     private String checkSandboxMember(final Sandbox sandbox, final String sbmUserId) {
         for(UserRole userRole : sandbox.getUserRoles()) {
             if (userRole.getUser().getSbmUserId().equalsIgnoreCase(sbmUserId)) {
@@ -234,15 +244,6 @@ abstract class AbstractController {
             }
         }
         throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
-    }
-
-    boolean checkUserHasSystemRole(final User user, final SystemRole role) {
-        for(SystemRole systemRole : user.getSystemRoles()) {
-            if (systemRole == role) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean checkUserHasSandboxRole(final HttpServletRequest request, final Sandbox sandbox, final Role role) {
@@ -258,5 +259,4 @@ abstract class AbstractController {
         }
         return false;
     }
-
 }

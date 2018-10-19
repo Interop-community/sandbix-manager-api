@@ -1,6 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
+import org.hspconsortium.sandboxmanagerapi.services.AuthorizationService;
 import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
@@ -17,6 +18,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
 import java.util.*;
@@ -40,13 +42,13 @@ public class TermsOfUseControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private TermsOfUseService termsOfUseService;
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -61,10 +63,14 @@ public class TermsOfUseControllerTest {
     }
 
     private TermsOfUse termsOfUse;
+    private User user;
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
+        user = new User();
+        user.setSbmUserId("userId");
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         termsOfUse = new TermsOfUse();
     }
 
@@ -100,6 +106,16 @@ public class TermsOfUseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(json));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void createTermsOfUseTestUserNotFound() throws Exception {
+        String json = json(termsOfUse);
+        when(userService.findBySbmUserId(any())).thenReturn(null);
+        mvc
+                .perform(post("/termsofuse")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json));
     }
 
     @SuppressWarnings("unchecked")

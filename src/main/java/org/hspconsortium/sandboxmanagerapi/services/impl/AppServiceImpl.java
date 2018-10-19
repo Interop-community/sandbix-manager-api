@@ -24,7 +24,6 @@ public class AppServiceImpl implements AppService {
     private static Logger LOGGER = LoggerFactory.getLogger(AppServiceImpl.class.getName());
 
     private final AppRepository repository;
-    private AuthClientService authClientService;
     private ImageService imageService;
     private OAuthClientService oAuthClientService;
     private LaunchScenarioService launchScenarioService;
@@ -33,11 +32,6 @@ public class AppServiceImpl implements AppService {
     @Inject
     public AppServiceImpl(final AppRepository repository) {
         this.repository = repository;
-    }
-
-    @Inject
-    public void setAuthClientService(AuthClientService authClientService) {
-        this.authClientService = authClientService;
     }
 
     @Inject
@@ -108,13 +102,6 @@ public class AppServiceImpl implements AppService {
             imageService.delete(logoId);
         }
 
-        // TODO: remove, skip testing
-        if (app.getAuthClient() != null) {
-            int authClientId = app.getAuthClient().getId();
-            app.setAuthClient(null);
-            save(app);
-            authClientService.delete(authClientId);
-        }
         delete(app.getId());
     }
 

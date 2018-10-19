@@ -44,9 +44,6 @@ public class SandboxInviteControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private SandboxInviteService sandboxInviteService;
 
     @MockBean
@@ -60,6 +57,9 @@ public class SandboxInviteControllerTest {
 
     @MockBean
     private SandboxActivityLogService sandboxActivityLogService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -80,7 +80,6 @@ public class SandboxInviteControllerTest {
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
         user = new User();
         user.setSbmUserId("me");
         user.setEmail("email");
@@ -203,6 +202,7 @@ public class SandboxInviteControllerTest {
         String json = json(sandboxInvites);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(sandboxInviteService.findInvitesBySandboxIdAndStatus(sandbox.getSandboxId(), sandboxInvite.getStatus())).thenReturn(sandboxInvites);
         mvc
                 .perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()))
@@ -214,6 +214,7 @@ public class SandboxInviteControllerTest {
     @Test
     public void getSandboxInvitesBySandboxTestReturnsEmpty() throws Exception {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxInviteService.findInvitesBySandboxIdAndStatus(sandbox.getSandboxId(), sandboxInvite.getStatus())).thenReturn(null);
         mvc

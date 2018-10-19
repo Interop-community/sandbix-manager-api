@@ -1,10 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
-import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
-import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,9 +41,6 @@ public class UserAccessHistoryControllerTest {
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @MockBean
-    private OAuthService oAuthService;
-
-    @MockBean
     private SandboxService sandboxService;
 
     @MockBean
@@ -54,6 +48,9 @@ public class UserAccessHistoryControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
 
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -74,7 +71,6 @@ public class UserAccessHistoryControllerTest {
 
     @Before
     public void setup() {
-        when(oAuthService.getOAuthUserId(any())).thenReturn("me");
         user = new User();
         sandbox = new Sandbox();
         user.setSbmUserId("me");

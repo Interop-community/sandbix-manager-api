@@ -103,6 +103,9 @@ public class SandboxServiceTest {
         app = new App();
         app.setId(1);
         app.setVisibility(Visibility.PRIVATE);
+        app.setClientId("clientId");
+        app.setLaunchUri("launchUri");
+        launchScenario.setApp(app);
         apps.add(app);
         userPersonas = new ArrayList<>();
         userPersona = new UserPersona();
@@ -250,6 +253,7 @@ public class SandboxServiceTest {
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         when(appService.findBySandboxId(sandbox.getSandboxId())).thenReturn(apps);
+        when(appService.findByLaunchUriAndClientIdAndSandboxId(any(), any(), any())).thenReturn(app);
         List<ContextParams> contextParams = new ArrayList<>();
         contextParams.add(new ContextParams());
         launchScenario.setContextParams(contextParams);
