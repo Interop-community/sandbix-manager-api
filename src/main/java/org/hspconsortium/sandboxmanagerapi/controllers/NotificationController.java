@@ -53,7 +53,6 @@ public class NotificationController {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
-        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return notificationService.markAllNotificationsAsHiddenByUser(user);
     }
 
@@ -62,7 +61,6 @@ public class NotificationController {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
-        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return notificationService.markAllNotificationsAsSeenByUser(user);
     }
 
@@ -71,7 +69,6 @@ public class NotificationController {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
-        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return notificationService.update(notification);
     }
 
