@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
-import org.hspconsortium.sandboxmanagerapi.repositories.UserAccessHistoryRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -37,7 +36,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private UserService userService;
     private SandboxService sandboxService;
     private FhirTransactionRepository fhirTransactionRepository;
-    private UserAccessHistoryRepository userAccessHistoryRepository;
+
     private AppService appService;
     private RuleService ruleService;
     private SandboxActivityLogService sandboxActivityLogService;
@@ -45,9 +44,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private RestTemplate simpleRestTemplate;
 
     @Inject
-    AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository, final UserAccessHistoryRepository userAccessHistoryRepository) {
+    AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository) {
         this.fhirTransactionRepository = fhirTransactionRepository;
-        this.userAccessHistoryRepository = userAccessHistoryRepository;
     }
 
     @Inject
@@ -385,11 +383,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     private Set<String> activeSandboxes(Integer interval) {
-        Iterable<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findAll();
+        Iterable<SandboxActivityLog> sandboxActivityLogs = sandboxActivityLogService.findAll();
         Set<String> sandboxIds = new HashSet<>();
-        for (UserAccessHistory userAccessHistory: userAccessHistories) {
-            if (userAccessHistory.getAccessTimestamp().getTime() > (new Date().getTime() - TimeUnit.DAYS.toMillis(interval))) {
-                sandboxIds.add(userAccessHistory.getSandboxId());
+        for (SandboxActivityLog userAccessHistory : sandboxActivityLogs) {
+            if (userAccessHistory.getTimestamp().getTime() > (new Date().getTime() - TimeUnit.DAYS.toMillis(interval))) {
+                sandboxIds.add(userAccessHistory.getSandbox().getSandboxId());
             }
         }
         return sandboxIds;

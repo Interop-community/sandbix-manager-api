@@ -1,10 +1,10 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import com.google.common.collect.Sets;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
-import org.hspconsortium.sandboxmanagerapi.services.AdminService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxActivityLogService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
-import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.hspconsortium.sandboxmanagerapi.model.SandboxActivityLog;
+import org.hspconsortium.sandboxmanagerapi.model.User;
+import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -59,6 +60,7 @@ public class AdminServiceImpl implements AdminService {
         this.simpleRestTemplate = simpleRestTemplate;
     }
 
+    @Override
     public HashMap<String, Object> syncSandboxManagerandReferenceApi(Boolean fix, String request) {
         List<String> sandboxesInSM = new ArrayList<>();
         Collection<LinkedHashMap> sandboxesInRAPI;
@@ -116,10 +118,39 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    @Override
+    public Set<String> deleteUnusedSandboxes(User user, String bearerToken){
+        Iterable<SandboxActivityLog> sandboxAccessHistories = sandboxActivityLogService.findAll();
+        Set<String> set1SandboxIdMoreThanYear = new HashSet<>();
+        Set<String> set2SandboxIdLessThanYear = new HashSet<>();
+
+
+        for (SandboxActivityLog sandboxAccessHistory : sandboxAccessHistories){
+            if ((sandboxAccessHistory.getTimestamp().getTime() < (new Date().getTime() - TimeUnit.DAYS.toMillis(366)))
+                    && (sandboxAccessHistory.getSandbox() != null)) {
+                set1SandboxIdMoreThanYear.add(sandboxAccessHistory.getSandbox().getSandboxId());
+            }
+            else if ((sandboxAccessHistory.getTimestamp().getTime() > (new Date().getTime() - TimeUnit.DAYS.toMillis(366)))
+                    && (sandboxAccessHistory.getSandbox() != null))  {
+                set2SandboxIdLessThanYear.add(sandboxAccessHistory.getSandbox().getSandboxId());
+            }
+        }
+        // delete or flag all the sandboxes in the Set of set1SandboxIdMoreThanYear
+        Set<String> setFinalSandboxIdDeleted = Sets.difference(set1SandboxIdMoreThanYear,set2SandboxIdLessThanYear);
+        for (String sandboxId : setFinalSandboxIdDeleted){
+            Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+            sandboxService.delete(sandbox, bearerToken, user, false);
+        }
+
+        return setFinalSandboxIdDeleted;
+    }
+
     private void callDeleteSandboxAPI(Sandbox sandbox, String request) {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.set("Authorization", "Bearer " + request);
         HttpEntity<String> httpEntity = new HttpEntity<>(requestHeaders);
         simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandbox)  + "/sandbox?sync=true", HttpMethod.DELETE, httpEntity, String.class);
     }
+
+
 }
