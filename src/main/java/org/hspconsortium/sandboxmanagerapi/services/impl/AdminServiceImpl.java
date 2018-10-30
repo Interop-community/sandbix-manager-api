@@ -124,7 +124,6 @@ public class AdminServiceImpl implements AdminService {
         Set<String> set1SandboxIdMoreThanYear = new HashSet<>();
         Set<String> set2SandboxIdLessThanYear = new HashSet<>();
 
-
         for (SandboxActivityLog sandboxAccessHistory : sandboxAccessHistories){
             if ((sandboxAccessHistory.getTimestamp().getTime() < (new Date().getTime() - TimeUnit.DAYS.toMillis(366)))
                     && (sandboxAccessHistory.getSandbox() != null)) {
@@ -141,7 +140,6 @@ public class AdminServiceImpl implements AdminService {
             Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
             sandboxService.delete(sandbox, bearerToken, user, false);
         }
-
         return setFinalSandboxIdDeleted;
     }
 
@@ -151,6 +149,4 @@ public class AdminServiceImpl implements AdminService {
         HttpEntity<String> httpEntity = new HttpEntity<>(requestHeaders);
         simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandbox)  + "/sandbox?sync=true", HttpMethod.DELETE, httpEntity, String.class);
     }
-
-
 }
