@@ -43,7 +43,6 @@ public class AppServiceTest {
         appService.setoAuthClientService(oAuthClientService);
         appService.setImageService(imageService);
         appService.setUserLaunchService(userLaunchService);
-        apps.add(app);
 
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandbox");
@@ -64,6 +63,7 @@ public class AppServiceTest {
         client.put("clientId", app.getClientId());
         String clientString = client.toString();
         app.setClientJSON(clientString);
+        apps.add(app);
 
         launchScenario = new LaunchScenario();
         launchScenario.setApp(app);
