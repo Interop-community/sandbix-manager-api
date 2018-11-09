@@ -279,7 +279,7 @@ public class SandboxServiceImpl implements SandboxService {
                 newSandbox.setExpirationDate(formatDate());
             }
 
-            newSandbox.setPayerUserId(clonedSandbox.getPayerUserId());
+            newSandbox.setPayerUserId(user.getId());
             Sandbox savedSandbox = save(newSandbox);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {

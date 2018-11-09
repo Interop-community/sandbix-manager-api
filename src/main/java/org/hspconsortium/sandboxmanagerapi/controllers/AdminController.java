@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -73,6 +74,20 @@ public class AdminController {
         invites.forEach(sandboxInviteService::delete);
 
         sandboxService.delete(sandbox, authorizationService.getBearerToken(request), user, false);
+    }
+
+    // SS Admin Level Sandbox Delete to delete sandboxes not used in a year
+    @DeleteMapping(value = "/deleteUnused")
+    @ResponseBody
+    public Set<String> deleteUnusedSandboxes(HttpServletRequest request) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+
+        return adminService.deleteUnusedSandboxes(user, authorizationService.getBearerToken(request));
+
     }
 
     @GetMapping(value = "/sandbox-differences/$list", produces = APPLICATION_JSON_VALUE)

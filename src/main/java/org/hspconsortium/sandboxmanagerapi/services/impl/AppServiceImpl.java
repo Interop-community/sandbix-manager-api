@@ -229,7 +229,11 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
-        return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+        List<App> apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
+        for (App app: apps) {
+            getClientJSON(app);
+        }
+        return apps;
     }
 
     @Override

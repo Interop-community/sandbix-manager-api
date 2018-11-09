@@ -2,7 +2,11 @@
 //
 //import org.hspconsortium.sandboxmanagerapi.services.OAuthService;
 //import org.junit.Before;
+//import org.junit.Rule;
+//import org.junit.Test;
+//import org.junit.rules.ExpectedException;
 //import org.junit.runner.RunWith;
+//import org.mockito.Mockito;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 //import org.springframework.boot.test.mock.mockito.MockBean;
@@ -14,11 +18,15 @@
 //import org.springframework.test.context.junit4.SpringRunner;
 //import org.springframework.test.web.servlet.MockMvc;
 //
+//import javax.servlet.http.HttpServletRequest;
 //import java.io.IOException;
+//import java.io.UnsupportedEncodingException;
 //import java.util.Arrays;
 //
 //import static org.junit.Assert.assertNotNull;
+//import static org.junit.Assert.assertTrue;
 //import static org.mockito.Matchers.any;
+//import static org.mockito.Mockito.mock;
 //import static org.mockito.Mockito.when;
 //
 //@RunWith(SpringRunner.class)
@@ -57,5 +65,13 @@
 //        mappingJackson2HttpMessageConverter.write(
 //                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
 //        return mockHttpOutputMessage.getBodyAsString();
+//    }
+//    // SS
+//
+//    @Test(expected = UnsupportedEncodingException.class)
+//    public void countSandboxesByUserReturns() throws UnsupportedEncodingException {
+//        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+//        String userId = "1";
+//
 //    }
 //}
