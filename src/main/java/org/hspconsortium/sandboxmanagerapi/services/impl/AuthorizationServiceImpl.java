@@ -97,18 +97,10 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     public String checkSystemUserDeleteSandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
-        Boolean isAdmin = false;
-        for (UserRole userRole: sandbox.getUserRoles()) {
-            if (userRole.getUser().getSbmUserId().equals(oauthUserId)) {
-                if (userRole.getRole() == Role.ADMIN) {
-                    isAdmin = true;
-                }
-            }
-        }
         // If the sandbox is PRIVATE, only an admin can delete.
         // If the sandbox is PUBLIC, a system sandbox creator or system admin can delete.
-        if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user) &&
-                (sandbox.getVisibility() == Visibility.PRIVATE && isAdmin)) {
+
+        if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user)) {
 //                (sandbox.getVisibility() == Visibility.PRIVATE && sandbox.getCreatedBy().getSbmUserId().equalsIgnoreCase(oauthUserId))) {
             return oauthUserId;
         }
