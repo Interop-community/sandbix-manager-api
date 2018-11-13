@@ -90,7 +90,7 @@ public class AdminController {
 
     }
 
-    @GetMapping(value = "/sandbox-differences/$list", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/sandbox-differences/$list")
     @Transactional
     public HashMap<String, Object> listSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
@@ -101,7 +101,7 @@ public class AdminController {
         return adminService.syncSandboxManagerandReferenceApi(false, authorizationService.getBearerToken(request));
     }
 
-    @GetMapping(value = "/sandbox-differences/$sync", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/sandbox-differences/$sync")
     @Transactional
     public HashMap<String, Object> syncSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));

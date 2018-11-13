@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -100,6 +101,7 @@ public class AnalyticsController {
     }
 
     @PostMapping(value = "/transaction")
+    @Transactional
     public @ResponseBody
     FhirTransaction handleFhirTransaction(final HttpServletRequest request, @RequestBody final HashMap transactionInfo) {
         Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());

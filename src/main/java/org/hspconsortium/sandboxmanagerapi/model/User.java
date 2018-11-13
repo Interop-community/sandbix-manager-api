@@ -37,7 +37,7 @@ public class User {
     private List<TermsOfUseAcceptance> termsOfUseAcceptances = new ArrayList<>();
     private Tier tierLevel;
 
-    @Id // @Id indicates that this it a unique primary key
+    @Id // @Id indicates that this is a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer getId() {
         return id;
