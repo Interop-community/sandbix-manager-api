@@ -328,7 +328,7 @@ public class AnalyticsControllerTest {
                 .andExpect(content().json(ft));
     }
 
-//    @Test(expected = NestedServletException.class)
+//    @Test
 //    public void handleFhirTransactionPersonaNullTest() throws Exception {
 //        HashMap<String, String> transactionInfo = new HashMap<>();
 //        transactionInfo.put("tenant", sandbox.getSandboxId());
@@ -338,16 +338,14 @@ public class AnalyticsControllerTest {
 //        String json = json(transactionInfo);
 //        String ft = json(fhirTransaction);
 //
-//
 //        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
 //        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
 //        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
 //        doThrow(UnauthorizedException.class).when(authorizationService).checkIfPersonaAndHasAuthority(sandbox, userPersona);
-////        when(authorizationService.getBearerToken(any())).thenReturn("")
-////        when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(fhirTransaction);
 //
 //        mvc
-//                .perform(post("/analytics/transaction"));
+//                .perform(post("/analytics/transaction"))
+//                .andExpect(content().);
 //    }
 
 //    @Test
