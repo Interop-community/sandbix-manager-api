@@ -484,6 +484,8 @@ public class SandboxServiceImpl implements SandboxService {
         }
 
         for (Sandbox sandbox : findByVisibility(Visibility.PUBLIC)){
+            List<UserRole> userRoles = sandbox.getUserRoles();
+            userRoles.removeIf((UserRole userRole) -> !userRole.getUser().getSbmUserId().equals(user.getSbmUserId()));
             if (!sandboxes.contains(sandbox)){
                 sandboxes.add(sandbox);
             }

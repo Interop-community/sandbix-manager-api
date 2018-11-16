@@ -44,7 +44,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private RestTemplate simpleRestTemplate;
 
     @Inject
-    AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository) {
+    public AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository) {
         this.fhirTransactionRepository = fhirTransactionRepository;
     }
 
