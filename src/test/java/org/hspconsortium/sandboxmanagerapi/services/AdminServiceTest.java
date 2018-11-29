@@ -68,7 +68,7 @@ public class AdminServiceTest {
 
     @Test
     public void syncSandboxManagerandReferenceApiTest() {
-        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        // when(sandboxService.findAll()).thenReturn(sandboxesIterable);
         //TODO: RestTemplate issue, do it later
     }
 
