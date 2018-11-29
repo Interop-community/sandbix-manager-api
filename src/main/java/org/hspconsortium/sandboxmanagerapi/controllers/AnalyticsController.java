@@ -4,7 +4,6 @@ import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -142,6 +141,16 @@ public class AnalyticsController {
         }
         authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.getSandboxStatistics(intervalDays);
+    }
+
+    @GetMapping(value="/getstats", produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody HashMap<Integer, Statistics> getStats(HttpServletRequest request) throws UnsupportedEncodingException {
+        // User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+//        if (user == null) {
+//            throw new ResourceNotFoundException("User not found in authorization header.");
+//        }
+//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.getSandboxAndUserStatsForAYear();
     }
 
     @GetMapping(value="/overallStats/transactions", params = {"interval"})

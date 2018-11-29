@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -21,13 +22,12 @@ import org.springframework.web.util.NestedServletException;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -336,6 +336,17 @@ public class SandboxControllerTest {
                         .content(json));
     }
 
+    @Test(expected = UnsupportedEncodingException.class)
+    public void updateSandboxMemberRoleTestUnsupportedEncoding() throws Exception {
+        String json = json(sandbox);
+        sandbox.setCreatedBy(user);
+        when(userService.findBySbmUserId("a")).thenReturn(new User());
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?editUserRole=" + user.getSbmUserId() + "&role=ADMIN&add=true")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json));
+    }
+
     @Test
     public void changePayerForSandboxTest() throws Exception {
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
@@ -350,6 +361,14 @@ public class SandboxControllerTest {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
         mvc
                 .perform(put("/sandbox/" + sandbox.getSandboxId() + "/changePayer?newPayerId=" + user.getSbmUserId()));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void changePayerForSandboxTestUserDenied() throws Exception {
+        when(authorizationService.getSystemUserId(any())).thenReturn("a");
+        when(userService.findBySbmUserId("a")).thenReturn(user);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "/changePayer?newPayerId=" + "ab"));
     }
 
     @Test

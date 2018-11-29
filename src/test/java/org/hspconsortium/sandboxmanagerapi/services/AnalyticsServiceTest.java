@@ -11,6 +11,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -44,6 +45,7 @@ public class AnalyticsServiceTest {
     private List<String> schemaNames;
     private ResponseEntity<HashMap> responseEntity;
     private Iterable<SandboxActivityLog> sandboxActivityLogs;
+    private List<SandboxActivityLog> sandboxActivityLogList;
     private SandboxActivityLog sandboxActivityLog;
     private SandboxActivityLog sandboxActivityLog2;
     private List<FhirTransaction> fhirTransactionList;
@@ -151,7 +153,7 @@ public class AnalyticsServiceTest {
         sandboxActivityLog.setSandbox(sandbox);
 
         sandboxActivityLog2 = new SandboxActivityLog();
-        sandboxActivityLog2.setId(1);
+        sandboxActivityLog2.setId(2);
         sandboxActivityLog2.setTimestamp(timestamp);
         sandboxActivityLog2.setUser(user2);
         sandboxActivityLog2.setActivity(SandboxActivity.LOGGED_IN);
@@ -160,6 +162,10 @@ public class AnalyticsServiceTest {
         sandboxActivityLogs = new ArrayList<>();
         ((ArrayList<SandboxActivityLog>) sandboxActivityLogs).add(sandboxActivityLog);
         ((ArrayList<SandboxActivityLog>) sandboxActivityLogs).add(sandboxActivityLog2);
+
+        sandboxActivityLogList = new ArrayList<>();
+        sandboxActivityLogList.add(sandboxActivityLog);
+        sandboxActivityLogList.add(sandboxActivityLog2);
 
         fhirTransactionList = new ArrayList<>();
         FhirTransaction ft = new FhirTransaction();
@@ -273,29 +279,29 @@ public class AnalyticsServiceTest {
         assertEquals("2", n);
     }
 
-//    @Test
-//    public void getSandboxStatisticsTest() {
-//        Date d = new Date();
-//        int intDays = Integer.parseInt("5");
-//        Date dateBefore = new Date(d.getTime() - intDays * 24 * 3600 * 1000L );
-//        Timestamp timestamp = new Timestamp(dateBefore.getTime());
-//
-//        when(sandboxService.fullCount()).thenReturn("1");
-//        when(sandboxService.schemaCount("1")).thenReturn("1");
-//        when(sandboxService.schemaCount("2")).thenReturn("2");
-//        when(sandboxService.schemaCount("5")).thenReturn("5");
-//        when(sandboxService.schemaCount("3")).thenReturn("3");
-//        when(sandboxService.schemaCount("4")).thenReturn("4");
-//        when(sandboxService.schemaCount("6")).thenReturn("6");
-//        when(sandboxService.schemaCount("7")).thenReturn("7");
-//        when(sandboxService.intervalCount(timestamp)).thenReturn("1");
-//        when(userService.fullCount()).thenReturn("1");
-//        when(userService.intervalCount(timestamp)).thenReturn("1");
-//        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogs);
-//        String stats = analyticsService.getSandboxStatistics("5");
-//        String expected = "";
-//        assertEquals(expected, stats);
-//    }
+    @Test
+    public void getSandboxStatisticsTest() {
+        Date d = new Date();
+        int intDays = Integer.parseInt("5");
+        Date dateBefore = new Date(d.getTime() - intDays * 24 * 3600 * 1000L );
+        Timestamp timestamp = new Timestamp(dateBefore.getTime());
+
+        when(sandboxService.fullCount()).thenReturn("1");
+        when(sandboxService.schemaCount("1")).thenReturn("1");
+        when(sandboxService.schemaCount("2")).thenReturn("2");
+        when(sandboxService.schemaCount("5")).thenReturn("5");
+        when(sandboxService.schemaCount("3")).thenReturn("3");
+        when(sandboxService.schemaCount("4")).thenReturn("4");
+        when(sandboxService.schemaCount("6")).thenReturn("6");
+        when(sandboxService.schemaCount("7")).thenReturn("7");
+        when(sandboxService.intervalCount(timestamp)).thenReturn("1");
+        when(userService.fullCount()).thenReturn("1");
+        when(userService.intervalCount(timestamp)).thenReturn("1");
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogs);
+        String actual = analyticsService.getSandboxStatistics("5");
+        String expected = "";
+       assertEquals(expected, actual);
+    }
 
     @Test
     public void transactionStatsTest() {
