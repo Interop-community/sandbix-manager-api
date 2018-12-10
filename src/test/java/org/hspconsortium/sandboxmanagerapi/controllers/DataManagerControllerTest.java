@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.junit.Before;
@@ -15,12 +16,15 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -67,6 +71,7 @@ public class DataManagerControllerTest {
 
     private Sandbox sandbox;
     private User user;
+    private SandboxActivityLog sandboxActivityLog;
 
     @Before
     public void setup() {
@@ -88,6 +93,9 @@ public class DataManagerControllerTest {
         systemRoles.add(SystemRole.ADMIN);
         user.setSystemRoles(systemRoles);
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        sandboxActivityLog = new SandboxActivityLog();
+        sandboxActivityLog.setSandbox(sandbox);
+        sandboxActivityLog.setUser(user);
     }
 
     @Test
@@ -102,10 +110,51 @@ public class DataManagerControllerTest {
                 .andExpect(content().json(json));
     }
 
+    @Test(expected = NestedServletException.class)
+    public void getSandboxImportsTestSandboxNull() throws Exception {
+        String json = json(sandbox.getImports());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        mvc
+                .perform(get("/fhirdata/import?sandboxId=" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test
+    public void importAllPatientDataTest() throws Exception {
+//        when(authorizationService.getBearerToken(any())).thenReturn("");
+//        String json = json(dataManagerService.importPatientData(sandbox, "", "1", "1", "1"));
+//        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+//        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+//        doNothing().when(authorizationService).checkUserAuthorization(any(), any());
+//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+//        when(authorizationService.checkSystemUserCanManageSandboxDataAuthorization(any(), any(), any())).thenReturn("");
+//        when(sandboxActivityLogService.sandboxImport(sandbox, user)).thenReturn(sandboxActivityLog);
+//        mvc
+//                .perform(get("fhirdata/import?sandboxId=" + sandbox.getSandboxId() + "&patientId=1&fhirIdPrefix=1&endpoint=1"))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().json(json));
+    }
+
     @Test
     public void resetTest() throws Exception {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(authorizationService.getBearerToken(any())).thenReturn("token");
+        when(dataManagerService.reset(sandbox, "token")).thenReturn("SUCCESS");
+        mvc
+                .perform(post("/fhirdata/reset?sandboxId=" + sandbox.getSandboxId() + "&dataSet=DEFAULT"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("SUCCESS"));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void resetTestSandboxNull() throws Exception {
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
         when(authorizationService.getBearerToken(any())).thenReturn("token");
         when(dataManagerService.reset(sandbox, "token")).thenReturn("SUCCESS");
         mvc

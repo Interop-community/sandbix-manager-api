@@ -18,7 +18,6 @@ import java.sql.Timestamp;
                 query = "SELECT c FROM Notification c WHERE c.newsItem.id = :newsItemId"),
 })
 public class Notification {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -36,5 +35,54 @@ public class Notification {
     private Boolean seen;
 
     private Boolean hidden;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Timestamp getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    public void setCreatedTimestamp(Timestamp createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public NewsItem getNewsItem() {
+        return newsItem;
+    }
+
+    public void setNewsItem(NewsItem newsItem) {
+        this.newsItem = newsItem;
+    }
+
+    public Boolean getSeen() {
+        return seen;
+    }
+
+    public void setSeen(Boolean seen) {
+        this.seen = seen;
+    }
+
+    public Boolean getHidden() {
+        return hidden;
+    }
+
+    public void setHidden(Boolean hidden) {
+        this.hidden = hidden;
+    }
+
 
 }

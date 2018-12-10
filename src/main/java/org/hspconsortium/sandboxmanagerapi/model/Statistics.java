@@ -1,18 +1,53 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
+import javax.persistence.*;
+import java.sql.Timestamp;
+
+@Entity
+@NamedQueries({
+        // Used to retrieve statistics for last 12 months
+        @NamedQuery(name="Statistics.get12MonthStatistics",
+                query="SELECT c FROM Statistics c WHERE c.createdTimestamp BETWEEN :yearAgoTimestamp AND :currentTimestamp")
+})
 public class Statistics {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private Timestamp createdTimestamp;
     private String fullSandboxCount;
-    private String fullUserCount;
-    private String fullDSTU2Count;
-    private String fullSTU3Count;
+    @Column(name = "full_dstu2_count")
+    private String fullDstu2Count;
+    @Column(name = "full_stu3_count")
+    private String fullStu3Count;
+    @Column(name = "full_r4_count")
     private String fullR4Count;
-    private String DSTU2SandboxesInInterval;
-    private String STU3SandboxesInInterval;
-    private String R4SandboxesInInterval;
-    private String newSandboxesInInterval;
-    private String newUsersInInterval;
-    private String activeUserInInterval;
     private String activeSandboxesInInterval;
+    private String newSandboxesInInterval;
+    @Column(name = "dstu2_sandboxes_in_interval")
+    private String dstu2SandboxesInInterval;
+    @Column(name = "stu3_sandboxes_in_interval")
+    private String stu3SandboxesInInterval;
+    @Column(name = "r4_sandboxes_in_interval")
+    private String r4SandboxesInInterval;
+    private String fullUserCount;
+    private String activeUserInInterval;
+    private String newUsersInInterval;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Timestamp getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    public void setCreatedTimestamp(Timestamp createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
+    }
 
     public String getFullSandboxCount() {
         return fullSandboxCount;
@@ -22,28 +57,20 @@ public class Statistics {
         this.fullSandboxCount = fullSandboxCount;
     }
 
-    public String getFullUserCount() {
-        return fullUserCount;
+    public String getFullDstu2Count() {
+        return fullDstu2Count;
     }
 
-    public void setFullUserCount(String fullUserCount) {
-        this.fullUserCount = fullUserCount;
+    public void setFullDstu2Count(String fullDstu2Count) {
+        this.fullDstu2Count = fullDstu2Count;
     }
 
-    public String getFullDSTU2Count() {
-        return fullDSTU2Count;
+    public String getFullStu3Count() {
+        return fullStu3Count;
     }
 
-    public void setFullDSTU2Count(String fullDSTU2Count) {
-        this.fullDSTU2Count = fullDSTU2Count;
-    }
-
-    public String getFullSTU3Count() {
-        return fullSTU3Count;
-    }
-
-    public void setFullSTU3Count(String fullSTU3Count) {
-        this.fullSTU3Count = fullSTU3Count;
+    public void setFullStu3Count(String fullStu3Count) {
+        this.fullStu3Count = fullStu3Count;
     }
 
     public String getFullR4Count() {
@@ -54,28 +81,12 @@ public class Statistics {
         this.fullR4Count = fullR4Count;
     }
 
-    public String getDSTU2SandboxesInInterval() {
-        return DSTU2SandboxesInInterval;
+    public String getActiveSandboxesInInterval() {
+        return activeSandboxesInInterval;
     }
 
-    public void setDSTU2SandboxesInInterval(String DSTU2SandboxesInInterval) {
-        this.DSTU2SandboxesInInterval = DSTU2SandboxesInInterval;
-    }
-
-    public String getSTU3SandboxesInInterval() {
-        return STU3SandboxesInInterval;
-    }
-
-    public void setSTU3SandboxesInInterval(String STU3SandboxesInInterval) {
-        this.STU3SandboxesInInterval = STU3SandboxesInInterval;
-    }
-
-    public String getR4SandboxesInInterval() {
-        return R4SandboxesInInterval;
-    }
-
-    public void setR4SandboxesInInterval(String r4SandboxesInInterval) {
-        R4SandboxesInInterval = r4SandboxesInInterval;
+    public void setActiveSandboxesInInterval(String activeSandboxesInInterval) {
+        this.activeSandboxesInInterval = activeSandboxesInInterval;
     }
 
     public String getNewSandboxesInInterval() {
@@ -86,12 +97,36 @@ public class Statistics {
         this.newSandboxesInInterval = newSandboxesInInterval;
     }
 
-    public String getNewUsersInInterval() {
-        return newUsersInInterval;
+    public String getDstu2SandboxesInInterval() {
+        return dstu2SandboxesInInterval;
     }
 
-    public void setNewUsersInInterval(String newUsersInInterval) {
-        this.newUsersInInterval = newUsersInInterval;
+    public void setDstu2SandboxesInInterval(String dstu2SandboxesInInterval) {
+        this.dstu2SandboxesInInterval = dstu2SandboxesInInterval;
+    }
+
+    public String getStu3SandboxesInInterval() {
+        return stu3SandboxesInInterval;
+    }
+
+    public void setStu3SandboxesInInterval(String stu3SandboxesInInterval) {
+        this.stu3SandboxesInInterval = stu3SandboxesInInterval;
+    }
+
+    public String getR4SandboxesInInterval() {
+        return r4SandboxesInInterval;
+    }
+
+    public void setR4SandboxesInInterval(String r4SandboxesInInterval) {
+        this.r4SandboxesInInterval = r4SandboxesInInterval;
+    }
+
+    public String getFullUserCount() {
+        return fullUserCount;
+    }
+
+    public void setFullUserCount(String fullUserCount) {
+        this.fullUserCount = fullUserCount;
     }
 
     public String getActiveUserInInterval() {
@@ -102,11 +137,11 @@ public class Statistics {
         this.activeUserInInterval = activeUserInInterval;
     }
 
-    public String getActiveSandboxesInInterval() {
-        return activeSandboxesInInterval;
+    public String getNewUsersInInterval() {
+        return newUsersInInterval;
     }
 
-    public void setActiveSandboxesInInterval(String activeSandboxesInInterval) {
-        this.activeSandboxesInInterval = activeSandboxesInInterval;
+    public void setNewUsersInInterval(String newUsersInInterval) {
+        this.newUsersInInterval = newUsersInInterval;
     }
 }

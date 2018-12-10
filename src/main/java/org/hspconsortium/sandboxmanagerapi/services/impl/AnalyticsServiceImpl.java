@@ -5,17 +5,23 @@ import com.google.gson.Gson;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.StatisticsRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import java.lang.reflect.Type;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Date;
@@ -24,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class AnalyticsServiceImpl implements AnalyticsService {
+    private static Logger LOGGER = LoggerFactory.getLogger(AnalyticsServiceImpl.class.getName());
 
     @Value("${spring.datasource.base_url}")
     private String databaseUrl;
@@ -37,6 +44,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private UserService userService;
     private SandboxService sandboxService;
     private FhirTransactionRepository fhirTransactionRepository;
+    private StatisticsRepository statisticsRepository;
 
     private AppService appService;
     private RuleService ruleService;
@@ -58,12 +66,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private Integer countNewUser = 0;
     private Integer sandboxId = 0;
     private Integer userId = 0;
-    private Iterable<SandboxActivityLog> sandboxActivityLogs;
     private String apiEndpointIndex = "";
+    private Iterable<SandboxActivityLog> sandboxActivityLogs;
+    private List<SandboxActivityLog> sandboxActivityLogListIntervalFilter;
 
     @Inject
-    public AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository) {
+    public AnalyticsServiceImpl(final FhirTransactionRepository fhirTransactionRepository,final StatisticsRepository statisticsRepository) {
         this.fhirTransactionRepository = fhirTransactionRepository;
+        this.statisticsRepository = statisticsRepository;
     }
 
     @Inject
@@ -179,23 +189,70 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return count;
     }
 
-    public String activeUserCount(Integer intervalDays) {
-        Iterable<SandboxActivityLog> sandboxActivityLogs = sandboxActivityLogService.findAll();
+    private void sandboxActivityLogListIntervalFilter(Timestamp timestamp, Integer intervalDays) {
+        sandboxActivityLogs= sandboxActivityLogService.findAll();
+        for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogs) {
+            if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getTimestamp().before(timestamp)) {
+                fullSanboxCount.add(sandboxActivityLog.getSandbox().getId());
+            }
+        }
         List<SandboxActivityLog> sandboxActivityLogList = new ArrayList<>();
         sandboxActivityLogs.forEach(sandboxActivityLogList::add);
-        List<SandboxActivityLog> sandboxActivityLogListInterfalFilter = sandboxActivityLogList.stream().filter(x -> new Date().getTime() - x.getTimestamp().getTime() < TimeUnit.DAYS.toMillis(intervalDays)).collect(Collectors.toList());
-        HashSet<Object> seen=new HashSet<>();
-        sandboxActivityLogListInterfalFilter.removeIf(e->!seen.add(e.getUser().getId()));
+        sandboxActivityLogListIntervalFilter = sandboxActivityLogList.stream().filter(x -> new Date().getTime() - x.getTimestamp().getTime() < TimeUnit.DAYS.toMillis(intervalDays)).collect(Collectors.toList());
+    }
+
+    private String activeUserCount() {
+        HashSet<Object> seen = new HashSet<>();
+        List<SandboxActivityLog> activeInInterval = new ArrayList<>(sandboxActivityLogListIntervalFilter);
+        activeInInterval.removeIf(e->!seen.add(e.getUser().getId()));
         return Integer.toString(seen.size());
     }
 
+    private String activeSandboxCount() {
+        List<SandboxActivityLog> activeInInterval = new ArrayList<>(sandboxActivityLogListIntervalFilter);
+        HashSet<Object> seenSandboxes = new HashSet<>();
+        activeInInterval.removeIf(e->e.getSandbox() != null && !seenSandboxes.add(e.getSandbox().getId()));
+        return Integer.toString(seenSandboxes.size());
+    }
+
+    private String dstu2SandboxesInInterval() {
+        Set<Integer> dstu2Sandbox = new HashSet<>();
+        for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
+            if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("5")) {
+                dstu2Sandbox.add(sandboxActivityLog.getSandbox().getId());
+            }
+        }
+        return Integer.toString(dstu2Sandbox.size());
+    }
+
+    private String stu3SandboxesInInterval() {
+        Set<Integer> stu3Sandbox = new HashSet<>();
+        for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
+            if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("6")) {
+                stu3Sandbox.add(sandboxActivityLog.getSandbox().getId());
+            }
+        }
+        return Integer.toString(stu3Sandbox.size());
+    }
+
+    private String r4SandboxesInInterval() {
+        Set<Integer> r4Sandbox = new HashSet<>();
+        for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
+            if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("7")) {
+                r4Sandbox.add(sandboxActivityLog.getSandbox().getId());
+            }
+        }
+        return Integer.toString(r4Sandbox.size());
+    }
+
     @Override
-    public String getSandboxStatistics(final String intervalDays) {
+    public Statistics getSandboxStatistics(final String intervalDays) {
 
         int intDays = Integer.parseInt(intervalDays);
         Date d = new Date();
         Date dateBefore = new Date(d.getTime() - intDays * 24 * 3600 * 1000L );
         Timestamp timestamp = new Timestamp(dateBefore.getTime());
+        sandboxActivityLogListIntervalFilter(timestamp, intDays);
 
         Statistics statistics = new Statistics();
         statistics.setFullSandboxCount(sandboxService.fullCount());
@@ -203,20 +260,25 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         int apiEndpoint2 = Integer.parseInt(sandboxService.schemaCount("2"));
         int apiEndpoint5 = Integer.parseInt(sandboxService.schemaCount("5"));
         int twoTotal = apiEndpoint1 + apiEndpoint2 + apiEndpoint5;
-        statistics.setFullDSTU2Count(Integer.toString(twoTotal));
+        statistics.setFullDstu2Count(Integer.toString(twoTotal));
         int apiEndpoint3 = Integer.parseInt(sandboxService.schemaCount("3"));
         int apiEndpoint4 = Integer.parseInt(sandboxService.schemaCount("4"));
         int apiEndpoint6 = Integer.parseInt(sandboxService.schemaCount("6"));
         int fourTotal = apiEndpoint3 + apiEndpoint4 + apiEndpoint6;
-        statistics.setFullSTU3Count(Integer.toString(fourTotal));
+        statistics.setFullStu3Count(Integer.toString(fourTotal));
         statistics.setNewSandboxesInInterval(sandboxService.intervalCount(timestamp));
         int apiEndpoint7 = Integer.parseInt(sandboxService.schemaCount("7"));
         statistics.setFullR4Count(Integer.toString(apiEndpoint7));
+        statistics.setActiveSandboxesInInterval(activeSandboxCount());
+        statistics.setDstu2SandboxesInInterval(dstu2SandboxesInInterval());
+        statistics.setStu3SandboxesInInterval(stu3SandboxesInInterval());
+        statistics.setR4SandboxesInInterval(r4SandboxesInInterval());
         statistics.setFullUserCount(userService.fullCount());
         statistics.setNewUsersInInterval(userService.intervalCount(timestamp));
-        statistics.setActiveUserInInterval(activeUserCount(intDays));
+        statistics.setActiveUserInInterval(activeUserCount());
+        statistics.setCreatedTimestamp(timestamp);
 
-        return toJson(statistics);
+        return statistics;
     }
 
     private static String toJson(Statistics statistics) {
@@ -225,8 +287,108 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }.getType();
         return gson.toJson(statistics, type);
     }
+    //(cron = "[Seconds] [Minutes] [Hours] [Day of month] [Month] [Day of week] [Year]")
+    @Scheduled(cron = "0 50 23 28-31 * ?")
+    public void snapshotStatistics() {
+        final Calendar c = Calendar.getInstance();
+        if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
+            int intDays = LocalDate.now().lengthOfMonth();
+            getSandboxStatistics(Integer.toString(intDays));
+            //LOGGER.info("Creating stats");
+        }
+    }
 
-    public HashMap<Integer, Statistics> getSandboxAndUserStatsForAYear() {
+    public Statistics getSandboxAndUserStatsForLastTwoYears() {
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+        int targetMonth = currentTimestamp.getMonth();
+        int targetYear = currentTimestamp.getYear() - 2;
+        sandboxActivityLogs = sandboxActivityLogService.findAll();
+        Statistics statisticsXX = new Statistics();
+        for(SandboxActivityLog sandboxActivityLog: sandboxActivityLogs) {
+            int monthActivityLog = sandboxActivityLog.getTimestamp().getMonth();
+            int yearActivityLog = sandboxActivityLog.getTimestamp().getYear();
+
+            if (sandboxActivityLog.getSandbox() == null) {
+                continue;
+            } else {
+                sandboxId = sandboxActivityLog.getSandbox().getId();
+            }
+            if (sandboxActivityLog.getUser() == null) {
+                continue;
+            } else {
+                userId = sandboxActivityLog.getUser().getId();
+            }
+            apiEndpointIndex = sandboxActivityLog.getSandbox().getApiEndpointIndex();
+            if(yearActivityLog < targetYear || (yearActivityLog == targetYear && monthActivityLog < targetMonth)) {
+                fullSanboxCount.add(sandboxId);
+                fullUserCount.add(userId);
+                if (apiEndpointIndex.equals("5")) {
+                    fullDSTU2Count.add(sandboxId);
+                }
+                if (apiEndpointIndex.equals("6")) {
+                    fullSTU3Count.add(sandboxId);
+                }
+                if (apiEndpointIndex.equals("7")) {
+                    fullR4Count.add(sandboxId);
+                }
+            } else if (monthActivityLog == targetMonth && yearActivityLog == targetYear) {
+                addToDifferentSandboxStats();
+            } else {
+                String timestampYear = Integer.toString(targetYear).substring(1);
+                String timestampMonth = Integer.toString(targetMonth+1);
+                if (timestampMonth.length() == 1) {
+                    timestampMonth = "0" + timestampMonth;
+                }
+                String str_date = "20" + timestampYear + "-" + timestampMonth + "-" + "01 23:50:00"; // "2018-10-04 11:36:57"
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                try {
+                    Date date = formatter.parse(str_date);
+                    Timestamp monthlyTimestamp = new Timestamp(date.getTime());
+                    Statistics statistics = new Statistics();
+                    statistics.setCreatedTimestamp(monthlyTimestamp);
+                    statistics.setActiveSandboxesInInterval(Integer.toString(activeSandboxInInterval.size()));
+                    statistics.setNewSandboxesInInterval(countNewSandbox.toString());
+                    statistics.setFullSandboxCount(Integer.toString(fullSanboxCount.size()));
+                    statistics.setDstu2SandboxesInInterval(Integer.toString(DSTU2SanboxesInInterval.size()));
+                    statistics.setStu3SandboxesInInterval(Integer.toString(STU3SandboxesInInterval.size()));
+                    statistics.setR4SandboxesInInterval(Integer.toString(R4SandboxesInInterval.size()));
+                    statistics.setFullUserCount(Integer.toString(fullUserCount.size()));
+                    statistics.setActiveUserInInterval(Integer.toString(activeUserInInterval.size()));
+                    statistics.setNewUsersInInterval(Integer.toString(countNewUser));
+                    statistics.setFullDstu2Count(Integer.toString(fullDSTU2Count.size()));
+                    statistics.setFullStu3Count(Integer.toString(fullSTU3Count.size()));
+                    statistics.setFullR4Count(Integer.toString(fullR4Count.size()));
+                    statisticsRepository.save(statistics);
+                } catch (ParseException e) {
+                        e.printStackTrace();
+                }
+                countNewSandbox = 0;
+                countNewUser = 0;
+                DSTU2SanboxesInInterval.clear();
+                STU3SandboxesInInterval.clear();
+                R4SandboxesInInterval.clear();
+                activeSandboxInInterval.clear();
+                activeUserInInterval.clear();
+                addToDifferentSandboxStats();
+                targetMonth = monthActivityLog;
+                targetYear = yearActivityLog;
+            }
+        }
+        return statisticsXX;
+    }
+
+    public List<Statistics> displayStatsForGivenNumberOfMonths(String numberOfMonths) {
+        int intNumberOfMonths = Integer.parseInt(numberOfMonths);
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+        Calendar c = Calendar.getInstance();
+        int lengthOfMonth = LocalDate.now().lengthOfMonth();
+        Date d = new Date();
+        Date dateYearAgo = new Date(d.getTime() - intNumberOfMonths * lengthOfMonth * 24 * 3600 * 1000L );
+        Timestamp yearAgoTimestamp = new Timestamp(dateYearAgo.getTime());
+        return statisticsRepository.get12MonthStatistics(yearAgoTimestamp, currentTimestamp);
+    }
+
+    public HashMap<Integer, Statistics> getSandboxAndUserStatsForAYearOriginal() {
         HashMap<Integer, Statistics> monthStats = new HashMap<>();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         int targetMonth = timestamp.getMonth();
@@ -267,14 +429,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 statistics.setActiveSandboxesInInterval(Integer.toString(activeSandboxInInterval.size()));
                 statistics.setNewSandboxesInInterval(countNewSandbox.toString());
                 statistics.setFullSandboxCount(Integer.toString(fullSanboxCount.size()));
-                statistics.setDSTU2SandboxesInInterval(Integer.toString(DSTU2SanboxesInInterval.size()));
-                statistics.setSTU3SandboxesInInterval(Integer.toString(STU3SandboxesInInterval.size()));
+                statistics.setDstu2SandboxesInInterval(Integer.toString(DSTU2SanboxesInInterval.size()));
+                statistics.setStu3SandboxesInInterval(Integer.toString(STU3SandboxesInInterval.size()));
                 statistics.setR4SandboxesInInterval(Integer.toString(R4SandboxesInInterval.size()));
                 statistics.setFullUserCount(Integer.toString(fullUserCount.size()));
                 statistics.setActiveUserInInterval(Integer.toString(activeUserInInterval.size()));
                 statistics.setNewUsersInInterval(Integer.toString(countNewUser));
-                statistics.setFullDSTU2Count(Integer.toString(fullDSTU2Count.size()));
-                statistics.setFullSTU3Count(Integer.toString(fullSTU3Count.size()));
+                statistics.setFullDstu2Count(Integer.toString(fullDSTU2Count.size()));
+                statistics.setFullStu3Count(Integer.toString(fullSTU3Count.size()));
                 statistics.setFullR4Count(Integer.toString(fullR4Count.size()));
                 if (!monthStats.containsKey(targetMonth + 1)) {
                     monthStats.put((targetMonth + 1), statistics);

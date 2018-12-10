@@ -24,9 +24,7 @@ public interface AnalyticsService {
 
     Double retrieveMemoryInSchemas(List<String> schemaNames, String request);
 
-    String getSandboxStatistics(final String intervalDays);
-
-    String activeUserCount(Integer intervalDays);
+    Statistics getSandboxStatistics(final String intervalDays);
 
     HashMap<String, Object> transactionStats(Integer interval, Integer n);
 
@@ -36,6 +34,10 @@ public interface AnalyticsService {
 
     HashMap<String, Object> sandboxesPerUserStats(Integer interval, Integer n);
 
-    HashMap<Integer, Statistics> getSandboxAndUserStatsForAYear();
+    HashMap<Integer, Statistics> getSandboxAndUserStatsForAYearOriginal();
+
+    Statistics getSandboxAndUserStatsForLastTwoYears();
+
+    List<Statistics> displayStatsForGivenNumberOfMonths(String numberOfMonths);
 
 }

@@ -133,8 +133,8 @@ public class AnalyticsController {
 
     //TODO: make interval not required such that interval=null means to use all sandboxes
 
-    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"interval"})
-    public @ResponseBody String getSandboxStatistics(HttpServletRequest request, @RequestParam(value = "interval") String intervalDays) throws UnsupportedEncodingException {
+    @GetMapping(value="/getstatsOriginal", produces = APPLICATION_JSON_VALUE, params = {"interval"})
+    public @ResponseBody Statistics getSandboxStatistics(HttpServletRequest request, @RequestParam(value = "interval") String intervalDays) throws UnsupportedEncodingException {
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -143,14 +143,35 @@ public class AnalyticsController {
         return analyticsService.getSandboxStatistics(intervalDays);
     }
 
+//    @GetMapping(value="/getstats", produces = APPLICATION_JSON_VALUE)
+//    public @ResponseBody HashMap<Integer, Statistics> getStats(HttpServletRequest request) throws UnsupportedEncodingException {
+//        // User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+////        if (user == null) {
+////            throw new ResourceNotFoundException("User not found in authorization header.");
+////        }
+////        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+//        return analyticsService.getSandboxAndUserStatsForAYear();
+//    }
+
     @GetMapping(value="/getstats", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody HashMap<Integer, Statistics> getStats(HttpServletRequest request) throws UnsupportedEncodingException {
+    public @ResponseBody Statistics getStats(HttpServletRequest request) throws UnsupportedEncodingException {
         // User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
 //        if (user == null) {
 //            throw new ResourceNotFoundException("User not found in authorization header.");
 //        }
 //        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
-        return analyticsService.getSandboxAndUserStatsForAYear();
+        // TODO: Delete this method
+        return analyticsService.getSandboxAndUserStatsForLastTwoYears();
+    }
+
+    @GetMapping(value="/displaystats", produces = APPLICATION_JSON_VALUE, params = {"numberOfMonths"})
+    public @ResponseBody List<Statistics> displayStats(HttpServletRequest request, @RequestParam(value = "numberOfMonths") String numberOfMonths) throws UnsupportedEncodingException {
+        // User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+//        if (user == null) {
+//            throw new ResourceNotFoundException("User not found in authorization header.");
+//        }
+//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.displayStatsForGivenNumberOfMonths(numberOfMonths);
     }
 
     @GetMapping(value="/overallStats/transactions", params = {"interval"})

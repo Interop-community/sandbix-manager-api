@@ -112,6 +112,13 @@ public class NotificationServiceTest {
         notificationService.deleteNotificationForAllUsers(newsItem.getId());
     }
 
+    @Test(expected = ResourceNotFoundException.class)
+    public void deleteNotificationForAllUsersTestNewsItemNull() {
+        when(newsItemService.findById(newsItem.getId())).thenReturn(null);
+        when(notificationRepository.findByNewsItemId(newsItem.getId())).thenReturn(notifications).thenReturn(notifications);
+        notificationService.deleteNotificationForAllUsers(newsItem.getId());
+    }
+
     @Test
     public void saveTest() {
         when(notificationRepository.save(notification)).thenReturn(notification);

@@ -3,6 +3,7 @@ package org.hspconsortium.sandboxmanagerapi.services;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.StatisticsRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.hspconsortium.sandboxmanagerapi.services.impl.AnalyticsServiceImpl;
@@ -11,7 +12,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -20,7 +20,8 @@ import static org.junit.Assert.*;
 public class AnalyticsServiceTest {
     MockHttpServletRequest request = new MockHttpServletRequest();
     private FhirTransactionRepository fhirTransactionRepository = mock(FhirTransactionRepository.class);
-    private AnalyticsServiceImpl analyticsService = new AnalyticsServiceImpl(fhirTransactionRepository);
+    private StatisticsRepository statisticsRepository = mock(StatisticsRepository.class);
+    private AnalyticsServiceImpl analyticsService = new AnalyticsServiceImpl(fhirTransactionRepository, statisticsRepository);
     private UserService userService = mock(UserService.class);
     private SandboxService sandboxService = mock(SandboxService.class);
     private AppService appService = mock(AppService.class);
@@ -35,7 +36,7 @@ public class AnalyticsServiceTest {
     private UserRole userRole3;
     private List<UserRole> userRoles;
     private Sandbox sandbox;
-//    private Sandbox sandbox2;
+    private Sandbox sandbox2;
     private HashMap<String, Integer> sandboxApps;
     private List<Sandbox> sandboxes;
     private List<App> appList;
@@ -44,10 +45,12 @@ public class AnalyticsServiceTest {
     private HashMap<String, String> transactionInfo;
     private List<String> schemaNames;
     private ResponseEntity<HashMap> responseEntity;
-    private Iterable<SandboxActivityLog> sandboxActivityLogs;
-    private List<SandboxActivityLog> sandboxActivityLogList;
+    private Iterable<SandboxActivityLog> sandboxActivityLogIterable;
+    private Iterable<SandboxActivityLog> sandboxActivityLogIterable2;
     private SandboxActivityLog sandboxActivityLog;
     private SandboxActivityLog sandboxActivityLog2;
+    private SandboxActivityLog sandboxActivityLog3;
+    private SandboxActivityLog sandboxActivityLog4;
     private List<FhirTransaction> fhirTransactionList;
 
 
@@ -76,19 +79,15 @@ public class AnalyticsServiceTest {
         appList.add(app1);
         appList.add(app2);
 
-//        DataSet dataSetApp;
-//        dataSetApp.
-
         sandbox = new Sandbox();
         sandbox.setSandboxId("1");
         sandbox.setCreatedBy(user);
         sandbox.setId(1);
 
-//        sandbox2 = new Sandbox();
-//        sandbox2.setSandboxId("2");
-//        sandbox2.setCreatedBy(user);
-//        sandbox2.setId(2);
-//        sandbox.setApps(appList);
+        sandbox2 = new Sandbox();
+        sandbox2.setSandboxId("2");
+        sandbox2.setCreatedBy(user2);
+        sandbox2.setId(2);
 
         userRole1 = new UserRole();
         userRole1.setUser(user);
@@ -143,7 +142,10 @@ public class AnalyticsServiceTest {
         schemaNames.add("2");
 
         Date d = new Date();
-        Timestamp timestamp = new Timestamp(d.getTime());
+        Timestamp timestamp = new Timestamp(d.getTime() - 40 * 24 * 3600 * 1000L);
+        Timestamp timestamp2 = new Timestamp(d.getTime() - 30 * 24 * 3600 * 1000L);
+        Timestamp timestamp3 = new Timestamp(d.getTime());
+        Timestamp timestamp4 = new Timestamp(d.getTime() - 1 * 24 * 3600 * 1000L);
 
         sandboxActivityLog = new SandboxActivityLog();
         sandboxActivityLog.setId(1);
@@ -154,31 +156,53 @@ public class AnalyticsServiceTest {
 
         sandboxActivityLog2 = new SandboxActivityLog();
         sandboxActivityLog2.setId(2);
-        sandboxActivityLog2.setTimestamp(timestamp);
-        sandboxActivityLog2.setUser(user2);
+        sandboxActivityLog2.setTimestamp(timestamp2);
+        sandboxActivityLog2.setUser(user);
         sandboxActivityLog2.setActivity(SandboxActivity.LOGGED_IN);
         sandboxActivityLog2.setSandbox(sandbox);
 
-        sandboxActivityLogs = new ArrayList<>();
-        ((ArrayList<SandboxActivityLog>) sandboxActivityLogs).add(sandboxActivityLog);
-        ((ArrayList<SandboxActivityLog>) sandboxActivityLogs).add(sandboxActivityLog2);
+        sandboxActivityLog3 = new SandboxActivityLog();
+        sandboxActivityLog3.setId(3);
+        sandboxActivityLog3.setTimestamp(timestamp3);
+        sandboxActivityLog3.setUser(user2);
+        sandboxActivityLog3.setActivity(SandboxActivity.CREATED);
+        sandboxActivityLog3.setSandbox(sandbox2);
 
-        sandboxActivityLogList = new ArrayList<>();
-        sandboxActivityLogList.add(sandboxActivityLog);
-        sandboxActivityLogList.add(sandboxActivityLog2);
+        sandboxActivityLog4 = new SandboxActivityLog();
+        sandboxActivityLog4.setId(4);
+        sandboxActivityLog4.setTimestamp(timestamp4);
+        sandboxActivityLog4.setUser(user2);
+        sandboxActivityLog4.setActivity(SandboxActivity.LOGGED_IN);
+        sandboxActivityLog4.setSandbox(sandbox2);
+
+        sandboxActivityLogIterable = new ArrayList<>();
+        ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable).add(sandboxActivityLog);
+        ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable).add(sandboxActivityLog2);
+
+        sandboxActivityLogIterable2 = new ArrayList<>();
+        ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable2).add(sandboxActivityLog);
+        ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable2).add(sandboxActivityLog2);
+        ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable2).add(sandboxActivityLog3);
+        ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable2).add(sandboxActivityLog4);
 
         fhirTransactionList = new ArrayList<>();
         FhirTransaction ft = new FhirTransaction();
-        ft.setTransactionTimestamp(timestamp);
+        FhirTransaction ft2 = new FhirTransaction();
+        ft.setTransactionTimestamp(timestamp3);
+        ft.setSandboxId(1);
+        ft2.setTransactionTimestamp(timestamp4);
+        ft2.setSandboxId(2);
         fhirTransactionList.add(ft);
+        fhirTransactionList.add(ft2);
 
     }
 
-//    @Test
-//    public void countSandboxesByUserTest(){
-//        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-//        when(analyticsService.countSandboxesByUser(user.getSbmUserId())).thenReturn(1);
-//    }
+    @Test
+    public void countSandboxesByUserTest(){
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        Integer expected = 1;
+        Integer actual = analyticsService.countSandboxesByUser(user.getSbmUserId());
+    }
 
     @Test
     public void countAppsPerSandboxByUserSizeTest(){
@@ -243,13 +267,14 @@ public class AnalyticsServiceTest {
     @Test
     public void countTransactionsByPayerTest() {
         when(fhirTransactionRepository.findByPayerUserId(1)).thenReturn(fhirTransactionList);
-        Integer n = analyticsService.countTransactionsByPayer(user);
-        Integer n2 = new Integer(1);
-        assertEquals(n, n2);
+        Integer actual = analyticsService.countTransactionsByPayer(user);
+        Integer expected = new Integer(2);
+        assertEquals(actual, expected);
     }
 
 //    @Test
 //    public void retrieveTotalMemoryByUserTest() {
+    // TODO: RestTemplate issue
 //
 //        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
 //        sandboxMemorySizes.put("1", 1.5);
@@ -273,48 +298,40 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void activeUserCountTest() {
-        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogs);
-        String n = analyticsService.activeUserCount(1);
-        assertEquals("2", n);
-    }
-
-    @Test
     public void getSandboxStatisticsTest() {
-//        Date d = new Date();
-//        int intDays = Integer.parseInt("5");
-//        Date dateBefore = new Date(d.getTime() - intDays * 24 * 3600 * 1000L );
-//        Timestamp timestamp = new Timestamp(dateBefore.getTime());
-//
-//        when(sandboxService.fullCount()).thenReturn("1");
-//        when(sandboxService.schemaCount("1")).thenReturn("1");
-//        when(sandboxService.schemaCount("2")).thenReturn("2");
-//        when(sandboxService.schemaCount("5")).thenReturn("5");
-//        when(sandboxService.schemaCount("3")).thenReturn("3");
-//        when(sandboxService.schemaCount("4")).thenReturn("4");
-//        when(sandboxService.schemaCount("6")).thenReturn("6");
-//        when(sandboxService.schemaCount("7")).thenReturn("7");
-//        when(sandboxService.intervalCount(timestamp)).thenReturn("1");
-//        when(userService.fullCount()).thenReturn("1");
-//        when(userService.intervalCount(timestamp)).thenReturn("1");
-//        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogs);
-//        String actual = analyticsService.getSandboxStatistics("5");
-//        String expected = "";
-//       assertEquals(expected, actual);
+        when(sandboxService.fullCount()).thenReturn("1");
+        when(sandboxService.schemaCount("1")).thenReturn("0");
+        when(sandboxService.schemaCount("2")).thenReturn("0");
+        when(sandboxService.schemaCount("5")).thenReturn("0");
+        when(sandboxService.schemaCount("3")).thenReturn("0");
+        when(sandboxService.schemaCount("4")).thenReturn("0");
+        when(sandboxService.schemaCount("6")).thenReturn("1");
+        when(sandboxService.schemaCount("7")).thenReturn("0");
+        when(sandboxService.intervalCount(any())).thenReturn("1");
+        when(userService.fullCount()).thenReturn("1");
+        when(userService.intervalCount(any())).thenReturn("1");
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
+        analyticsService.getSandboxStatistics("1");
+        verify(sandboxService).fullCount();
+        verify(sandboxService).schemaCount("1");
+        verify(sandboxService).intervalCount(any());
+        verify(userService).fullCount();
+        verify(userService).intervalCount(any());
     }
 
     @Test
     public void transactionStatsTest() {
+        //Can't use everyline in the code, would need to return two sandboxes, which can't be mocked
         HashMap<String, Object> expected = new HashMap<>();
         HashMap<String, Double> a = new HashMap<>();
-        a.put("1", 1.0);
+        a.put("1", 2.0);
         expected.put("top_values", a);
-        expected.put("median", 1.0);
-        expected.put("mean", 1.0);
-        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogs);
+        expected.put("median", 2.0);
+        expected.put("mean", 2.0);
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
         when(sandboxService.findBySandboxId(sandbox.getId().toString())).thenReturn(sandbox);
         when(fhirTransactionRepository.findBySandboxId(sandbox.getId())).thenReturn(fhirTransactionList);
-        HashMap<String, Object> actual = analyticsService.transactionStats(1, 2);
+        HashMap<String, Object> actual = analyticsService.transactionStats(45, 5);
         assertEquals(expected, actual);
     }
 
@@ -353,5 +370,4 @@ public class AnalyticsServiceTest {
         HashMap<String, Object> actual = analyticsService.sandboxesPerUserStats(1,1);
         assertEquals(expected, actual);
     }
-
 }

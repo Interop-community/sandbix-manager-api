@@ -7,9 +7,12 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
+import org.hspconsortium.sandboxmanagerapi.model.DataSet;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
+import org.hspconsortium.sandboxmanagerapi.model.SandboxImport;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.hspconsortium.sandboxmanagerapi.services.impl.DataMangerServiceImpl;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
@@ -19,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -40,6 +45,10 @@ public class DataManagerServiceTest {
     private String patientId = "patientId";
     private String fhirIdPrefix = "fhirIdPrefix";
     private StatusLine statusLine;
+    private List<JSONObject> everythingResources;
+    private JSONObject jsonObject;
+    private JSONObject jsonObject2;
+    private SandboxImport sandboxImport;
 
     @Before
     public void setup() throws IOException {
@@ -50,6 +59,10 @@ public class DataManagerServiceTest {
 //        response.setEntity(httpEntity);
 //        when(httpClient.execute(any())).thenReturn(response);
 //        when(response.getStatusLine()).thenReturn(statusLine);
+        everythingResources = new ArrayList<>();
+        everythingResources.add(jsonObject);
+        everythingResources.add(jsonObject2);
+        sandboxImport = new SandboxImport();
 
     }
 
@@ -69,6 +82,17 @@ public class DataManagerServiceTest {
         assertEquals("SUCCESS", success);
         verify(sandboxService).reset(sandbox, bearerToken);
     }
+//   CAN't be tested if reset failed.  No option to return FAILED in the code.
+//   postTOSandbox doesn't return false (throws exception instead))
+//    @Test
+//    public void resetFailedTest() throws UnsupportedEncodingException {
+//        sandbox.setDataSet(DataSet.NONE);
+//        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
+//        when(sandboxService.getSandboxApiURL(sandbox) + "/sandbox/reset").thenReturn("url");
+//        String success = dataMangerService.reset(sandbox, bearerToken);
+//        assertEquals("FAILED", success);
+//        verify(sandboxService).reset(sandbox, bearerToken);
+//    }
 
     @Test(expected = UnknownError.class)
     public void resetTestErrorInApiCall() throws UnsupportedEncodingException {
@@ -76,6 +100,4 @@ public class DataManagerServiceTest {
         when(sandboxService.getSandboxApiURL(sandbox) + "/sandbox/reset").thenReturn("url");
         dataMangerService.reset(sandbox, bearerToken);
     }
-
-
 }
