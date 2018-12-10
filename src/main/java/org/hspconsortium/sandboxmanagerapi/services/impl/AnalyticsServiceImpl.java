@@ -23,6 +23,7 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -299,6 +300,19 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     public Statistics getSandboxAndUserStatsForLastTwoYears() {
+        fullSanboxCount.clear();
+        fullUserCount.clear();
+        fullDSTU2Count.clear();
+        fullSTU3Count.clear();
+        fullR4Count.clear();
+        countNewSandbox = 0;
+        countNewUser = 0;
+        DSTU2SanboxesInInterval.clear();
+        STU3SandboxesInInterval.clear();
+        R4SandboxesInInterval.clear();
+        activeSandboxInInterval.clear();
+        activeUserInInterval.clear();
+
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
         int targetMonth = currentTimestamp.getMonth();
         int targetYear = currentTimestamp.getYear() - 2;
@@ -333,13 +347,23 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 }
             } else if (monthActivityLog == targetMonth && yearActivityLog == targetYear) {
                 addToDifferentSandboxStats();
-            } else {
+            } else if (fullSanboxCount.isEmpty()) {
+                continue;
+            }
+            else {
                 String timestampYear = Integer.toString(targetYear).substring(1);
-                String timestampMonth = Integer.toString(targetMonth+1);
+                String timestampMonth = Integer.toString(targetMonth + 1);
                 if (timestampMonth.length() == 1) {
                     timestampMonth = "0" + timestampMonth;
                 }
-                String str_date = "20" + timestampYear + "-" + timestampMonth + "-" + "01 23:50:00"; // "2018-10-04 11:36:57"
+                String strYear = "20" + timestampYear;
+                int intYear = Integer.parseInt(strYear);
+                int intMonth = Integer.parseInt(timestampMonth);
+
+                YearMonth yearMonthObject = YearMonth.of(intYear, intMonth);
+                String lastDayOfMonth = Integer.toString(yearMonthObject.lengthOfMonth());
+
+                String str_date = strYear + "-" + timestampMonth + "-" + lastDayOfMonth + " 23:50:00"; // "2018-10-04 11:36:57"
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
                     Date date = formatter.parse(str_date);
