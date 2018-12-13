@@ -253,6 +253,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         Date d = new Date();
         Date dateBefore = new Date(d.getTime() - intDays * 24 * 3600 * 1000L );
         Timestamp timestamp = new Timestamp(dateBefore.getTime());
+
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
         sandboxActivityLogListIntervalFilter(timestamp, intDays);
 
         Statistics statistics = new Statistics();
@@ -278,6 +280,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         statistics.setNewUsersInInterval(userService.intervalCount(timestamp));
         statistics.setActiveUserInInterval(activeUserCount());
         statistics.setCreatedTimestamp(timestamp);
+        statistics.setFhirTransactions(Integer.toString(statisticsRepository.getFhirTransaction(timestamp, currentTimestamp)));
 
         return statistics;
     }
@@ -361,13 +364,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 int intMonth = Integer.parseInt(timestampMonth);
 
                 YearMonth yearMonthObject = YearMonth.of(intYear, intMonth);
-                String lastDayOfMonth = Integer.toString(yearMonthObject.lengthOfMonth());
+                String lengthOfMonth = Integer.toString(yearMonthObject.lengthOfMonth());
 
-                String str_date = strYear + "-" + timestampMonth + "-" + lastDayOfMonth + " 23:50:00"; // "2018-10-04 11:36:57"
+                String lastDayOfMonth = strYear + "-" + timestampMonth + "-" + lengthOfMonth + " 23:50:00"; // "2018-10-04 11:36:57"
+                String firstDayOfMonth = strYear + "-" + timestampMonth + "-" + "01 23:50:00";
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
-                    Date date = formatter.parse(str_date);
-                    Timestamp monthlyTimestamp = new Timestamp(date.getTime());
+                    Date lastDayOfMonthDate = formatter.parse(lastDayOfMonth);
+                    Date firstDayOfMonthDate = formatter.parse(firstDayOfMonth);
+                    Timestamp monthlyTimestamp = new Timestamp(lastDayOfMonthDate.getTime());
+                    Timestamp fromTimestamp = new Timestamp(firstDayOfMonthDate.getTime());
+
                     Statistics statistics = new Statistics();
                     statistics.setCreatedTimestamp(monthlyTimestamp);
                     statistics.setActiveSandboxesInInterval(Integer.toString(activeSandboxInInterval.size()));
@@ -382,6 +389,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                     statistics.setFullDstu2Count(Integer.toString(fullDSTU2Count.size()));
                     statistics.setFullStu3Count(Integer.toString(fullSTU3Count.size()));
                     statistics.setFullR4Count(Integer.toString(fullR4Count.size()));
+                    statistics.setFhirTransactions(Integer.toString(statisticsRepository.getFhirTransaction(fromTimestamp, monthlyTimestamp)));
                     statisticsRepository.save(statistics);
                 } catch (ParseException e) {
                         e.printStackTrace();

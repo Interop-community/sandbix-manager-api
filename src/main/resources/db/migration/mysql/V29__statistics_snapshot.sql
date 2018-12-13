@@ -15,6 +15,7 @@ CREATE TABLE statistics (
   full_user_count               VARCHAR (11),
   active_user_in_interval       VARCHAR (11),
   new_users_in_interval          VARCHAR (11),
+  fhir_transactions               varchar (11),
   PRIMARY KEY (id)
 )
 

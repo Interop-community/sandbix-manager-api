@@ -21,12 +21,11 @@ import org.springframework.web.util.NestedServletException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -76,6 +75,7 @@ public class UserControllerTest {
     private List<User> userList;
     private UserPersona userPersona;
     private Sandbox sandbox;
+    private Sandbox sandbox2;
     private HttpServletRequest request;
 
     @Before
@@ -92,6 +92,9 @@ public class UserControllerTest {
         userPersona = new UserPersona();
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandboxId");
+        // sandbox.setSandboxId("MasterDstu2Empty");
+        sandbox2 = new Sandbox();
+        sandbox2.setSandboxId("MasterDstu2Empty");
         request = new MockHttpServletRequest();
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getUserName(any())).thenReturn(user.getName());
@@ -160,6 +163,21 @@ public class UserControllerTest {
                 .andExpect(content().string(""));
     }
 
+    @Test(expected = InterruptedException.class)
+    public void getUserTestException() throws Exception {
+        String json = json(user);
+        when(userService.findBySbmUserId(user.getEmail())).thenReturn(null);
+        when(userService.findByUserEmail(any())).thenReturn(null);
+        when(userPersonaService.findByPersonaUserId(any())).thenReturn(null);
+        when(sandboxActivityLogService.systemUserCreated(null, null)).thenReturn(null);
+        when(sandboxActivityLogService.systemUserRoleChange(null, SystemRole.USER, false)).thenReturn(null);
+        doNothing().when(sandboxInviteService).mergeSandboxInvites(null, "");
+        Thread.currentThread().interrupt();
+        mvc
+                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk());
+    }
+
     @Test
     public void getAllUsersTest() throws Exception {
         String json = json(userList);
@@ -194,7 +212,6 @@ public class UserControllerTest {
 
     @Test
     public void authorizeUserForReferenceApiTest() throws Exception {
-
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         mvc
@@ -235,6 +252,17 @@ public class UserControllerTest {
                 .perform(post("/user/authorize")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(jsonString));
+    }
+
+    @Test
+    public void authorizeUserForReferenceApiTestContainedInTemplateSandboxIds() throws Exception {
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(sandboxService.findBySandboxId(sandbox2.getSandboxId())).thenReturn(sandbox2);
+        mvc
+                .perform(post("/user/authorize")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"))
+                .andExpect(status().isOk());
     }
 
 

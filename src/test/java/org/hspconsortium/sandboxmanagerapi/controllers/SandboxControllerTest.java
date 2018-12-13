@@ -80,6 +80,7 @@ public class SandboxControllerTest {
 
     private Sandbox sandbox;
     private User user;
+    private User user2;
     private HashMap<String, Sandbox> sandboxHashMap;
 
     @Before
@@ -89,20 +90,29 @@ public class SandboxControllerTest {
         sandbox = new Sandbox();
         user.setSbmUserId("me");
         user.setId(1);
+        user2 = new User();
+        user2.setSbmUserId("removedUser");
+        user2.setId(2);
         UserRole userRole = new UserRole();
+        UserRole userRole2 = new UserRole();
         userRole.setUser(user);
+        userRole2.setUser(user2);
         userRole.setRole(Role.ADMIN);
+        userRole2.setRole(Role.USER);
         List<UserRole> userRoles = new ArrayList<>();
         userRoles.add(userRole);
+        userRoles.add(userRole2);
         sandbox.setUserRoles(userRoles);
         sandbox.setVisibility(Visibility.PRIVATE);
         sandbox.setSandboxId("sandbox");
         sandbox.setCreatedBy(user);
         sandbox.setId(1);
+
         Set<SystemRole> systemRoles = new HashSet<>();
         systemRoles.add(SystemRole.ADMIN);
         systemRoles.add(SystemRole.CREATE_SANDBOX);
         user.setSystemRoles(systemRoles);
+        user2.setSystemRoles(systemRoles);
         sandboxHashMap = new HashMap<>();
         sandboxHashMap.put("clonedSandbox", sandbox);
         sandboxHashMap.put("newSandbox", sandbox);
@@ -208,6 +218,29 @@ public class SandboxControllerTest {
     }
 
     @Test
+    public void getSandboxByIdTest2NotSandboxMember() throws Exception {
+        String json = json(sandbox);
+        when(sandboxService.isSandboxMember(sandbox, user)).thenReturn(false);
+        mvc
+                .perform(get("/sandbox/" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test
+    public void getSandboxByIdTest2SandboxVisibilityPublic() throws Exception {
+        sandbox.setVisibility(Visibility.PUBLIC);
+        String json = json(sandbox);
+        when(sandboxService.isSandboxMember(sandbox, user)).thenReturn(false);
+        mvc
+                .perform(get("/sandbox/" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test
     public void deleteSandboxByIdTest() throws Exception {
         List<SandboxInvite> sandboxInvites = new ArrayList<>();
         SandboxInvite sandboxInvite = new SandboxInvite();
@@ -297,6 +330,19 @@ public class SandboxControllerTest {
         String json = json(sandbox);
         mvc
                 .perform(put("/sandbox/" + sandbox.getSandboxId() + "?removeUserId=" + user.getSbmUserId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void removeSandboxMemberTestCanRemoveUser() throws Exception {
+        String json = json(sandbox);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user2.getSbmUserId())).thenReturn(user2);
+        mvc
+                .perform(put("/sandbox/" + sandbox.getSandboxId() + "?removeUserId=" + user2.getSbmUserId())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(json))
                 .andExpect(status().isOk());

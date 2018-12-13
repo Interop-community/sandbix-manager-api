@@ -7,7 +7,9 @@ import java.sql.Timestamp;
 @NamedQueries({
         // Used to retrieve statistics for last 12 months
         @NamedQuery(name="Statistics.get12MonthStatistics",
-                query="SELECT c FROM Statistics c WHERE c.createdTimestamp BETWEEN :yearAgoTimestamp AND :currentTimestamp")
+                query="SELECT c FROM Statistics c WHERE c.createdTimestamp BETWEEN :yearAgoTimestamp AND :currentTimestamp"),
+        @NamedQuery(name="Statistics.getFhirTransaction",
+                query="SELECT COUNT(*) FROM FhirTransaction c WHERE c.transactionTimestamp BETWEEN :fromTimestamp AND :toTimestamp")
 })
 public class Statistics {
     @Id
@@ -32,10 +34,9 @@ public class Statistics {
     private String fullUserCount;
     private String activeUserInInterval;
     private String newUsersInInterval;
+    private String fhirTransactions;
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
     public void setId(int id) {
         this.id = id;
@@ -85,41 +86,31 @@ public class Statistics {
         return activeSandboxesInInterval;
     }
 
-    public void setActiveSandboxesInInterval(String activeSandboxesInInterval) {
-        this.activeSandboxesInInterval = activeSandboxesInInterval;
-    }
+    public void setActiveSandboxesInInterval(String activeSandboxesInInterval) {this.activeSandboxesInInterval = activeSandboxesInInterval; }
 
     public String getNewSandboxesInInterval() {
         return newSandboxesInInterval;
     }
 
-    public void setNewSandboxesInInterval(String newSandboxesInInterval) {
-        this.newSandboxesInInterval = newSandboxesInInterval;
-    }
+    public void setNewSandboxesInInterval(String newSandboxesInInterval) {this.newSandboxesInInterval = newSandboxesInInterval; }
 
     public String getDstu2SandboxesInInterval() {
         return dstu2SandboxesInInterval;
     }
 
-    public void setDstu2SandboxesInInterval(String dstu2SandboxesInInterval) {
-        this.dstu2SandboxesInInterval = dstu2SandboxesInInterval;
-    }
+    public void setDstu2SandboxesInInterval(String dstu2SandboxesInInterval) {this.dstu2SandboxesInInterval = dstu2SandboxesInInterval; }
 
     public String getStu3SandboxesInInterval() {
         return stu3SandboxesInInterval;
     }
 
-    public void setStu3SandboxesInInterval(String stu3SandboxesInInterval) {
-        this.stu3SandboxesInInterval = stu3SandboxesInInterval;
-    }
+    public void setStu3SandboxesInInterval(String stu3SandboxesInInterval) {this.stu3SandboxesInInterval = stu3SandboxesInInterval; }
 
     public String getR4SandboxesInInterval() {
         return r4SandboxesInInterval;
     }
 
-    public void setR4SandboxesInInterval(String r4SandboxesInInterval) {
-        this.r4SandboxesInInterval = r4SandboxesInInterval;
-    }
+    public void setR4SandboxesInInterval(String r4SandboxesInInterval) {this.r4SandboxesInInterval = r4SandboxesInInterval; }
 
     public String getFullUserCount() {
         return fullUserCount;
@@ -133,9 +124,7 @@ public class Statistics {
         return activeUserInInterval;
     }
 
-    public void setActiveUserInInterval(String activeUserInInterval) {
-        this.activeUserInInterval = activeUserInInterval;
-    }
+    public void setActiveUserInInterval(String activeUserInInterval) { this.activeUserInInterval = activeUserInInterval; }
 
     public String getNewUsersInInterval() {
         return newUsersInInterval;
@@ -144,4 +133,10 @@ public class Statistics {
     public void setNewUsersInInterval(String newUsersInInterval) {
         this.newUsersInInterval = newUsersInInterval;
     }
+
+    public String getFhirTransactions() { return fhirTransactions; }
+
+    public void setFhirTransactions(String fhirTransactions) { this.fhirTransactions = fhirTransactions; }
+
+
 }

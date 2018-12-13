@@ -68,14 +68,12 @@ public class DataManagerControllerTest {
         assertNotNull("the JSON message converter must not be null",
                 this.mappingJackson2HttpMessageConverter);
     }
-
     private Sandbox sandbox;
     private User user;
     private SandboxActivityLog sandboxActivityLog;
 
     @Before
     public void setup() {
-
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandbox");
         user = new User();
@@ -124,19 +122,18 @@ public class DataManagerControllerTest {
 
     @Test
     public void importAllPatientDataTest() throws Exception {
-//        when(authorizationService.getBearerToken(any())).thenReturn("");
-//        String json = json(dataManagerService.importPatientData(sandbox, "", "1", "1", "1"));
-//        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-//        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
-//        doNothing().when(authorizationService).checkUserAuthorization(any(), any());
-//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-//        when(authorizationService.checkSystemUserCanManageSandboxDataAuthorization(any(), any(), any())).thenReturn("");
-//        when(sandboxActivityLogService.sandboxImport(sandbox, user)).thenReturn(sandboxActivityLog);
-//        mvc
-//                .perform(get("fhirdata/import?sandboxId=" + sandbox.getSandboxId() + "&patientId=1&fhirIdPrefix=1&endpoint=1"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-//                .andExpect(content().json(json));
+        when(authorizationService.getBearerToken(any())).thenReturn("");
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        doNothing().when(authorizationService).checkUserAuthorization(any(), any());
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(authorizationService.checkSystemUserCanManageSandboxDataAuthorization(any(), any(), any())).thenReturn("");
+        when(sandboxActivityLogService.sandboxImport(sandbox, user)).thenReturn(sandboxActivityLog);
+        when(dataManagerService.importPatientData(sandbox, "", "1", "1", "1")).thenReturn("SUCCESS");
+        mvc
+                .perform(get("/fhirdata/import?sandboxId=" + sandbox.getSandboxId() + "&patientId=1&fhirIdPrefix=1&endpoint=1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
