@@ -163,20 +163,20 @@ public class UserControllerTest {
                 .andExpect(content().string(""));
     }
 
-    @Test(expected = InterruptedException.class)
-    public void getUserTestException() throws Exception {
-        String json = json(user);
-        when(userService.findBySbmUserId(user.getEmail())).thenReturn(null);
-        when(userService.findByUserEmail(any())).thenReturn(null);
-        when(userPersonaService.findByPersonaUserId(any())).thenReturn(null);
-        when(sandboxActivityLogService.systemUserCreated(null, null)).thenReturn(null);
-        when(sandboxActivityLogService.systemUserRoleChange(null, SystemRole.USER, false)).thenReturn(null);
-        doNothing().when(sandboxInviteService).mergeSandboxInvites(null, "");
-        Thread.currentThread().interrupt();
-        mvc
-                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
-                .andExpect(status().isOk());
-    }
+//    @Test(expected = InterruptedException.class)
+//    public void getUserTestException() throws Exception {
+//        String json = json(user);
+//        when(userService.findBySbmUserId(user.getEmail())).thenReturn(null);
+//        when(userService.findByUserEmail(any())).thenReturn(null);
+//        when(userPersonaService.findByPersonaUserId(any())).thenReturn(null);
+//        when(sandboxActivityLogService.systemUserCreated(null, null)).thenReturn(null);
+//        when(sandboxActivityLogService.systemUserRoleChange(null, SystemRole.USER, false)).thenReturn(null);
+//        doNothing().when(sandboxInviteService).mergeSandboxInvites(null, "");
+//        Thread.currentThread().interrupt();
+//        mvc
+//                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+//                .andExpect(status().isOk());
+//    }
 
     @Test
     public void getAllUsersTest() throws Exception {
@@ -261,7 +261,7 @@ public class UserControllerTest {
         mvc
                 .perform(post("/user/authorize")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content("{\"sandbox\": \"" + sandbox.getSandboxId() + "\"}"))
+                        .content("{\"sandbox\": \"" + sandbox2.getSandboxId() + "\"}"))
                 .andExpect(status().isOk());
     }
 
