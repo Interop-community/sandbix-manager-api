@@ -92,7 +92,6 @@ public class UserControllerTest {
         userPersona = new UserPersona();
         sandbox = new Sandbox();
         sandbox.setSandboxId("sandboxId");
-        // sandbox.setSandboxId("MasterDstu2Empty");
         sandbox2 = new Sandbox();
         sandbox2.setSandboxId("MasterDstu2Empty");
         request = new MockHttpServletRequest();
@@ -163,20 +162,32 @@ public class UserControllerTest {
                 .andExpect(content().string(""));
     }
 
-//    @Test(expected = InterruptedException.class)
-//    public void getUserTestException() throws Exception {
-//        String json = json(user);
-//        when(userService.findBySbmUserId(user.getEmail())).thenReturn(null);
-//        when(userService.findByUserEmail(any())).thenReturn(null);
-//        when(userPersonaService.findByPersonaUserId(any())).thenReturn(null);
-//        when(sandboxActivityLogService.systemUserCreated(null, null)).thenReturn(null);
-//        when(sandboxActivityLogService.systemUserRoleChange(null, SystemRole.USER, false)).thenReturn(null);
-//        doNothing().when(sandboxInviteService).mergeSandboxInvites(null, "");
-//        Thread.currentThread().interrupt();
-//        mvc
-//                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
-//                .andExpect(status().isOk());
-//    }
+    @Test
+    public void getUserTestInterruptedException() throws Exception {
+        when(userService.findBySbmUserId(user.getEmail())).thenReturn(null);
+        when(userService.findByUserEmail(any())).thenReturn(null);
+        when(userPersonaService.findByPersonaUserId(any())).thenReturn(null);
+        when(sandboxActivityLogService.systemUserCreated(null, null)).thenReturn(null);
+        when(sandboxActivityLogService.systemUserRoleChange(null, SystemRole.USER, false)).thenReturn(null);
+        doNothing().when(sandboxInviteService).mergeSandboxInvites(null, "");
+        Thread.currentThread().interrupt();
+        mvc
+                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getUserTestException() throws Exception {
+        when(userService.findBySbmUserId(user.getEmail())).thenReturn(null);
+        when(userService.findByUserEmail(any())).thenReturn(null);
+        when(userPersonaService.findByPersonaUserId(any())).thenReturn(null);
+        when(sandboxActivityLogService.systemUserCreated(null, null)).thenReturn(null);
+        when(sandboxActivityLogService.systemUserRoleChange(null, SystemRole.USER, false)).thenReturn(null);
+        doNothing().when(sandboxInviteService).mergeSandboxInvites(null, "");
+        mvc
+                .perform(get("/user?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk());
+    }
 
     @Test
     public void getAllUsersTest() throws Exception {

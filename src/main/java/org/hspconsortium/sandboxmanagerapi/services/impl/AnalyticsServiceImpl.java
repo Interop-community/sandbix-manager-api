@@ -350,10 +350,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 }
             } else if (monthActivityLog == targetMonth && yearActivityLog == targetYear) {
                 addToDifferentSandboxStats();
-            } else if (fullSanboxCount.isEmpty()) {
-                continue;
-            }
-            else {
+            } else {
                 String timestampYear = Integer.toString(targetYear).substring(1);
                 String timestampMonth = Integer.toString(targetMonth + 1);
                 if (timestampMonth.length() == 1) {
