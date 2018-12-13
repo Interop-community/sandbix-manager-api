@@ -88,6 +88,7 @@ public class SandboxServiceImpl implements SandboxService {
     private SandboxActivityLogService sandboxActivityLogService;
     private RuleService ruleService;
     private UserAccessHistoryService userAccessHistoryService;
+    private SandboxInviteService sandboxInviteService;
     private CloseableHttpClient httpClient;
 
     @Inject
@@ -143,6 +144,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
         this.userAccessHistoryService = userAccessHistoryService;
+    }
+
+    @Inject
+    public void setSandboxInviteService(SandboxInviteService sandboxInviteService) {
+        this.sandboxInviteService = sandboxInviteService;
     }
 
     @Inject
@@ -215,6 +221,11 @@ public class SandboxServiceImpl implements SandboxService {
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(sandbox.getSandboxId());
         for (UserPersona userPersona : userPersonas) {
             userPersonaService.delete(userPersona);
+        }
+
+        List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
+        for (SandboxInvite sandboxInvite : sandboxInvites) {
+            sandboxInviteService.delete(sandboxInvite);
         }
 
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
