@@ -16,27 +16,36 @@ public class Statistics {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private Timestamp createdTimestamp;
-    private String fullSandboxCount;
-    @Column(name = "full_dstu2_count")
-    private String fullDstu2Count;
-    @Column(name = "full_stu3_count")
-    private String fullStu3Count;
-    @Column(name = "full_r4_count")
-    private String fullR4Count;
+    private String totalSandboxesCount;
+    @Column(name = "total_dstu2_sandboxes_count")
+    private String totalDstu2SandboxesCount;
+    @Column(name = "total_stu3_sandboxes_count")
+    private String toalStu3SandboxesCount;
+    @Column(name = "total_r4_sandboxes_count")
+    private String totalR4SandboxesCount;
+    private String totalUsersCount;
     private String activeSandboxesInInterval;
+    @Column(name = "active_dstu2_sandboxes_in_interval")
+    private String activeDstu2SandboxesInInterval;
+    @Column(name = "active_stu3_sandboxes_in_interval")
+    private String activeStu3SandboxesInInterval;
+    @Column(name = "active_r4_sandboxes_in_interval")
+    private String activeR4SandboxesInInterval;
+    private String activeUsersInInterval;
     private String newSandboxesInInterval;
-    @Column(name = "dstu2_sandboxes_in_interval")
-    private String dstu2SandboxesInInterval;
-    @Column(name = "stu3_sandboxes_in_interval")
-    private String stu3SandboxesInInterval;
-    @Column(name = "r4_sandboxes_in_interval")
-    private String r4SandboxesInInterval;
-    private String fullUserCount;
-    private String activeUserInInterval;
     private String newUsersInInterval;
+    @Column(name = "new_dstu2_sandboxes_in_interval")
+    private String newDstu2SandboxesInInterval;
+    @Column(name = "new_stu3_sandboxes_in_interval")
+    private String newStu3SandboxesInInterval;
+    @Column(name = "new_r4_sandboxes_in_interval")
+    private String newR4SandboxesInInterval;
     private String fhirTransactions;
 
-    public int getId() { return id; }
+
+    public int getId() {
+        return id;
+    }
 
     public void setId(int id) {
         this.id = id;
@@ -50,81 +59,93 @@ public class Statistics {
         this.createdTimestamp = createdTimestamp;
     }
 
-    public String getFullSandboxCount() {
-        return fullSandboxCount;
+    public String getTotalSandboxesCount() {
+        return totalSandboxesCount;
     }
 
-    public void setFullSandboxCount(String fullSandboxCount) {
-        this.fullSandboxCount = fullSandboxCount;
+    public void setTotalSandboxesCount(String totalSandboxesCount) {
+        this.totalSandboxesCount = totalSandboxesCount;
     }
 
-    public String getFullDstu2Count() {
-        return fullDstu2Count;
+    public String getTotalDstu2SandboxesCount() {
+        return totalDstu2SandboxesCount;
     }
 
-    public void setFullDstu2Count(String fullDstu2Count) {
-        this.fullDstu2Count = fullDstu2Count;
+    public void setTotalDstu2SandboxesCount(String totalDstu2SandboxesCount) {
+        this.totalDstu2SandboxesCount = totalDstu2SandboxesCount;
     }
 
-    public String getFullStu3Count() {
-        return fullStu3Count;
+    public String getToalStu3SandboxesCount() {
+        return toalStu3SandboxesCount;
     }
 
-    public void setFullStu3Count(String fullStu3Count) {
-        this.fullStu3Count = fullStu3Count;
+    public void setToalStu3SandboxesCount(String toalStu3SandboxesCount) {
+        this.toalStu3SandboxesCount = toalStu3SandboxesCount;
     }
 
-    public String getFullR4Count() {
-        return fullR4Count;
+    public String getTotalR4SandboxesCount() {
+        return totalR4SandboxesCount;
     }
 
-    public void setFullR4Count(String fullR4Count) {
-        this.fullR4Count = fullR4Count;
+    public void setTotalR4SandboxesCount(String totalR4SandboxesCount) {
+        this.totalR4SandboxesCount = totalR4SandboxesCount;
+    }
+
+    public String getTotalUsersCount() {
+        return totalUsersCount;
+    }
+
+    public void setTotalUsersCount(String totalUsersCount) {
+        this.totalUsersCount = totalUsersCount;
     }
 
     public String getActiveSandboxesInInterval() {
         return activeSandboxesInInterval;
     }
 
-    public void setActiveSandboxesInInterval(String activeSandboxesInInterval) {this.activeSandboxesInInterval = activeSandboxesInInterval; }
+    public void setActiveSandboxesInInterval(String activeSandboxesInInterval) {
+        this.activeSandboxesInInterval = activeSandboxesInInterval;
+    }
+
+    public String getActiveDstu2SandboxesInInterval() {
+        return activeDstu2SandboxesInInterval;
+    }
+
+    public void setActiveDstu2SandboxesInInterval(String activeDstu2SandboxesInInterval) {
+        this.activeDstu2SandboxesInInterval = activeDstu2SandboxesInInterval;
+    }
+
+    public String getActiveStu3SandboxesInInterval() {
+        return activeStu3SandboxesInInterval;
+    }
+
+    public void setActiveStu3SandboxesInInterval(String activeStu3SandboxesInInterval) {
+        this.activeStu3SandboxesInInterval = activeStu3SandboxesInInterval;
+    }
+
+    public String getActiveR4SandboxesInInterval() {
+        return activeR4SandboxesInInterval;
+    }
+
+    public void setActiveR4SandboxesInInterval(String activeR4SandboxesInInterval) {
+        this.activeR4SandboxesInInterval = activeR4SandboxesInInterval;
+    }
+
+    public String getActiveUsersInInterval() {
+        return activeUsersInInterval;
+    }
+
+    public void setActiveUsersInInterval(String activeUsersInInterval) {
+        this.activeUsersInInterval = activeUsersInInterval;
+    }
 
     public String getNewSandboxesInInterval() {
         return newSandboxesInInterval;
     }
 
-    public void setNewSandboxesInInterval(String newSandboxesInInterval) {this.newSandboxesInInterval = newSandboxesInInterval; }
-
-    public String getDstu2SandboxesInInterval() {
-        return dstu2SandboxesInInterval;
+    public void setNewSandboxesInInterval(String newSandboxesInInterval) {
+        this.newSandboxesInInterval = newSandboxesInInterval;
     }
-
-    public void setDstu2SandboxesInInterval(String dstu2SandboxesInInterval) {this.dstu2SandboxesInInterval = dstu2SandboxesInInterval; }
-
-    public String getStu3SandboxesInInterval() {
-        return stu3SandboxesInInterval;
-    }
-
-    public void setStu3SandboxesInInterval(String stu3SandboxesInInterval) {this.stu3SandboxesInInterval = stu3SandboxesInInterval; }
-
-    public String getR4SandboxesInInterval() {
-        return r4SandboxesInInterval;
-    }
-
-    public void setR4SandboxesInInterval(String r4SandboxesInInterval) {this.r4SandboxesInInterval = r4SandboxesInInterval; }
-
-    public String getFullUserCount() {
-        return fullUserCount;
-    }
-
-    public void setFullUserCount(String fullUserCount) {
-        this.fullUserCount = fullUserCount;
-    }
-
-    public String getActiveUserInInterval() {
-        return activeUserInInterval;
-    }
-
-    public void setActiveUserInInterval(String activeUserInInterval) { this.activeUserInInterval = activeUserInInterval; }
 
     public String getNewUsersInInterval() {
         return newUsersInInterval;
@@ -134,9 +155,36 @@ public class Statistics {
         this.newUsersInInterval = newUsersInInterval;
     }
 
-    public String getFhirTransactions() { return fhirTransactions; }
+    public String getNewDstu2SandboxesInInterval() {
+        return newDstu2SandboxesInInterval;
+    }
 
-    public void setFhirTransactions(String fhirTransactions) { this.fhirTransactions = fhirTransactions; }
+    public void setNewDstu2SandboxesInInterval(String newDstu2SandboxesInInterval) {
+        this.newDstu2SandboxesInInterval = newDstu2SandboxesInInterval;
+    }
 
+    public String getNewStu3SandboxesInInterval() {
+        return newStu3SandboxesInInterval;
+    }
+
+    public void setNewStu3SandboxesInInterval(String newStu3SandboxesInInterval) {
+        this.newStu3SandboxesInInterval = newStu3SandboxesInInterval;
+    }
+
+    public String getNewR4SandboxesInInterval() {
+        return newR4SandboxesInInterval;
+    }
+
+    public void setNewR4SandboxesInInterval(String newR4SandboxesInInterval) {
+        this.newR4SandboxesInInterval = newR4SandboxesInInterval;
+    }
+
+    public String getFhirTransactions() {
+        return fhirTransactions;
+    }
+
+    public void setFhirTransactions(String fhirTransactions) {
+        this.fhirTransactions = fhirTransactions;
+    }
 
 }
