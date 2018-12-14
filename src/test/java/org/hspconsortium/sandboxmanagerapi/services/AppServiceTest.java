@@ -29,6 +29,7 @@ public class AppServiceTest {
     private AppServiceImpl appService = new AppServiceImpl(appRepository);
 
     private App app;
+    private App app2;
     private List<App> apps = new ArrayList<>();
     private Sandbox sandbox;
     private LaunchScenario launchScenario;
@@ -64,6 +65,19 @@ public class AppServiceTest {
         String clientString = client.toString();
         app.setClientJSON(clientString);
         apps.add(app);
+
+        app2 = new App();
+        app2.setCopyType(CopyType.MASTER);
+        app2.setClientId("clientId");
+        app2.setClientName("null");
+        app2.setId(2);
+        app2.setSandbox(sandbox);
+        app2.setLaunchUri("launchUri");
+        JSONObject client2 = new JSONObject();
+        client2.put("clientName", app2.getClientName());
+        client2.put("clientId", app2.getClientId());
+        String clientString2 = client2.toString();
+        app2.setClientJSON(clientString2);
 
         launchScenario = new LaunchScenario();
         launchScenario.setApp(app);
@@ -134,6 +148,13 @@ public class AppServiceTest {
         when(appRepository.findOne(app.getId())).thenReturn(app);
         appService.update(app);
         verify(oAuthClientService).putOAuthClientWithClientId(app.getClientId(), app.getClientJSON());
+    }
+
+    @Test
+    public void updateTestClientNameNull() {
+        when(appRepository.findOne(app2.getId())).thenReturn(app2);
+        appService.update(app2);
+        verify(oAuthClientService).putOAuthClientWithClientId(app2.getClientId(), app2.getClientJSON());
     }
 
     @Test(expected = RuntimeException.class)

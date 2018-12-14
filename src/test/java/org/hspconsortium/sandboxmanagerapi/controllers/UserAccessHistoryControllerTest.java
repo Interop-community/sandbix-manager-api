@@ -15,6 +15,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -98,10 +99,34 @@ public class UserAccessHistoryControllerTest {
                 .andExpect(content().json(json));
     }
 
+    @Test(expected = NestedServletException.class)
+    public void getLastSandboxAccessWithSandboxIdTestSandboxNull() throws Exception {
+        String json = json(userAccessHistoryList);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSandbox(sandbox)).thenReturn(userAccessHistoryList);
+        mvc
+                .perform(get("/sandbox-access?sandboxId=" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
     @Test
     public void getLastSandboxAccessWithSbmUserIdTest() throws Exception {
         String json = json(userAccessHistoryList);
         when(userService.findBySbmUserId(any())).thenReturn(user);
+        when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSbmUser(user)).thenReturn(userAccessHistoryList);
+        mvc
+                .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void getLastSandboxAccessWithSbmUserIdTestUserNull() throws Exception {
+        String json = json(userAccessHistoryList);
+        when(userService.findBySbmUserId(any())).thenReturn(null);
         when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSbmUser(user)).thenReturn(userAccessHistoryList);
         mvc
                 .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId()))

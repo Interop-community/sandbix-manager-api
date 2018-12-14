@@ -88,6 +88,7 @@ public class SandboxServiceImpl implements SandboxService {
     private SandboxActivityLogService sandboxActivityLogService;
     private RuleService ruleService;
     private UserAccessHistoryService userAccessHistoryService;
+    private SandboxInviteService sandboxInviteService;
     private CloseableHttpClient httpClient;
 
     @Inject
@@ -143,6 +144,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
         this.userAccessHistoryService = userAccessHistoryService;
+    }
+
+    @Inject
+    public void setSandboxInviteService(SandboxInviteService sandboxInviteService) {
+        this.sandboxInviteService = sandboxInviteService;
     }
 
     @Inject
@@ -215,6 +221,11 @@ public class SandboxServiceImpl implements SandboxService {
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(sandbox.getSandboxId());
         for (UserPersona userPersona : userPersonas) {
             userPersonaService.delete(userPersona);
+        }
+
+        List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
+        for (SandboxInvite sandboxInvite : sandboxInvites) {
+            sandboxInviteService.delete(sandboxInvite);
         }
 
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
@@ -517,6 +528,21 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String intervalCount(Timestamp intervalTime) {
         return repository.intervalCount(intervalTime);
+    }
+
+    @Override
+    public String newDSTU2SandboxesInIntervalCount(Timestamp intervalTime) {
+        return repository.newDSTU2SandboxesInIntervalCount(intervalTime);
+    }
+
+    @Override
+    public String newSTU3SandboxesInIntervalCount(Timestamp intervalTime) {
+        return repository.newSTU3SandboxesInIntervalCount(intervalTime);
+    }
+
+    @Override
+    public String newR4SandboxesInIntervalCount(Timestamp intervalTime) {
+        return repository.newR4SandboxesInIntervalCount(intervalTime);
     }
 
     @Override

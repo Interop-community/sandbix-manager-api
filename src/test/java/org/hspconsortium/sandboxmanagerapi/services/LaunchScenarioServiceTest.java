@@ -254,4 +254,11 @@ public class LaunchScenarioServiceTest {
         verify(userLaunchService).findByUserIdAndLaunchScenarioId(user.getSbmUserId(), launchScenario.getId());
     }
 
+    @Test
+    public void updateLastLaunchForCurrentUserTestUserLaunchNull() {
+        when(userLaunchService.findByUserIdAndLaunchScenarioId(user.getSbmUserId(), launchScenario.getId())).thenReturn(null);
+        launchScenarioService.updateLastLaunchForCurrentUser(launchScenarios, user);
+        verify(userLaunchService).findByUserIdAndLaunchScenarioId(user.getSbmUserId(), launchScenario.getId());
+    }
+
 }

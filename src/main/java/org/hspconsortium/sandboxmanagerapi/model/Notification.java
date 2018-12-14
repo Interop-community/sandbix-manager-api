@@ -18,7 +18,6 @@ import java.sql.Timestamp;
                 query = "SELECT c FROM Notification c WHERE c.newsItem.id = :newsItemId"),
 })
 public class Notification {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -36,5 +35,4 @@ public class Notification {
     private Boolean seen;
 
     private Boolean hidden;
-
 }

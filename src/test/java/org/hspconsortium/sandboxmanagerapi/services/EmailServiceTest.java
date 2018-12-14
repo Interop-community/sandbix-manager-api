@@ -14,6 +14,7 @@ import javax.mail.internet.MimeMessage;
 
 import java.io.IOException;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,7 +41,10 @@ public class EmailServiceTest {
         invitee.setName("me");
         invitee.setEmail("my@email.com");
         inviter = new User();
+        inviter.setName("ab");
+        inviter.setEmail("ab@email.com");
         sandbox = new Sandbox();
+        sandbox.setName("mySandbox");
         message = new Message(true, Message.ENCODING);
         message.addRecipient(invitee.getName(), invitee.getEmail());
 
@@ -56,4 +60,12 @@ public class EmailServiceTest {
 //        when(templateEngine.process(any(), any())).thenReturn("htmlContent");
         emailService.sendEmail(inviter, invitee, sandbox);
     }
+
+    // TODO: gives NullPointerException
+//    @Test
+//    public void sendEmailSuccessTest() throws IOException {
+//        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+//        when(templateEngine.process(any(), any())).thenReturn("htmlContent");
+//        emailService.sendEmail(inviter, invitee, sandbox);
+//    }
 }

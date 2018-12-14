@@ -181,7 +181,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     public void checkSystemUserCanMakeTransaction(Sandbox sandbox, User user) {
         if (!checkUserHasSystemRole(user, SystemRole.ADMIN)) {
             List<Sandbox> sandboxes = user.getSandboxes();
-            if (!sandboxes.contains(sandbox)) {
+            if (!sandboxes.contains(sandbox) && !sandbox.getVisibility().equals(Visibility.PUBLIC)) {
                 throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
             }
         }

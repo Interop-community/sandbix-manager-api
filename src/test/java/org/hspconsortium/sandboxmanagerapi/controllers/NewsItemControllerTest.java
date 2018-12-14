@@ -19,6 +19,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -92,8 +93,31 @@ public class NewsItemControllerTest {
                 .andExpect(content().json(json));
     }
 
+    @Test(expected = NestedServletException.class)
+    public void findAllNewsItemsTestUserNull() throws Exception {
+        String json = json(newsItemList);
+        when(authorizationService.getSystemUserId(any())).thenReturn("");
+        when(userService.findBySbmUserId("me")).thenReturn(null);
+        when(newsItemService.findAll()).thenReturn(newsItemList);
+        mvc
+                .perform(get("/newsItem/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
     @Test
     public void deleteNewsItemByIdTest() throws Exception {
+        doNothing().when(newsItemService).delete(newsItem.getId());
+        mvc
+                .perform(delete("/newsItem/delete/" + newsItem.getId()))
+                .andExpect(status().isOk());
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void deleteNewsItemByIdTestUserNull() throws Exception {
+        when(authorizationService.getSystemUserId(any())).thenReturn("");
+        when(userService.findBySbmUserId("me")).thenReturn(null);
         doNothing().when(newsItemService).delete(newsItem.getId());
         mvc
                 .perform(delete("/newsItem/delete/" + newsItem.getId()))
@@ -113,9 +137,39 @@ public class NewsItemControllerTest {
                 .andExpect(content().json(json));
     }
 
+    @Test(expected = NestedServletException.class)
+    public void saveNewsItemTestUserNull() throws Exception {
+        String json = json(newsItem);
+        when(authorizationService.getSystemUserId(any())).thenReturn("");
+        when(userService.findBySbmUserId("me")).thenReturn(null);
+        when(newsItemService.save(any())).thenReturn(newsItem);
+        mvc
+                .perform(post("/newsItem/save")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
     @Test
     public void updateNewsItemTest() throws Exception {
         String json = json(newsItem);
+        when(newsItemService.update(any())).thenReturn(newsItem);
+        mvc
+                .perform(put("/newsItem/update/" + newsItem.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void updateNewsItemTestUserNull() throws Exception {
+        String json = json(newsItem);
+        when(authorizationService.getSystemUserId(any())).thenReturn("");
+        when(userService.findBySbmUserId("me")).thenReturn(null);
         when(newsItemService.update(any())).thenReturn(newsItem);
         mvc
                 .perform(put("/newsItem/update/" + newsItem.getId())

@@ -30,6 +30,7 @@ public class SandboxServiceTest {
     private UserRoleService userRoleService = mock(UserRoleService.class);
     private UserPersonaService userPersonaService = mock(UserPersonaService.class);
     private UserLaunchService userLaunchService = mock(UserLaunchService.class);
+    private SandboxInviteService sandboxInviteService = mock(SandboxInviteService.class);
     private AppService appService = mock(AppService.class);
     private LaunchScenarioService launchScenarioService = mock(LaunchScenarioService.class);
     private SandboxImportService sandboxImportService = mock(SandboxImportService.class);
@@ -50,11 +51,13 @@ public class SandboxServiceTest {
     private StatusLine statusLine;
     private LaunchScenario launchScenario;
     private UserPersona userPersona;
+    private SandboxInvite sandboxInvite;
     private App app;
     private UserLaunch userLaunch;
     private UserRole userRole;
     private List<LaunchScenario> launchScenarios;
     private List<UserPersona> userPersonas;
+    private List<SandboxInvite> sandboxInvites;
     private List<App> apps;
     private List<UserLaunch> userLaunches;
     private List<UserRole> userRoles;
@@ -68,6 +71,7 @@ public class SandboxServiceTest {
         sandboxService.setUserLaunchService(userLaunchService);
         sandboxService.setUserPersonaService(userPersonaService);
         sandboxService.setUserRoleService(userRoleService);
+        sandboxService.setSandboxInviteService(sandboxInviteService);
         sandboxService.setUserService(userService);
         sandboxService.setAppService(appService);
         sandboxService.setLaunchScenarioService(launchScenarioService);
@@ -114,6 +118,10 @@ public class SandboxServiceTest {
         userPersona.setPersonaUserId("user@sandbox");
         launchScenario.setUserPersona(userPersona);
         userPersonas.add(userPersona);
+        sandboxInvites = new ArrayList<>();
+        sandboxInvite = new SandboxInvite();
+        sandboxInvite.setSandbox(sandbox);
+        sandboxInvites.add(sandboxInvite);
         userLaunch = new UserLaunch();
         userLaunch.setId(1);
         userLaunch.setLaunchScenario(launchScenario);
@@ -159,6 +167,7 @@ public class SandboxServiceTest {
         sandboxService.delete(sandbox, bearerToken, user, false);
         verify(sandboxImportService).delete(sandboxImport);
         verify(sandboxActivityLogService).sandboxDelete(sandbox, user);
+        verify(sandboxInviteService).findInvitesBySandboxId(sandbox.getSandboxId());
     }
 
     @Test
@@ -175,10 +184,12 @@ public class SandboxServiceTest {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(launchScenarioService.findBySandboxId(sandbox.getSandboxId())).thenReturn(launchScenarios);
         when(userPersonaService.findBySandboxId(sandbox.getSandboxId())).thenReturn(userPersonas);
+        when(sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId())).thenReturn(sandboxInvites);
         when(appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId())).thenReturn(apps);
         sandboxService.delete(sandbox, bearerToken, user, false);
         verify(launchScenarioService).delete(launchScenario);
         verify(userPersonaService).delete(userPersona);
+        verify(sandboxInviteService).delete(sandboxInvite);
         verify(appService).delete(app);
         verify(userAccessHistoryService).deleteUserAccessInstancesForSandbox(sandbox);
     }
