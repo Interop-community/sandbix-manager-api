@@ -63,4 +63,10 @@ public interface SandboxService {
     List<Sandbox> findByPayerId(Integer payerId);
 
     Iterable<Sandbox> findAll();
+
+    String newDSTU2SandboxesInIntervalCount(final Timestamp intervalTime);
+
+    String newSTU3SandboxesInIntervalCount(final Timestamp intervalTime);
+
+    String newR4SandboxesInIntervalCount(final Timestamp intervalTime);
 }

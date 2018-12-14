@@ -34,8 +34,6 @@ public interface AnalyticsService {
 
     HashMap<String, Object> sandboxesPerUserStats(Integer interval, Integer n);
 
-    HashMap<Integer, Statistics> getSandboxAndUserStatsForAYearOriginal();
-
     Statistics getSandboxAndUserStatsForLastTwoYears();
 
     List<Statistics> displayStatsForGivenNumberOfMonths(String numberOfMonths);

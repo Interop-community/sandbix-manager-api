@@ -531,6 +531,21 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
+    public String newDSTU2SandboxesInIntervalCount(Timestamp intervalTime) {
+        return repository.newDSTU2SandboxesInIntervalCount(intervalTime);
+    }
+
+    @Override
+    public String newSTU3SandboxesInIntervalCount(Timestamp intervalTime) {
+        return repository.newSTU3SandboxesInIntervalCount(intervalTime);
+    }
+
+    @Override
+    public String newR4SandboxesInIntervalCount(Timestamp intervalTime) {
+        return repository.newR4SandboxesInIntervalCount(intervalTime);
+    }
+
+    @Override
     public List<Sandbox> findByPayerId(Integer payerId) {
         return repository.findByPayerUserId(payerId);
     }

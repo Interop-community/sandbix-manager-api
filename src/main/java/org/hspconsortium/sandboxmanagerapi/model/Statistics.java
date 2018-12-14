@@ -20,7 +20,7 @@ public class Statistics {
     @Column(name = "total_dstu2_sandboxes_count")
     private String totalDstu2SandboxesCount;
     @Column(name = "total_stu3_sandboxes_count")
-    private String toalStu3SandboxesCount;
+    private String totalStu3SandboxesCount;
     @Column(name = "total_r4_sandboxes_count")
     private String totalR4SandboxesCount;
     private String totalUsersCount;
@@ -75,12 +75,12 @@ public class Statistics {
         this.totalDstu2SandboxesCount = totalDstu2SandboxesCount;
     }
 
-    public String getToalStu3SandboxesCount() {
-        return toalStu3SandboxesCount;
+    public String getTotalStu3SandboxesCount() {
+        return totalStu3SandboxesCount;
     }
 
-    public void setToalStu3SandboxesCount(String toalStu3SandboxesCount) {
-        this.toalStu3SandboxesCount = toalStu3SandboxesCount;
+    public void setTotalStu3SandboxesCount(String totalStu3SandboxesCount) {
+        this.totalStu3SandboxesCount = totalStu3SandboxesCount;
     }
 
     public String getTotalR4SandboxesCount() {
