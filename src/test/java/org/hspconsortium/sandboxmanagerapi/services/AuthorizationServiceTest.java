@@ -551,6 +551,13 @@ public class AuthorizationServiceTest {
 
     @Test(expected = UnauthorizedException.class)
     public void checkSystemUserCanMakeTransactionTest() {
+        sandbox.setVisibility(Visibility.PRIVATE);
+        authorizationService.checkSystemUserCanMakeTransaction(sandbox, user);
+    }
+
+    @Test
+    public void checkSystemUserCanMakeTransactionTestSandboxIsPublic() {
+        sandbox.setVisibility(Visibility.PUBLIC);
         authorizationService.checkSystemUserCanMakeTransaction(sandbox, user);
     }
 
