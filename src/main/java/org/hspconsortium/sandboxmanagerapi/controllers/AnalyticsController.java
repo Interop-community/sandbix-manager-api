@@ -135,22 +135,22 @@ public class AnalyticsController {
 
     @GetMapping(value="/getstats", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody void getStats(HttpServletRequest request) throws UnsupportedEncodingException {
-//        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-//        if (user == null) {
-//            throw new ResourceNotFoundException("User not found in authorization header.");
-//        }
-//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         // TODO: Delete this method
         analyticsService.getSandboxAndUserStatsForLastTwoYears();
     }
 
     @GetMapping(value="/displaystats", produces = APPLICATION_JSON_VALUE, params = {"numberOfMonths"})
     public @ResponseBody List<Statistics> displayStats(HttpServletRequest request, @RequestParam(value = "numberOfMonths") String numberOfMonths) throws UnsupportedEncodingException {
-//        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-//        if (user == null) {
-//            throw new ResourceNotFoundException("User not found in authorization header.");
-//        }
-//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.displayStatsForGivenNumberOfMonths(numberOfMonths);
     }
 

@@ -1,8 +1,3 @@
-/**
- * @authors: Jacob Crump, Shilpy Sharma
- *
- */
-
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
