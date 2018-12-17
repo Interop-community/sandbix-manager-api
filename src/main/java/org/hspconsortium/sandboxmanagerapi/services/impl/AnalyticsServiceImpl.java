@@ -300,16 +300,16 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return gson.toJson(statistics, type);
     }
     //(cron = "[Seconds] [Minutes] [Hours] [Day of month] [Month] [Day of week] [Year]")
-    // @Scheduled(cron = "0 50 23 28-31 * ?")
-    @Scheduled(cron = "0 */1 * * * *")
+    //@Scheduled(cron = "0 */1 * * * *") fire every minute
+    @Scheduled(cron = "0 50 23 28-31 * ?")
     public void snapshotStatistics() {
-//        final Calendar c = Calendar.getInstance();
-//        if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
-//            int intDays = LocalDate.now().lengthOfMonth();
-        int intDays = 30;
+        final Calendar c = Calendar.getInstance();
+        if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
+            int intDays = LocalDate.now().lengthOfMonth();
+//            int intDays = 30;
             getSandboxStatistics(Integer.toString(intDays));
-            LOGGER.info("Creating stats");
-//        }
+//            LOGGER.info("Creating stats");
+        }
    }
 
     public void getSandboxAndUserStatsForLastTwoYears() {
