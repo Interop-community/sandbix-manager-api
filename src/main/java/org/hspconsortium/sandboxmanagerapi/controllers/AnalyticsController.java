@@ -193,4 +193,13 @@ public class AnalyticsController {
         return analyticsService.sandboxesPerUserStats(intervalDays, n);
     }
 
+    @GetMapping(value = "/userStatistics")
+    public UserStatistics currentStatisticsByUser(HttpServletRequest request) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+       // authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.getUserStats(user, authorizationService.getBearerToken(request));
+    }
 }

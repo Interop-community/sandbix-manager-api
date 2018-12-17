@@ -173,7 +173,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         requestHeaders.set("Authorization", "Bearer " + request);
         HttpEntity<List<String>> httpEntity = new HttpEntity(schemaNames, requestHeaders);
         sandboxMemorySizes = simpleRestTemplate.exchange(sandboxService.getSystemSandboxApiURL() + "/memory/user", HttpMethod.PUT, httpEntity, HashMap.class).getBody();
-        for (Double memory: new ArrayList<>(sandboxMemorySizes.values())) {
+        for (Double memory: sandboxMemorySizes.values()) {
             count += memory;
         }
         return count;
@@ -352,6 +352,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
         }
         return compileStats(countsMap, n);
+    }
+
+    public UserStatistics getUserStats(User user, String request) {
+        UserStatistics usrStats = new UserStatistics(ruleService.findRulesByUser(user));
+
+        usrStats.setMemoryCount(retrieveTotalMemoryByUser(user, request));
+        usrStats.setTransactionsCount(countTransactionsByPayer(user));
+        usrStats.setApplicationsCount(countAppsPerSandboxByUser(user));
+        usrStats.setSandboxesCount(countSandboxesByUser(user.getSbmUserId()));
+        usrStats.setUsersCount(countUsersPerSandboxByUser(user));
+        return usrStats;
     }
 
     private HashMap<String, Object> compileStats(HashMap<String, Double> valuesMap, Integer n) {

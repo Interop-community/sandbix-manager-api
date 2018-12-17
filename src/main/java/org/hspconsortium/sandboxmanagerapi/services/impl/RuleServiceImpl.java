@@ -131,7 +131,7 @@ public class RuleServiceImpl implements RuleService {
         return false;
     }
 
-    private Rule findRulesByUser(User user) {
+    public Rule findRulesByUser(User user) {
         if (user.getTierLevel() == null) {
             return null;
         }
