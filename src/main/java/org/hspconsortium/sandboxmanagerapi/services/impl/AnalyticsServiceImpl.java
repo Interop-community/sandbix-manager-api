@@ -304,9 +304,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     // @Scheduled(cron = "0 50 23 28-31 * ?")
     @Scheduled(cron = "0 0/5 * * * ?")
     public void snapshotStatistics() {
-        final Calendar c = Calendar.getInstance();
-        if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
-            int intDays = LocalDate.now().lengthOfMonth();
+//        final Calendar c = Calendar.getInstance();
+//        if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
+//            int intDays = LocalDate.now().lengthOfMonth();
+        int intDays = 30;
             getSandboxStatistics(Integer.toString(intDays));
             //LOGGER.info("Creating stats");
         }
