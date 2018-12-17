@@ -310,7 +310,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         int intDays = 30;
             getSandboxStatistics(Integer.toString(intDays));
             //LOGGER.info("Creating stats");
-        }
+//        }
     }
 
     public Statistics getSandboxAndUserStatsForLastTwoYears() {
