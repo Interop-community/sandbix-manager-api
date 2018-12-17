@@ -245,6 +245,16 @@ public class SandboxController {
         sandboxService.sandboxLogin(id, userId);
     }
 
+    @GetMapping(value = "/all", params = {"sbmUserId"})
+    @Transactional
+    public @ResponseBody
+    Iterable<Sandbox> getAllUsers(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
+        authorizationService.checkUserAuthorization(request, sbmUserId);
+        User user = userService.findBySbmUserId(sbmUserId);
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return sandboxService.findAll();
+    }
+
     /**
      * A user can be removed from a sandbox if they are
      *  - not an {@link Role#ADMIN } user
