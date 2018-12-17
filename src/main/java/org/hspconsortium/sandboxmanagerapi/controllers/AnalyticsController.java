@@ -199,7 +199,7 @@ public class AnalyticsController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-       // authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+       // authorizationService.checkUserSystemRole(user, SystemRole.ADMIN); 
         return analyticsService.getUserStats(user, authorizationService.getBearerToken(request));
     }
 }
