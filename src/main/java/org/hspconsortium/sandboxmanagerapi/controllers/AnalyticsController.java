@@ -134,14 +134,14 @@ public class AnalyticsController {
     //TODO: make interval not required such that interval=null means to use all sandboxes
 
     @GetMapping(value="/getstats", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody Statistics getStats(HttpServletRequest request) throws UnsupportedEncodingException {
+    public @ResponseBody void getStats(HttpServletRequest request) throws UnsupportedEncodingException {
 //        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
 //        if (user == null) {
 //            throw new ResourceNotFoundException("User not found in authorization header.");
 //        }
 //        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         // TODO: Delete this method
-        return analyticsService.getSandboxAndUserStatsForLastTwoYears();
+        analyticsService.getSandboxAndUserStatsForLastTwoYears();
     }
 
     @GetMapping(value="/displaystats", produces = APPLICATION_JSON_VALUE, params = {"numberOfMonths"})

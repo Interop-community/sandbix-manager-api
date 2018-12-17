@@ -250,7 +250,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     @Override
-    public Statistics getSandboxStatistics(final String intervalDays) {
+    public void getSandboxStatistics(final String intervalDays) {
 
         int intDays = Integer.parseInt(intervalDays);
         Date d = new Date();
@@ -261,7 +261,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         sandboxActivityLogListIntervalFilter(timestamp, intDays);
 
         Statistics statistics = new Statistics();
-        statistics.setCreatedTimestamp(timestamp);
+        statistics.setCreatedTimestamp(currentTimestamp);
         statistics.setTotalSandboxesCount(sandboxService.fullCount());
         int apiEndpoint1 = Integer.parseInt(sandboxService.schemaCount("1"));
         int apiEndpoint2 = Integer.parseInt(sandboxService.schemaCount("2"));
@@ -290,8 +290,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         statistics.setNewUsersInInterval(userService.intervalCount(timestamp));
 
         statistics.setFhirTransactions(Integer.toString(statisticsRepository.getFhirTransaction(timestamp, currentTimestamp)));
-
-        return statistics;
+        statisticsRepository.save(statistics);
     }
 
     private static String toJson(Statistics statistics) {
@@ -313,7 +312,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 //        }
    }
 
-    public Statistics getSandboxAndUserStatsForLastTwoYears() {
+    public void getSandboxAndUserStatsForLastTwoYears() {
         totalSanboxCount.clear();
         totalUserCount.clear();
         totalDSTU2Count.clear();
@@ -377,7 +376,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 YearMonth yearMonthObject = YearMonth.of(intYear, intMonth);
                 String lengthOfMonth = Integer.toString(yearMonthObject.lengthOfMonth());
 
-                String lastDayOfMonth = strYear + "-" + timestampMonth + "-" + lengthOfMonth + " 23:50:00"; // "2018-10-04 11:36:57"
+                String lastDayOfMonth = strYear + "-" + timestampMonth + "-" + lengthOfMonth + " 23:50:00";
                 String firstDayOfMonth = strYear + "-" + timestampMonth + "-" + "01 23:50:00";
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
@@ -423,7 +422,6 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 targetYear = yearActivityLog;
             }
         }
-        return statisticsXX;
     }
 
     public List<Statistics> displayStatsForGivenNumberOfMonths(String numberOfMonths) {
