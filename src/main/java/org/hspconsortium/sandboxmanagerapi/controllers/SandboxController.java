@@ -245,12 +245,14 @@ public class SandboxController {
         sandboxService.sandboxLogin(id, userId);
     }
 
-    @GetMapping(value = "/all", params = {"sbmUserId"})
+    @GetMapping(value = "/all")
     @Transactional
     public @ResponseBody
-    Iterable<Sandbox> getAllUsers(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
-        authorizationService.checkUserAuthorization(request, sbmUserId);
-        User user = userService.findBySbmUserId(sbmUserId);
+    Iterable<Sandbox> getAllSandboxes(final HttpServletRequest request) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
         authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return sandboxService.findAll();
     }
