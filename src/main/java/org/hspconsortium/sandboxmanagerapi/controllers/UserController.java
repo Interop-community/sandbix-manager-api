@@ -98,12 +98,14 @@ public class UserController {
         return user;
     }
 
-    @GetMapping(value = "/all", params = {"sbmUserId"})
+    @GetMapping(value = "/all")
     @Transactional
     public @ResponseBody
-    Iterable<User> getAllUsers(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
-        authorizationService.checkUserAuthorization(request, sbmUserId);
-        User user = userService.findBySbmUserId(sbmUserId);
+    Iterable<User> getAllUsers(final HttpServletRequest request) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
         authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return userService.findAll();
     }
