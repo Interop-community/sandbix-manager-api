@@ -219,7 +219,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return Integer.toString(seenSandboxes.size());
     }
 
-    private String dstu2SandboxesInInterval() {
+    private String activeDstu2SandboxesInInterval() {
         Set<Integer> dstu2Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
             if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("5")) {
@@ -229,7 +229,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return Integer.toString(dstu2Sandbox.size());
     }
 
-    private String stu3SandboxesInInterval() {
+    private String activeStu3SandboxesInInterval() {
         Set<Integer> stu3Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
             if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("6")) {
@@ -239,7 +239,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return Integer.toString(stu3Sandbox.size());
     }
 
-    private String r4SandboxesInInterval() {
+    private String activeR4SandboxesInInterval() {
         Set<Integer> r4Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
             if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("7")) {
@@ -278,9 +278,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         statistics.setTotalUsersCount(userService.fullCount());
 
         statistics.setActiveSandboxesInInterval(activeSandboxCount());
-        statistics.setActiveDstu2SandboxesInInterval(dstu2SandboxesInInterval());
-        statistics.setActiveStu3SandboxesInInterval(stu3SandboxesInInterval());
-        statistics.setActiveR4SandboxesInInterval(r4SandboxesInInterval());
+        statistics.setActiveDstu2SandboxesInInterval(activeDstu2SandboxesInInterval());
+        statistics.setActiveStu3SandboxesInInterval(activeStu3SandboxesInInterval());
+        statistics.setActiveR4SandboxesInInterval(activeR4SandboxesInInterval());
         statistics.setActiveUsersInInterval(activeUserCount());
 
         statistics.setNewSandboxesInInterval(sandboxService.intervalCount(timestamp));
@@ -293,12 +293,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         statisticsRepository.save(statistics);
     }
 
-    private static String toJson(Statistics statistics) {
-        Gson gson = new Gson();
-        Type type = new TypeToken<Statistics>() {
-        }.getType();
-        return gson.toJson(statistics, type);
-    }
+//    private static String toJson(Statistics statistics) {
+//        Gson gson = new Gson();
+//        Type type = new TypeToken<Statistics>() {
+//        }.getType();
+//        return gson.toJson(statistics, type);
+//    }
+
     //(cron = "[Seconds] [Minutes] [Hours] [Day of month] [Month] [Day of week] [Year]")
     //@Scheduled(cron = "0 */1 * * * *") fire every minute
     @Scheduled(cron = "0 50 23 28-31 * ?")

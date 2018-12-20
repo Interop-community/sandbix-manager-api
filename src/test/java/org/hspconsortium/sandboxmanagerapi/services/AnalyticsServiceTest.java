@@ -37,6 +37,7 @@ public class AnalyticsServiceTest {
     private List<UserRole> userRoles;
     private Sandbox sandbox;
     private Sandbox sandbox2;
+    private Sandbox sandbox3;
     private HashMap<String, Integer> sandboxApps;
     private List<Sandbox> sandboxes;
     private List<App> appList;
@@ -83,11 +84,19 @@ public class AnalyticsServiceTest {
         sandbox.setSandboxId("1");
         sandbox.setCreatedBy(user);
         sandbox.setId(1);
+        sandbox.setApiEndpointIndex("5");
 
         sandbox2 = new Sandbox();
         sandbox2.setSandboxId("2");
         sandbox2.setCreatedBy(user2);
         sandbox2.setId(2);
+        sandbox2.setApiEndpointIndex("6");
+
+        sandbox3 = new Sandbox();
+        sandbox3.setSandboxId("2");
+        sandbox3.setCreatedBy(user2);
+        sandbox3.setId(2);
+        sandbox3.setApiEndpointIndex("7");
 
         userRole1 = new UserRole();
         userRole1.setUser(user);
@@ -173,7 +182,7 @@ public class AnalyticsServiceTest {
         sandboxActivityLog4.setTimestamp(timestamp4);
         sandboxActivityLog4.setUser(user2);
         sandboxActivityLog4.setActivity(SandboxActivity.LOGGED_IN);
-        sandboxActivityLog4.setSandbox(sandbox2);
+        sandboxActivityLog4.setSandbox(sandbox3);
 
         sandboxActivityLogIterable = new ArrayList<>();
         ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable).add(sandboxActivityLog);
@@ -272,29 +281,31 @@ public class AnalyticsServiceTest {
         assertEquals(actual, expected);
     }
 
-//    @Test
-//    public void retrieveTotalMemoryByUserTest() {
-    // TODO: RestTemplate issue
-//
-//        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
-//        sandboxMemorySizes.put("1", 1.5);
-//        sandboxMemorySizes.put("2", 3.5);
-//        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
-//        HttpHeaders requestHeaders = new HttpHeaders();
-//        requestHeaders.set("Authorization", "Bearer " + request);
-//        HttpEntity<List<String>> httpEntity = new HttpEntity(schemaNames, requestHeaders);
-//        when(sandboxService.findByPayerId(user.getId())).thenReturn(sandboxes);
-//        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
-//        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(), eq(HashMap.class))).thenReturn(responseEntity);
-//        Double totalMemory = analyticsService.retrieveTotalMemoryByUser(user, "");
-//        Double n = new Double(5.0);
-//        assertEquals(totalMemory, n);
-//
-//    }
+    @Test
+    public void retrieveTotalMemoryByUserTest() {
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        sandboxMemorySizes.put("2", 3.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        when(sandboxService.findByPayerId(user.getId())).thenReturn(sandboxes);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+        Double totalMemory = analyticsService.retrieveTotalMemoryByUser(user, "");
+        Double n = new Double(5.0);
+        assertEquals(totalMemory, n);
+    }
 
     @Test
     public void retrieveMemoryInSchemasTest() {
-        //TODO: same problem as above
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        sandboxMemorySizes.put("2", 3.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+        Double totalMemory = analyticsService.retrieveMemoryInSchemas(schemaNames, "");
+        Double n = new Double(5.0);
+        assertEquals(totalMemory, n);
+
     }
 
     @Test
@@ -317,6 +328,22 @@ public class AnalyticsServiceTest {
         verify(sandboxService).intervalCount(any());
         verify(userService).fullCount();
         verify(userService).intervalCount(any());
+        verify(sandboxService.newDSTU2SandboxesInIntervalCount(any()));
+        verify(sandboxService.newSTU3SandboxesInIntervalCount(any()));
+        verify(sandboxService.newR4SandboxesInIntervalCount(any()));
+        verify(statisticsRepository.getFhirTransaction(any(), any()));
+    }
+
+    @Test
+    public void snapshotStatisticsTest() {
+        analyticsService.snapshotStatistics();
+        verify(analyticsService).getSandboxStatistics(any());
+    }
+
+    @Test
+    public void displayStatsForGivenNumberOfMonthsTest() {
+        analyticsService.displayStatsForGivenNumberOfMonths(any());
+        verify(statisticsRepository).get12MonthStatistics(any(), any());
     }
 
     @Test
@@ -337,8 +364,21 @@ public class AnalyticsServiceTest {
 
     @Test
     public void sandboxMemoryStatsTest() {
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
         when(sandboxService.findBySandboxId(sandbox.getId().toString())).thenReturn(sandbox);
-        //TODO: RestTemplate issue, same as above
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        sandboxMemorySizes.put("2", 3.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+        HashMap<String, Object> actual = analyticsService.sandboxMemoryStats(1, 1, "");
+        HashMap<String, Object> expected = new HashMap<>();
+        HashMap<String, Double> a = new HashMap<>();
+        a.put("2", 3.5);
+        expected.put("top_values", a);
+        expected.put("median", 2.5);
+        expected.put("mean", 2.5);
+        assertEquals(expected, actual);
     }
 
     @Test

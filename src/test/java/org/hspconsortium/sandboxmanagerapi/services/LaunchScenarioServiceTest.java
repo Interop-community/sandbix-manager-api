@@ -143,6 +143,16 @@ public class LaunchScenarioServiceTest {
     }
 
     @Test
+    public void createTestUserPersonaNull() {
+        when(userPersonaService.findByPersonaUserIdAndSandboxId(launchScenario.getUserPersona().getPersonaUserId(), sandbox.getSandboxId())).thenReturn(null);
+        launchScenarioService.create(launchScenario);
+        verify(userPersonaService).findByPersonaUserIdAndSandboxId(any(), any());
+        verify(userPersonaService).save(any());
+        verify(appService, times(0)).save(launchScenario.getApp());
+        verify(appService).findByLaunchUriAndClientIdAndSandboxId(any(), any(), any());
+    }
+
+    @Test
     public void createTestAppIsCustom() {
         app.setCustomApp(true);
         launchScenario.setApp(app);
