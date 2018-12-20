@@ -43,4 +43,6 @@ public interface AuthorizationService {
 
     boolean checkUserHasSystemRole(final User user, final SystemRole role);
 
+    String checkSystemUserCanRemoveUser(final HttpServletRequest request, final Sandbox sandbox, final User user);
+
 }

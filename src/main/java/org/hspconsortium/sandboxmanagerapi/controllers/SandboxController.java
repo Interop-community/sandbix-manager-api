@@ -176,7 +176,7 @@ public class SandboxController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-        authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+        authorizationService.checkSystemUserCanRemoveUser(request, sandbox, user);
         String removeUserId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         User removedUser = userService.findBySbmUserId(removeUserId);
         if (user == null) {

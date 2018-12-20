@@ -119,6 +119,19 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return oauthUserId;
     }
 
+    @Override
+    public String checkSystemUserCanRemoveUser(final HttpServletRequest request, final Sandbox sandbox, final User user) {
+        String oauthUserId = oAuthService.getOAuthUserId(request);
+        if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
+            if  (user.getSbmUserId().equalsIgnoreCase(oauthUserId) ||
+                    (sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.ADMIN))) {
+                return oauthUserId;
+            }
+            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
+        }
+        return oauthUserId;
+    }
+
     // Sandbox Admin rights
     @Override
     public String checkSystemUserCanModifySandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
