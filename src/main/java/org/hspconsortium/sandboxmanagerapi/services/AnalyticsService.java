@@ -25,7 +25,9 @@ public interface AnalyticsService {
 
     Double retrieveMemoryInSchemas(List<String> schemaNames, String request);
 
-    void getSandboxStatistics(final String intervalDays);
+    void saveMonthlySandboxStatistics(final String intervalDays);
+
+    Statistics getSandboxStatisticsOverNumberOfDays(final String intervalDays);
 
     HashMap<String, Object> transactionStats(Integer interval, Integer n);
 

@@ -1,7 +1,5 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
-import java.lang.reflect.Type;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -249,9 +246,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return Integer.toString(r4Sandbox.size());
     }
 
-    @Override
-    public void getSandboxStatistics(final String intervalDays) {
-
+    private Statistics getSandboxStatistics(String intervalDays) {
         int intDays = Integer.parseInt(intervalDays);
         Date d = new Date();
         Date dateBefore = new Date(d.getTime() - intDays * 24 * 3600 * 1000L );
@@ -263,18 +258,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         Statistics statistics = new Statistics();
         statistics.setCreatedTimestamp(currentTimestamp);
         statistics.setTotalSandboxesCount(sandboxService.fullCount());
-        int apiEndpoint1 = Integer.parseInt(sandboxService.schemaCount("1"));
-        int apiEndpoint2 = Integer.parseInt(sandboxService.schemaCount("2"));
-        int apiEndpoint5 = Integer.parseInt(sandboxService.schemaCount("5"));
-        int twoTotal = apiEndpoint1 + apiEndpoint2 + apiEndpoint5;
-        statistics.setTotalDstu2SandboxesCount(Integer.toString(twoTotal));
-        int apiEndpoint3 = Integer.parseInt(sandboxService.schemaCount("3"));
-        int apiEndpoint4 = Integer.parseInt(sandboxService.schemaCount("4"));
-        int apiEndpoint6 = Integer.parseInt(sandboxService.schemaCount("6"));
-        int fourTotal = apiEndpoint3 + apiEndpoint4 + apiEndpoint6;
-        statistics.setTotalStu3SandboxesCount(Integer.toString(fourTotal));
-        int apiEndpoint7 = Integer.parseInt(sandboxService.schemaCount("7"));
-        statistics.setTotalR4SandboxesCount(Integer.toString(apiEndpoint7));
+        statistics.setTotalDstu2SandboxesCount(sandboxService.schemaCount("5"));
+        statistics.setTotalStu3SandboxesCount(sandboxService.schemaCount("6"));
+        statistics.setTotalR4SandboxesCount(sandboxService.schemaCount("7"));
         statistics.setTotalUsersCount(userService.fullCount());
 
         statistics.setActiveSandboxesInInterval(activeSandboxCount());
@@ -284,13 +270,24 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         statistics.setActiveUsersInInterval(activeUserCount());
 
         statistics.setNewSandboxesInInterval(sandboxService.intervalCount(timestamp));
-        statistics.setNewDstu2SandboxesInInterval(sandboxService.newDSTU2SandboxesInIntervalCount(timestamp));
-        statistics.setNewStu3SandboxesInInterval(sandboxService.newSTU3SandboxesInIntervalCount(timestamp));
-        statistics.setNewR4SandboxesInInterval(sandboxService.newR4SandboxesInIntervalCount(timestamp));
+        statistics.setNewDstu2SandboxesInInterval(sandboxService.newSandboxesInIntervalCount(timestamp, "5"));
+        statistics.setNewStu3SandboxesInInterval(sandboxService.newSandboxesInIntervalCount(timestamp, "6"));
+        statistics.setNewR4SandboxesInInterval(sandboxService.newSandboxesInIntervalCount(timestamp, "7"));
         statistics.setNewUsersInInterval(userService.intervalCount(timestamp));
 
         statistics.setFhirTransactions(Integer.toString(statisticsRepository.getFhirTransaction(timestamp, currentTimestamp)));
+        return statistics;
+    }
+
+    @Override
+    public void saveMonthlySandboxStatistics(final String intervalDays) {
+        Statistics statistics = getSandboxStatistics(intervalDays);
         statisticsRepository.save(statistics);
+    }
+
+    @Override
+    public Statistics getSandboxStatisticsOverNumberOfDays(final String intervalDays) {
+        return getSandboxStatistics(intervalDays);
     }
 
 //    private static String toJson(Statistics statistics) {
@@ -300,16 +297,12 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 //        return gson.toJson(statistics, type);
 //    }
 
-    //(cron = "[Seconds] [Minutes] [Hours] [Day of month] [Month] [Day of week] [Year]")
-    //@Scheduled(cron = "0 */1 * * * *") fire every minute
     @Scheduled(cron = "0 50 23 28-31 * ?")
     public void snapshotStatistics() {
         final Calendar c = Calendar.getInstance();
         if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
             int intDays = LocalDate.now().lengthOfMonth();
-//            int intDays = 30;
-            getSandboxStatistics(Integer.toString(intDays));
-//            LOGGER.info("Creating stats");
+            saveMonthlySandboxStatistics(Integer.toString(intDays));
         }
    }
 
