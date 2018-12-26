@@ -80,7 +80,6 @@ public class SandboxInvite {
         this.sandbox = sandbox;
     }
 
-    @JsonIgnore
     public Timestamp getInviteTimestamp() {
         return inviteTimestamp;
     }
