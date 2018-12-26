@@ -33,7 +33,9 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -85,6 +87,7 @@ public class SandboxInviteController {
         if (!sandboxInvites.isEmpty() && !sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())) {
             SandboxInvite existingSandboxInvite = sandboxInvites.get(0);
             existingSandboxInvite.setStatus(InviteStatus.PENDING);
+            existingSandboxInvite.setInviteTimestamp(new Timestamp(new Date().getTime()));
             sandboxInviteReturned = sandboxInviteService.save(existingSandboxInvite);
 
             // Send an Email
