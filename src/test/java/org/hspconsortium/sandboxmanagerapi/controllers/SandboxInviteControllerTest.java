@@ -121,8 +121,7 @@ public class SandboxInviteControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(json))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
@@ -144,8 +143,7 @@ public class SandboxInviteControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(json))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
