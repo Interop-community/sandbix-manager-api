@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +23,7 @@ public class RuleServiceTest {
     private AnalyticsService analyticsService = mock(AnalyticsService.class);
     private AppService appService = mock(AppService.class);
     private RulesList rulesList = mock(RulesList.class);
+    private NotificationService notificationService = mock(NotificationService.class);
 
     private RuleServiceImpl ruleService = new RuleServiceImpl();
     private Sandbox sandbox;
@@ -36,6 +38,7 @@ public class RuleServiceTest {
         ruleService.setSandboxService(sandboxService);
         ruleService.setUserService(userService);
         ruleService.setRulesList(rulesList);
+        ruleService.setNotificationService(notificationService);
 
         sandbox = new Sandbox();
         user = new User();
@@ -56,6 +59,7 @@ public class RuleServiceTest {
         rules.put("FREE", rule);
 
         when(rulesList.getTierRuleList()).thenReturn(rules);
+        when(rulesList.getThreshold()).thenReturn(0.9);
     }
 
     @Test
@@ -234,5 +238,14 @@ public class RuleServiceTest {
         when(analyticsService.countTransactionsByPayer(user)).thenReturn(transactions);
         Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
         assertEquals(false, bool);
+    }
+
+    @Test
+    public void checkIfUserCanPerformTransactionTransactionOverThresholdLimit() {
+        when(userService.findById(sandbox.getPayerUserId())).thenReturn(user);
+        Integer transactions = (int)Math.round(rulesList.getTierRuleList().get("FREE").getTransactions() * rulesList.getThreshold()) + 20;
+        when(analyticsService.countTransactionsByPayer(user)).thenReturn(transactions);
+        Boolean bool = ruleService.checkIfUserCanPerformTransaction(sandbox, "POST", token);
+        assertEquals(true, bool);
     }
 }

@@ -51,6 +51,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private RuleService ruleService;
     private SandboxActivityLogService sandboxActivityLogService;
 
+    private NotificationService notificationService;
+    private NewsItemService newsItemService;
+
     private RestTemplate simpleRestTemplate;
 
     private Set<Integer> totalSanboxCount = new HashSet<>();
