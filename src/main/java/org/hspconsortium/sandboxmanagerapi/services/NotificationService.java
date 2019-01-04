@@ -20,5 +20,11 @@ public interface NotificationService {
 
     void createNotificationsForAllUsers(NewsItem newsItem);
 
+    void createNotificationsForAGivenUser(NewsItem newsItem, User user);
+
+    void createNotificationForMoreThanThresholdTransaction(User user);
+
+    void createNotificationForMoreThanThresholdMemory(User user);
+
     void deleteNotificationForAllUsers(Integer newsItemId);
 }

@@ -11,6 +11,13 @@ import java.util.List;
 public class RulesList {
     private HashMap<String, Rule> tierRuleList;
 
+    private Double threshold;
+
+    public RulesList(HashMap<String, Rule> tierRuleList, Double threshold) {
+        this.tierRuleList = tierRuleList;
+        this.threshold = threshold;
+    }
+
     public RulesList(HashMap<String, Rule> tierRuleList) {
         this.tierRuleList = tierRuleList;
     }
@@ -25,4 +32,7 @@ public class RulesList {
         this.tierRuleList = tierRuleList;
     }
 
+    public Double getThreshold() { return threshold; }
+
+    public void setThreshold(Double threshold) { this.threshold = threshold; }
 }

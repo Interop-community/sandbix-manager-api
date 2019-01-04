@@ -172,3 +172,4 @@ tier-rules:
       users:
       transactions:
       storage:
+  threshold: 0.9
