@@ -330,7 +330,6 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         int targetMonth = currentTimestamp.getMonth();
         int targetYear = currentTimestamp.getYear() - 2;
         sandboxActivityLogs = sandboxActivityLogService.findAll();
-        Statistics statisticsXX = new Statistics();
         for(SandboxActivityLog sandboxActivityLog: sandboxActivityLogs) {
             int monthActivityLog = sandboxActivityLog.getTimestamp().getMonth();
             int yearActivityLog = sandboxActivityLog.getTimestamp().getYear();

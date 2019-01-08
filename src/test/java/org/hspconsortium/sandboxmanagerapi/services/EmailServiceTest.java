@@ -61,6 +61,8 @@ public class EmailServiceTest {
         emailService.sendEmail(inviter, invitee, sandbox);
     }
 
+
+
     // TODO: gives NullPointerException
 //    @Test
 //    public void sendEmailSuccessTest() throws IOException {
