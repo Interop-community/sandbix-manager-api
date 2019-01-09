@@ -329,6 +329,14 @@ public class UserPersonaControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    public void authenticateUserPersonaTestUserPersonaCredentialsNull() throws Exception {
+        mvc
+                .perform(
+                        post("/userPersona/authenticate"))
+                .andExpect(status().isBadRequest());
+    }
+
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();

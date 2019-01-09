@@ -56,6 +56,21 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public void createNotificationsForAGivenUser(NewsItem newsItem, User user){
+        NewsItem existingNewsItem = newsItemService.findById(newsItem.getId());
+        if (existingNewsItem == null) {
+            throw new ResourceNotFoundException("NewsItem does not exist.");
+        }
+        Notification notification = new Notification();
+        notification.setSeen(false);
+        notification.setHidden(false);
+        notification.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+        notification.setNewsItem(existingNewsItem);
+        notification.setUser(user);
+        save(notification);
+    }
+
+    @Override
     public Notification findById(Integer id) {
         return notificationRepository.findOne(id);
     }
@@ -114,5 +129,25 @@ public class NotificationServiceImpl implements NotificationService {
 
     public void delete(Integer id) {
         notificationRepository.delete(id);
+    }
+
+    @Override
+    public void createNotificationForMoreThanThresholdTransaction(User user){
+        NewsItem newsItemTransaction = new NewsItem();
+        newsItemTransaction.setTitle("Transactions more than threshold");
+        newsItemTransaction.setDescription("Transactions are more than 90%");
+        newsItemTransaction.setActive(1);
+        newsItemService.save(newsItemTransaction);
+        createNotificationsForAGivenUser(newsItemTransaction, user);
+    }
+
+    @Override
+    public void createNotificationForMoreThanThresholdMemory(User user){
+        NewsItem newsItemStorage = new NewsItem();
+        newsItemStorage.setTitle("Used storage more than 90%");
+        newsItemStorage.setDescription("Used Storage is more than 90%");
+        newsItemStorage.setActive(1);
+        newsItemService.save(newsItemStorage);
+        createNotificationsForAGivenUser(newsItemStorage, user);
     }
 }

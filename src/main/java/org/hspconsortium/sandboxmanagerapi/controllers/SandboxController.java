@@ -176,7 +176,7 @@ public class SandboxController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-        authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+        authorizationService.checkSystemUserCanRemoveUser(request, sandbox, user);
         String removeUserId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         User removedUser = userService.findBySbmUserId(removeUserId);
         if (user == null) {
@@ -243,6 +243,18 @@ public class SandboxController {
         userAccessHistoryService.saveUserAccessInstance(sandbox, user);
 
         sandboxService.sandboxLogin(id, userId);
+    }
+
+    @GetMapping(value = "/all")
+    @Transactional
+    public @ResponseBody
+    Iterable<Sandbox> getAllSandboxes(final HttpServletRequest request) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return sandboxService.findAll();
     }
 
     /**

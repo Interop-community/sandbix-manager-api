@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
+import io.swagger.models.auth.In;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
@@ -9,6 +10,7 @@ import org.junit.Test;
 import org.hspconsortium.sandboxmanagerapi.services.impl.AnalyticsServiceImpl;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
@@ -22,12 +24,14 @@ public class AnalyticsServiceTest {
     private FhirTransactionRepository fhirTransactionRepository = mock(FhirTransactionRepository.class);
     private StatisticsRepository statisticsRepository = mock(StatisticsRepository.class);
     private AnalyticsServiceImpl analyticsService = new AnalyticsServiceImpl(fhirTransactionRepository, statisticsRepository);
+    private AnalyticsServiceImpl analyticsServiceMock = mock(AnalyticsServiceImpl.class);
     private UserService userService = mock(UserService.class);
     private SandboxService sandboxService = mock(SandboxService.class);
     private AppService appService = mock(AppService.class);
     private RuleService ruleService = mock(RuleService.class);
     private SandboxActivityLogService sandboxActivityLogService = mock(SandboxActivityLogService.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
+    private UserStatistics userStatistics = mock(UserStatistics.class);
 
     private User user;
     private User user2;
@@ -37,6 +41,7 @@ public class AnalyticsServiceTest {
     private List<UserRole> userRoles;
     private Sandbox sandbox;
     private Sandbox sandbox2;
+    private Sandbox sandbox3;
     private HashMap<String, Integer> sandboxApps;
     private List<Sandbox> sandboxes;
     private List<App> appList;
@@ -83,11 +88,19 @@ public class AnalyticsServiceTest {
         sandbox.setSandboxId("1");
         sandbox.setCreatedBy(user);
         sandbox.setId(1);
+        sandbox.setApiEndpointIndex("5");
 
         sandbox2 = new Sandbox();
         sandbox2.setSandboxId("2");
         sandbox2.setCreatedBy(user2);
         sandbox2.setId(2);
+        sandbox2.setApiEndpointIndex("2");
+
+        sandbox3 = new Sandbox();
+        sandbox3.setSandboxId("2");
+        sandbox3.setCreatedBy(user2);
+        sandbox3.setId(2);
+        sandbox3.setApiEndpointIndex("7");
 
         userRole1 = new UserRole();
         userRole1.setUser(user);
@@ -149,7 +162,7 @@ public class AnalyticsServiceTest {
 
         sandboxActivityLog = new SandboxActivityLog();
         sandboxActivityLog.setId(1);
-        sandboxActivityLog.setTimestamp(timestamp);
+        sandboxActivityLog.setTimestamp(timestamp3);
         sandboxActivityLog.setUser(user);
         sandboxActivityLog.setActivity(SandboxActivity.CREATED);
         sandboxActivityLog.setSandbox(sandbox);
@@ -163,7 +176,7 @@ public class AnalyticsServiceTest {
 
         sandboxActivityLog3 = new SandboxActivityLog();
         sandboxActivityLog3.setId(3);
-        sandboxActivityLog3.setTimestamp(timestamp3);
+        sandboxActivityLog3.setTimestamp(timestamp);
         sandboxActivityLog3.setUser(user2);
         sandboxActivityLog3.setActivity(SandboxActivity.CREATED);
         sandboxActivityLog3.setSandbox(sandbox2);
@@ -173,7 +186,7 @@ public class AnalyticsServiceTest {
         sandboxActivityLog4.setTimestamp(timestamp4);
         sandboxActivityLog4.setUser(user2);
         sandboxActivityLog4.setActivity(SandboxActivity.LOGGED_IN);
-        sandboxActivityLog4.setSandbox(sandbox2);
+        sandboxActivityLog4.setSandbox(sandbox3);
 
         sandboxActivityLogIterable = new ArrayList<>();
         ((ArrayList<SandboxActivityLog>) sandboxActivityLogIterable).add(sandboxActivityLog);
@@ -272,33 +285,35 @@ public class AnalyticsServiceTest {
         assertEquals(actual, expected);
     }
 
-//    @Test
-//    public void retrieveTotalMemoryByUserTest() {
-    // TODO: RestTemplate issue
-//
-//        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
-//        sandboxMemorySizes.put("1", 1.5);
-//        sandboxMemorySizes.put("2", 3.5);
-//        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
-//        HttpHeaders requestHeaders = new HttpHeaders();
-//        requestHeaders.set("Authorization", "Bearer " + request);
-//        HttpEntity<List<String>> httpEntity = new HttpEntity(schemaNames, requestHeaders);
-//        when(sandboxService.findByPayerId(user.getId())).thenReturn(sandboxes);
-//        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
-//        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(), eq(HashMap.class))).thenReturn(responseEntity);
-//        Double totalMemory = analyticsService.retrieveTotalMemoryByUser(user, "");
-//        Double n = new Double(5.0);
-//        assertEquals(totalMemory, n);
-//
-//    }
-
     @Test
-    public void retrieveMemoryInSchemasTest() {
-        //TODO: same problem as above
+    public void retrieveTotalMemoryByUserTest() {
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        sandboxMemorySizes.put("2", 3.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        when(sandboxService.findByPayerId(user.getId())).thenReturn(sandboxes);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+        Double totalMemory = analyticsService.retrieveTotalMemoryByUser(user, "");
+        Double n = new Double(5.0);
+        assertEquals(totalMemory, n);
     }
 
     @Test
-    public void getSandboxStatisticsTest() {
+    public void retrieveMemoryInSchemasTest() {
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        sandboxMemorySizes.put("2", 3.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+        Double totalMemory = analyticsService.retrieveMemoryInSchemas(schemaNames, "");
+        Double n = new Double(5.0);
+        assertEquals(totalMemory, n);
+
+    }
+
+    @Test
+    public void saveMonthlySandboxStatisticsTest() {
         when(sandboxService.fullCount()).thenReturn("1");
         when(sandboxService.schemaCount("1")).thenReturn("0");
         when(sandboxService.schemaCount("2")).thenReturn("0");
@@ -311,12 +326,21 @@ public class AnalyticsServiceTest {
         when(userService.fullCount()).thenReturn("1");
         when(userService.intervalCount(any())).thenReturn("1");
         when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
-        analyticsService.getSandboxStatistics("1");
+        analyticsService.saveMonthlySandboxStatistics("1");
         verify(sandboxService).fullCount();
-        verify(sandboxService).schemaCount("1");
+        verify(sandboxService).schemaCount("5");
         verify(sandboxService).intervalCount(any());
         verify(userService).fullCount();
         verify(userService).intervalCount(any());
+        verify(sandboxService, atLeast(1)).newSandboxesInIntervalCount(any(), anyString());
+        verify(sandboxService, atMost(3)).newSandboxesInIntervalCount(any(), anyString());
+        verify(statisticsRepository).getFhirTransaction(any(), any());
+    }
+
+    @Test
+    public void displayStatsForGivenNumberOfMonthsTest() {
+        analyticsService.displayStatsForGivenNumberOfMonths("5");
+        verify(statisticsRepository).get12MonthStatistics(any(), any());
     }
 
     @Test
@@ -337,8 +361,40 @@ public class AnalyticsServiceTest {
 
     @Test
     public void sandboxMemoryStatsTest() {
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
         when(sandboxService.findBySandboxId(sandbox.getId().toString())).thenReturn(sandbox);
-        //TODO: RestTemplate issue, same as above
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        sandboxMemorySizes.put("2", 3.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+        HashMap<String, Object> actual = analyticsService.sandboxMemoryStats(1, 1, "");
+        HashMap<String, Object> expected = new HashMap<>();
+        HashMap<String, Double> a = new HashMap<>();
+        a.put("2", 3.5);
+        expected.put("top_values", a);
+        expected.put("median", 2.5);
+        expected.put("mean", 2.5);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void sandboxMemoryStatsElseTest() {
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
+        when(sandboxService.findBySandboxId(sandbox.getId().toString())).thenReturn(sandbox2);
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        sandboxMemorySizes.put("2", 3.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+        HashMap<String, Object> actual = analyticsService.sandboxMemoryStats(1, 1, "");
+        HashMap<String, Object> expected = new HashMap<>();
+        HashMap<String, Double> a = new HashMap<>();
+        a.put("2", 3.5);
+        expected.put("top_values", a);
+        expected.put("median", 2.5);
+        expected.put("mean", 2.5);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -370,4 +426,54 @@ public class AnalyticsServiceTest {
         HashMap<String, Object> actual = analyticsService.sandboxesPerUserStats(1,1);
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void getUserStatsTest() {
+        Rule ruleList = new Rule();
+        HashMap<String, Double> sandboxMemorySizes = new HashMap<>();
+        sandboxMemorySizes.put("1", 1.5);
+        responseEntity = new ResponseEntity<HashMap>(sandboxMemorySizes, HttpStatus.OK);
+        List<Sandbox> userCreatedSandboxes = new ArrayList<>();
+        userCreatedSandboxes.add(sandbox);
+
+        when(ruleService.findRulesByUser(user)).thenReturn(ruleList);
+        when(sandboxService.findByPayerId(user.getId())).thenReturn(userCreatedSandboxes);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), any(), any(), eq(HashMap.class))).thenReturn(responseEntity);
+
+        analyticsService.getUserStats(user, "");
+        verify(sandboxService, times(3)).findByPayerId(user.getId());
+        verify(fhirTransactionRepository, times(1)).findByPayerUserId(user.getId());
+        verify(userService, times(1)).findBySbmUserId(user.getSbmUserId());
+    }
+
+    @Test
+    public void getSandboxStatisticsOverNumberOfDaysTest() {
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
+        analyticsService.getSandboxStatisticsOverNumberOfDays("30");
+        verify(sandboxService).fullCount();
+    }
+
+    @Test
+    public void snapshotStatisticsTest() {
+//        TODO:
+        org.springframework.scheduling.support.CronTrigger trigger =
+                new CronTrigger("0 50 23 28-31 * ?");
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.DATE, c.getActualMaximum(Calendar.DATE));
+
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
+        analyticsService.snapshotStatistics();
+//        verify(sandboxService).fullCount();
+//        verify(analyticsService, atLeast(1)).saveMonthlySandboxStatistics("30");
+    }
+
+    @Test
+    public void getSandboxAndUserStatsForLastTwoYearsTest() {
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxActivityLogIterable);
+        analyticsService.getSandboxAndUserStatsForLastTwoYears();
+        verify(sandboxActivityLogService).findAll();
+    }
+
+
 }

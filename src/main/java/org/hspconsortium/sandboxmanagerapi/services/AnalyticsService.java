@@ -3,6 +3,7 @@ package org.hspconsortium.sandboxmanagerapi.services;
 import org.hspconsortium.sandboxmanagerapi.model.FhirTransaction;
 import org.hspconsortium.sandboxmanagerapi.model.Statistics;
 import org.hspconsortium.sandboxmanagerapi.model.User;
+import org.hspconsortium.sandboxmanagerapi.model.UserStatistics;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -24,7 +25,9 @@ public interface AnalyticsService {
 
     Double retrieveMemoryInSchemas(List<String> schemaNames, String request);
 
-    Statistics getSandboxStatistics(final String intervalDays);
+    void saveMonthlySandboxStatistics(final String intervalDays);
+
+    Statistics getSandboxStatisticsOverNumberOfDays(final String intervalDays);
 
     HashMap<String, Object> transactionStats(Integer interval, Integer n);
 
@@ -34,8 +37,10 @@ public interface AnalyticsService {
 
     HashMap<String, Object> sandboxesPerUserStats(Integer interval, Integer n);
 
-    Statistics getSandboxAndUserStatsForLastTwoYears();
+    void getSandboxAndUserStatsForLastTwoYears();
 
     List<Statistics> displayStatsForGivenNumberOfMonths(String numberOfMonths);
+
+    UserStatistics getUserStats(User user, String request);
 
 }

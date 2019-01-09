@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 @Service
 public class RuleServiceImpl implements RuleService {
 
-
     private RulesList rulesList;
 
     private SandboxService sandboxService;
     private UserService userService;
     private AnalyticsService analyticsService;
     private AppService appService;
+    private NotificationService notificationService;
 
     public RuleServiceImpl() { }
 
@@ -40,6 +40,11 @@ public class RuleServiceImpl implements RuleService {
     @Inject
     public void setAppService(AppService appService) {
         this.appService = appService;
+    }
+
+    @Inject
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @Inject
@@ -118,10 +123,29 @@ public class RuleServiceImpl implements RuleService {
         if (rules == null) {
             return true;
         }
-        if (rules.getTransactions() > analyticsService.countTransactionsByPayer(user)) {
+        Boolean hasNotifForTransaction = false;
+        Boolean hasNotifForMemory = false;
+        List<Notification> notifications = notificationService.getAllNotificationsByUser(user);
+        for (Notification notification: notifications) {
+            String title = notification.getNewsItem().getTitle();
+            if(title.equalsIgnoreCase("Transactions more than threshold")){
+                hasNotifForTransaction = true;
+            }else if(title.equalsIgnoreCase("Used storage more than threshold")){
+                hasNotifForMemory = true;
+            }
+        }
+        Integer countedTransactionsByPayer = analyticsService.countTransactionsByPayer(user);
+        if (rules.getTransactions() > countedTransactionsByPayer) {
+            if(rules.getTransactions() * rulesList.getThreshold() <= countedTransactionsByPayer && !hasNotifForTransaction){
+                notificationService.createNotificationForMoreThanThresholdTransaction(user);
+            }
             if (!operation.equals("GET") && !operation.equals("DELETE")) {
                 // Don't need to check memory for these operations
-                if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user, bearerToken)) {
+                Double countedTotalMemoryByUser = analyticsService.retrieveTotalMemoryByUser(user, bearerToken);
+                if (rules.getStorage() > countedTotalMemoryByUser) {
+                    if (rules.getStorage() * rulesList.getThreshold() <= countedTotalMemoryByUser && !hasNotifForMemory) {
+                        notificationService.createNotificationForMoreThanThresholdMemory(user);
+                    }
                     return true;
                 }
             } else {
@@ -131,7 +155,7 @@ public class RuleServiceImpl implements RuleService {
         return false;
     }
 
-    private Rule findRulesByUser(User user) {
+    public Rule findRulesByUser(User user) {
         if (user.getTierLevel() == null) {
             return null;
         }

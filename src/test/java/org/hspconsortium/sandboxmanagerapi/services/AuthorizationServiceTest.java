@@ -343,6 +343,20 @@ public class AuthorizationServiceTest {
     }
 
     @Test(expected = UnauthorizedException.class)
+    public void checkSystemUserCanModifySandboxAuthorizationSystemRoleNotEqualUserRoleTest() {
+        // Not possible to return oauthUserId from inside the nested if statement
+        userRole.setRole(Role.USER);
+        userRoles.add(userRole);
+        sandbox.setUserRoles(userRoles);
+        sandbox.setVisibility(Visibility.PRIVATE);
+        systemRoles.add(SystemRole.CREATE_SANDBOX);
+        user.setSystemRoles(systemRoles);
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+        String userId = authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
+    }
+
+    @Test(expected = UnauthorizedException.class)
     public void checkSystemUserCanModifySandboxAuthorizationUserUnathorizedTest() {
         userRole.setRole(Role.USER);
         userRoles.add(userRole);
@@ -585,11 +599,22 @@ public class AuthorizationServiceTest {
     }
 
     @Test
-    public void getDefaultVisibilityAdminTest() {
+    public void getDefaultVisibilityTest() {
         sandbox.setVisibility(Visibility.PRIVATE);
+        userRole.setRole(Role.READONLY);
+        userRoles.add(userRole);
+        user.setSystemRoles(systemRoles);
+        Visibility vis = authorizationService.getDefaultVisibility(user, sandbox);
+        assertEquals(Visibility.PUBLIC, vis);
+    }
+
+    @Test
+    public void getDefaultVisibilityAdminTest() {
+        sandbox.setVisibility(Visibility.PUBLIC);
         userRole.setRole(Role.ADMIN);
         userRoles.add(userRole);
         user.setSystemRoles(systemRoles);
+        sandbox.setUserRoles(userRoles);
         Visibility vis = authorizationService.getDefaultVisibility(user, sandbox);
         assertEquals(Visibility.PUBLIC, vis);
     }
@@ -651,5 +676,12 @@ public class AuthorizationServiceTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
         authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
+    }
+
+    @Test
+    public void checkSystemUserCanRemoveUserTest() {
+        when(oAuthService.getOAuthUserId(request)).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        assertEquals(user.getSbmUserId(), authorizationService.checkSystemUserCanRemoveUser(request, sandbox, user));
     }
 }

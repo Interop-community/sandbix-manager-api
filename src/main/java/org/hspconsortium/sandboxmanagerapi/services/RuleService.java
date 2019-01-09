@@ -1,6 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.App;
+import org.hspconsortium.sandboxmanagerapi.model.Rule;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 
@@ -18,4 +19,5 @@ public interface RuleService {
 
     Boolean checkIfUserCanPerformTransaction(Sandbox sandbox, String operation, String bearerToken);
 
+    Rule findRulesByUser(User user);
 }

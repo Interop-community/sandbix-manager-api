@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,7 +28,7 @@ public class AdminServiceTest {
     private SandboxActivityLogService sandboxActivityLogService = mock(SandboxActivityLogService.class);
     private HttpEntity httpEntity = mock(HttpEntity.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
-    private ResponseEntity<Collection> responseEntity;
+    private ResponseEntity<Collection<LinkedHashMap>> responseEntity;
 
     private Iterable<Sandbox> sandboxesIterable;
     private Iterable<SandboxActivityLog> sandboxAccessHistories;
@@ -70,8 +71,9 @@ public class AdminServiceTest {
 
     @Test
     public void syncSandboxManagerandReferenceApiTest() {
+//        responseEntity = new ResponseEntity<Collection<LinkedHashMap>>();
+//          TODO: Skip these class tests
 //        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
-//        // TODO: Ask Jacob, restTemplate not working
 //        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
 //        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity);
 //        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);

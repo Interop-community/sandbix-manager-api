@@ -17,7 +17,6 @@ public interface SandboxRepository extends CrudRepository<Sandbox, Integer> {
     String fullCount();
     String schemaCount(@Param("apiEndpointIndex") String apiEndpointIndex);
     String intervalCount(@Param("intervalTime") Timestamp intervalTime);
-    String newDSTU2SandboxesInIntervalCount(@Param("intervalTime") Timestamp intervalTime);
-    String newSTU3SandboxesInIntervalCount(@Param("intervalTime") Timestamp intervalTime);
-    String newR4SandboxesInIntervalCount(@Param("intervalTime") Timestamp intervalTime);
+    String newSandboxesInIntervalCount(@Param("intervalTime") Timestamp intervalTime,
+                                       @Param("apiEndpointIndex") String apiEndpointIndex);
 }

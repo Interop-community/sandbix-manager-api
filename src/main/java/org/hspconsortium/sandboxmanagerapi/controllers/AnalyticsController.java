@@ -133,25 +133,35 @@ public class AnalyticsController {
 
     //TODO: make interval not required such that interval=null means to use all sandboxes
 
-    @GetMapping(value="/getstats", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody Statistics getStats(HttpServletRequest request) throws UnsupportedEncodingException {
-//        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-//        if (user == null) {
-//            throw new ResourceNotFoundException("User not found in authorization header.");
-//        }
-//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+    @GetMapping(value="/getStats", produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody void getStats(HttpServletRequest request) throws UnsupportedEncodingException {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         // TODO: Delete this method
-        return analyticsService.getSandboxAndUserStatsForLastTwoYears();
+        analyticsService.getSandboxAndUserStatsForLastTwoYears();
     }
 
-    @GetMapping(value="/displaystats", produces = APPLICATION_JSON_VALUE, params = {"numberOfMonths"})
+    @GetMapping(value="/overallStats", produces = APPLICATION_JSON_VALUE, params = {"numberOfMonths"})
     public @ResponseBody List<Statistics> displayStats(HttpServletRequest request, @RequestParam(value = "numberOfMonths") String numberOfMonths) throws UnsupportedEncodingException {
-//        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-//        if (user == null) {
-//            throw new ResourceNotFoundException("User not found in authorization header.");
-//        }
-//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.displayStatsForGivenNumberOfMonths(numberOfMonths);
+    }
+
+    @GetMapping(value="/overallStats", produces = APPLICATION_JSON_VALUE, params = {"numberOfDays"})
+    public @ResponseBody Statistics getStatsOverNumberOfDays(HttpServletRequest request, @RequestParam(value = "numberOfDays") String numberOfDays) throws UnsupportedEncodingException {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+        return analyticsService.getSandboxStatisticsOverNumberOfDays(numberOfDays);
     }
 
     @GetMapping(value="/overallStats/transactions", params = {"interval"})
@@ -194,4 +204,13 @@ public class AnalyticsController {
         return analyticsService.sandboxesPerUserStats(intervalDays, n);
     }
 
+    @GetMapping(value = "/userStatistics")
+    public UserStatistics currentStatisticsByUser(HttpServletRequest request) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+       // authorizationService.checkUserSystemRole(user, SystemRole.ADMIN); 
+        return analyticsService.getUserStats(user, authorizationService.getBearerToken(request));
+    }
 }
