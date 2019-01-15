@@ -334,20 +334,20 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             int monthActivityLog = sandboxActivityLog.getTimestamp().getMonth();
             int yearActivityLog = sandboxActivityLog.getTimestamp().getYear();
 
-            if (sandboxActivityLog.getSandbox() == null) {
-                continue;
-            } else {
-                sandboxId = sandboxActivityLog.getSandbox().getId();
-            }
-            if (sandboxActivityLog.getUser() == null) {
-                continue;
-            } else {
+            if (sandboxActivityLog.getUser() != null) {
                 userId = sandboxActivityLog.getUser().getId();
             }
-            apiEndpointIndex = sandboxActivityLog.getSandbox().getApiEndpointIndex();
+
+            if (sandboxActivityLog.getSandbox() != null) {
+                sandboxId = sandboxActivityLog.getSandbox().getId();
+                apiEndpointIndex = sandboxActivityLog.getSandbox().getApiEndpointIndex();
+            } else {
+                sandboxId = 0;
+                apiEndpointIndex = "-1";
+            }
             if(yearActivityLog < targetYear || (yearActivityLog == targetYear && monthActivityLog < targetMonth)) {
                 totalSanboxCount.add(sandboxId);
-                totalUserCount.add(userId);
+                    totalUserCount.add(userId);
                 if (apiEndpointIndex.equals("5")) {
                     totalDSTU2Count.add(sandboxId);
                 }
@@ -551,7 +551,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     private void addToDifferentSandboxStats (){
-        if (!totalSanboxCount.contains(sandboxId)) {
+        if (sandboxId != 0 && !totalSanboxCount.contains(sandboxId)) {
             countNewSandbox++;
             if (apiEndpointIndex.equals("5")) {
                 newDSTU2SandboxesInInterval.add(sandboxId);
@@ -566,9 +566,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         if (!totalUserCount.contains(userId)) {
             countNewUser++;
         }
-        activeSandboxesInInterval.add(sandboxId);
+        if (sandboxId != 0) {
+            activeSandboxesInInterval.add(sandboxId);
+            totalSanboxCount.add(sandboxId);
+        }
         activeUserInInterval.add(userId);
-        totalSanboxCount.add(sandboxId);
         totalUserCount.add(userId);
         if (apiEndpointIndex.equals("5")) {
             activeDSTU2SanboxesInInterval.add(sandboxId);

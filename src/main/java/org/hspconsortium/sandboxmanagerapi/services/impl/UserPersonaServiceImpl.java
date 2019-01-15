@@ -39,7 +39,7 @@ public class UserPersonaServiceImpl implements UserPersonaService {
 
     @Override
     public UserPersona findByPersonaUserIdAndSandboxId(final String personaUserId, final String sandboxId) {
-        return  repository.findByPersonaUserIdAndSandboxId(personaUserId, sandboxId);
+        return repository.findByPersonaUserIdAndSandboxId(personaUserId, sandboxId);
     }
 
     @Override
@@ -78,6 +78,7 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Transactional
     public UserPersona create(UserPersona userPersona) {
         userPersona.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+        checkpersonaUserId(userPersona);
         return createOrUpdate(userPersona);
     }
 
@@ -89,5 +90,12 @@ public class UserPersonaServiceImpl implements UserPersonaService {
 
     private UserPersona createOrUpdate(final UserPersona userPersona) {
         return save(userPersona);
+    }
+
+    private void checkpersonaUserId(UserPersona userPersona) {
+        UserPersona userPersonaExists = findByPersonaUserIdAndSandboxId(userPersona.getPersonaUserId(), userPersona.getSandbox().getSandboxId());
+        if (userPersonaExists != null) {
+            throw new IllegalArgumentException("Persona user " + userPersona.getPersonaUserId() + " already in use in sandbox " + userPersona.getSandbox().getSandboxId());
+        }
     }
 }
