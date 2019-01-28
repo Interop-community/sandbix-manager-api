@@ -78,8 +78,9 @@ public class SandboxInviteServiceTest {
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(inviter);
         when(ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())).thenReturn(true);
         when(userService.findBySbmUserId(sandboxInvite.getInvitee().getSbmUserId())).thenReturn(invitee);
+        when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
         sandboxInviteService.create(sandboxInvite);
-        verify(emailService).sendEmail(any(), any(), any());
+        verify(emailService).sendEmail(any(), any(), any(), anyInt());
         verify(sandboxActivityLogService).sandboxUserInvited(any(), any(), any());
     }
 
@@ -88,6 +89,7 @@ public class SandboxInviteServiceTest {
         when(sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(inviter);
         when(ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())).thenReturn(false);
+        when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
         SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
         assertEquals(null, returnedSandboxInvite);
     }
@@ -99,6 +101,7 @@ public class SandboxInviteServiceTest {
         when(ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())).thenReturn(true);
         when(userService.findBySbmUserId(sandboxInvite.getInvitee().getSbmUserId())).thenReturn(invitee);
         when(sandboxService.isSandboxMember(any(), any())).thenReturn(true);
+        when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
         SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
         assertEquals(null, returnedSandboxInvite);
     }
@@ -111,6 +114,7 @@ public class SandboxInviteServiceTest {
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(inviter);
         when(ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())).thenReturn(true);
         when(userService.findByUserEmail(sandboxInvite.getInvitee().getEmail())).thenReturn(invitee);
+        when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
         sandboxInviteService.create(sandboxInvite);
         verify(userService).findByUserEmail(sandboxInvite.getInvitee().getEmail());
     }
@@ -123,6 +127,7 @@ public class SandboxInviteServiceTest {
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(inviter);
         when(ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())).thenReturn(true);
         when(userService.findByUserEmail(sandboxInvite.getInvitee().getSbmUserId())).thenReturn(null);
+        when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
         sandboxInviteService.create(sandboxInvite);
         verify(userService).save(any());
     }

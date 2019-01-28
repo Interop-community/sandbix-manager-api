@@ -58,7 +58,7 @@ public class EmailServiceTest {
     public void sendEmailTest() throws IOException {
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
 //        when(templateEngine.process(any(), any())).thenReturn("htmlContent");
-        emailService.sendEmail(inviter, invitee, sandbox);
+        emailService.sendEmail(inviter, invitee, sandbox, 1);
     }
 
 
@@ -68,6 +68,6 @@ public class EmailServiceTest {
 //    public void sendEmailSuccessTest() throws IOException {
 //        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
 //        when(templateEngine.process(any(), any())).thenReturn("htmlContent");
-//        emailService.sendEmail(inviter, invitee, sandbox);
+//        emailService.sendEmail(inviter, invitee, sandbox, 1);
 //    }
 }

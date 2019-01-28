@@ -25,6 +25,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -114,7 +115,7 @@ public class SandboxInviteControllerTest {
         when(sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())).thenReturn(false);
         when(sandboxInviteService.save(any())).thenReturn(sandboxInvite);
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(user);
-        doNothing().when(emailService).sendEmail(any(), any(), any());
+        doNothing().when(emailService).sendEmail(any(), any(), any(), anyInt());
 
         mvc
                 .perform(put("/sandboxinvite")
@@ -136,7 +137,7 @@ public class SandboxInviteControllerTest {
         when(sandboxInviteService.findInvitesByInviteeEmailAndSandboxId(sandboxInvite.getInvitee().getEmail(), sandboxInvite.getSandbox().getSandboxId())).thenReturn(sandboxInvites);
         when(sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())).thenReturn(false);
         when(sandboxInviteService.save(any())).thenReturn(sandboxInvite);
-        doNothing().when(emailService).sendEmail(any(), any(), any());
+        doNothing().when(emailService).sendEmail(any(), any(), any(), anyInt());
 
         mvc
                 .perform(put("/sandboxinvite")
