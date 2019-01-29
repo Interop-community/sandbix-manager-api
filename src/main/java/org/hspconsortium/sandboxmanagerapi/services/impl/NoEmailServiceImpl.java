@@ -17,6 +17,7 @@ public class NoEmailServiceImpl implements EmailService {
 
     @Override
     public void sendEmail(User inviter, User invitee, Sandbox sandbox, int invitationId) throws IOException {
-        LOGGER.info("Mail is not enabled, would have sent from: " + inviter.getName() + " to: " + invitee.getName() + " for sandbox: " + sandbox.getName());
+        LOGGER.info("Mail is not enabled, would have sent from: " + inviter.getName() + " to: " + invitee.getName()
+                + " for sandbox: " + sandbox.getName() + " for invitation ID: " + invitationId);
     }
 }
