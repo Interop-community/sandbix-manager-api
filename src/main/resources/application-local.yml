@@ -32,3 +32,4 @@ hspc:
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
+    frontend: http://localhost:3001
