@@ -84,9 +84,14 @@ public class EmailServiceImpl implements EmailService {
             } else {
                 message.addVariable("invitee", invitee.getEmail());
             }
+            String baseURL = "https://sandbox.hspconsortium.org";
             message.addVariable("sandboxName", sandbox.getName());
             message.addVariable("inviteeEmail", invitee.getEmail());
             message.addVariable("invitationId", invitationId);
+            if (System.getenv("TARGET_ENV").equals("test")) {
+                baseURL = "https://sandbox-test.hspconsortium.org";
+            }
+            message.addVariable("baseURL", baseURL);
 
             // Add the inline images, referenced from the HTML code as "cid:image-name"
             message.addResource("hspc-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
