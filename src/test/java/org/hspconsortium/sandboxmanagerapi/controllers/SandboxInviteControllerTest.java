@@ -166,6 +166,7 @@ public class SandboxInviteControllerTest {
 
     @Test(expected = NestedServletException.class)
     public void createOrUpdateSandboxInviteTestSandboxNotFound() throws Exception {
+        //TODO: test not passing
         String json = json(sandboxInvite);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
         mvc
@@ -212,6 +213,7 @@ public class SandboxInviteControllerTest {
 
     @Test
     public void getSandboxInvitesBySandboxTestReturnsEmpty() throws Exception {
+        // TODO:Test not passing
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
@@ -275,6 +277,7 @@ public class SandboxInviteControllerTest {
 
     @Test
     public void updateSandboxInviteTestStatusIsRejected() throws Exception {
+        //TODO: test not passing
         String json = json(sandboxInvite);
         when(sandboxInviteService.getById(sandboxInvite.getId())).thenReturn(sandboxInvite);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
