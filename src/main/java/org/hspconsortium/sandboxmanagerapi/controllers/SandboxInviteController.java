@@ -98,7 +98,7 @@ public class SandboxInviteController {
             } else {
                 invitee = userService.findByUserEmail(sandboxInvite.getInvitee().getEmail());
             }
-            emailService.sendEmail(inviter, invitee, sandboxInvite.getSandbox());
+            emailService.sendEmail(inviter, invitee, sandboxInvite.getSandbox(), sandboxInviteReturned.getId());
         } else if (sandboxInvites.isEmpty()) { // Create
             // Make sure the inviter is the authenticated user
             User invitedBy = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());

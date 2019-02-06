@@ -32,7 +32,7 @@ hspc:
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
-
+    frontend: https://sandbox-test.hspconsortium.org
 tier-rules:
   tierRuleList:
     FREE:

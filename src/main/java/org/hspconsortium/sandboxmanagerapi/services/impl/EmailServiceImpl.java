@@ -45,6 +45,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${hspc.platform.messaging.sendEmail}")
     private boolean sendEmail;
 
+    @Value("${hspc.platform.frontend}")
+    private String baseURL;
+
     private JavaMailSender mailSender;
     private SpringTemplateEngine templateEngine;
 
@@ -60,7 +63,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     @PublishAtomicMetric
-    public void sendEmail(User inviter, User invitee, Sandbox sandbox) throws IOException {
+    public void sendEmail(User inviter, User invitee, Sandbox sandbox, int invitationId) throws IOException {
         if (sendEmail) {
 
             Message message = new Message(true, Message.ENCODING);
@@ -86,6 +89,8 @@ public class EmailServiceImpl implements EmailService {
             }
             message.addVariable("sandboxName", sandbox.getName());
             message.addVariable("inviteeEmail", invitee.getEmail());
+            message.addVariable("invitationId", invitationId);
+            message.addVariable("baseURL", baseURL);
 
             // Add the inline images, referenced from the HTML code as "cid:image-name"
             message.addResource("hspc-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
