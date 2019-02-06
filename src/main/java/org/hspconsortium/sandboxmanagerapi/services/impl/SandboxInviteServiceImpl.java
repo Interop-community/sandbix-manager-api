@@ -145,49 +145,49 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesByInviteeId(final String inviteeId) {
         List<SandboxInvite> sandboxInvites = repository.findInvitesByInviteeId(inviteeId);
-        clearSandboxInformation(sandboxInvites);
+//        clearSandboxInformation(sandboxInvites);
         return sandboxInvites;
     }
 
     @Override
     public List<SandboxInvite> findInvitesBySandboxId(final String sandboxId) {
         List<SandboxInvite> sandboxInvites = repository.findInvitesBySandboxId(sandboxId);
-        clearSandboxInformation(sandboxInvites);
+//        clearSandboxInformation(sandboxInvites);
         return sandboxInvites;
     }
 
     @Override
     public List<SandboxInvite> findInvitesByInviteeIdAndSandboxId(final String inviteeId, final String sandboxId) {
         List<SandboxInvite> sandboxInvites = repository.findInvitesByInviteeIdAndSandboxId(inviteeId, sandboxId);
-        clearSandboxInformation(sandboxInvites);
+//        clearSandboxInformation(sandboxInvites);
         return sandboxInvites;
     }
 
     @Override
     public List<SandboxInvite> findInvitesByInviteeEmailAndSandboxId(final String inviteeEmail, final String sandboxId) {
         List<SandboxInvite> sandboxInvites = repository.findInvitesByInviteeEmailAndSandboxId(inviteeEmail, sandboxId);
-        clearSandboxInformation(sandboxInvites);
+//        clearSandboxInformation(sandboxInvites);
         return sandboxInvites;
     }
 
     @Override
     public List<SandboxInvite> findInvitesByInviteeEmail(final String inviteeEmail) {
         List<SandboxInvite> sandboxInvites = repository.findInvitesByInviteeEmail(inviteeEmail);
-        clearSandboxInformation(sandboxInvites);
+//        clearSandboxInformation(sandboxInvites);
         return sandboxInvites;
     }
 
     @Override
     public List<SandboxInvite> findInvitesByInviteeIdAndStatus(final String inviteeId, final InviteStatus status) {
         List<SandboxInvite> sandboxInvites = repository.findInvitesByInviteeIdAndStatus(inviteeId, status);
-        clearSandboxInformation(sandboxInvites);
+//        clearSandboxInformation(sandboxInvites);
         return sandboxInvites;
     }
 
     @Override
     public List<SandboxInvite> findInvitesBySandboxIdAndStatus(final String sandboxId, final InviteStatus status) {
         List<SandboxInvite> sandboxInvites = repository.findInvitesBySandboxIdAndStatus(sandboxId, status);
-        clearSandboxInformation(sandboxInvites);
+//        clearSandboxInformation(sandboxInvites);
         return sandboxInvites;
     }
 
