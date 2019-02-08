@@ -12,6 +12,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxServiceImpl;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -54,4 +55,7 @@ public class SandboxManagerConfig {
     public RestTemplate simpleRestTemplate() {
         return new RestTemplate();
     }
+
+    @Bean
+    public ModelMapper modelMapper() { return new ModelMapper(); }
 }
