@@ -9,11 +9,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SandboxDto {
+public class SecuredSandboxDto {
     private String sandboxId;
     private String name;
-    private String apiEndpointIndex;
-    private String fhirServerEndPoint;
 
     public String getSandboxId() {
         return sandboxId;
@@ -29,21 +27,5 @@ public class SandboxDto {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getApiEndpointIndex() {
-        return apiEndpointIndex;
-    }
-
-    public void setApiEndpointIndex(String apiEndpointIndex) {
-        this.apiEndpointIndex = apiEndpointIndex;
-    }
-
-    public String getFhirServerEndPoint() {
-        return fhirServerEndPoint;
-    }
-
-    public void setFhirServerEndPoint(String fhirServerEndPoint) {
-        this.fhirServerEndPoint = fhirServerEndPoint;
     }
 }

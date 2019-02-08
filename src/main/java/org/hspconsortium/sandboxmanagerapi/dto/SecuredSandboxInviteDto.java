@@ -4,11 +4,11 @@ import org.hspconsortium.sandboxmanagerapi.model.InviteStatus;
 
 import java.sql.Timestamp;
 
-public class SandboxInviteDto {
+public class SecuredSandboxInviteDto {
     private Integer id;
-    private UserDto invitee;
-    private UserDto invitedBy;
-    private SandboxDto sandbox;
+    private SecuredUserDto invitee;
+    private SecuredUserDto invitedBy;
+    private SecuredSandboxDto sandbox;
     private Timestamp inviteTimestamp;
     private InviteStatus status;
 
@@ -20,27 +20,27 @@ public class SandboxInviteDto {
         this.id = id;
     }
 
-    public UserDto getInvitee() {
+    public SecuredUserDto getInvitee() {
         return invitee;
     }
 
-    public void setInvitee(UserDto invitee) {
+    public void setInvitee(SecuredUserDto invitee) {
         this.invitee = invitee;
     }
 
-    public UserDto getInvitedBy() {
+    public SecuredUserDto getInvitedBy() {
         return invitedBy;
     }
 
-    public void setInvitedBy(UserDto invitedBy) {
+    public void setInvitedBy(SecuredUserDto invitedBy) {
         this.invitedBy = invitedBy;
     }
 
-    public SandboxDto getSandbox() {
+    public SecuredSandboxDto getSandbox() {
         return sandbox;
     }
 
-    public void setSandbox(SandboxDto sandbox) {
+    public void setSandbox(SecuredSandboxDto sandbox) {
         this.sandbox = sandbox;
     }
 

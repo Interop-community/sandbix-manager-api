@@ -21,10 +21,11 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
-import org.hspconsortium.sandboxmanagerapi.dto.SandboxInviteDto;
+import org.hspconsortium.sandboxmanagerapi.dto.SecuredSandboxInviteDto;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -116,8 +118,8 @@ public class SandboxInviteController {
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sbmUserId", "status"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
-    List<SandboxInviteDto> getSandboxInvitesByInvitee(HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserIdEncoded,
-                                                      @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
+    List<SecuredSandboxInviteDto> getSandboxInvitesByInvitee(HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserIdEncoded,
+                                                             @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         String sbmUserId = java.net.URLDecoder.decode(sbmUserIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, sbmUserId);
 //        if (status == null) {
@@ -128,10 +130,9 @@ public class SandboxInviteController {
 //        } else {
         List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeIdAndStatus(sbmUserId, status);
         if (sandboxInvites != null) {
-
             return sandboxInvites
                     .stream()
-                    .map(sandboxInvite -> modelMapper.map(sandboxInvites, SandboxInviteDto.class))
+                    .map(sandboxInvite -> modelMapper.map(sandboxInvite, SecuredSandboxInviteDto.class))
                     .collect(Collectors.toList());
         }
 //        }
@@ -141,8 +142,8 @@ public class SandboxInviteController {
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId", "status"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
-    List<SandboxInviteDto> getSandboxInvitesBySandbox(HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId,
-                                                      @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
+    List<SecuredSandboxInviteDto> getSandboxInvitesBySandbox(HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId,
+                                                             @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -163,7 +164,7 @@ public class SandboxInviteController {
         if (sandboxInvites != null) {
             return sandboxInvites
                     .stream()
-                    .map(sandboxInvite -> modelMapper.map(sandboxInvite, SandboxInviteDto.class))
+                    .map(sandboxInvite -> modelMapper.map(sandboxInvite, SecuredSandboxInviteDto.class))
                     .collect(Collectors.toList());
         }
 //        }
