@@ -7,10 +7,10 @@ import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.services.impl.AdminServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
@@ -28,7 +28,7 @@ public class AdminServiceTest {
     private SandboxActivityLogService sandboxActivityLogService = mock(SandboxActivityLogService.class);
     private HttpEntity httpEntity = mock(HttpEntity.class);
     private RestTemplate restTemplate = mock(RestTemplate.class);
-    private ResponseEntity<Collection<LinkedHashMap>> responseEntity;
+    private ResponseEntity<Collection> responseEntity;
 
     private Iterable<Sandbox> sandboxesIterable;
     private Iterable<SandboxActivityLog> sandboxAccessHistories;
@@ -64,47 +64,181 @@ public class AdminServiceTest {
 
         sandboxAccessHistory2 = new SandboxActivityLog();
         sandboxAccessHistory2.setId(2);
-        sandboxAccessHistory2.setSandbox(sandbox);
         sandboxAccessHistories = new ArrayList<>();
 
+        String[] dontDeleteInSyncList = new String[]{"SND1"};
+        ReflectionTestUtils.setField(adminService, "dontDeleteInSync", dontDeleteInSyncList);
     }
 
     @Test
     public void syncSandboxManagerandReferenceApiTest() {
-//        responseEntity = new ResponseEntity<Collection<LinkedHashMap>>();
-//          TODO: Skip these class tests
-//        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
-//        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
-//        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity);
-//        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);
-//        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
-//        HashMap<String, Object> actual = new HashMap<>();
-//        List<String> missingInSandboxManagerIds = new ArrayList<>();
-//        missingInSandboxManagerIds.add("SND2");
-//        List<String> missingInReferenceApi = new ArrayList<>();
-//        missingInReferenceApi.add("SND2");
-//        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
-//        actual.put("missing_in_reference_api", missingInReferenceApi);
-//        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(true, "");
-//        assertEquals(expected, actual);
+        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        ResponseEntity responseEntity2 = new ResponseEntity<Collection>(sandboxesInRAPI, HttpStatus.OK);
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity2);
+        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);
+        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
+        HashMap<String, Object> actual = new HashMap<>();
+        List<String> missingInSandboxManagerIds = new ArrayList<>();
+        List<String> missingInReferenceApi = new ArrayList<>();
+        missingInReferenceApi.add("SND1");
+        missingInReferenceApi.add("SND2");
+        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
+        actual.put("missing_in_reference_api", missingInReferenceApi);
+        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(true, "");
+        assertEquals(expected, actual);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void syncSandboxManagerandReferenceApiExceptionTest() {
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(null);
+        adminService.syncSandboxManagerandReferenceApi(true, "");
+    }
+
+    @Test
+    public void syncSandboxManagerandReferenceApiMissingInSandboxManagerTest() {
+        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        LinkedHashMap linkedHashMap = new LinkedHashMap();
+        linkedHashMap.put("teamId", "SND3");
+        linkedHashMap.put("schemaVersion", "6");
+
+        ((ArrayList<LinkedHashMap>) sandboxesInRAPI).add(linkedHashMap);
+        ResponseEntity responseEntity2 = new ResponseEntity<Collection>(sandboxesInRAPI, HttpStatus.OK);
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity2);
+        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);
+        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
+        HashMap<String, Object> actual = new HashMap<>();
+        List<String> missingInSandboxManagerIds = new ArrayList<>();
+        missingInSandboxManagerIds.add("SND3");
+        List<String> missingInReferenceApi = new ArrayList<>();
+        missingInReferenceApi.add("SND1");
+        missingInReferenceApi.add("SND2");
+        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
+        actual.put("missing_in_reference_api", missingInReferenceApi);
+        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(true, "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void syncSandboxManagerandReferenceApiSandboxJsonNotNullTest() {
+        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        LinkedHashMap linkedHashMap = new LinkedHashMap();
+        linkedHashMap.put("teamId", "SND1");
+        linkedHashMap.put("schemaVersion", "6");
+
+        ((ArrayList<LinkedHashMap>) sandboxesInRAPI).add(linkedHashMap);
+        ResponseEntity responseEntity2 = new ResponseEntity<Collection>(sandboxesInRAPI, HttpStatus.OK);
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity2);
+        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);
+        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
+        HashMap<String, Object> actual = new HashMap<>();
+        List<String> missingInSandboxManagerIds = new ArrayList<>();
+        List<String> missingInReferenceApi = new ArrayList<>();
+        missingInReferenceApi.add("SND2");
+        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
+        actual.put("missing_in_reference_api", missingInReferenceApi);
+        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(true, "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void syncSandboxManagerandReferenceApiSandboxJsonNullTest() {
+        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        LinkedHashMap linkedHashMap = null;
+
+        ((ArrayList<LinkedHashMap>) sandboxesInRAPI).add(linkedHashMap);
+        ResponseEntity responseEntity2 = new ResponseEntity<Collection>(sandboxesInRAPI, HttpStatus.OK);
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity2);
+        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);
+        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
+        HashMap<String, Object> actual = new HashMap<>();
+        List<String> missingInSandboxManagerIds = new ArrayList<>();
+        List<String> missingInReferenceApi = new ArrayList<>();
+        missingInReferenceApi.add("SND1");
+        missingInReferenceApi.add("SND2");
+        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
+        actual.put("missing_in_reference_api", missingInReferenceApi);
+        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(true, "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void syncSandboxManagerandReferenceApiContainsSandboxIdTest() {
+        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        LinkedHashMap linkedHashMap = new LinkedHashMap();
+        linkedHashMap.put("teamId", "SND1");
+        linkedHashMap.put("schemaVersion", "6");
+
+        ((ArrayList<LinkedHashMap>) sandboxesInRAPI).add(linkedHashMap);
+        ResponseEntity responseEntity2 = new ResponseEntity<Collection>(sandboxesInRAPI, HttpStatus.OK);
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity2);
+        when(sandboxService.findBySandboxId("SND1")).thenReturn(sandbox);
+        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
+        HashMap<String, Object> actual = new HashMap<>();
+        List<String> missingInSandboxManagerIds = new ArrayList<>();
+        List<String> missingInReferenceApi = new ArrayList<>();
+        missingInReferenceApi.add("SND2");
+        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
+        actual.put("missing_in_reference_api", missingInReferenceApi);
+        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(true, "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void syncSandboxManagerandReferenceApiDeleteInSyncTest() {
+        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        LinkedHashMap linkedHashMap = new LinkedHashMap();
+        linkedHashMap.put("teamId", "SND1");
+        linkedHashMap.put("schemaVersion", "6");
+
+        ((ArrayList<LinkedHashMap>) sandboxesInRAPI).add(linkedHashMap);
+        ResponseEntity responseEntity2 = new ResponseEntity<Collection>(sandboxesInRAPI, HttpStatus.OK);
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(sandboxService.getSystemSandboxApiURL()).thenReturn("");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity2);
+        when(sandboxService.findBySandboxId("SND1")).thenReturn(sandbox);
+        doNothing().when(sandboxService).delete(sandbox, "", null, true);
+        HashMap<String, Object> actual = new HashMap<>();
+        List<String> missingInSandboxManagerIds = new ArrayList<>();
+        List<String> missingInReferenceApi = new ArrayList<>();
+        missingInReferenceApi.add("SND2");
+        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
+        actual.put("missing_in_reference_api", missingInReferenceApi);
+        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(true, "");
+        assertEquals(expected, actual);
     }
 
     @Test
     public void syncSandboxManagerandReferenceApiFixedFalseTest() {
-//        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
-//        // TODO: Ask Jacob, restTemplate not working
-//        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity);
-//        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);
-//        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
-//        HashMap<String, Object> actual = new HashMap<>();
-//        List<String> missingInSandboxManagerIds = new ArrayList<>();
-//        missingInSandboxManagerIds.add("SND2");
-//        List<String> missingInReferenceApi = new ArrayList<>();
-//        missingInReferenceApi.add("SND2");
-//        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
-//        actual.put("missing_in_reference_api", missingInReferenceApi);
-//        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(false, "");
-//        assertEquals(expected, actual);
+        Collection<LinkedHashMap> sandboxesInRAPI = new ArrayList<>();
+        LinkedHashMap linkedHashMap1 = new LinkedHashMap();
+        linkedHashMap1.put("teamId", "SND1");
+        linkedHashMap1.put("schemaVersion", "6");
+
+        ((ArrayList<LinkedHashMap>) sandboxesInRAPI).add(linkedHashMap1);
+        ResponseEntity responseEntity2 = new ResponseEntity<Collection>(sandboxesInRAPI, HttpStatus.OK);
+        when(sandboxService.findAll()).thenReturn(sandboxesIterable);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Collection.class))).thenReturn(responseEntity2);
+        when(sandboxService.findBySandboxId("SND2")).thenReturn(sandbox2);
+        doNothing().when(sandboxService).delete(sandbox2, "", null, true);
+        HashMap<String, Object> actual = new HashMap<>();
+        List<String> missingInSandboxManagerIds = new ArrayList<>();
+        List<String> missingInReferenceApi = new ArrayList<>();
+        missingInReferenceApi.add("SND2");
+        actual.put("missing_in_sandbox_manager", missingInSandboxManagerIds);
+        actual.put("missing_in_reference_api", missingInReferenceApi);
+        HashMap<String, Object> expected = adminService.syncSandboxManagerandReferenceApi(false, "");
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -123,6 +257,48 @@ public class AdminServiceTest {
     }
 
     @Test
+    public void deleteUnusedSandboxesMoreThanYearAndSandboxNullTest() {
+        Date d = new Date();
+        Timestamp timestamp = new Timestamp(d.getTime() - 400 * 24 * 3600 * 1000L);
+        sandboxAccessHistory2.setTimestamp(timestamp);
+        ((ArrayList<SandboxActivityLog>) sandboxAccessHistories).add(sandboxAccessHistory2);
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxAccessHistories);
+        when(sandboxService.findBySandboxId("SND1")).thenReturn(sandbox);
+        doNothing().when(sandboxService).delete(sandbox, "Token", user, false);
+        Set<String> expected = new HashSet<>();
+        Set<String> actual = adminService.deleteUnusedSandboxes(user, "Token");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void deleteUnusedSandboxesLessThanYearTest() {
+        Date d = new Date();
+        Timestamp timestamp = new Timestamp(d.getTime() - 200 * 24 * 3600 * 1000L);
+        sandboxAccessHistory.setTimestamp(timestamp);
+        ((ArrayList<SandboxActivityLog>) sandboxAccessHistories).add(sandboxAccessHistory);
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxAccessHistories);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        doNothing().when(sandboxService).delete(sandbox, "Token", user, false);
+        Set<String> expected = new HashSet<>();
+        Set<String> actual = adminService.deleteUnusedSandboxes(user, "Token");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void deleteUnusedSandboxesLessThanYearAndSandboxNullTest() {
+        Date d = new Date();
+        Timestamp timestamp = new Timestamp(d.getTime() - 200 * 24 * 3600 * 1000L);
+        sandboxAccessHistory.setTimestamp(timestamp);
+        ((ArrayList<SandboxActivityLog>) sandboxAccessHistories).add(sandboxAccessHistory);
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxAccessHistories);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        doNothing().when(sandboxService).delete(sandbox, "Token", user, false);
+        Set<String> expected = new HashSet<>();
+        Set<String> actual = adminService.deleteUnusedSandboxes(user, "Token");
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void deleteUnusedSandboxesMoreThanOneHistoryTest() {
         Date d = new Date();
         Timestamp timestamp = new Timestamp(d.getTime() - 400 * 24 * 3600 * 1000L);
@@ -135,6 +311,22 @@ public class AdminServiceTest {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         doNothing().when(sandboxService).delete(sandbox, "Token", user, false);
         Set<String> expected = new HashSet<>();
+        expected.add("SND1");
+        Set<String> actual = adminService.deleteUnusedSandboxes(user, "Token");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void deleteUnusedSandboxesAccessHistoryNotNullTest() {
+        Date d = new Date();
+        Timestamp timestamp = new Timestamp(d.getTime() - 400 * 24 * 3600 * 1000L);
+        sandboxAccessHistory.setTimestamp(timestamp);
+        ((ArrayList<SandboxActivityLog>) sandboxAccessHistories).add(sandboxAccessHistory);
+        when(sandboxActivityLogService.findAll()).thenReturn(sandboxAccessHistories);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        doNothing().when(sandboxService).delete(sandbox, "Token", user, false);
+        Set<String> expected = new HashSet<>();
+        expected.add(sandbox.getSandboxId());
         Set<String> actual = adminService.deleteUnusedSandboxes(user, "Token");
         assertEquals(expected, actual);
     }
