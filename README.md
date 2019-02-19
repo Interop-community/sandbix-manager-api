@@ -9,19 +9,24 @@ Welcome to the HSPC Sandbox Manager API!
 [HSPC Sandbox](https://sandbox.hspconsortium.org)
 
 ### How do I get set up?
+This project uses Java 8. Please make sure that your Project SDK is set to use Java 8.
 
-#### Prerequisites
+#### Step 1: Prerequisites
  * build "sandman" schema in local mysql. Check application.yml that name has not changed.
 
-#### Maven Build
+#### Step 2: Maven Build
+
+In the terminal, run the following command:
 
     mvn package
     
-#### Run locally
+#### Step 3: Run locally or Run on Docker
+
+###### For local installation
 
     ./run-local.sh
 
-#### Docker Install
+###### For Docker Installation
 
     cd docker/nginx
     ./build.sh
@@ -29,7 +34,7 @@ Welcome to the HSPC Sandbox Manager API!
     ./build.sh
     docker-compose up
     
-The service is available at: 
+The set up process is complete and your project is running now. The service is available at: 
     http://localhost:12000/health
 
 #### Configuration ####
@@ -51,4 +56,3 @@ https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platf
 | SANDMAN-API-DSTU2       | 12000 |
 | SANDMAN-API-DSTU2-DEBUG | 12005 |
 | MySQL                   |  3306 |
-
