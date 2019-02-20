@@ -276,6 +276,8 @@ public class AnalyticsControllerTest {
         transactionInfo.put("userId", user.getSbmUserId());
         String json = json(transactionInfo);
         String ft = json(fhirTransaction);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(fhirTransaction);
         mvc
@@ -308,77 +310,70 @@ public class AnalyticsControllerTest {
                 .andExpect(content().json(ft));
     }
 
-//    @Test(expected = UnauthorizedException.class)
-//    public void handleFhirTransactionPersonaNullTest() throws Exception {
-//        //TODO: Start here
-//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-//        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-//        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
-//        doThrow(UnauthorizedException.class).when(authorizationService).checkIfPersonaAndHasAuthority(sandbox, null);
-//
-//        mvc
-//                .perform(post("/analytics/transaction"));
-//    }
+    @Test(expected = NestedServletException.class)
+    public void handleFhirTransactionPersonaNullTest() throws Exception {
+        HashMap<String, String> transactionInfo = new HashMap<>();
+        transactionInfo.put("tenant", sandbox.getSandboxId());
+        transactionInfo.put("secured", "true");
+        transactionInfo.put("userId", user.getSbmUserId());
+        String json = json(transactionInfo);
+        String ft = json(fhirTransaction);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
+        doThrow(UnauthorizedException.class).when(authorizationService).checkIfPersonaAndHasAuthority(sandbox, null);
+        mvc
+                .perform(post("/analytics/transaction")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(ft));
+    }
 
-//    @Test
-//    public void handleFhirTransactionIfContainsTenantTest() throws Exception {
-//        HashMap<String, String> transactionInfo = new HashMap<>();
-//        transactionInfo.put("tenant", sandbox.getSandboxId());
-//        transactionInfo.put("secured", "true");
-//        transactionInfo.put("userId", user.getSbmUserId());
-//
-//        String[] sandboxesAllUsersCanAccess = new String[]{"a", "b", "c", "d"};
-//
-//        String json = json(transactionInfo);
-//        String ft = json(fhirTransaction);
-//
-//
-//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-//        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-////        doThrow(new Exception()).when(authorizationService).checkSystemUserCanMakeTransaction(sandbox, user);
-////        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(userPersona);
-//        when(authorizationService.getBearerToken(any())).thenReturn("");
-//        when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(null);
-//
-//        mvc
-//                .perform(
-//                        post("/analytics/transaction")
-//                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-//                                .content(json))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-//                .andExpect(content().json(ft));
-//    }
+    @Test(expected = NestedServletException.class)
+    public void handleFhirTransactionThrowsUserCanMakeTransactionExceptionTest() throws Exception {
+        HashMap<String, String> transactionInfo = new HashMap<>();
+        transactionInfo.put("tenant", sandbox.getSandboxId());
+        transactionInfo.put("secured", "true");
+        transactionInfo.put("userId", user.getSbmUserId());
+        String json = json(transactionInfo);
+        String ft = json(fhirTransaction);
+        User user2 = new User();
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user2);
+        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
+        doThrow(UnauthorizedException.class).when(authorizationService).checkSystemUserCanMakeTransaction(sandbox, user2);
+        mvc
+                .perform(post("/analytics/transaction")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(ft));
+    }
 
-//    @Test
-//    public void getSandboxStatisticsTest() throws Exception {
-//        String stats = json(statistics);
-//        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
-//        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-//        when(analyticsService.getSandboxStatistics("2")).thenReturn(statistics);
-//
-//        mvc
-//                .perform(
-//                        get("/analytics/getstats?interval=2"))
-//                        .andExpect(status().isOk())
-//                        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-//                        .andExpect(content().json(stats));
-//    }
-
-//    @Test(expected =  NestedServletException.class)
-//    public void getSandboxStatisticsNullUserTest() throws Exception {
-//        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
-//        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-//        when(analyticsService.getSandboxStatistics("2")).thenReturn(statistics);
-//        String stats = json(statistics);
-//
-//        mvc
-//                .perform(
-//                        get("/analytics/getstats?interval=2"))
-//                        .andExpect(status().isOk())
-//                        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-//                        .andExpect(content().json(stats));
-//    }
+    @Test
+    public void handleFhirTransactionIfContainsTenantTest() throws Exception {
+        HashMap<String, String> transactionInfo = new HashMap<>();
+        transactionInfo.put("tenant", "SND1");
+        transactionInfo.put("secured", "true");
+        transactionInfo.put("userId", user.getSbmUserId());
+        String json = json(transactionInfo);
+        String ft = json(fhirTransaction);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        when(authorizationService.getBearerToken(any())).thenReturn("");
+        when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(fhirTransaction);
+        mvc
+                .perform(
+                        post("/analytics/transaction")
+                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                                .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(ft));
+    }
 
     @Test
     public void transactionStatsTest() throws Exception {

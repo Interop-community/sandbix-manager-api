@@ -114,8 +114,6 @@ public class AnalyticsController {
                 } catch (UnauthorizedException e) {
                     throw new UnauthorizedException("User does not have access to this sandbox");
                 }
-            } else if (transactionInfo.get("secured").equals("false")) {
-                // do nothing
             } else {
                 try {
                     UserPersona userPersona = userPersonaService.findByPersonaUserId(userId);
