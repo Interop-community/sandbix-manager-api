@@ -1,14 +1,10 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
-import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -18,25 +14,22 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,6 +73,9 @@ public class AnalyticsControllerTest {
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
+    @Inject
+    private AnalyticsController analyticsController;
+
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 
@@ -99,6 +95,7 @@ public class AnalyticsControllerTest {
     private HashMap<String, Object> stringObjectHashMap;
     private Integer stringObjectSize;
     private Statistics statistics;
+    private String  jsonStringObjectHashMap;
 
     @Before
     public void setup() {
@@ -123,8 +120,15 @@ public class AnalyticsControllerTest {
         stringObjectHashMap.put("asdf6", 1.0);
         stringObjectHashMap.put("asdf7", 1.0);
         stringObjectSize = stringObjectHashMap.size();
+        try {
+            jsonStringObjectHashMap = json(stringObjectHashMap);
+        } catch (IOException e) {
 
+        }
         statistics = new Statistics();
+        String[] sandboxesAllUsersCanAccess = new String[]{"SND1"};
+        ReflectionTestUtils.setField(analyticsController, "sandboxesAllUsersCanAccess", sandboxesAllUsersCanAccess);
+
     }
 
     @Test
@@ -132,11 +136,9 @@ public class AnalyticsControllerTest {
         List<Sandbox>  userCreatedSandboxes = new ArrayList<>();
         userCreatedSandboxes.add(sandbox);
         int numberOfSandboxes = userCreatedSandboxes.size();
-
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findByPayerId(user.getId())).thenReturn(userCreatedSandboxes);
-
         mvc
                 .perform(
                         get("/analytics/sandboxes?userId=" + user.getSbmUserId()))
@@ -148,7 +150,6 @@ public class AnalyticsControllerTest {
     @Test(expected=NestedServletException.class)
     public void countSandboxesByUserNullUserTest() throws Exception {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-
         mvc
                 .perform(
                         get("/analytics/sandboxes?userId=" + user.getSbmUserId()));
@@ -162,7 +163,6 @@ public class AnalyticsControllerTest {
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.countUsersPerSandboxByUser(user)).thenReturn(sandboxIdAndUniqueUserCount);
-
         mvc
                 .perform(
                         get("/analytics/users?userId=" + user.getSbmUserId()))
@@ -178,7 +178,6 @@ public class AnalyticsControllerTest {
         String json = json(sandboxIdAndUniqueUserCount);
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-
         mvc
                 .perform(
                         get("/analytics/users?userId=" + user.getSbmUserId()))
@@ -195,7 +194,6 @@ public class AnalyticsControllerTest {
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.countAppsPerSandboxByUser(user)).thenReturn(sandboxIdAndAppsCount);
-
         mvc
                 .perform(
                         get("/analytics/apps?userId=" + user.getSbmUserId()))
@@ -211,7 +209,6 @@ public class AnalyticsControllerTest {
         String json = json(sandboxIdAndAppsCount);
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-
         mvc
                 .perform(
                         get("/analytics/apps?userId=" + user.getSbmUserId()))
@@ -222,14 +219,11 @@ public class AnalyticsControllerTest {
 
     @Test
     public void memoryUsedByUserTest() throws Exception {
-        Double memoryUsedInMB = 0.0;
-        String json = json(memoryUsedInMB);
-
+        String json = json(0.0);
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.retrieveTotalMemoryByUser(user, "")).thenReturn(memoryUsedInMB);
-
+        when(analyticsService.retrieveTotalMemoryByUser(user, "")).thenReturn(0.0);
         mvc
                 .perform(
                         get("/analytics/memory?userId=" + user.getSbmUserId()))
@@ -240,12 +234,9 @@ public class AnalyticsControllerTest {
 
     @Test(expected = NestedServletException.class)
     public void memoryUsedByUserNullUserTest() throws Exception {
-        Double memoryUsedInMB = 0.0;
-        String json = json(memoryUsedInMB);
-
+        String json = json(0.0);
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-
         mvc
                 .perform(
                         get("/analytics/memory?userId=" + user.getSbmUserId()))
@@ -260,16 +251,13 @@ public class AnalyticsControllerTest {
         transactionInfo.put("tenant", sandbox.getSandboxId());
         transactionInfo.put("secured", "true");
         transactionInfo.put("userId", user.getSbmUserId());
-
         String json = json(transactionInfo);
         String ft = json(fhirTransaction);
-
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(userPersona);
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.handleFhirTransaction(user, transactionInfo,"")).thenReturn(fhirTransaction);
-
         mvc
                 .perform(
                         post("/analytics/transaction")
@@ -286,13 +274,10 @@ public class AnalyticsControllerTest {
         transactionInfo.put("tenant", sandbox.getSandboxId());
         transactionInfo.put("secured", "false");
         transactionInfo.put("userId", user.getSbmUserId());
-
         String json = json(transactionInfo);
         String ft = json(fhirTransaction);
-
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(fhirTransaction);
-
         mvc
                 .perform(
                         post("/analytics/transaction")
@@ -309,13 +294,10 @@ public class AnalyticsControllerTest {
         transactionInfo.put("tenant", sandbox.getSandboxId());
         transactionInfo.put("secured", "true");
         transactionInfo.put("userId", user.getSbmUserId());
-
         String json = json(transactionInfo);
         String ft = json(fhirTransaction);
-
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(fhirTransaction);
-
         mvc
                 .perform(
                         post("/analytics/transaction")
@@ -326,24 +308,16 @@ public class AnalyticsControllerTest {
                 .andExpect(content().json(ft));
     }
 
-//    @Test
+//    @Test(expected = UnauthorizedException.class)
 //    public void handleFhirTransactionPersonaNullTest() throws Exception {
-//        HashMap<String, String> transactionInfo = new HashMap<>();
-//        transactionInfo.put("tenant", sandbox.getSandboxId());
-//        transactionInfo.put("secured", "true");
-//        transactionInfo.put("userId", user.getSbmUserId());
-//
-//        String json = json(transactionInfo);
-//        String ft = json(fhirTransaction);
-//
+//        //TODO: Start here
 //        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
 //        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
 //        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
-//        doThrow(UnauthorizedException.class).when(authorizationService).checkIfPersonaAndHasAuthority(sandbox, userPersona);
+//        doThrow(UnauthorizedException.class).when(authorizationService).checkIfPersonaAndHasAuthority(sandbox, null);
 //
 //        mvc
-//                .perform(post("/analytics/transaction"))
-//                .andExpect(content().);
+//                .perform(post("/analytics/transaction"));
 //    }
 
 //    @Test
@@ -408,327 +382,349 @@ public class AnalyticsControllerTest {
 
     @Test
     public void transactionStatsTest() throws Exception {
-        String json = json(stringObjectHashMap);
-        Integer n = 1;
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.transactionStats(2, 1)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n))
+                        get("/analytics/overallStats/transactions?interval=2&n=1" ))
                         .andExpect(status().isOk())
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                        .andExpect(content().json(json));
+                        .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test(expected = NestedServletException.class)
     public void transactionStatsNullUserTest() throws Exception {
-        String json = json(stringObjectHashMap);
-        Integer n = 1;
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-        when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.transactionStats(2, 1)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n))
+                        get("/analytics/overallStats/transactions?interval=2&n=1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void transactionStatsNValueArraySizeTest() throws Exception {
-        Integer n = stringObjectSize;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.transactionStats(2, stringObjectSize)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n) )
+                        get("/analytics/overallStats/transactions?interval=2&n=" + stringObjectSize) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void transactionStatsNValueLessThanArraySizeTest() throws Exception {
         Integer n = stringObjectSize - 5;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
-
         mvc
                 .perform(
                         get("/analytics/overallStats/transactions?interval=2&n=" + n) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void transactionStatsNValueMoreThanArraySizeTest() throws Exception {
         Integer n = stringObjectSize + 10;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
-
         mvc
                 .perform(
                         get("/analytics/overallStats/transactions?interval=2&n=" + n) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void transactionStatsNegativeNValueTest() throws Exception {
-        Integer n = -15;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.transactionStats(2, -15)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n) )
+                        get("/analytics/overallStats/transactions?interval=2&n=" + -15) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void transactionStatsDifferentIntervalZeroTest() throws Exception {
-        Integer n = 6;
-        Integer interval = 0;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        when(analyticsService.transactionStats(interval, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.transactionStats(0, 6)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/transactions?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/transactions?interval=" + 0 +"&n=" + 6) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void transactionStatsDifferentIntervalThousandTest() throws Exception {
-        Integer n = 6;
-        Integer interval = 1000;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        when(analyticsService.transactionStats(interval, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.transactionStats(1000, 6)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/transactions?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/transactions?interval=" + 1000 +"&n=" + 6) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void transactionStatsDifferentIntervalTenThousandTest() throws Exception {
-        Integer n = 6;
-        Integer interval = 10000;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        when(analyticsService.transactionStats(interval, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.transactionStats(10000, 6)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/transactions?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/transactions?interval=" + 10000 +"&n=" + 6) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void sandboxMemoryStatsTest() throws Exception {
-        Integer n = stringObjectSize;
-        Integer interval = 1000;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.sandboxMemoryStats(1000, stringObjectSize, "")).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/sandboxMemory?interval=" + 1000 +"&n=" + stringObjectSize) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test(expected = NestedServletException.class)
     public void sandboxMemoryStatsNullUserTest() throws Exception {
-        Integer n = stringObjectSize;
-        Integer interval = 1000;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.sandboxMemoryStats(1000, stringObjectSize, "")).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/sandboxMemory?interval=" + 1000 +"&n=" + stringObjectSize) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void sandboxMemoryStatsNValueArraySizeTest() throws Exception {
-        Integer n = stringObjectSize;
-        Integer interval = 1000;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.sandboxMemoryStats(1000, stringObjectSize, "")).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/sandboxMemory?interval=" + 1000 +"&n=" + stringObjectSize) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void sandboxMemoryStatsNValueLessArraySizeTest() throws Exception {
         Integer n = stringObjectSize - 10;
-        Integer interval = 1000;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.sandboxMemoryStats(1000, n, "")).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/sandboxMemory?interval=" + 1000 +"&n=" + n) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void sandboxMemoryStatsNValueNullTest() throws Exception {
-        Integer interval = 1000;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.sandboxMemoryStats(interval, null, "")).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.sandboxMemoryStats(1000, null, "")).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval) )
+                        get("/analytics/overallStats/sandboxMemory?interval=" + 1000) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void usersPerSandboxStatsTest() throws Exception {
-        Integer interval = 1000;
-        Integer n = -1;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.usersPerSandboxStats(interval, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.usersPerSandboxStats(1000, -1)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/usersPerSandbox?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/usersPerSandbox?interval=" + 1000 +"&n=" + -1) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test(expected = NestedServletException.class)
     public void usersPerSandboxStatsNullUserTest() throws Exception {
-        Integer interval = 1000;
-        Integer n = -1;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn("");
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-
         mvc
                 .perform(
-                        get("/analytics/overallStats/usersPerSandbox?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/usersPerSandbox?interval=" + 1000 +"&n=" + -1) )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+                .andExpect(content().json(jsonStringObjectHashMap));
     }
 
     @Test
     public void sandboxesPerUserStatsTest() throws Exception {
-        Integer interval = 1000;
-        Integer n = -1;
-        String json = json(stringObjectHashMap);
-
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.sandboxesPerUserStats(interval, n)).thenReturn(stringObjectHashMap);
-
+        when(analyticsService.sandboxesPerUserStats(1000, -1)).thenReturn(stringObjectHashMap);
         mvc
                 .perform(
-                        get("/analytics/overallStats/sandboxesPerUser?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats/sandboxesPerUser?interval=" + 1000 +"&n=" + -1) )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(jsonStringObjectHashMap));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void sandboxesPerUserStatsNullUserTest() throws Exception {
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        when(authorizationService.getBearerToken(any())).thenReturn("");
+        when(analyticsService.sandboxesPerUserStats(1000, -1)).thenReturn(stringObjectHashMap);
+        mvc
+                .perform(
+                        get("/analytics/overallStats/sandboxesPerUser?interval=" + 1000 +"&n=" + -1) )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(jsonStringObjectHashMap));
+    }
+
+    @Test
+    public void displayStatsNumMonthsTest() throws Exception{
+        List<Statistics> lstStat = new ArrayList<>();
+        String json = json(lstStat);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(analyticsService.displayStatsForGivenNumberOfMonths("1")).thenReturn(lstStat);
+        mvc
+                .perform(
+                        get("/analytics/overallStats?numberOfMonths=1") )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
-    public void sandboxesPerUserStatsNullUserTest() throws Exception {
-        Integer interval = 1000;
-        Integer n = -1;
-        String json = json(stringObjectHashMap);
-
+    public void displayStatsNumMonthsNullUserTest() throws Exception{
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-        when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.sandboxesPerUserStats(interval, n)).thenReturn(stringObjectHashMap);
-
         mvc
                 .perform(
-                        get("/analytics/overallStats/sandboxesPerUser?interval=" + interval +"&n=" + n) )
+                        get("/analytics/overallStats?numberOfMonths=1") )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+    }
+
+    @Test
+    public void getStatsOverNumberOfDaysTest() throws Exception{
+        String json = json(statistics);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(analyticsService.getSandboxStatisticsOverNumberOfDays("1")).thenReturn(statistics);
+        mvc
+                .perform(
+                        get("/analytics/overallStats?numberOfDays=1") )
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(json));
     }
+
+    @Test(expected = NestedServletException.class)
+    public void getStatsOverNumberOfDaysNullUserTest() throws Exception{
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        mvc
+                .perform(
+                        get("/analytics/overallStats?numberOfDays=1") )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+    }
+
+    //TODO: This method/test would later be deleted, when the main method in the AnalyticsService gets deleted
+    @Test
+    public void getStatsTest() throws Exception {
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        mvc
+                .perform(
+                        get("/analytics/getStats"))
+                .andExpect(status().isOk());
+    }
+
+    //TODO: This method/test would later be deleted, when the main method in the AnalyticsService gets deleted
+    @Test(expected = NestedServletException.class)
+    public void getStatsNullUserTest() throws Exception {
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        mvc
+                .perform(
+                        get("/analytics/getStats"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void currentStatisticsByUserTest() throws Exception{
+        Rule rule = new Rule();
+        UserStatistics userStatistics = new UserStatistics(rule);
+        String json = json(userStatistics);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.getBearerToken(any())).thenReturn("");
+        when(analyticsService.getUserStats(user, "")).thenReturn(userStatistics);
+        mvc
+                .perform(
+                        get("/analytics/userStatistics") )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void currentStatisticsByUserNullUserTest() throws Exception{
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
+        mvc
+                .perform(
+                        get("/analytics/userStatistics") )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+    }
+
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
