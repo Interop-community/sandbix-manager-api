@@ -92,20 +92,18 @@ hspc:
         clientId: sandman_admin
         clientSecret: secret
     api:
-      version1:
-        baseUrl: http://localhost:8071
-      version2:
-        baseUrl: http://localhost:8072
-      version3:
-        baseUrl: http://localhost:8073
-      version4:
-        baseUrl: http://localhost:8074
       version5:
         baseUrl: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
       version6:
         baseUrl: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
       version7:
         baseUrl: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
+      version8:
+        baseUrl: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8078}
+      version9:
+        baseUrl: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079}
+      version10:
+        baseUrl: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
     messaging:
