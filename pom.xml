@@ -10,7 +10,7 @@
 
     <groupId>org.hspconsortium.sandbox</groupId>
     <artifactId>hspc-sandbox-manager-api</artifactId>
-    <version>1.1.11</version>
+    <version>1.1.12</version>
     <packaging>jar</packaging>
 
     <name>Sandbox Manager API</name>
@@ -275,6 +275,12 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>2.3.2</version>
         </dependency>
 
     </dependencies>

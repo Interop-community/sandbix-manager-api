@@ -141,8 +141,8 @@ cloud:
     stack:
       auto: false
 
-expiration-message: FHIR R4 DFC available on trial basis. This sandbox will be unavailable after Dec 15, 2018.
-expiration-date: 2018-12-15
+expiration-message: FHIR R4 DFC available on trial basis. This sandbox will be unavailable after Mar 31, 2019.
+expiration-date: 2019-03-31
 
 default-public-apps: cds-hooks-sandbox, hspc-bilirubin-risk-chart, hspc-my-web-app
 
