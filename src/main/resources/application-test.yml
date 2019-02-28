@@ -5,7 +5,7 @@ spring:
     password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
   mail:
 #    password: ENC(G617hEtHdDqtzbpE9CtoYnopRfcrBqK8)
-    password: 1FYUeBbb/cd2R8a8yE3gc06tsILx5g20fzy6QGvcCMauMMI4ck9XL2YfhzBCPdNp/fIWCr9MSTs=
+    password: ENC(jbwbOVIvRmJc0vmjHS/GN+kCbx5CSrS3kv/0YZ1qlkfaKzgYnrF6wJXihFKCEQOjVDrTOEzLBQ4=)
 hspc:
   platform:
     authorization:
