@@ -33,7 +33,8 @@ spring:
   mail:
     sender:
       address: no-reply@hspconsortium.org
-    host: smtp.gmail.com
+#    host: smtp.gmail.com
+    host: email-smtp.us-west-2.amazonaws.com
     port: 587
     protocol: smtp
     properties:
@@ -46,7 +47,7 @@ spring:
             enable: false
           quitwait: false
           enableAuthentication: true
-    username: no-reply@hspconsortium.org
+    username: AKIAIH5KFVMTXJPXFLTQ      #no-reply@hspconsortium.org
     password: ThisIsNotTheRightPW
   thymeleaf:
       cache: false
