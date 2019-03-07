@@ -81,10 +81,10 @@ public class SandboxServiceTest {
 //        sandbox = new Sandbox();
         sandbox.setId(1);
         sandbox.setSandboxId("sandboxId");
-        sandbox.setApiEndpointIndex("6");
+        sandbox.setApiEndpointIndex("9");
         sandbox.setVisibility(Visibility.PUBLIC);
         newSandbox.setSandboxId("new-sandbox");
-        newSandbox.setApiEndpointIndex("7");
+        newSandbox.setApiEndpointIndex("10");
         sandboxes = new ArrayList<>();
         sandboxes.add(sandbox);
         user = new User();
@@ -141,13 +141,12 @@ public class SandboxServiceTest {
         ReflectionTestUtils.setField(sandboxService, "defaultSandboxVisibility", "PRIVATE");
         ReflectionTestUtils.setField(sandboxService, "expirationDate", "2018-09-01");
         ReflectionTestUtils.setField(sandboxService, "defaultSandboxCreatorRoles", new String[0]);
-        ReflectionTestUtils.setField(sandboxService, "apiBaseURL_1", "apiBaseURL_1");
-        ReflectionTestUtils.setField(sandboxService, "apiBaseURL_2", "apiBaseURL_2");
-        ReflectionTestUtils.setField(sandboxService, "apiBaseURL_3", "apiBaseURL_3");
-        ReflectionTestUtils.setField(sandboxService, "apiBaseURL_4", "apiBaseURL_4");
         ReflectionTestUtils.setField(sandboxService, "apiBaseURL_5", "apiBaseURL_5");
         ReflectionTestUtils.setField(sandboxService, "apiBaseURL_6", "apiBaseURL_6");
         ReflectionTestUtils.setField(sandboxService, "apiBaseURL_7", "apiBaseURL_7");
+        ReflectionTestUtils.setField(sandboxService, "apiBaseURL_8", "apiBaseURL_8");
+        ReflectionTestUtils.setField(sandboxService, "apiBaseURL_9", "apiBaseURL_9");
+        ReflectionTestUtils.setField(sandboxService, "apiBaseURL_10", "apiBaseURL_10");
         ReflectionTestUtils.setField(sandboxService, "defaultPublicSandboxRoles", defaultPublicSandboxRoles);
 
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
@@ -225,8 +224,6 @@ public class SandboxServiceTest {
         verify(newSandbox).setCreatedBy(user);
         verify(newSandbox).setCreatedTimestamp(any());
         verify(newSandbox).setVisibility(any());
-        verify(newSandbox).setExpirationMessage(any());
-        verify(newSandbox).setExpirationDate(any());
         verify(newSandbox).setPayerUserId(any());
         verify(sandboxActivityLogService).sandboxCreate(newSandbox, user);
     }
@@ -349,7 +346,7 @@ public class SandboxServiceTest {
         otherSandbox.setAllowOpenAccess(true);
         otherSandbox.setId(2);
         otherSandbox.setSandboxId("otherSandboxId");
-        otherSandbox.setApiEndpointIndex("6");
+        otherSandbox.setApiEndpointIndex("9");
         when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(otherSandbox);
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
@@ -364,7 +361,7 @@ public class SandboxServiceTest {
         otherSandbox.setAllowOpenAccess(true);
         otherSandbox.setId(2);
         otherSandbox.setSandboxId("otherSandboxId");
-        otherSandbox.setApiEndpointIndex("6");
+        otherSandbox.setApiEndpointIndex("9");
         otherSandbox.setDataSet(DataSet.NONE);
         when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(otherSandbox);
         when(httpClient.execute(any())).thenReturn(response);
@@ -379,7 +376,7 @@ public class SandboxServiceTest {
         otherSandbox.setAllowOpenAccess(true);
         otherSandbox.setId(2);
         otherSandbox.setSandboxId("otherSandboxId");
-        otherSandbox.setApiEndpointIndex("6");
+        otherSandbox.setApiEndpointIndex("9");
         when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(otherSandbox);
         when(httpClient.execute(any())).thenReturn(response);
         statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_UNAUTHORIZED, "NOT FINE!");
@@ -394,7 +391,7 @@ public class SandboxServiceTest {
         otherSandbox.setAllowOpenAccess(true);
         otherSandbox.setId(2);
         otherSandbox.setSandboxId("otherSandboxId");
-        otherSandbox.setApiEndpointIndex("6");
+        otherSandbox.setApiEndpointIndex("9");
         when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(otherSandbox);
         when(httpClient.execute(any())).thenThrow(IOException.class);
         sandboxService.update(sandbox, user, bearerToken);
@@ -558,8 +555,8 @@ public class SandboxServiceTest {
 
     @Test
     public void schemaCountTest() {
-        when(repository.schemaCount("6")).thenReturn("1");
-        String returnedSchemaCount = sandboxService.schemaCount("6");
+        when(repository.schemaCount("9")).thenReturn("1");
+        String returnedSchemaCount = sandboxService.schemaCount("9");
         assertEquals("1", returnedSchemaCount);
     }
 
@@ -580,24 +577,8 @@ public class SandboxServiceTest {
 
     @Test
     public void getSandboxApiURLTest() {
-        sandbox.setApiEndpointIndex("1");
-        String url = sandboxService.getSandboxApiURL(sandbox);
-        assertEquals("apiBaseURL_1/" + sandbox.getSandboxId(), url);
-
-        sandbox.setApiEndpointIndex("2");
-        url = sandboxService.getSandboxApiURL(sandbox);
-        assertEquals("apiBaseURL_2/" + sandbox.getSandboxId(), url);
-
-        sandbox.setApiEndpointIndex("3");
-        url = sandboxService.getSandboxApiURL(sandbox);
-        assertEquals("apiBaseURL_3/" + sandbox.getSandboxId(), url);
-
-        sandbox.setApiEndpointIndex("4");
-        url = sandboxService.getSandboxApiURL(sandbox);
-        assertEquals("apiBaseURL_4/" + sandbox.getSandboxId(), url);
-
         sandbox.setApiEndpointIndex("5");
-        url = sandboxService.getSandboxApiURL(sandbox);
+        String url = sandboxService.getSandboxApiURL(sandbox);
         assertEquals("apiBaseURL_5/" + sandbox.getSandboxId(), url);
 
         sandbox.setApiEndpointIndex("6");
@@ -607,6 +588,18 @@ public class SandboxServiceTest {
         sandbox.setApiEndpointIndex("7");
         url = sandboxService.getSandboxApiURL(sandbox);
         assertEquals("apiBaseURL_7/" + sandbox.getSandboxId(), url);
+
+        sandbox.setApiEndpointIndex("8");
+        url = sandboxService.getSandboxApiURL(sandbox);
+        assertEquals("apiBaseURL_8/" + sandbox.getSandboxId(), url);
+
+        sandbox.setApiEndpointIndex("9");
+        url = sandboxService.getSandboxApiURL(sandbox);
+        assertEquals("apiBaseURL_9/" + sandbox.getSandboxId(), url);
+
+        sandbox.setApiEndpointIndex("9");
+        url = sandboxService.getSandboxApiURL(sandbox);
+        assertEquals("apiBaseURL_9/" + sandbox.getSandboxId(), url);
     }
 
     @Test
@@ -624,14 +617,14 @@ public class SandboxServiceTest {
     public void newSandboxesInIntervalCountTest() {
         Date d = new Date();
         Timestamp intervalTime = new Timestamp(d.getTime());
-        sandboxService.newSandboxesInIntervalCount(intervalTime, "5");
-        verify(repository).newSandboxesInIntervalCount(intervalTime, "5");
+        sandboxService.newSandboxesInIntervalCount(intervalTime, "8");
+        verify(repository).newSandboxesInIntervalCount(intervalTime, "8");
 
     }
 
     @Test
     public void getSystemSandboxApiURLTest() {
-        assertEquals(sandboxService.getSystemSandboxApiURL(), "apiBaseURL_5/system");
+        assertEquals(sandboxService.getSystemSandboxApiURL(), "apiBaseURL_8/system");
     }
 
     @Test

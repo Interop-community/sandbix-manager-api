@@ -13,20 +13,18 @@ hspc:
       adminAccess:
         clientSecret: secret
     api:
-      version1:
-        baseUrl: https://api-test.hspconsortium.org
-      version2:
-        baseUrl: https://api2-test.hspconsortium.org
-      version3:
-        baseUrl: https://api3-test.hspconsortium.org
-      version4:
-        baseUrl: https://api-stu3-test.hspconsortium.org
       version5:
         baseUrl: https://api-v5-dstu2-test.hspconsortium.org
       version6:
         baseUrl: https://api-v5-stu3-test.hspconsortium.org
       version7:
         baseUrl: https://api-v5-r4-test.hspconsortium.org
+      version8:
+        baseUrl: https://api-v6-dstu2-test.hspconsortium.org
+      version9:
+        baseUrl: https://api-v6-stu3-test.hspconsortium.org
+      version10:
+        baseUrl: https://api-v6-r4-test.hspconsortium.org
     messaging:
       sendEmail: true
       url: https://messaging-test.hspconsortium.org
