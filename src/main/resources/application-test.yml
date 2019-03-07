@@ -20,11 +20,11 @@ hspc:
       version7:
         baseUrl: https://api-v5-r4-test.hspconsortium.org
       version8:
-        baseUrl: https://api-v6-dstu2-test.hspconsortium.org
+        baseUrl: https://api-v8-dstu2-test.hspconsortium.org
       version9:
-        baseUrl: https://api-v6-stu3-test.hspconsortium.org
+        baseUrl: https://api-v8-stu3-test.hspconsortium.org
       version10:
-        baseUrl: https://api-v6-r4-test.hspconsortium.org
+        baseUrl: https://api-v8-r4-test.hspconsortium.org
     messaging:
       sendEmail: true
       url: https://messaging-test.hspconsortium.org
