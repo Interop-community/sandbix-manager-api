@@ -45,7 +45,7 @@ spring:
           ssl:
             enable: false
           quitwait: false
-          enableAuthentication: true
+#          enableAuthentication: true
     username: apikey
     password: ThisIsNotTheRightPW
   thymeleaf:
