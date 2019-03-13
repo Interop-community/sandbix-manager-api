@@ -33,7 +33,7 @@ spring:
   mail:
     sender:
       address: no-reply@hspconsortium.org
-    host: smtp.sendgrid.net
+    host: smtp.gmail.com
     port: 587
     protocol: smtp
     properties:
@@ -45,8 +45,7 @@ spring:
           ssl:
             enable: false
           quitwait: false
-#          enableAuthentication: true
-    username: apikey
+    username: no-reply@hspconsortium.org
     password: ThisIsNotTheRightPW
   thymeleaf:
       cache: false

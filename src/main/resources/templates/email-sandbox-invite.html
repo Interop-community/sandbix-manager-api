@@ -25,10 +25,6 @@
             }
 
         </style>
-        <!--<script>-->
-            <!--var myurl = "https://sandbox.hspconsortium.org/id=" + ${invitationId};-->
-        <!--</script>-->
-
     </head>
     <body>
             <div style="padding: 10px;">
@@ -42,9 +38,7 @@
                         </p>
                         <br />
                         <p>
-                            <!--<div class="accept"><a href='https://sandbox.hspconsortium.org' target="_blank">Accept Invitation</a></div>-->
-                        <!--<div class="accept"><a th:href="@{https://sandbox.hspconsortium.org(id=${invitationId})}"  target="_blank">Accept Invitation</a></div>-->
-                        <div class="accept"><a th:href="@{${baseURL}(id=${invitationId})}"  target="_blank">Accept Invitation</a></div>
+                            <div class="accept"><a th:href="@{${baseURL}(id=${invitationId})}"  target="_blank">Accept Invitation</a></div>
                         </p>
                         <br />
                         <p>
