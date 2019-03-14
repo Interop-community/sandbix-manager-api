@@ -45,18 +45,6 @@ public class SandboxServiceImpl implements SandboxService {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
     private final SandboxRepository repository;
 
-    @Value("${hspc.platform.api.version1.baseUrl:}")
-    private String apiBaseURL_1;
-
-    @Value("${hspc.platform.api.version2.baseUrl:}")
-    private String apiBaseURL_2;
-
-    @Value("${hspc.platform.api.version3.baseUrl:}")
-    private String apiBaseURL_3;
-
-    @Value("${hspc.platform.api.version4.baseUrl:}")
-    private String apiBaseURL_4;
-
     @Value("${hspc.platform.api.version5.baseUrl:}")
     private String apiBaseURL_5;
 
@@ -65,6 +53,15 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Value("${hspc.platform.api.version7.baseUrl:}")
     private String apiBaseURL_7;
+
+    @Value("${hspc.platform.api.version8.baseUrl:}")
+    private String apiBaseURL_8;
+
+    @Value("${hspc.platform.api.version9.baseUrl:}")
+    private String apiBaseURL_9;
+
+    @Value("${hspc.platform.api.version10.baseUrl:}")
+    private String apiBaseURL_10;
 
     @Value("${hspc.platform.api.oauthUserInfoEndpointURL}")
     private String oauthUserInfoEndpointURL;
@@ -284,11 +281,6 @@ public class SandboxServiceImpl implements SandboxService {
             newSandbox.setCreatedBy(user);
             newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-            // Set expiration date and message for R4 sandboxes
-            if (newSandbox.getApiEndpointIndex().equals("7")) {
-                newSandbox.setExpirationMessage(expirationMessage);
-                newSandbox.setExpirationDate(formatDate());
-            }
 
             newSandbox.setPayerUserId(user.getId());
             Sandbox savedSandbox = save(newSandbox);
@@ -547,7 +539,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public String getSystemSandboxApiURL() {
-        return getApiSchemaURL("5") + "/system";
+        return getApiSchemaURL("8") + "/system";
     }
 
     @Override
@@ -570,26 +562,23 @@ public class SandboxServiceImpl implements SandboxService {
     private String getApiSchemaURL(final String apiEndpointIndex) {
         String url;
         switch (apiEndpointIndex){
-            case "1":
-                url = apiBaseURL_1;
-                break;
-            case "2":
-                url = apiBaseURL_2;
-                break;
-            case "3":
-                url = apiBaseURL_3;
-                break;
-            case "4":
-                url = apiBaseURL_4;
-                break;
             case "5":
                 url = apiBaseURL_5;
                 break;
             case "6":
                 url = apiBaseURL_6;
                 break;
-            default:
+            case "7":
                 url = apiBaseURL_7;
+                break;
+            case "8":
+                url = apiBaseURL_8;
+                break;
+            case "9":
+                url = apiBaseURL_9;
+                break;
+            default:
+                url = apiBaseURL_10;
         }
         return url;
     }
