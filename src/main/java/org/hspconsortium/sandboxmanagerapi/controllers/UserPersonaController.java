@@ -122,16 +122,20 @@ public class UserPersonaController {
         return (userPersona == null) ? null : userPersona.getPersonaUserId();
     }
 
-    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{id}")
     @Transactional
-    public void deleteSandboxUserPersona(HttpServletRequest request, @PathVariable Integer id) {
+    public ResponseEntity deleteSandboxUserPersona(HttpServletRequest request, @PathVariable Integer id) {
         UserPersona userPersona = userPersonaService.getById(id);
         if (userPersona == null) {
-            throw new ResourceNotFoundException("UserPersona not found.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("UserPersona not found.");
         }
         authorizationService.checkSandboxUserModifyAuthorization(request, userPersona.getSandbox(), userPersona);
-
-        userPersonaService.delete(userPersona);
+        try {
+            userPersonaService.delete(userPersona);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        return ResponseEntity.ok("OK");
     }
 
     @GetMapping(value = "/{personaUserId}", produces = APPLICATION_JSON_VALUE)
