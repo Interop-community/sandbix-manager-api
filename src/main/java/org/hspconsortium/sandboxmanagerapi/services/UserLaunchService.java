@@ -20,7 +20,11 @@ public interface UserLaunchService {
 
     UserLaunch findByUserIdAndLaunchScenarioId(final String sbmUserId, final int launchScenarioId);
 
+    UserLaunch findByUserIdAndLaunchScenarioCdsId(final String sbmUserId, final int launchScenarioCdsId);
+
     List<UserLaunch> findByUserId(final String sbmUserId);
 
     List<UserLaunch> findByLaunchScenarioId(final int launchScenarioId);
+
+    List<UserLaunch> findByLaunchScenarioCdsId(final int launchScenarioCdsId);
 }
