@@ -1,6 +1,9 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.json.JSONObject;
+
 import javax.persistence.*;
 
 @Entity
@@ -23,12 +26,14 @@ import javax.persistence.*;
 
 public class CdsHook {
 
-    private Integer id; // get rid
-    private Integer hookId;
+    private Integer id;
     private String logoUri;
     private Image logo;
-    private String Id; // Add all the stuff
-    private CdsServiceEndpoint cs; // many hook will have one cdsserviceendpoint
+    private String hook;
+    private String title;
+    private String description;
+    private String hookId;
+    private String prefetch;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,14 +43,6 @@ public class CdsHook {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getHookId() {
-        return hookId;
-    }
-
-    public void setHookId(Integer hookId) {
-        this.hookId = hookId;
     }
 
     @OneToOne(cascade={CascadeType.ALL})
@@ -67,4 +64,43 @@ public class CdsHook {
         this.logoUri = logoUri;
     }
 
+    public String getHook() {
+        return hook;
+    }
+
+    public void setHook(String hook) {
+        this.hook = hook;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getHookId() {
+        return hookId;
+    }
+
+    public void setHookId(String hookId) {
+        this.hookId = hookId;
+    }
+
+    public String getPrefetch() {
+        return prefetch;
+    }
+
+    public void setPrefetch(String prefetch) {
+        this.prefetch = prefetch;
+    }
 }

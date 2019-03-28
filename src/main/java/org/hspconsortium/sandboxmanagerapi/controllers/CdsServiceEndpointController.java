@@ -35,14 +35,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.http.MediaType.*;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 
 @RestController
-@RequestMapping({"/cds"})
-public class CdsController {
+@RequestMapping({"/cds-services"})
+public class CdsServiceEndpointController {
     private static Logger LOGGER = LoggerFactory.getLogger(AppController.class.getName());
 
     private final CdsServiceEndpointService cdsServiceEndpointService;
@@ -53,9 +55,10 @@ public class CdsController {
     private final AuthorizationService authorizationService;
 
     @Inject
-    public CdsController(final CdsServiceEndpointService cdsServiceEndpointService, final CdsHookService cdsHookService, final SandboxService sandboxService,
-                         final UserService userService, final RuleService ruleService,
-                         final AuthorizationService authorizationService) {
+    public CdsServiceEndpointController(final CdsServiceEndpointService cdsServiceEndpointService,
+                                        final CdsHookService cdsHookService, final SandboxService sandboxService,
+                                        final UserService userService, final RuleService ruleService,
+                                        final AuthorizationService authorizationService) {
         this.authorizationService = authorizationService;
         this.cdsServiceEndpointService = cdsServiceEndpointService;
         this.cdsHookService = cdsHookService;
@@ -67,9 +70,8 @@ public class CdsController {
     @PostMapping
     @Transactional
     @ResponseBody
-    public CdsServiceEndpoint createCDS(final HttpServletRequest request,
-                                        @RequestBody CdsServiceEndpoint cdsServiceEndpoint,
-                                        @RequestBody CdsHook cdsHook) {
+    public CdsServiceEndpoint createCdsServiceEndpoint(final HttpServletRequest request,
+                                        @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
         Sandbox sandbox = sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox specified in CDS-Service not found.");
@@ -84,13 +86,13 @@ public class CdsController {
         User user = userService.findBySbmUserId(sbmUserId);
         cdsServiceEndpoint.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
         cdsServiceEndpoint.setCreatedBy(user);
-        //TODO: What about saving the image here, app doesn't save image here
-        return cdsServiceEndpointService.create(cdsServiceEndpoint, cdsHook, sandbox);
+        return cdsServiceEndpointService.create(cdsServiceEndpoint, sandbox);
     }
 
     @GetMapping(params = {"sandboxId"})
     @ResponseBody
-    public List<CdsServiceEndpoint> getCDSList(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
+    public List<CdsServiceEndpoint> getCDSList(final HttpServletRequest request,
+                                               @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");

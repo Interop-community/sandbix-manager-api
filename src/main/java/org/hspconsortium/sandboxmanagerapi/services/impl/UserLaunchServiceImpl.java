@@ -68,11 +68,6 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     }
 
     @Override
-    public UserLaunch findByUserIdAndLaunchScenarioCdsId(String sbmUserId, int launchScenarioCdsId) {
-        return repository.findByUserIdAndLaunchScenarioCdsId(sbmUserId, launchScenarioCdsId);
-    }
-
-    @Override
     public List<UserLaunch> findByUserId(String sbmUserId) {
         return repository.findByUserId(sbmUserId);
     }
@@ -80,11 +75,6 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Override
     public List<UserLaunch> findByLaunchScenarioId(int launchScenarioId) {
         return repository.findByLaunchScenarioId(launchScenarioId);
-    }
-
-    @Override
-    public List<UserLaunch> findByLaunchScenarioCdsId(int launchScenarioCdsId) {
-        return repository.findByLaunchScenarioCdsId(launchScenarioCdsId);
     }
 
 }

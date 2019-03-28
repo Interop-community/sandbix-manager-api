@@ -37,28 +37,28 @@ import java.util.List;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("/launchScenarioCds")
-public class LaunchScenarioCdsController {
+@RequestMapping("/launchScenarioCdsServiceEndpoint")
+public class LaunchScenarioCdsServiceEndpointController {
 
-    private final LaunchScenarioCdsService launchScenarioCdsService;
+    private final LaunchScenarioCdsServiceEndpointService launchScenarioCdsServiceEndpointService;
     private final UserService userService;
     private final CdsServiceEndpointService cdsServiceEndpointService;
     private final CdsHookService cdsHookService;
     private final UserPersonaService userPersonaService;
     private final SandboxService sandboxService;
-    private final UserLaunchService userLaunchService;
+    private final UserLaunchCdsServiceEndpointService userLaunchService;
     private final AuthorizationService authorizationService;
 
     @Inject
-    public LaunchScenarioCdsController(final LaunchScenarioCdsService launchScenarioCdsService,
-                                    final CdsServiceEndpointService cdsServiceEndpointService,
-                                    final CdsHookService cdsHookService,
-                                    final UserService userService,
-                                    final UserPersonaService userPersonaService,
-                                    final SandboxService sandboxService,
-                                    final UserLaunchService userLaunchService,
-                                    final AuthorizationService authorizationService) {
-        this.launchScenarioCdsService = launchScenarioCdsService;
+    public LaunchScenarioCdsServiceEndpointController(final LaunchScenarioCdsServiceEndpointService launchScenarioCdsServiceEndpointService,
+                                                      final CdsServiceEndpointService cdsServiceEndpointService,
+                                                      final CdsHookService cdsHookService,
+                                                      final UserService userService,
+                                                      final UserPersonaService userPersonaService,
+                                                      final SandboxService sandboxService,
+                                                      final UserLaunchCdsServiceEndpointService userLaunchService,
+                                                      final AuthorizationService authorizationService) {
+        this.launchScenarioCdsServiceEndpointService = launchScenarioCdsServiceEndpointService;
         this.userService = userService;
         this.cdsServiceEndpointService = cdsServiceEndpointService;
         this.cdsHookService = cdsHookService;
@@ -71,65 +71,65 @@ public class LaunchScenarioCdsController {
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
-    public LaunchScenarioCds createLaunchScenarioCds(HttpServletRequest request, @RequestBody final LaunchScenarioCds launchScenarioCds) {
+    public LaunchScenarioCdsServiceEndpoint createLaunchScenarioCds(HttpServletRequest request, @RequestBody final LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint) {
 
-        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCds.getSandbox().getSandboxId());
+        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        User user = userService.findBySbmUserId(launchScenarioCds.getCreatedBy().getSbmUserId());
+        User user = userService.findBySbmUserId(launchScenarioCdsServiceEndpoint.getCreatedBy().getSbmUserId());
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
         authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
-        authorizationService.checkUserAuthorization(request, launchScenarioCds.getCreatedBy().getSbmUserId());
+        authorizationService.checkUserAuthorization(request, launchScenarioCdsServiceEndpoint.getCreatedBy().getSbmUserId());
 
-        launchScenarioCds.setSandbox(sandbox);
+        launchScenarioCdsServiceEndpoint.setSandbox(sandbox);
 
-        launchScenarioCds.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
-        launchScenarioCds.setCreatedBy(user);
+        launchScenarioCdsServiceEndpoint.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
+        launchScenarioCdsServiceEndpoint.setCreatedBy(user);
 
-        LaunchScenarioCds createdLaunchScenarioCds = launchScenarioCdsService.create(launchScenarioCds);
-        userLaunchService.create(new UserLaunch(user, null, createdLaunchScenarioCds, new Timestamp(new Date().getTime())));
+        LaunchScenarioCdsServiceEndpoint createdLaunchScenarioCds = launchScenarioCdsServiceEndpointService.create(launchScenarioCdsServiceEndpoint);
+        userLaunchService.create(new UserLaunchCdsServiceEndpoint(user, createdLaunchScenarioCds, new Timestamp(new Date().getTime())));
         return createdLaunchScenarioCds;
     }
 
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
-    public LaunchScenarioCds updateLaunchScenarioCds(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenarioCds launchScenarioCds) {
-        LaunchScenarioCds existinglaunchScenarioCds = launchScenarioCdsService.getById(id);
-        if (existinglaunchScenarioCds == null || id.intValue() != launchScenarioCds.getId().intValue()) {
+    public LaunchScenarioCdsServiceEndpoint updateLaunchScenarioCds(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint) {
+        LaunchScenarioCdsServiceEndpoint existinglaunchScenarioCds = launchScenarioCdsServiceEndpointService.getById(id);
+        if (existinglaunchScenarioCds == null || id.intValue() != launchScenarioCdsServiceEndpoint.getId().intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
                             "Response Detail : Launch Scenario Id doesn't match Id in JSON body."
                     , HttpStatus.SC_BAD_REQUEST));
         }
-        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCds.getSandbox().getSandboxId());
+        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, launchScenarioCds);
-        return launchScenarioCdsService.update(launchScenarioCds);
+        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, launchScenarioCdsServiceEndpoint);
+        return launchScenarioCdsServiceEndpointService.update(launchScenarioCdsServiceEndpoint);
     }
 
     @PutMapping(value = "/{id}/launched", produces = APPLICATION_JSON_VALUE)
     @Transactional
-    public void updateLaunchTimestamp(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenarioCds launchScenarioCds) {
-        LaunchScenarioCds existingLaunchScenarioCds = launchScenarioCdsService.getById(id);
-        if (existingLaunchScenarioCds == null || id.intValue() != launchScenarioCds.getId().intValue()) {
+    public void updateLaunchTimestamp(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint) {
+        LaunchScenarioCdsServiceEndpoint existingLaunchScenarioCds = launchScenarioCdsServiceEndpointService.getById(id);
+        if (existingLaunchScenarioCds == null || id.intValue() != launchScenarioCdsServiceEndpoint.getId().intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
                             "Response Detail : Launch Scenario Id doesn't match Id in JSON body."
                     , HttpStatus.SC_BAD_REQUEST));
         }
-        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCds.getSandbox().getSandboxId());
+        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
-        UserLaunch userLaunch = userLaunchService.findByUserIdAndLaunchScenarioCdsId(authorizationService.getSystemUserId(request), existingLaunchScenarioCds.getId());
+        UserLaunchCdsServiceEndpoint userLaunch = userLaunchService.findByUserIdAndLaunchScenarioCdsServiceEndpointId(authorizationService.getSystemUserId(request), existingLaunchScenarioCds.getId());
         if (userLaunch == null) {
             User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-            userLaunchService.create(new UserLaunch(user, null, existingLaunchScenarioCds, new Timestamp(new Date().getTime())));
+            userLaunchService.create(new UserLaunchCdsServiceEndpoint(user, existingLaunchScenarioCds, new Timestamp(new Date().getTime())));
         } else {
             userLaunchService.update(userLaunch);
         }
@@ -137,7 +137,7 @@ public class LaunchScenarioCdsController {
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"cdsId"})
     @ResponseBody
-    public Iterable<LaunchScenarioCds> getLaunchScenariosForCdsEndpointService(HttpServletRequest request,
+    public Iterable<LaunchScenarioCdsServiceEndpoint> getLaunchScenariosForCdsEndpointService(HttpServletRequest request,
                                                                            @RequestParam(value = "cdsId") int cdsId) {
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsId);
         if (cdsServiceEndpoint == null) {
@@ -145,12 +145,12 @@ public class LaunchScenarioCdsController {
         }
         authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
 
-        return launchScenarioCdsService.findByCdsIdAndSandboxId(cdsServiceEndpoint.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
+        return launchScenarioCdsServiceEndpointService.findByCdsIdAndSandboxId(cdsServiceEndpoint.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userPersonaId"})
     @ResponseBody
-    public Iterable<LaunchScenarioCds> getLaunchScenariosForPersona(HttpServletRequest request,
+    public Iterable<LaunchScenarioCdsServiceEndpoint> getLaunchScenariosForPersona(HttpServletRequest request,
                                                                                @RequestParam(value = "userPersonaId") int personaId) {
 
         UserPersona userPersona = userPersonaService.getById(personaId);
@@ -159,28 +159,28 @@ public class LaunchScenarioCdsController {
         }
         authorizationService.checkSandboxUserReadAuthorization(request, userPersona.getSandbox());
 
-        return launchScenarioCdsService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
+        return launchScenarioCdsServiceEndpointService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
     }
 
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
     public void deleteLaunchScenarioCds(HttpServletRequest request, @PathVariable Integer id) {
-        LaunchScenarioCds launchScenarioCds = launchScenarioCdsService.getById(id);
-        if (launchScenarioCds == null) {
+        LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint = launchScenarioCdsServiceEndpointService.getById(id);
+        if (launchScenarioCdsServiceEndpoint == null) {
             throw new ResourceNotFoundException("LaunchScenario not found.");
         }
-        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCds.getSandbox().getSandboxId());
+        Sandbox sandbox = sandboxService.findBySandboxId(launchScenarioCdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, launchScenarioCds);
-        launchScenarioCdsService.delete(launchScenarioCds);
+        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, launchScenarioCdsServiceEndpoint);
+        launchScenarioCdsServiceEndpointService.delete(launchScenarioCdsServiceEndpoint);
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId"})
     @SuppressWarnings("unchecked")
-    public @ResponseBody Iterable<LaunchScenarioCds> getLaunchScenariosCds(HttpServletRequest request,
+    public @ResponseBody Iterable<LaunchScenarioCdsServiceEndpoint> getLaunchScenariosCds(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
 
         String oauthUserId = authorizationService.getSystemUserId(request);
@@ -189,9 +189,9 @@ public class LaunchScenarioCdsController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
-        List<LaunchScenarioCds> launchScenariosCdsList = launchScenarioCdsService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, oauthUserId, Visibility.PUBLIC);
+        List<LaunchScenarioCdsServiceEndpoint> launchScenariosCdsList = launchScenarioCdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, oauthUserId, Visibility.PUBLIC);
         // Modify the lastLaunchSeconds field of each launch scenario to match when this user last launched each launch scenario
-        return launchScenarioCdsService.updateLastLaunchForCurrentUser(launchScenariosCdsList, userService.findBySbmUserId(oauthUserId));
+        return launchScenarioCdsServiceEndpointService.updateLastLaunchForCurrentUser(launchScenariosCdsList, userService.findBySbmUserId(oauthUserId));
     }
 }
 

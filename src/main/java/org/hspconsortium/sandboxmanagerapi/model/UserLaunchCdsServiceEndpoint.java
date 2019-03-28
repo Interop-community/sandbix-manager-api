@@ -2,36 +2,37 @@ package org.hspconsortium.sandboxmanagerapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hspconsortium.sandboxmanagerapi.model.*;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
 @NamedQueries({
-        // Used to retrieve a UserLaunch to update it with a launch or to apply lastLaunchSeconds to a launch scenario
-        @NamedQuery(name="UserLaunch.findByUserIdAndLaunchScenarioId",
-                query="SELECT c FROM UserLaunch c WHERE c.user.sbmUserId = :sbmUserId and c.launchScenario.id = :launchScenarioId"),
+        // Used to retrieve a UserLaunch to update it with a launch or to apply lastLaunchSeconds to a CDS launch scenario
+        @NamedQuery(name="UserLaunchCdsServiceEndpoint.findByUserIdAndLaunchScenarioCdsServiceEndpointId",
+                query="SELECT c FROM UserLaunchCdsServiceEndpoint c WHERE c.user.sbmUserId = :sbmUserId and c.launchScenarioCdsServiceEndpoint.id = :launchScenarioCdsServiceEndpointId"),
         // Used to delete a user's UserLaunch's when they are removed from a sandbox
-        @NamedQuery(name="UserLaunch.findByUserId",
-                query="SELECT c FROM UserLaunch c WHERE c.user.sbmUserId = :sbmUserId"),
-        // Used to delete a user's UserLaunch's when a launch scenario is deleted
-        @NamedQuery(name="UserLaunch.findByLaunchScenarioId",
-                query="SELECT c FROM UserLaunch c WHERE c.launchScenario.id = :launchScenarioId")
+        @NamedQuery(name="UserLaunchCdsServiceEndpoint.findByUserId",
+                query="SELECT c FROM UserLaunchCdsServiceEndpoint c WHERE c.user.sbmUserId = :sbmUserId"),
+        // Used to delete a user's UserLaunch's when a CDS launch scenario is deleted
+        @NamedQuery(name="UserLaunchCdsServiceEndpoint.findByLaunchScenarioCdsServiceEndpointId",
+                query="SELECT c FROM UserLaunchCdsServiceEndpoint c WHERE c.launchScenarioCdsServiceEndpoint.id = :launchScenarioCdsServiceEndpointId")
 })
 // UserLaunch is used to track the time a given user launched a given launch scenario
 // for the purpose of showing recent launch scerarios in sandbox manager
-public class UserLaunch {
+public class UserLaunchCdsServiceEndpoint {
     private Integer id;
     private User user;
-    private LaunchScenario launchScenario;
+    private LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint;
     private Timestamp lastLaunch;
     private Long lastLaunchSeconds;
 
-    public UserLaunch() {}
+    public UserLaunchCdsServiceEndpoint() {}
 
-    public UserLaunch(User user, LaunchScenario launchScenario, Timestamp lastLaunch) {
+    public UserLaunchCdsServiceEndpoint(User user, LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint, Timestamp lastLaunch) {
         this.user = user;
-        this.launchScenario = launchScenario;
+        this.launchScenarioCdsServiceEndpoint = launchScenarioCdsServiceEndpoint;
         this.lastLaunch = lastLaunch;
     }
 
@@ -82,13 +83,12 @@ public class UserLaunch {
     }
 
     @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="launch_scenario_id")
-    public LaunchScenario getLaunchScenario() {
-        return launchScenario;
+    @JoinColumn(name="launch_scenario_cds_service_endpoint_id")
+    public LaunchScenarioCdsServiceEndpoint getLaunchScenarioCdsServiceEndpoint() {
+        return launchScenarioCdsServiceEndpoint;
     }
 
-    public void setLaunchScenario(LaunchScenario launchScenario) {
-        this.launchScenario = launchScenario;
+    public void setLaunchScenarioCdsServiceEndpoint(LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint) {
+        this.launchScenarioCdsServiceEndpoint = launchScenarioCdsServiceEndpoint;
     }
-
 }

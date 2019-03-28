@@ -4,6 +4,7 @@ package org.hspconsortium.sandboxmanagerapi.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,7 +29,7 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
     private String title;
     private String description;
     private String url;
-    private List<CdsHook> cdsHooks;
+    private List<CdsHook> cdsHooks = new ArrayList<>();
 
     /******************* Inherited Property Getter/Setters ************************/
 
@@ -107,6 +108,7 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
         this.url = url;
     }
 
+    @OneToMany(cascade={CascadeType.ALL})
     public List<CdsHook> getCdsHooks() {
         return cdsHooks;
     }

@@ -5,6 +5,12 @@ import org.hspconsortium.sandboxmanagerapi.model.Image;
 
 public interface CdsHookService {
 
+    CdsHook save(final CdsHook cdsHook);
+
+    void delete(final int id);
+
+    void delete(CdsHook cdsHook);
+
     CdsHook getById(final int id);
 
     CdsHook updateCDSImage(final CdsHook cdsHook, final Image image);

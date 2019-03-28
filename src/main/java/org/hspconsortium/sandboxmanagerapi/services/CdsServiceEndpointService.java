@@ -12,7 +12,7 @@ public interface CdsServiceEndpointService {
 
     void delete(final CdsServiceEndpoint cdsServiceEndpoint, CdsHook cdsHook);
 
-    CdsServiceEndpoint create(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook, final Sandbox sandbox);
+    CdsServiceEndpoint create(final CdsServiceEndpoint cdsServiceEndpoint, final Sandbox sandbox);
 
     CdsServiceEndpoint update(final CdsServiceEndpoint cdsServiceEndpoint);
 
@@ -25,5 +25,8 @@ public interface CdsServiceEndpointService {
     List<CdsServiceEndpoint> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy);
 
     CdsServiceEndpoint findByUrlAndSandboxId(final String url, final String sandboxId);
+
+    //TODO: figure out where to add this method to make the joint table CdsServiceEndpointCdsHook
+    void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook);
 
 }

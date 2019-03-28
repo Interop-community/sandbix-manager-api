@@ -24,6 +24,24 @@ public class CdsHookServiceImpl implements CdsHookService {
         this.imageService = imageService;
     }
 
+    @Override
+    @Transactional
+    public CdsHook save(final CdsHook cdsHook) {
+        return repository.save(cdsHook);
+    }
+
+    @Override
+    @Transactional
+    public void delete(final int id) {
+        repository.delete(id);
+    }
+
+    @Override
+    @Transactional
+    public void delete(CdsHook cdsHook) {
+        delete(cdsHook.getId());
+    }
+
     public CdsHook getById(final int id) {
         return null;
     }

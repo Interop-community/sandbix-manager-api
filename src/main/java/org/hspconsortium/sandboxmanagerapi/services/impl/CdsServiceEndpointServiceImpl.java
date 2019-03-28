@@ -20,8 +20,8 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
 
     private final CdsServiceEndpointRepository repository;
     private ImageService imageService;
-    private LaunchScenarioCdsService launchScenarioCdsService;
-    private UserLaunchService userLaunchService;
+    private LaunchScenarioCdsServiceEndpointService launchScenarioCdsServiceEndpointService;
+    private UserLaunchCdsServiceEndpointService userLaunchCdsServiceEndpointService;
 
     @Inject
     public CdsServiceEndpointServiceImpl(final CdsServiceEndpointRepository cdsServiceEndpointRepository) { this.repository = cdsServiceEndpointRepository; }
@@ -32,19 +32,19 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     }
 
     @Inject
-    public void setLaunchScenarioCdsService(LaunchScenarioCdsService launchScenarioCdsService) {
-        this.launchScenarioCdsService = launchScenarioCdsService;
+    public void setLaunchScenarioCdsService(LaunchScenarioCdsServiceEndpointService launchScenarioCdsServiceEndpointService) {
+        this.launchScenarioCdsServiceEndpointService = launchScenarioCdsServiceEndpointService;
     }
 
     @Inject
-    public void setUserLaunchService(UserLaunchService userLaunchService) {
-        this.userLaunchService = userLaunchService;
+    public void setUserLaunchService(UserLaunchCdsServiceEndpointService userLaunchCdsServiceEndpointService) {
+        this.userLaunchCdsServiceEndpointService = userLaunchCdsServiceEndpointService;
     }
 
     @Inject
-    public void setLaunchScenarioCdsServices(LaunchScenarioCdsService launchScenarioCdsService, UserLaunchService userLaunchService) {
-        this.launchScenarioCdsService = launchScenarioCdsService;
-        this.userLaunchService = userLaunchService; //TODO: Check AppServiceImpl doesn't set this.  Why??
+    public void setLaunchScenarioCdsServices(LaunchScenarioCdsServiceEndpointService launchScenarioCdsServiceEndpointService, UserLaunchCdsServiceEndpointService userLaunchCdsServiceEndpointService) {
+        this.launchScenarioCdsServiceEndpointService = launchScenarioCdsServiceEndpointService;
+        this.userLaunchCdsServiceEndpointService = userLaunchCdsServiceEndpointService; //TODO: Check AppServiceImpl doesn't set this.  Why??
     }
 
     @Override
@@ -63,12 +63,12 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Transactional
     public void delete(final CdsServiceEndpoint cdsServiceEndpoint, CdsHook cdsHook) {
         // Delete all associated CDS-Service Launch Scenarios
-        List<LaunchScenarioCds> launchScenariosCdsList = launchScenarioCdsService.findByCdsIdAndSandboxId(cdsServiceEndpoint.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
-        for (LaunchScenarioCds launchScenarioCds: launchScenariosCdsList) {
-            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioCdsId(launchScenarioCds.getId())) {
-                userLaunchService.delete(userLaunch.getId());
+        List<LaunchScenarioCdsServiceEndpoint> launchScenarioCdsServiceEndpointList = launchScenarioCdsServiceEndpointService.findByCdsIdAndSandboxId(cdsServiceEndpoint.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
+        for (LaunchScenarioCdsServiceEndpoint launchScenarioCdsServiceEndpoint: launchScenarioCdsServiceEndpointList) {
+            for (UserLaunchCdsServiceEndpoint userLaunchCdsServiceEndpoint: userLaunchCdsServiceEndpointService.findByLaunchScenarioCdsServiceEndpointId(launchScenarioCdsServiceEndpoint.getId())) {
+                userLaunchCdsServiceEndpointService.delete(userLaunchCdsServiceEndpoint.getId());
             }
-            launchScenarioCdsService.delete(launchScenarioCds.getId());
+            launchScenarioCdsServiceEndpointService.delete(launchScenarioCdsServiceEndpoint.getId());
         }
         if (cdsHook.getLogo() != null) {
             int logoId = cdsHook.getLogo().getId();
@@ -81,8 +81,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Override
     @Transactional
     @PublishAtomicMetric
-    public CdsServiceEndpoint create(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook, final Sandbox sandbox) {
-        cdsHook.setLogo(null); //TODO: Why does AppServiceImpl has logo set to null;
+    public CdsServiceEndpoint create(final CdsServiceEndpoint cdsServiceEndpoint, final Sandbox sandbox) {
         cdsServiceEndpoint.setCreatedTimestamp(new Timestamp(new Date().getTime()));
         return save(cdsServiceEndpoint);
     }
@@ -117,5 +116,12 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
 
     public CdsServiceEndpoint findByUrlAndSandboxId (final String url, final String sandboxId) {
         return repository.findByUrlAndSandboxId(url, sandboxId);
+    }
+
+    public void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook) {
+        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
+        cdsHooks.add(cdsHook);
+        cdsServiceEndpoint.setCdsHooks(cdsHooks);
+        save(cdsServiceEndpoint);
     }
 }

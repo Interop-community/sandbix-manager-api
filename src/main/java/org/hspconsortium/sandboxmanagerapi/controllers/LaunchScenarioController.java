@@ -84,7 +84,7 @@ public class LaunchScenarioController {
         launchScenario.setCreatedBy(user);
 
         LaunchScenario createdLaunchScenario = launchScenarioService.create(launchScenario);
-        userLaunchService.create(new UserLaunch(user, createdLaunchScenario, null, new Timestamp(new Date().getTime())));
+        userLaunchService.create(new UserLaunch(user, createdLaunchScenario, new Timestamp(new Date().getTime())));
         return createdLaunchScenario;
     }
 
@@ -122,7 +122,7 @@ public class LaunchScenarioController {
         UserLaunch userLaunch = userLaunchService.findByUserIdAndLaunchScenarioId(authorizationService.getSystemUserId(request), existingLaunchScenario.getId());
         if (userLaunch == null) {
             User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-            userLaunchService.create(new UserLaunch(user, existingLaunchScenario, null, new Timestamp(new Date().getTime())));
+            userLaunchService.create(new UserLaunch(user, existingLaunchScenario, new Timestamp(new Date().getTime())));
         } else {
             userLaunchService.update(userLaunch);
         }
