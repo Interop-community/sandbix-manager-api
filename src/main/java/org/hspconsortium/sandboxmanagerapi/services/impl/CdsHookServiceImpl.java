@@ -67,4 +67,5 @@ public class CdsHookServiceImpl implements CdsHookService {
         existingCdsHook.setLogo(null);
         return repository.save(existingCdsHook);
     }
+
 }

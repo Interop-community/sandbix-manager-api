@@ -24,9 +24,9 @@ public interface CdsServiceEndpointService {
 
     List<CdsServiceEndpoint> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy);
 
-    CdsServiceEndpoint findByUrlAndSandboxId(final String url, final String sandboxId);
+    CdsServiceEndpoint findByCdsServiceEndpointUrlAndSandboxId(final String url, final String sandboxId);
 
-    //TODO: figure out where to add this method to make the joint table CdsServiceEndpointCdsHook
+    //TODO: figure out where to add this method
     void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook);
 
 }

@@ -50,7 +50,8 @@ public class LaunchScenarioController {
 
     @Inject
     public LaunchScenarioController(final LaunchScenarioService launchScenarioService,
-                                    final AppService appService, final UserService userService,
+                                    final AppService appService,
+                                    final UserService userService,
                                     final UserPersonaService userPersonaService,
                                     final SandboxService sandboxService,
                                     final UserLaunchService userLaunchService, final AuthorizationService authorizationService) {

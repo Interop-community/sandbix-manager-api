@@ -91,7 +91,7 @@ public class CdsServiceEndpointController {
 
     @GetMapping(params = {"sandboxId"})
     @ResponseBody
-    public List<CdsServiceEndpoint> getCDSList(final HttpServletRequest request,
+    public List<CdsServiceEndpoint> getCdsServiceEndpointList(final HttpServletRequest request,
                                                @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -108,7 +108,7 @@ public class CdsServiceEndpointController {
 
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
-    public @ResponseBody void deleteCDS(final HttpServletRequest request, @PathVariable Integer id) {
+    public @ResponseBody void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         CdsHook cdsHook = cdsHookService.getById(id);
         if (cdsServiceEndpoint != null) {

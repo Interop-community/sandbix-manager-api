@@ -25,7 +25,10 @@ import java.util.List;
         // Used to delete a user's PRIVATE launch scenarios when they are removed from a sandbox
         @NamedQuery(name="LaunchScenario.findBySandboxIdAndCreatedBy",
         query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId and " +
-                "c.createdBy.sbmUserId = :createdBy")
+                "c.createdBy.sbmUserId = :createdBy"),
+        // Used to determine if a registered cds is being used in a launch scenarios and cannot be deleted
+        @NamedQuery(name="LaunchScenario.findByCdsServiceEndpointIdIdAndSandboxId",
+                query="SELECT c FROM LaunchScenario c WHERE c.cdsServiceEndpoint.id = :cdsServiceEndpointId and c.sandbox.sandboxId = :sandboxId")
 })
 public class LaunchScenario extends AbstractSandboxItem {
 
@@ -44,7 +47,8 @@ public class LaunchScenario extends AbstractSandboxItem {
     private String smartStyleUrl;
     private String title;
     private String needPatientBanner;
-
+    private CdsHook cdsHook;
+    private CdsServiceEndpoint cdsServiceEndpoint;
 
     /******************* Launch Scenario Property Getter/Setters ************************/
 
@@ -107,6 +111,26 @@ public class LaunchScenario extends AbstractSandboxItem {
         if (lastLaunchSeconds != null) {
             this.lastLaunch = new Timestamp(lastLaunchSeconds);
         }
+    }
+
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name="cds_hook_id")
+    public CdsHook getCdsHook() {
+        return cdsHook;
+    }
+
+    public void setCdsHook(CdsHook cdsHook) {
+        this.cdsHook = cdsHook;
+    }
+
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name="cds_service_endpoint_id")
+    public CdsServiceEndpoint getCdsServiceEndpoint() {
+        return cdsServiceEndpoint;
+    }
+
+    public void setCdsServiceEndpoint(CdsServiceEndpoint cdsServiceEndpoint) {
+        this.cdsServiceEndpoint = cdsServiceEndpoint;
     }
 
     /******************* Inherited Property Getter/Setters ************************/

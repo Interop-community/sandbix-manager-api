@@ -10,8 +10,8 @@ import java.util.List;
 @Repository
 public interface CdsServiceEndpointRepository extends CrudRepository<CdsServiceEndpoint, Integer> {
 
-    CdsServiceEndpoint findByUrlAndSandboxId(@Param("url") String url,
-                                               @Param("sandboxId") String sandboxId);
+    CdsServiceEndpoint findByCdsServiceEndpointUrlAndSandboxId(@Param("url") String url,
+                                                      @Param("sandboxId") String sandboxId);
 
     List<CdsServiceEndpoint> findBySandboxId(@Param("sandboxId") String sandboxId);
 
@@ -20,5 +20,5 @@ public interface CdsServiceEndpointRepository extends CrudRepository<CdsServiceE
                                                       @Param("visibility") Visibility visibility);
 
     List<CdsServiceEndpoint> findBySandboxIdAndCreatedBy(@Param("sandboxId") String sandboxId,
-                                          @Param("createdBy") String createdBy);
+                                                        @Param("createdBy") String createdBy);
 }

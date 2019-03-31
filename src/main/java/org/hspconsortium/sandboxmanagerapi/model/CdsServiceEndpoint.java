@@ -10,8 +10,9 @@ import java.util.List;
 @Entity
 @NamedQueries({
         // Used to retrieve a registered CdsServiceEndpoint when a new launch scenario is being created with the CdsServiceEndpoint
-        @NamedQuery(name="CdsServiceEndpoint.findByUrlAndSandboxId",
-                query="SELECT c FROM CdsServiceEndpoint c WHERE c.url = :url and c.sandbox.sandboxId = :sandboxId"),
+        @NamedQuery(name="CdsServiceEndpoint.findByCdsServiceEndpointUrlAndSandboxId",
+                query="SELECT c FROM CdsServiceEndpoint c WHERE c.url = :url and " +
+                        "c.sandbox.sandboxId = :sandboxId"),
         // Used to delete all registered CDS-Services when a sandbox is deleted
         @NamedQuery(name="CdsServiceEndpoint.findBySandboxId",
                 query="SELECT c FROM CdsServiceEndpoint c WHERE c.sandbox.sandboxId = :sandboxId"),
@@ -26,9 +27,9 @@ import java.util.List;
 })
 public class CdsServiceEndpoint extends AbstractSandboxItem {
 
+    private String url;
     private String title;
     private String description;
-    private String url;
     private List<CdsHook> cdsHooks = new ArrayList<>();
 
     /******************* Inherited Property Getter/Setters ************************/
@@ -84,6 +85,14 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
 
     /**********************************************************************************/
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -98,14 +107,6 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 
     @OneToMany(cascade={CascadeType.ALL})

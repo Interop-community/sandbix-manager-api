@@ -1,8 +1,10 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.vladmihalcea.hibernate.type.json.JsonNodeStringType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 
@@ -13,17 +15,9 @@ import javax.persistence.*;
                 query="SELECT c FROM CdsHook c WHERE c.logoUri = :logoUri and c.hookId = :hookId"),
         // Used to delete all registered CDS-Services when a sandbox is deleted
         @NamedQuery(name="CdsHook.findByHookId",
-                query="SELECT c FROM CdsHook c WHERE c.hookId = :hookId"),
-        // Used to retrieve all registered CDS-Services visible to a user of this a sandbox
-        @NamedQuery(name="CdsHook.findByHookIdAndCreatedByOrVisibility",
-                query="SELECT c FROM CdsHook c WHERE c.hookId = :hookId and " +
-                        "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility) "),
-        // Used to delete a user's PRIVATE registered CDS-Services when they are removed from a sandbox
-        @NamedQuery(name="CdsHook.findByHookIdAndCreatedBy",
-                query="SELECT c FROM CdsHook c WHERE c.hookId = :hookId and " +
-                        "c.createdBy.sbmUserId = :createdBy ")
+                query="SELECT c.id FROM CdsHook c WHERE c.hookId = :hookId")
 })
-
+@TypeDef(name = "jsonb-node", typeClass = JsonNodeStringType.class)
 public class CdsHook {
 
     private Integer id;
@@ -33,7 +27,7 @@ public class CdsHook {
     private String title;
     private String description;
     private String hookId;
-    private String prefetch;
+    private JsonNode prefetch;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -96,11 +90,13 @@ public class CdsHook {
         this.hookId = hookId;
     }
 
-    public String getPrefetch() {
+    @Type(type = "jsonb-node")
+    @Column(columnDefinition = "json")
+    public JsonNode getPrefetch() {
         return prefetch;
     }
 
-    public void setPrefetch(String prefetch) {
+    public void setPrefetch(JsonNode prefetch) {
         this.prefetch = prefetch;
     }
 }
