@@ -35,8 +35,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 import static org.springframework.http.MediaType.*;
@@ -91,7 +89,7 @@ public class CdsServiceEndpointController {
 
     @GetMapping(params = {"sandboxId"})
     @ResponseBody
-    public List<CdsServiceEndpoint> getCdsServiceEndpointList(final HttpServletRequest request,
+    public List<CdsServiceEndpoint> getCdsServiceEndpoints(final HttpServletRequest request,
                                                @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -103,7 +101,13 @@ public class CdsServiceEndpointController {
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody CdsServiceEndpoint getCDS(final HttpServletRequest request, @PathVariable Integer id) {
-        return cdsServiceEndpointService.getById(id);
+        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
+        if (cdsServiceEndpoint != null) {
+            authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
+            return cdsServiceEndpoint;
+        } else {
+            throw new ResourceNotFoundException("CDS Service Endpoint was not found");
+        }
     }
 
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
@@ -113,7 +117,7 @@ public class CdsServiceEndpointController {
         CdsHook cdsHook = cdsHookService.getById(id);
         if (cdsServiceEndpoint != null) {
             authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-            cdsServiceEndpointService.delete(cdsServiceEndpoint, cdsHook);
+            cdsServiceEndpointService.delete(cdsServiceEndpoint);
         } else {
             throw new ResourceNotFoundException("Could not find the CDS-Service.");
         }
@@ -165,7 +169,7 @@ public class CdsServiceEndpointController {
             Image image = new Image();
             image.setBytes(file.getBytes());
             image.setContentType(file.getContentType());
-            cdsHookService.updateCDSImage(cdsHook, image);
+            cdsHookService.updateCdsHookImage(cdsHook, image);
         } catch (IOException e) {
             if(LOGGER.isErrorEnabled()){
                 LOGGER.error("Unable to update image", e);
@@ -182,6 +186,6 @@ public class CdsServiceEndpointController {
             throw new ResourceNotFoundException("CDS-Service does not exist. Cannot delete image.");
         }
         authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-        return cdsHookService.deleteCDSImage(cdsHook);
+        return cdsHookService.deleteCdsHookImage(cdsHook);
     }
 }

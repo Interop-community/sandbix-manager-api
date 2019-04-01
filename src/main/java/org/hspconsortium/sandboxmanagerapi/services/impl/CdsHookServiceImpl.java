@@ -39,6 +39,9 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Override
     @Transactional
     public void delete(CdsHook cdsHook) {
+        if (cdsHook.getLogo() != null) {
+            imageService.delete(cdsHook.getLogo().getId());
+        }
         delete(cdsHook.getId());
     }
 
@@ -48,7 +51,7 @@ public class CdsHookServiceImpl implements CdsHookService {
 
     @Override
     @Transactional
-    public CdsHook updateCDSImage(final CdsHook cdsHook, final Image image) {
+    public CdsHook updateCdsHookImage(final CdsHook cdsHook, final Image image) {
         if (cdsHook.getLogo() != null) {
             imageService.delete(cdsHook.getLogo().getId());
         }
@@ -59,7 +62,7 @@ public class CdsHookServiceImpl implements CdsHookService {
 
     @Override
     @Transactional
-    public CdsHook deleteCDSImage(final CdsHook existingCdsHook) {
+    public CdsHook deleteCdsHookImage(final CdsHook existingCdsHook) {
         if (existingCdsHook.getLogo() != null) {
             imageService.delete(existingCdsHook.getLogo().getId());
         }

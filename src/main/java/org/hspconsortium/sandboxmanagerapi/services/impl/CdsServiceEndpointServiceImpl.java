@@ -16,7 +16,6 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
 
     private final CdsServiceEndpointRepository repository;
     private CdsHookService cdsHookService;
-    private ImageService imageService;
     private LaunchScenarioService launchScenarioService;
     private UserLaunchService userLaunchService;
 
@@ -26,11 +25,6 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Inject
     public void setCdsHookService(CdsHookService cdsHookService) {
         this.cdsHookService = cdsHookService;
-    }
-
-    @Inject
-    public void setImageService(ImageService imageService) {
-        this.imageService = imageService;
     }
 
     @Inject
@@ -63,7 +57,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
 
     @Override
     @Transactional
-    public void delete(final CdsServiceEndpoint cdsServiceEndpoint, CdsHook cdsHook) {
+    public void delete(final CdsServiceEndpoint cdsServiceEndpoint) {
         // Delete all associated CDS-Service Launch Scenarios
         List<LaunchScenario> launchScenarioList = launchScenarioService.findByCdsServiceEndpointIdIdAndSandboxId(cdsServiceEndpoint.getId(), cdsServiceEndpoint.getSandbox().getId());
         for (LaunchScenario launchScenario: launchScenarioList) {
@@ -72,10 +66,9 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
             }
             launchScenarioService.delete(launchScenario.getId());
         }
-        if (cdsHook.getLogo() != null) {
-            int logoId = cdsHook.getLogo().getId();
-            cdsHook.setLogo(null);
-            imageService.delete(logoId);
+        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
+        for (CdsHook cdsHook: cdsHooks) {
+            cdsHookService.delete(cdsHook);
         }
         delete(cdsServiceEndpoint.getId());
     }
@@ -124,10 +117,11 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
         return repository.findByCdsServiceEndpointUrlAndSandboxId(url, sandboxId);
     }
 
-    public void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook) {
-        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
-        cdsHooks.add(cdsHook);
-        cdsServiceEndpoint.setCdsHooks(cdsHooks);
-        save(cdsServiceEndpoint);
-    }
+//    public void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook) {
+//        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
+//        cdsHooks.add(cdsHook);
+//        cdsServiceEndpoint.setCdsHooks(cdsHooks);
+//        save(cdsServiceEndpoint);
+//    }
+
 }

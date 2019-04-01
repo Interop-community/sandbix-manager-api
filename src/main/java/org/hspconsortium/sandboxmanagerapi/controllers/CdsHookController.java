@@ -1,7 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
-import org.hspconsortium.sandboxmanagerapi.model.App;
 import org.hspconsortium.sandboxmanagerapi.model.CdsHook;
 import org.hspconsortium.sandboxmanagerapi.model.Image;
 import org.hspconsortium.sandboxmanagerapi.services.CdsHookService;
@@ -71,7 +70,7 @@ public class CdsHookController {
             Image image = new Image();
             image.setBytes(file.getBytes());
             image.setContentType(file.getContentType());
-            cdsHookService.updateCDSImage(cdsHook, image);
+            cdsHookService.updateCdsHookImage(cdsHook, image);
         } catch (IOException e) {
             if(LOGGER.isErrorEnabled()){
                 LOGGER.error("Unable to update image", e);
@@ -87,7 +86,7 @@ public class CdsHookController {
             throw new ResourceNotFoundException("CDS-Hook does not exist. Cannot delete image.");
         }
 //        authorizationService.checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
-        return cdsHookService.deleteCDSImage(cdsHook);
+        return cdsHookService.deleteCdsHookImage(cdsHook);
     }
 
     //***********************************************************************************************

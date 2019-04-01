@@ -125,6 +125,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
                         launchScenario.setCdsHook(cdsHook);
                     }
                 }
+                if (launchScenario.getCdsHook() == null) {
+                    throw new ResourceNotFoundException("CDS-Hook was not found");
+                }
             }
             launchScenario.setCdsServiceEndpoint(cdsServiceEndpoint);
         } else {
@@ -169,7 +172,6 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
                     app = appService.save(app);
                     updateLaunchScenario.setApp(app);
                 }
-                return save(updateLaunchScenario);
             }
             return save(updateLaunchScenario);
         }

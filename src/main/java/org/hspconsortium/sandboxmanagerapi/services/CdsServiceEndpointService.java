@@ -10,7 +10,7 @@ public interface CdsServiceEndpointService {
 
     void delete(final int id);
 
-    void delete(final CdsServiceEndpoint cdsServiceEndpoint, CdsHook cdsHook);
+    void delete(final CdsServiceEndpoint cdsServiceEndpoint);
 
     CdsServiceEndpoint create(final CdsServiceEndpoint cdsServiceEndpoint, final Sandbox sandbox);
 
@@ -26,7 +26,7 @@ public interface CdsServiceEndpointService {
 
     CdsServiceEndpoint findByCdsServiceEndpointUrlAndSandboxId(final String url, final String sandboxId);
 
-    //TODO: figure out where to add this method
-    void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook);
+    //TODO: figure out where does this method gets used in app
+//    void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook);
 
 }

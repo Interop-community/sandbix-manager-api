@@ -13,8 +13,8 @@ public interface CdsHookService {
 
     CdsHook getById(final int id);
 
-    CdsHook updateCDSImage(final CdsHook cdsHook, final Image image);
+    CdsHook updateCdsHookImage(final CdsHook cdsHook, final Image image);
 
-    CdsHook deleteCDSImage(final CdsHook cdsHook);
+    CdsHook deleteCdsHookImage(final CdsHook cdsHook);
 
 }
