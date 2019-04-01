@@ -253,8 +253,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     }
 
     @Override
-    public List<LaunchScenario> findByCdsServiceEndpointIdIdAndSandboxId(final int cdsId, final int sandboxId) {
-        return  repository.findByCdsServiceEndpointIdIdAndSandboxId(cdsId, sandboxId);
+    public List<LaunchScenario> findBySandboxIdAndCdsServiceEndpointUrl(final String sandboxId, final String cdsServiceEndpointUrl) {
+        return  repository.findBySandboxIdAndCdsServiceEndpointUrl(sandboxId, cdsServiceEndpointUrl);
     }
 
 }

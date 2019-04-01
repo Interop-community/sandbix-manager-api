@@ -38,6 +38,6 @@ CREATE TABLE cds_service_endpoint_cds_hooks (
   CONSTRAINT FOREIGN KEY (cds_service_endpoint_id) REFERENCES cds_service_endpoint (id)
 );
 
--- ALTER TABLE launch_scenario ADD cds_hook_id INT(11) DEFAULT NULL;
--- ALTER TABLE launch_scenario ADD cds_service_endpoint_id INT(11) DEFAULT NULL;
+ALTER TABLE launch_scenario ADD cds_hook_id INT(11) DEFAULT NULL;
+ALTER TABLE launch_scenario ADD cds_service_endpoint_id INT(11) DEFAULT NULL;
 ALTER TABLE launch_scenario ADD context JSON DEFAULT NULL;

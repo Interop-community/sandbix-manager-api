@@ -25,7 +25,7 @@ public interface LaunchScenarioRepository extends CrudRepository<LaunchScenario,
     List<LaunchScenario> findBySandboxIdAndCreatedBy(@Param("sandboxId") String sandboxId,
                                                                         @Param("createdBy") String createdBy);
 
-    List<LaunchScenario> findByCdsServiceEndpointIdIdAndSandboxId(@Param("sandboxId") int sandboxId,
-                                                 @Param("cdsServiceEndpointId") int cdsServiceEndpointId);
+    List<LaunchScenario> findBySandboxIdAndCdsServiceEndpointUrl(@Param("sandboxId") String sandboxId,
+                                                 @Param("cdsServiceEndpointUrl") String cdsServiceEndpointUrl);
 
 }

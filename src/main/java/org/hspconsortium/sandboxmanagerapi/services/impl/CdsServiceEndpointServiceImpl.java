@@ -59,10 +59,10 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Transactional
     public void delete(final CdsServiceEndpoint cdsServiceEndpoint) {
         // Delete all associated CDS-Service Launch Scenarios
-        List<LaunchScenario> launchScenarioList = launchScenarioService.findByCdsServiceEndpointIdIdAndSandboxId(cdsServiceEndpoint.getId(), cdsServiceEndpoint.getSandbox().getId());
-        for (LaunchScenario launchScenario: launchScenarioList) {
-            for (UserLaunch userLaunchCdsServiceEndpoint: userLaunchService.findByLaunchScenarioCdsServiceEndpointId(launchScenario.getId())) {
-                userLaunchService.delete(userLaunchCdsServiceEndpoint.getId());
+        List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxIdAndCdsServiceEndpointUrl(cdsServiceEndpoint.getSandbox().getSandboxId(), cdsServiceEndpoint.getUrl());
+        for (LaunchScenario launchScenario: launchScenarios) {
+            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
+                userLaunchService.delete(userLaunch.getId());
             }
             launchScenarioService.delete(launchScenario.getId());
         }

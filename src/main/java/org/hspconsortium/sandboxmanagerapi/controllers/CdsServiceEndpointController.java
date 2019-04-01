@@ -67,8 +67,7 @@ public class CdsServiceEndpointController {
 
     @PostMapping
     @Transactional
-    @ResponseBody
-    public CdsServiceEndpoint createCdsServiceEndpoint(final HttpServletRequest request,
+    public @ResponseBody CdsServiceEndpoint createCdsServiceEndpoint(final HttpServletRequest request,
                                         @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
         Sandbox sandbox = sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
@@ -88,8 +87,7 @@ public class CdsServiceEndpointController {
     }
 
     @GetMapping(params = {"sandboxId"})
-    @ResponseBody
-    public List<CdsServiceEndpoint> getCdsServiceEndpoints(final HttpServletRequest request,
+    public @ResponseBody List<CdsServiceEndpoint> getCdsServiceEndpoints(final HttpServletRequest request,
                                                @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -100,7 +98,7 @@ public class CdsServiceEndpointController {
     }
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody CdsServiceEndpoint getCDS(final HttpServletRequest request, @PathVariable Integer id) {
+    public @ResponseBody CdsServiceEndpoint getCdsServicEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         if (cdsServiceEndpoint != null) {
             authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
@@ -114,12 +112,11 @@ public class CdsServiceEndpointController {
     @Transactional
     public @ResponseBody void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-        CdsHook cdsHook = cdsHookService.getById(id);
         if (cdsServiceEndpoint != null) {
             authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
             cdsServiceEndpointService.delete(cdsServiceEndpoint);
         } else {
-            throw new ResourceNotFoundException("Could not find the CDS-Service.");
+            throw new ResourceNotFoundException("Could not find the CDS Service Endpoint");
         }
     }
 

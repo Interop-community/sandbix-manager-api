@@ -31,8 +31,8 @@ import java.util.List;
         query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId and " +
                 "c.createdBy.sbmUserId = :createdBy"),
         // Used to determine if a registered cds is being used in a launch scenarios and cannot be deleted
-        @NamedQuery(name="LaunchScenario.findByCdsServiceEndpointIdIdAndSandboxId",
-                query="SELECT c FROM LaunchScenario c WHERE c.cdsServiceEndpoint.id = :cdsServiceEndpointId and c.sandbox.sandboxId = :sandboxId")
+        @NamedQuery(name= "LaunchScenario.findBySandboxIdAndCdsServiceEndpointUrl",
+                query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId AND c.cdsServiceEndpoint.url = :cdsServiceEndpointUrl")
 })
 @TypeDef(name = "jsonb-node", typeClass = JsonNodeStringType.class)
 public class LaunchScenario extends AbstractSandboxItem {
