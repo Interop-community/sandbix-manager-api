@@ -77,6 +77,11 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Transactional
     @PublishAtomicMetric
     public CdsServiceEndpoint create(final CdsServiceEndpoint cdsServiceEndpoint, final Sandbox sandbox) {
+        CdsServiceEndpoint existingCdsServiceEndpoint = findByCdsServiceEndpointUrlAndSandboxId(cdsServiceEndpoint.getUrl(), cdsServiceEndpoint.getSandbox().getSandboxId());
+        if (existingCdsServiceEndpoint != null) {
+            cdsServiceEndpoint.setId(existingCdsServiceEndpoint.getId());
+            update(cdsServiceEndpoint);
+        }
         cdsServiceEndpoint.setCreatedTimestamp(new Timestamp(new Date().getTime()));
         List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
         for (CdsHook cdsHook: cdsHooks) {
