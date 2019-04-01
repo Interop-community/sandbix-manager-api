@@ -2,6 +2,10 @@ package org.hspconsortium.sandboxmanagerapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.vladmihalcea.hibernate.type.json.JsonNodeStringType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -30,6 +34,7 @@ import java.util.List;
         @NamedQuery(name="LaunchScenario.findByCdsServiceEndpointIdIdAndSandboxId",
                 query="SELECT c FROM LaunchScenario c WHERE c.cdsServiceEndpoint.id = :cdsServiceEndpointId and c.sandbox.sandboxId = :sandboxId")
 })
+@TypeDef(name = "jsonb-node", typeClass = JsonNodeStringType.class)
 public class LaunchScenario extends AbstractSandboxItem {
 
     private String description;
@@ -49,6 +54,7 @@ public class LaunchScenario extends AbstractSandboxItem {
     private String needPatientBanner;
     private CdsHook cdsHook;
     private CdsServiceEndpoint cdsServiceEndpoint;
+    private JsonNode context;
 
     /******************* Launch Scenario Property Getter/Setters ************************/
 
@@ -254,5 +260,15 @@ public class LaunchScenario extends AbstractSandboxItem {
 
     public void setNeedPatientBanner(String needPatientBanner) {
         this.needPatientBanner = needPatientBanner;
+    }
+
+    @Type(type = "jsonb-node")
+    @Column(columnDefinition = "json")
+    public JsonNode getContext() {
+        return context;
+    }
+
+    public void setContext(JsonNode context) {
+        this.context = context;
     }
 }

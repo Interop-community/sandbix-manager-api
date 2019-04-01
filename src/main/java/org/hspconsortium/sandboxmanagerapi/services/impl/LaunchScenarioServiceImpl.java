@@ -153,15 +153,23 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             updateLaunchScenario.setPatient(launchScenario.getPatient());
             updateLaunchScenario.setUserPersona(userPersonaService.getById(launchScenario.getUserPersona().getId()));
             updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
+            updateLaunchScenario.setCdsHook(launchScenario.getCdsHook());
+            updateLaunchScenario.setCdsServiceEndpoint(launchScenario.getCdsServiceEndpoint());
+            updateLaunchScenario.setContext(launchScenario.getContext());
+
             if (launchScenario.getContextParams() != null) {
                 updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
             }
-            if (launchScenario.getApp().isCustomApp()) {
-                // Create an anonymous App for a custom launch
-                App app = appService.getById(launchScenario.getApp().getId());
-                app.setLaunchUri(launchScenario.getApp().getLaunchUri());
-                app = appService.save(app);
-                updateLaunchScenario.setApp(app);
+
+            if(launchScenario.getApp() != null & launchScenario.getCdsHook() == null) {
+                if (launchScenario.getApp().isCustomApp()) {
+                    // Create an anonymous App for a custom launch
+                    App app = appService.getById(launchScenario.getApp().getId());
+                    app.setLaunchUri(launchScenario.getApp().getLaunchUri());
+                    app = appService.save(app);
+                    updateLaunchScenario.setApp(app);
+                }
+                return save(updateLaunchScenario);
             }
             return save(updateLaunchScenario);
         }
