@@ -19,7 +19,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     private LaunchScenarioRepository repository;
     private ContextParamsService contextParamsService;
     private AppService appService;
-    private CdsServiceEndpointService cdsServiceEndpointService;
+    private CdsHookService cdsHookService;
     private UserPersonaService userPersonaService;
     private UserLaunchService userLaunchService;
 
@@ -37,8 +37,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     public void setAppService(AppService appService) { this.appService = appService; }
 
     @Inject
-    public void setCdsServiceEndpointService(CdsServiceEndpointService cdsServiceEndpointService) {
-        this.cdsServiceEndpointService = cdsServiceEndpointService;
+    public void setdsHookService(CdsHookService cdsHookService) {
+        this.cdsHookService = cdsHookService;
     }
 
     @Inject
@@ -116,20 +116,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
                 launchScenario.setApp(app);
             }
         } else if (launchScenario.getApp() == null & launchScenario.getCdsHook() != null) {
-            CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.findByCdsServiceEndpointUrlAndSandboxId(launchScenario.getCdsServiceEndpoint().getUrl(),
-                    sandbox.getSandboxId());
-            if (cdsServiceEndpoint != null) {
-                List<CdsHook> cdsHookList = cdsServiceEndpoint.getCdsHooks();
-                for (CdsHook cdsHook: cdsHookList) {
-                    if (cdsHook.getHookId().equals(launchScenario.getCdsHook().getHookId())) {
-                        launchScenario.setCdsHook(cdsHook);
-                    }
-                }
-                if (launchScenario.getCdsHook() == null) {
-                    throw new ResourceNotFoundException("CDS-Hook was not found");
-                }
-            }
-            launchScenario.setCdsServiceEndpoint(cdsServiceEndpoint);
+            CdsHook cdsHook = cdsHookService.findByHookIdAndCdsServiceEndpointId(launchScenario.getCdsHook().getHookId(), launchScenario.getCdsHook().getCdsServiceEndpointId());
+            launchScenario.setCdsHook(cdsHook);
         } else {
             throw new ResourceNotFoundException("No app or CDS-Hook provided");
         }
@@ -157,7 +145,6 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             updateLaunchScenario.setUserPersona(userPersonaService.getById(launchScenario.getUserPersona().getId()));
             updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
             updateLaunchScenario.setCdsHook(launchScenario.getCdsHook());
-            updateLaunchScenario.setCdsServiceEndpoint(launchScenario.getCdsServiceEndpoint());
             updateLaunchScenario.setContext(launchScenario.getContext());
 
             if (launchScenario.getContextParams() != null) {
@@ -253,8 +240,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     }
 
     @Override
-    public List<LaunchScenario> findBySandboxIdAndCdsServiceEndpointUrl(final String sandboxId, final String cdsServiceEndpointUrl) {
-        return  repository.findBySandboxIdAndCdsServiceEndpointUrl(sandboxId, cdsServiceEndpointUrl);
+    public List<LaunchScenario> findBySandboxIdAndCdsServiceEndpointId(final String sandboxId, final int cdsServiceEndpointId) {
+        return  repository.findBySandboxIdAndCdsServiceEndpointId(sandboxId, cdsServiceEndpointId);
     }
 
 }

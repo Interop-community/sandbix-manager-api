@@ -11,11 +11,9 @@ import javax.persistence.*;
 @Entity
 @NamedQueries({
         // Used to retrieve a registered CdsHook when a new launch scenario is being created with the CdsHook
-        @NamedQuery(name="CdsHook.findByLogoUriAndHookId",
-                query="SELECT c FROM CdsHook c WHERE c.logoUri = :logoUri and c.hookId = :hookId"),
-        // Used to delete all registered CDS-Services when a sandbox is deleted
-        @NamedQuery(name="CdsHook.findByHookId",
-                query="SELECT c.id FROM CdsHook c WHERE c.hookId = :hookId")
+        @NamedQuery(name="CdsHook.findByHookIdAndCdsServiceEndpointId",
+                query="SELECT c FROM CdsHook c WHERE c.hookId = :hookId and " +
+                        "c.cdsServiceEndpointId = :cdsServiceEndpointId")
 })
 @TypeDef(name = "jsonb-node", typeClass = JsonNodeStringType.class)
 public class CdsHook {
@@ -28,6 +26,7 @@ public class CdsHook {
     private String description;
     private String hookId;
     private JsonNode prefetch;
+    private Integer cdsServiceEndpointId;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,5 +97,13 @@ public class CdsHook {
 
     public void setPrefetch(JsonNode prefetch) {
         this.prefetch = prefetch;
+    }
+
+    public Integer getCdsServiceEndpointId() {
+        return cdsServiceEndpointId;
+    }
+
+    public void setCdsServiceEndpointId(Integer cdsServiceEndpointId) {
+        this.cdsServiceEndpointId = cdsServiceEndpointId;
     }
 }

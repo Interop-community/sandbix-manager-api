@@ -59,7 +59,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Transactional
     public void delete(final CdsServiceEndpoint cdsServiceEndpoint) {
         // Delete all associated CDS-Service Launch Scenarios
-        List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxIdAndCdsServiceEndpointUrl(cdsServiceEndpoint.getSandbox().getSandboxId(), cdsServiceEndpoint.getUrl());
+        List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxIdAndCdsServiceEndpointId(cdsServiceEndpoint.getSandbox().getSandboxId(), cdsServiceEndpoint.getId());
         for (LaunchScenario launchScenario: launchScenarios) {
             for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
                 userLaunchService.delete(userLaunch.getId());
@@ -80,14 +80,16 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
         CdsServiceEndpoint existingCdsServiceEndpoint = findByCdsServiceEndpointUrlAndSandboxId(cdsServiceEndpoint.getUrl(), cdsServiceEndpoint.getSandbox().getSandboxId());
         if (existingCdsServiceEndpoint != null) {
             cdsServiceEndpoint.setId(existingCdsServiceEndpoint.getId());
-            update(cdsServiceEndpoint);
+            return update(cdsServiceEndpoint);
         }
         cdsServiceEndpoint.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+        CdsServiceEndpoint cdsServiceEndpointSaved = save(cdsServiceEndpoint);
         List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
         for (CdsHook cdsHook: cdsHooks) {
+            cdsHook.setCdsServiceEndpointId(cdsServiceEndpointSaved.getId());
             cdsHookService.save(cdsHook);
         }
-        return save(cdsServiceEndpoint);
+        return cdsServiceEndpointSaved;
     }
 
     @Override
@@ -97,8 +99,9 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
         existingCdsServiceEndpoint.setUrl(cdsServiceEndpoint.getUrl());
         existingCdsServiceEndpoint.setTitle(cdsServiceEndpoint.getTitle());
         existingCdsServiceEndpoint.setDescription(cdsServiceEndpoint.getDescription());
-        existingCdsServiceEndpoint.setCdsHooks(cdsServiceEndpoint.getCdsHooks());
-        return save(cdsServiceEndpoint);
+        existingCdsServiceEndpoint.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+        existingCdsServiceEndpoint.setVisibility(cdsServiceEndpoint.getVisibility());
+        return save(existingCdsServiceEndpoint);
     }
 
     @Override

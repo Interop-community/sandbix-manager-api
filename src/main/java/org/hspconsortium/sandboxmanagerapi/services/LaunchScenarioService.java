@@ -37,6 +37,6 @@ public interface LaunchScenarioService {
 
     List<LaunchScenario> updateLastLaunchForCurrentUser(final List<LaunchScenario> launchScenarios, final User user);
 
-    List<LaunchScenario> findBySandboxIdAndCdsServiceEndpointUrl(final String sandboxId, final String cdsServiceEndpointUrl) ;
+    List<LaunchScenario> findBySandboxIdAndCdsServiceEndpointId(final String sandboxId, final int cdsServiceEndpointId) ;
 
 }
