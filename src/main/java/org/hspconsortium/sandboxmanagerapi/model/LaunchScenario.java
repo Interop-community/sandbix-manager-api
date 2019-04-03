@@ -31,8 +31,8 @@ import java.util.List;
         query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId and " +
                 "c.createdBy.sbmUserId = :createdBy"),
         // Used to determine if a registered cds is being used in a launch scenarios and cannot be deleted
-        @NamedQuery(name= "LaunchScenario.findBySandboxIdAndCdsServiceEndpointUrl",
-                query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId AND c.cdsServiceEndpoint.url = :cdsServiceEndpointUrl")
+        @NamedQuery(name= "LaunchScenario.findBySandboxIdAndCdsServiceEndpointId",
+                query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId AND c.cdsHook.cdsServiceEndpointId = :cdsServiceEndpointId")
 })
 @TypeDef(name = "jsonb-node", typeClass = JsonNodeStringType.class)
 public class LaunchScenario extends AbstractSandboxItem {
@@ -53,7 +53,6 @@ public class LaunchScenario extends AbstractSandboxItem {
     private String title;
     private String needPatientBanner;
     private CdsHook cdsHook;
-    private CdsServiceEndpoint cdsServiceEndpoint;
     private JsonNode context;
 
     /******************* Launch Scenario Property Getter/Setters ************************/
@@ -127,16 +126,6 @@ public class LaunchScenario extends AbstractSandboxItem {
 
     public void setCdsHook(CdsHook cdsHook) {
         this.cdsHook = cdsHook;
-    }
-
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="cds_service_endpoint_id")
-    public CdsServiceEndpoint getCdsServiceEndpoint() {
-        return cdsServiceEndpoint;
-    }
-
-    public void setCdsServiceEndpoint(CdsServiceEndpoint cdsServiceEndpoint) {
-        this.cdsServiceEndpoint = cdsServiceEndpoint;
     }
 
     /******************* Inherited Property Getter/Setters ************************/

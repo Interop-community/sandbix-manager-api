@@ -1,6 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import org.hspconsortium.sandboxmanagerapi.model.CdsHook;
+import org.hspconsortium.sandboxmanagerapi.model.CdsServiceEndpoint;
 import org.hspconsortium.sandboxmanagerapi.model.Image;
 import org.hspconsortium.sandboxmanagerapi.repositories.CdsHookRepository;
 import org.hspconsortium.sandboxmanagerapi.services.CdsHookService;
@@ -45,8 +46,9 @@ public class CdsHookServiceImpl implements CdsHookService {
         delete(cdsHook.getId());
     }
 
+    @Override
     public CdsHook getById(final int id) {
-        return null;
+        return repository.findOne(id);
     }
 
     @Override
@@ -57,7 +59,7 @@ public class CdsHookServiceImpl implements CdsHookService {
         }
         cdsHook.setLogo(image);
         cdsHook.setLogoUri(cdsHook.getLogoUri());
-        return repository.save(cdsHook);
+        return save(cdsHook);
     }
 
     @Override
@@ -68,7 +70,12 @@ public class CdsHookServiceImpl implements CdsHookService {
         }
         existingCdsHook.setLogoUri(null);
         existingCdsHook.setLogo(null);
-        return repository.save(existingCdsHook);
+        return save(existingCdsHook);
+    }
+
+    @Override
+    public CdsHook findByHookIdAndCdsServiceEndpointId(final String hookId, final int cdsServiceEndpointId) {
+        return repository.findByHookIdAndCdsServiceEndpointId(hookId, cdsServiceEndpointId);
     }
 
 }

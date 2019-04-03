@@ -1,6 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.CdsHook;
+import org.hspconsortium.sandboxmanagerapi.model.CdsServiceEndpoint;
 import org.hspconsortium.sandboxmanagerapi.model.Image;
 
 public interface CdsHookService {
@@ -16,5 +17,7 @@ public interface CdsHookService {
     CdsHook updateCdsHookImage(final CdsHook cdsHook, final Image image);
 
     CdsHook deleteCdsHookImage(final CdsHook cdsHook);
+
+    CdsHook findByHookIdAndCdsServiceEndpointId(final String hookId, final int cdsServiceEndpointId);
 
 }

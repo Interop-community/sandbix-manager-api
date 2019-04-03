@@ -19,11 +19,11 @@ import java.util.List;
         // Used to retrieve all registered CDS-Services visible to a user of this a sandbox
         @NamedQuery(name="CdsServiceEndpoint.findBySandboxIdAndCreatedByOrVisibility",
                 query="SELECT c FROM CdsServiceEndpoint c WHERE c.sandbox.sandboxId = :sandboxId and " +
-                        "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility) "),
+                        "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility)"),
         // Used to delete a user's PRIVATE registered CDS-Services when they are removed from a sandbox
         @NamedQuery(name="CdsServiceEndpoint.findBySandboxIdAndCreatedBy",
                 query="SELECT c FROM CdsServiceEndpoint c WHERE c.sandbox.sandboxId = :sandboxId and " +
-                        "c.createdBy.sbmUserId = :createdBy ")
+                        "c.createdBy.sbmUserId = :createdBy")
 })
 public class CdsServiceEndpoint extends AbstractSandboxItem {
 
@@ -109,7 +109,7 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
         this.description = description;
     }
 
-    @OneToMany(cascade={CascadeType.ALL})
+    @Transient
     public List<CdsHook> getCdsHooks() {
         return cdsHooks;
     }
