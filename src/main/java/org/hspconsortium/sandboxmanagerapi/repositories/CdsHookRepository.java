@@ -14,4 +14,5 @@ public interface CdsHookRepository extends CrudRepository<CdsHook, Integer> {
 
     CdsHook findByHookIdAndCdsServiceEndpointId(@Param("hookId") String hookId,
                                                 @Param("cdsServiceEndpointId") int cdsServiceEndpointId);
+    List<CdsHook> findByCdsServiceEndpointId(@Param("cdsServiceEndpointId") int cdsServiceEndpointId);
 }

@@ -109,18 +109,22 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
         return repository.findOne(id);
     }
 
+    @Override
     public List<CdsServiceEndpoint> findBySandboxId(final String sandboxId) {
         return repository.findBySandboxId(sandboxId);
     }
 
+    @Override
     public List<CdsServiceEndpoint> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
         return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
     }
 
+    @Override
     public List<CdsServiceEndpoint> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy) {
         return repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy);
     }
 
+    @Override
     public CdsServiceEndpoint findByCdsServiceEndpointUrlAndSandboxId (final String url, final String sandboxId) {
         return repository.findByCdsServiceEndpointUrlAndSandboxId(url, sandboxId);
     }

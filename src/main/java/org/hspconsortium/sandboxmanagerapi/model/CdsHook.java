@@ -13,7 +13,10 @@ import javax.persistence.*;
         // Used to retrieve a registered CdsHook when a new launch scenario is being created with the CdsHook
         @NamedQuery(name="CdsHook.findByHookIdAndCdsServiceEndpointId",
                 query="SELECT c FROM CdsHook c WHERE c.hookId = :hookId and " +
-                        "c.cdsServiceEndpointId = :cdsServiceEndpointId")
+                        "c.cdsServiceEndpointId = :cdsServiceEndpointId"),
+        // Used to attach all the cds-hook to the cds-service-endpoint when get cds-service-endpoint is called
+        @NamedQuery(name="CdsHook.findCdsServiceEndpointId",
+                query="SELECT c FROM CdsHook c WHERE c.cdsServiceEndpointId = :cdsServiceEndpointId")
 })
 @TypeDef(name = "jsonb-node", typeClass = JsonNodeStringType.class)
 public class CdsHook {

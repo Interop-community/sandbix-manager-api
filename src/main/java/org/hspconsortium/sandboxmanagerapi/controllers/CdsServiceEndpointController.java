@@ -96,13 +96,20 @@ public class CdsServiceEndpointController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         String sbmUserId = authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
-        return cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        List<CdsServiceEndpoint> cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        for (CdsServiceEndpoint cdsServiceEndpoint: cdsServiceEndpoints) {
+            List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
+            cdsServiceEndpoint.setCdsHooks(cdsHooks);
+        }
+        return cdsServiceEndpoints;
     }
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public CdsServiceEndpoint getCdsServicEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
+        List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
+        cdsServiceEndpoint.setCdsHooks(cdsHooks);
         if (cdsServiceEndpoint != null) {
             authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
             return cdsServiceEndpoint;
@@ -111,18 +118,19 @@ public class CdsServiceEndpointController {
         }
     }
 
-    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-    @Transactional
-    @ResponseBody
-    public void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
-        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-        if (cdsServiceEndpoint != null) {
-            authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-            cdsServiceEndpointService.delete(cdsServiceEndpoint);
-        } else {
-            throw new ResourceNotFoundException("Could not find the CDS Service Endpoint");
-        }
-    }
+//    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
+//    @Transactional
+//    @ResponseBody
+//    public void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
+//        //TODO: delete all the associated cds-hooks
+//        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
+//        if (cdsServiceEndpoint != null) {
+//            authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
+//            cdsServiceEndpointService.delete(cdsServiceEndpoint);
+//        } else {
+//            throw new ResourceNotFoundException("Could not find the CDS Service Endpoint");
+//        }
+//    }
 
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional

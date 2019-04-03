@@ -1,7 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import org.hspconsortium.sandboxmanagerapi.model.CdsHook;
-import org.hspconsortium.sandboxmanagerapi.model.CdsServiceEndpoint;
 import org.hspconsortium.sandboxmanagerapi.model.Image;
 import org.hspconsortium.sandboxmanagerapi.repositories.CdsHookRepository;
 import org.hspconsortium.sandboxmanagerapi.services.CdsHookService;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 public class CdsHookServiceImpl implements CdsHookService {
@@ -76,6 +76,11 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Override
     public CdsHook findByHookIdAndCdsServiceEndpointId(final String hookId, final int cdsServiceEndpointId) {
         return repository.findByHookIdAndCdsServiceEndpointId(hookId, cdsServiceEndpointId);
+    }
+
+    @Override
+    public List<CdsHook> findByCdsServiceEndpointId(final int cdsServiceEndpointId) {
+        return repository.findByCdsServiceEndpointId(cdsServiceEndpointId);
     }
 
 }
