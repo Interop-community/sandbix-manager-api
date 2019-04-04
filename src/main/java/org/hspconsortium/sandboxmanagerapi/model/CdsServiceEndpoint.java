@@ -31,6 +31,7 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
     private String title;
     private String description;
     private List<CdsHook> cdsHooks = new ArrayList<>();
+    private Timestamp lastUpdated;
 
     /******************* Inherited Property Getter/Setters ************************/
 
@@ -118,4 +119,11 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
         this.cdsHooks = cdsHooks;
     }
 
+    public Timestamp getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Timestamp lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
 }

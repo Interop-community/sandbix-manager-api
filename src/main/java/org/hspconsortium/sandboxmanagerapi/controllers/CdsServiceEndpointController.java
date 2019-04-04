@@ -57,12 +57,12 @@ public class CdsServiceEndpointController {
                                         final CdsHookService cdsHookService, final SandboxService sandboxService,
                                         final UserService userService, final RuleService ruleService,
                                         final AuthorizationService authorizationService) {
-        this.authorizationService = authorizationService;
         this.cdsServiceEndpointService = cdsServiceEndpointService;
         this.cdsHookService = cdsHookService;
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.ruleService = ruleService;
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping(produces = APPLICATION_JSON_VALUE)
@@ -70,6 +70,15 @@ public class CdsServiceEndpointController {
     @ResponseBody
     public CdsServiceEndpoint createCdsServiceEndpoint(final HttpServletRequest request,
                                         @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
+
+        checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);
+        authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
+
+        return cdsServiceEndpointService.create(cdsServiceEndpoint, sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId()));
+    }
+
+    private CdsServiceEndpoint checkUserAuthorizationAndModifyCdsServiceEndpoint (HttpServletRequest request,
+                                                                                  CdsServiceEndpoint cdsServiceEndpoint) {
         Sandbox sandbox = sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox specified in CDS-Service not found.");
@@ -78,13 +87,31 @@ public class CdsServiceEndpointController {
             return null;
         }
         String sbmUserId = authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
-        authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
 
         cdsServiceEndpoint.setSandbox(sandbox);
         User user = userService.findBySbmUserId(sbmUserId);
         cdsServiceEndpoint.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
         cdsServiceEndpoint.setCreatedBy(user);
-        return cdsServiceEndpointService.create(cdsServiceEndpoint, sandbox);
+        return cdsServiceEndpoint;
+    }
+
+    @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
+    @Transactional
+    @ResponseBody
+    public CdsServiceEndpoint updateCdsServiceEndpoint(final HttpServletRequest request,
+                                                       @PathVariable Integer id,
+                                                       @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
+        CdsServiceEndpoint existingCdsServiceEndpoint = cdsServiceEndpointService.getById(id);
+        if (existingCdsServiceEndpoint == null || existingCdsServiceEndpoint.getId().intValue() != id.intValue()) {
+            throw new RuntimeException(String.format("Response Status : %s.\n" +
+                            "Response Detail : CDS-Service Id doesn't match Id in JSON body."
+                    , HttpStatus.SC_BAD_REQUEST));
+        }
+
+        checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);
+        authorizationService.checkSandboxUserModifyAuthorization(request, existingCdsServiceEndpoint.getSandbox(), existingCdsServiceEndpoint);
+
+        return cdsServiceEndpointService.update(cdsServiceEndpoint);
     }
 
     @GetMapping(params = {"sandboxId"})
@@ -118,35 +145,19 @@ public class CdsServiceEndpointController {
         }
     }
 
-//    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-//    @Transactional
-//    @ResponseBody
-//    public void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
-//        //TODO: delete all the associated cds-hooks
-//        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-//        if (cdsServiceEndpoint != null) {
-//            authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-//            cdsServiceEndpointService.delete(cdsServiceEndpoint);
-//        } else {
-//            throw new ResourceNotFoundException("Could not find the CDS Service Endpoint");
-//        }
-//    }
-
-    @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
-    public CdsServiceEndpoint updateCdsServiceEndpoint(final HttpServletRequest request,
-                                                                     @PathVariable Integer id,
-                                                                     @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
-        CdsServiceEndpoint existingCdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-        if (existingCdsServiceEndpoint == null || existingCdsServiceEndpoint.getId().intValue() != id.intValue()) {
-            throw new RuntimeException(String.format("Response Status : %s.\n" +
-                            "Response Detail : CDS-Service Id doesn't match Id in JSON body."
-                    , HttpStatus.SC_BAD_REQUEST));
+    public void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
+        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
+        if (cdsServiceEndpoint != null) {
+            authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
+            cdsServiceEndpointService.delete(cdsServiceEndpoint);
+        } else {
+            throw new ResourceNotFoundException("Could not find the CDS Service Endpoint");
         }
-        authorizationService.checkSandboxUserModifyAuthorization(request, existingCdsServiceEndpoint.getSandbox(), existingCdsServiceEndpoint);
-        return cdsServiceEndpointService.update(cdsServiceEndpoint);
     }
+
 }
 
 //    @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})

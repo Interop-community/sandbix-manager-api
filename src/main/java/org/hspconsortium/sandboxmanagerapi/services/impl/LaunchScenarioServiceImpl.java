@@ -66,13 +66,14 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     @Transactional
     public void delete(final LaunchScenario launchScenario) {
-
-        if (launchScenario.getApp().isCustomApp()) {
-            // This is an anonymous App created for a custom launch
-            App app = launchScenario.getApp();
-            launchScenario.setApp(null);
-            save(launchScenario);
-            appService.delete(app);
+        if (launchScenario.getApp() != null) {
+            if (launchScenario.getApp().isCustomApp()) {
+                // This is an anonymous App created for a custom launch
+                App app = launchScenario.getApp();
+                launchScenario.setApp(null);
+                save(launchScenario);
+                appService.delete(app);
+            }
         }
 
         List<ContextParams> contextParamsList = launchScenario.getContextParams();
@@ -143,15 +144,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             updateLaunchScenario.setPatientName(launchScenario.getPatientName());
             updateLaunchScenario.setPatient(launchScenario.getPatient());
             updateLaunchScenario.setUserPersona(userPersonaService.getById(launchScenario.getUserPersona().getId()));
-            updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
-            updateLaunchScenario.setCdsHook(launchScenario.getCdsHook());
-            updateLaunchScenario.setContext(launchScenario.getContext());
-
-            if (launchScenario.getContextParams() != null) {
-                updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
-            }
-
-            if(launchScenario.getApp() != null & launchScenario.getCdsHook() == null) {
+            if (launchScenario.getApp() != null & launchScenario.getCdsHook() == null) {
+                updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
                 if (launchScenario.getApp().isCustomApp()) {
                     // Create an anonymous App for a custom launch
                     App app = appService.getById(launchScenario.getApp().getId());
@@ -159,6 +153,14 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
                     app = appService.save(app);
                     updateLaunchScenario.setApp(app);
                 }
+            } else if (launchScenario.getApp() == null & launchScenario.getCdsHook() != null) {
+                updateLaunchScenario.setCdsHook(launchScenario.getCdsHook());
+                updateLaunchScenario.setContext(launchScenario.getContext());
+            } else {
+                throw new IllegalArgumentException("Both App and CDS-Hook can't be updated together ");
+            }
+            if (launchScenario.getContextParams() != null) {
+                updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
             }
             return save(updateLaunchScenario);
         }
@@ -240,8 +242,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     }
 
     @Override
-    public List<LaunchScenario> findBySandboxIdAndCdsServiceEndpointId(final String sandboxId, final int cdsServiceEndpointId) {
-        return  repository.findBySandboxIdAndCdsServiceEndpointId(sandboxId, cdsServiceEndpointId);
+    public List<LaunchScenario> findByCdsHookIdAndSandboxId(final int cdsHookId, final String sandboxId) {
+        return repository.findByCdsHookIdAndSandboxId(cdsHookId, sandboxId);
     }
-
 }

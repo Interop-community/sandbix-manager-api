@@ -30,6 +30,7 @@ public class CdsHook {
     private String hookId;
     private JsonNode prefetch;
     private Integer cdsServiceEndpointId;
+    private String hookUrl;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -108,5 +109,13 @@ public class CdsHook {
 
     public void setCdsServiceEndpointId(Integer cdsServiceEndpointId) {
         this.cdsServiceEndpointId = cdsServiceEndpointId;
+    }
+
+    public String getHookUrl() {
+        return hookUrl;
+    }
+
+    public void setHookUrl(String hookUrl) {
+        this.hookUrl = hookUrl;
     }
 }

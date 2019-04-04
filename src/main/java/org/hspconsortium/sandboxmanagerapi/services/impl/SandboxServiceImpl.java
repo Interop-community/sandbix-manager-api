@@ -87,6 +87,8 @@ public class SandboxServiceImpl implements SandboxService {
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxInviteService sandboxInviteService;
     private CloseableHttpClient httpClient;
+    private CdsHookService cdsHookService;
+    private CdsServiceEndpointService cdsServiceEndpointService;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -151,6 +153,16 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setHttpClient(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    @Inject
+    public void setCdsHookService(CdsHookService cdsHookService) {
+        this.cdsHookService = cdsHookService;
+    }
+
+    @Inject
+    public void setCdsServiceEndpointService(CdsServiceEndpointService cdsServiceEndpointService) {
+        this.cdsServiceEndpointService = cdsServiceEndpointService;
     }
 
     @Override
@@ -223,6 +235,15 @@ public class SandboxServiceImpl implements SandboxService {
         List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
         for (SandboxInvite sandboxInvite : sandboxInvites) {
             sandboxInviteService.delete(sandboxInvite);
+        }
+
+        List<CdsServiceEndpoint> cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxId(sandbox.getSandboxId());
+        for (CdsServiceEndpoint cdsServiceEndpoint: cdsServiceEndpoints) {
+            List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
+            for (CdsHook cdsHook: cdsHooks) {
+                cdsHookService.delete(cdsHook);
+            }
+            cdsServiceEndpointService.delete(cdsServiceEndpoint);
         }
 
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);

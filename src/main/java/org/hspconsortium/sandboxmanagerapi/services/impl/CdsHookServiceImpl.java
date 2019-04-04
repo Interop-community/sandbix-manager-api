@@ -27,8 +27,36 @@ public class CdsHookServiceImpl implements CdsHookService {
 
     @Override
     @Transactional
+    public CdsHook create(final CdsHook cdsHook) {
+        CdsHook existingCdsHook = findByHookIdAndCdsServiceEndpointId(cdsHook.getHookId(),
+                cdsHook.getCdsServiceEndpointId());
+        if (existingCdsHook != null) {
+            cdsHook.setId(existingCdsHook.getId());
+            return update(cdsHook);
+        }
+        return save(cdsHook);
+    }
+
+    @Override
+    @Transactional
     public CdsHook save(final CdsHook cdsHook) {
         return repository.save(cdsHook);
+    }
+
+    @Override
+    @Transactional
+    public CdsHook update(final CdsHook cdsHook) {
+        CdsHook existingCdsHook = getById(cdsHook.getId());
+        existingCdsHook.setLogo(cdsHook.getLogo());
+        existingCdsHook.setLogoUri(cdsHook.getLogoUri());
+        existingCdsHook.setHook(cdsHook.getHook());
+        existingCdsHook.setTitle(cdsHook.getTitle());
+        existingCdsHook.setDescription(cdsHook.getDescription());
+//        existingCdsHook.setHookId(cdsHook.getHookId()); //TODO: should this be updated
+        existingCdsHook.setPrefetch(cdsHook.getPrefetch());
+//        existingCdsHook.setCdsServiceEndpointId(cdsHook.getCdsServiceEndpointId()); //TODO: should this be updated
+        existingCdsHook.setHookUrl(cdsHook.getHookUrl());
+        return save(existingCdsHook);
     }
 
     @Override
