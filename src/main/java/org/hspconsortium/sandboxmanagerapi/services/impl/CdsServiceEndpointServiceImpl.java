@@ -58,16 +58,15 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Override
     @Transactional
     public void delete(final CdsServiceEndpoint cdsServiceEndpoint) {
-        // Delete all associated CDS-Service Launch Scenarios
-        List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxIdAndCdsServiceEndpointId(cdsServiceEndpoint.getSandbox().getSandboxId(), cdsServiceEndpoint.getId());
-        for (LaunchScenario launchScenario: launchScenarios) {
-            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
-                userLaunchService.delete(userLaunch.getId());
-            }
-            launchScenarioService.delete(launchScenario.getId());
-        }
-        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
+        // Delete all associated CDS-Hook and  CDS-Hook Launch Scenarios
+        List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
         for (CdsHook cdsHook: cdsHooks) {
+            for (LaunchScenario launchScenario: launchScenarioService.findByCdsHookIdAndSandboxId(cdsHook.getId(), cdsServiceEndpoint.getSandbox().getSandboxId())) {
+                for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
+                    userLaunchService.delete(userLaunch.getId());
+                }
+                launchScenarioService.delete(launchScenario.getId());
+            }
             cdsHookService.delete(cdsHook);
         }
         delete(cdsServiceEndpoint.getId());
@@ -87,7 +86,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
         List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
         for (CdsHook cdsHook: cdsHooks) {
             cdsHook.setCdsServiceEndpointId(cdsServiceEndpointSaved.getId());
-            cdsHookService.save(cdsHook);
+            cdsHookService.create(cdsHook);
         }
         return cdsServiceEndpointSaved;
     }
@@ -96,11 +95,15 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Transactional
     public  CdsServiceEndpoint update(final CdsServiceEndpoint cdsServiceEndpoint) {
         CdsServiceEndpoint existingCdsServiceEndpoint = getById(cdsServiceEndpoint.getId());
-        existingCdsServiceEndpoint.setUrl(cdsServiceEndpoint.getUrl());
+//        existingCdsServiceEndpoint.setUrl(cdsServiceEndpoint.getUrl()); //TODO: should this be updated??
         existingCdsServiceEndpoint.setTitle(cdsServiceEndpoint.getTitle());
         existingCdsServiceEndpoint.setDescription(cdsServiceEndpoint.getDescription());
-        existingCdsServiceEndpoint.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-        existingCdsServiceEndpoint.setVisibility(cdsServiceEndpoint.getVisibility());
+        existingCdsServiceEndpoint.setLastUpdated(new Timestamp(new Date().getTime()));
+        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
+        for (CdsHook cdsHook: cdsHooks) {
+            cdsHook.setCdsServiceEndpointId(cdsServiceEndpoint.getId());
+            cdsHookService.create(cdsHook);
+        }
         return save(existingCdsServiceEndpoint);
     }
 

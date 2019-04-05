@@ -47,6 +47,8 @@ public class LaunchScenarioController {
     private final SandboxService sandboxService;
     private final UserLaunchService userLaunchService;
     private final AuthorizationService authorizationService;
+    private final CdsHookService cdsHookService;
+    private final CdsServiceEndpointService cdsServiceEndpointService;
 
     @Inject
     public LaunchScenarioController(final LaunchScenarioService launchScenarioService,
@@ -54,7 +56,10 @@ public class LaunchScenarioController {
                                     final UserService userService,
                                     final UserPersonaService userPersonaService,
                                     final SandboxService sandboxService,
-                                    final UserLaunchService userLaunchService, final AuthorizationService authorizationService) {
+                                    final UserLaunchService userLaunchService,
+                                    final AuthorizationService authorizationService,
+                                    final CdsHookService cdsHookService,
+                                    final CdsServiceEndpointService cdsServiceEndpointService) {
         this.launchScenarioService = launchScenarioService;
         this.userService = userService;
         this.appService = appService;
@@ -62,6 +67,8 @@ public class LaunchScenarioController {
         this.sandboxService = sandboxService;
         this.userLaunchService = userLaunchService;
         this.authorizationService = authorizationService;
+        this.cdsHookService = cdsHookService;
+        this.cdsServiceEndpointService = cdsServiceEndpointService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -139,6 +146,19 @@ public class LaunchScenarioController {
         authorizationService.checkSandboxUserReadAuthorization(request, app.getSandbox());
 
         return launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+    }
+
+    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"cdsHookId"})
+    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForCdsHook(HttpServletRequest request,
+                                                                           @RequestParam(value = "cdsHookId") int cdsHookId) {
+        CdsHook cdsHook = cdsHookService.getById(cdsHookId);
+        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
+        if (cdsHook == null) {
+            throw new ResourceNotFoundException("CDS-Hook not found.");
+        }
+        authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
+
+        return launchScenarioService.findByCdsHookIdAndSandboxId(cdsHook.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
     }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userPersonaId"})

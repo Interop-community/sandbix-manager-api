@@ -8,7 +8,11 @@ import java.util.List;
 
 public interface CdsHookService {
 
+    CdsHook create(final CdsHook cdsHook);
+
     CdsHook save(final CdsHook cdsHook);
+
+    CdsHook update(final CdsHook cdsHook);
 
     void delete(final int id);
 
