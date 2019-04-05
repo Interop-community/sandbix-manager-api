@@ -52,9 +52,7 @@ public class CdsHookServiceImpl implements CdsHookService {
         existingCdsHook.setHook(cdsHook.getHook());
         existingCdsHook.setTitle(cdsHook.getTitle());
         existingCdsHook.setDescription(cdsHook.getDescription());
-//        existingCdsHook.setHookId(cdsHook.getHookId()); //TODO: should this be updated
         existingCdsHook.setPrefetch(cdsHook.getPrefetch());
-//        existingCdsHook.setCdsServiceEndpointId(cdsHook.getCdsServiceEndpointId()); //TODO: should this be updated
         existingCdsHook.setHookUrl(cdsHook.getHookUrl());
         return save(existingCdsHook);
     }
