@@ -35,6 +35,8 @@ public class SandboxServiceTest {
     private SandboxActivityLogService sandboxActivityLogService = mock(SandboxActivityLogService.class);
     private RuleService ruleService = mock(RuleService.class);
     private UserAccessHistoryService userAccessHistoryService = mock(UserAccessHistoryService.class);
+    private CdsServiceEndpointService cdsServiceEndpointService = mock(CdsServiceEndpointService.class);
+    private CdsHookService cdsHookService = mock(CdsHookService.class);
     private CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
     private CloseableHttpResponse response = spy(CloseableHttpResponse.class);
 
@@ -77,6 +79,8 @@ public class SandboxServiceTest {
         sandboxService.setSandboxActivityLogService(sandboxActivityLogService);
         sandboxService.setRuleService(ruleService);
         sandboxService.setHttpClient(httpClient);
+        sandboxService.setCdsServiceEndpointService(cdsServiceEndpointService);
+        sandboxService.setCdsHookService(cdsHookService);
 
 //        sandbox = new Sandbox();
         sandbox.setId(1);
