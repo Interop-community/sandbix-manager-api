@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService {
@@ -86,6 +87,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
         List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
         for (CdsHook cdsHook: cdsHooks) {
             cdsHook.setCdsServiceEndpointId(cdsServiceEndpointSaved.getId());
+            cdsHook.setHookUrl(cdsServiceEndpointSaved.getUrl() + "/" + cdsHook.getHookId());
             cdsHookService.create(cdsHook);
         }
         return cdsServiceEndpointSaved;
@@ -95,13 +97,22 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Transactional
     public  CdsServiceEndpoint update(final CdsServiceEndpoint cdsServiceEndpoint) {
         CdsServiceEndpoint existingCdsServiceEndpoint = getById(cdsServiceEndpoint.getId());
-//        existingCdsServiceEndpoint.setUrl(cdsServiceEndpoint.getUrl()); //TODO: should this be updated??
         existingCdsServiceEndpoint.setTitle(cdsServiceEndpoint.getTitle());
         existingCdsServiceEndpoint.setDescription(cdsServiceEndpoint.getDescription());
         existingCdsServiceEndpoint.setLastUpdated(new Timestamp(new Date().getTime()));
         List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
+        List<CdsHook> existingCdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
+
+        for (CdsHook existingCdsHook: existingCdsHooks) {
+            List<CdsHook> c = cdsHooks.stream().filter(p1 -> existingCdsHook.getHookId().equals(p1.getHookId())).collect(Collectors.toList());
+            if (c.size() == 0) {
+                cdsHookService.delete(existingCdsHook);
+            }
+        }
+
         for (CdsHook cdsHook: cdsHooks) {
             cdsHook.setCdsServiceEndpointId(cdsServiceEndpoint.getId());
+            cdsHook.setHookUrl(cdsServiceEndpoint.getUrl() + "/" + cdsHook.getHookId());
             cdsHookService.create(cdsHook);
         }
         return save(existingCdsServiceEndpoint);
@@ -131,12 +142,5 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     public CdsServiceEndpoint findByCdsServiceEndpointUrlAndSandboxId (final String url, final String sandboxId) {
         return repository.findByCdsServiceEndpointUrlAndSandboxId(url, sandboxId);
     }
-
-//    public void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook) {
-//        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
-//        cdsHooks.add(cdsHook);
-//        cdsServiceEndpoint.setCdsHooks(cdsHooks);
-//        save(cdsServiceEndpoint);
-//    }
 
 }

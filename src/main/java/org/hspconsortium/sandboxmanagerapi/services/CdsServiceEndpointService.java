@@ -26,7 +26,4 @@ public interface CdsServiceEndpointService {
 
     CdsServiceEndpoint findByCdsServiceEndpointUrlAndSandboxId(final String url, final String sandboxId);
 
-    //TODO: figure out where does this method gets used in app
-//    void addCdsServiceEndpointCdsHook(final CdsServiceEndpoint cdsServiceEndpoint, final CdsHook cdsHook);
-
 }
