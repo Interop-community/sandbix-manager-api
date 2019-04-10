@@ -4,7 +4,7 @@ spring:
     username: sandman_api
     password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
   mail:
-    password: ENC(DqcAHgFLNO56JPc9mFhONpf93MkJrZtxjMDD85keUy9N/En58H5ReTao6cnuKk39WXij1zfa8Z8=)   # ENC(G617hEtHdDqtzbpE9CtoYnopRfcrBqK8)
+    password: ENC(DqcAHgFLNO56JPc9mFhONpf93MkJrZtxjMDD85keUy9N/En58H5ReTao6cnuKk39WXij1zfa8Z8=)
 hspc:
   platform:
     authorization:

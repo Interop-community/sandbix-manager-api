@@ -32,8 +32,8 @@ spring:
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
   mail:
     sender:
-      address: noreply@hspconsortium.org # no-reply@hspconsortium.org
-    host: email-smtp.us-east-1.amazonaws.com # smtp.gmail.com
+      address: noreply@hspconsortium.org
+    host: email-smtp.us-east-1.amazonaws.com
     port: 587
     protocol: smtp
     properties:
@@ -45,7 +45,7 @@ spring:
           ssl:
             enable: false
           quitwait: false
-    username: AKIAJE2TPBVK7V7YB3VQ  # no-reply@hspconsortium.org
+    username: AKIAJE2TPBVK7V7YB3VQ
     password: ThisIsNotTheRightPW
   thymeleaf:
       cache: false
