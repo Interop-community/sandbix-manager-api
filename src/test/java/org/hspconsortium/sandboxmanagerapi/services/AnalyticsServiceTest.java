@@ -1,6 +1,5 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
-import io.swagger.models.auth.In;
 import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.FhirTransactionRepository;
@@ -11,6 +10,7 @@ import org.hspconsortium.sandboxmanagerapi.services.impl.AnalyticsServiceImpl;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
 public class AnalyticsServiceTest {
+
     MockHttpServletRequest request = new MockHttpServletRequest();
     private FhirTransactionRepository fhirTransactionRepository = mock(FhirTransactionRepository.class);
     private StatisticsRepository statisticsRepository = mock(StatisticsRepository.class);
@@ -208,13 +209,23 @@ public class AnalyticsServiceTest {
         fhirTransactionList.add(ft);
         fhirTransactionList.add(ft2);
 
+        FhirVersion currentFhirVersion = new FhirVersion();
+        currentFhirVersion.setDstu2("8");
+        currentFhirVersion.setStu3("9");
+        currentFhirVersion.setR4("10");
+        FhirVersion prevFhirVersion = new FhirVersion();
+        prevFhirVersion.setDstu2("5");
+        prevFhirVersion.setStu3("6");
+        prevFhirVersion.setR4("7");
+        ApiEndpointIndex apiEndpointIndex = new ApiEndpointIndex(currentFhirVersion, prevFhirVersion);
+        ReflectionTestUtils.setField(analyticsService, "apiEndpointIndexObj", apiEndpointIndex);
+
     }
 
     @Test
     public void countSandboxesByUserTest(){
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
-        Integer expected = 1;
-        Integer actual = analyticsService.countSandboxesByUser(user.getSbmUserId());
+        assertEquals(new Integer(1), analyticsService.countSandboxesByUser(user.getSbmUserId()));
     }
 
     @Test
@@ -333,7 +344,7 @@ public class AnalyticsServiceTest {
         verify(userService).fullCount();
         verify(userService).intervalCount(any());
         verify(sandboxService, atLeast(1)).newSandboxesInIntervalCount(any(), anyString());
-        verify(sandboxService, atMost(3)).newSandboxesInIntervalCount(any(), anyString());
+        verify(sandboxService, atMost(6)).newSandboxesInIntervalCount(any(), anyString());
         verify(statisticsRepository).getFhirTransaction(any(), any());
     }
 
@@ -474,6 +485,4 @@ public class AnalyticsServiceTest {
         analyticsService.getSandboxAndUserStatsForLastTwoYears();
         verify(sandboxActivityLogService).findAll();
     }
-
-
 }
