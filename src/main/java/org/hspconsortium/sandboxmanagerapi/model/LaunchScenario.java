@@ -2,6 +2,10 @@ package org.hspconsortium.sandboxmanagerapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.vladmihalcea.hibernate.type.json.JsonNodeStringType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -25,8 +29,12 @@ import java.util.List;
         // Used to delete a user's PRIVATE launch scenarios when they are removed from a sandbox
         @NamedQuery(name="LaunchScenario.findBySandboxIdAndCreatedBy",
         query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId and " +
-                "c.createdBy.sbmUserId = :createdBy")
+                "c.createdBy.sbmUserId = :createdBy"),
+        // Used to determine if a registered cds-hook is being used in a launch scenarios and cannot be deleted
+        @NamedQuery(name="LaunchScenario.findByCdsHookIdAndSandboxId",
+                query="SELECT c FROM LaunchScenario c WHERE c.cdsHook.id = :cdsHookId AND c.sandbox.sandboxId = :sandboxId")
 })
+@TypeDef(name = "jsonb-node", typeClass = JsonNodeStringType.class)
 public class LaunchScenario extends AbstractSandboxItem {
 
     private String description;
@@ -44,7 +52,8 @@ public class LaunchScenario extends AbstractSandboxItem {
     private String smartStyleUrl;
     private String title;
     private String needPatientBanner;
-
+    private CdsHook cdsHook;
+    private JsonNode context;
 
     /******************* Launch Scenario Property Getter/Setters ************************/
 
@@ -107,6 +116,16 @@ public class LaunchScenario extends AbstractSandboxItem {
         if (lastLaunchSeconds != null) {
             this.lastLaunch = new Timestamp(lastLaunchSeconds);
         }
+    }
+
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name="cds_hook_id")
+    public CdsHook getCdsHook() {
+        return cdsHook;
+    }
+
+    public void setCdsHook(CdsHook cdsHook) {
+        this.cdsHook = cdsHook;
     }
 
     /******************* Inherited Property Getter/Setters ************************/
@@ -230,5 +249,15 @@ public class LaunchScenario extends AbstractSandboxItem {
 
     public void setNeedPatientBanner(String needPatientBanner) {
         this.needPatientBanner = needPatientBanner;
+    }
+
+    @Type(type = "jsonb-node")
+    @Column(columnDefinition = "json")
+    public JsonNode getContext() {
+        return context;
+    }
+
+    public void setContext(JsonNode context) {
+        this.context = context;
     }
 }

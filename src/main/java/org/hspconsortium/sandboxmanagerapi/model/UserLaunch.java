@@ -90,4 +90,5 @@ public class UserLaunch {
     public void setLaunchScenario(LaunchScenario launchScenario) {
         this.launchScenario = launchScenario;
     }
+
 }

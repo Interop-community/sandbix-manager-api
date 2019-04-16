@@ -64,6 +64,12 @@ public class LaunchScenarioControllerTest {
     @MockBean
     private AuthorizationService authorizationService;
 
+    @MockBean
+    private CdsHookService cdsHookService;
+
+    @MockBean
+    private CdsServiceEndpointService cdsServiceEndpointService;
+
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 

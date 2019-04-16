@@ -15,4 +15,6 @@ public interface UserLaunchRepository extends CrudRepository<UserLaunch, Integer
     List<UserLaunch> findByUserId(@Param("sbmUserId") String sbmUserId);
 
     List<UserLaunch> findByLaunchScenarioId(@Param("launchScenarioId") int launchScenarioId);
+
+//    List<UserLaunch> findByLaunchScenarioCdsServiceEndpointId(@Param("launchScenarioCdsServiceEndpointId") int launchScenarioCdsServiceEndpointId);
 }

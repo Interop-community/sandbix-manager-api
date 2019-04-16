@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.LaunchScenarioRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
@@ -18,6 +19,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     private LaunchScenarioRepository repository;
     private ContextParamsService contextParamsService;
     private AppService appService;
+    private CdsHookService cdsHookService;
     private UserPersonaService userPersonaService;
     private UserLaunchService userLaunchService;
 
@@ -32,8 +34,11 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     }
 
     @Inject
-    public void setAppService(AppService appService) {
-        this.appService = appService;
+    public void setAppService(AppService appService) { this.appService = appService; }
+
+    @Inject
+    public void setdsHookService(CdsHookService cdsHookService) {
+        this.cdsHookService = cdsHookService;
     }
 
     @Inject
@@ -61,13 +66,14 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     @Transactional
     public void delete(final LaunchScenario launchScenario) {
-
-        if (launchScenario.getApp().isCustomApp()) {
-            // This is an anonymous App created for a custom launch
-            App app = launchScenario.getApp();
-            launchScenario.setApp(null);
-            save(launchScenario);
-            appService.delete(app);
+        if (launchScenario.getApp() != null) {
+            if (launchScenario.getApp().isCustomApp()) {
+                // This is an anonymous App created for a custom launch
+                App app = launchScenario.getApp();
+                launchScenario.setApp(null);
+                save(launchScenario);
+                appService.delete(app);
+            }
         }
 
         List<ContextParams> contextParamsList = launchScenario.getContextParams();
@@ -100,14 +106,21 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         }
         launchScenario.setUserPersona(userPersona);
 
-        if (launchScenario.getApp().isCustomApp()) {
-            // Create an anonymous App for a custom launch
-            launchScenario.getApp().setSandbox(sandbox);
-            App app = appService.save(launchScenario.getApp());
-            launchScenario.setApp(app);
+        if(launchScenario.getApp() != null & launchScenario.getCdsHook() == null) {
+            if (launchScenario.getApp().isCustomApp()) {
+                // Create an anonymous App for a custom launch
+                launchScenario.getApp().setSandbox(sandbox);
+                App app = appService.save(launchScenario.getApp());
+                launchScenario.setApp(app);
+            } else {
+                App app = appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getClientId(), sandbox.getSandboxId());
+                launchScenario.setApp(app);
+            }
+        } else if (launchScenario.getApp() == null & launchScenario.getCdsHook() != null) {
+            CdsHook cdsHook = cdsHookService.findByHookIdAndCdsServiceEndpointId(launchScenario.getCdsHook().getHookId(), launchScenario.getCdsHook().getCdsServiceEndpointId());
+            launchScenario.setCdsHook(cdsHook);
         } else {
-            App app = appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getClientId(), sandbox.getSandboxId());
-            launchScenario.setApp(app);
+            throw new ResourceNotFoundException("No app or CDS-Hook provided");
         }
 
         return save(launchScenario);
@@ -131,16 +144,23 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             updateLaunchScenario.setPatientName(launchScenario.getPatientName());
             updateLaunchScenario.setPatient(launchScenario.getPatient());
             updateLaunchScenario.setUserPersona(userPersonaService.getById(launchScenario.getUserPersona().getId()));
-            updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
+            if (launchScenario.getApp() != null & launchScenario.getCdsHook() == null) {
+                updateLaunchScenario.setApp(appService.getById(launchScenario.getApp().getId()));
+                if (launchScenario.getApp().isCustomApp()) {
+                    // Create an anonymous App for a custom launch
+                    App app = appService.getById(launchScenario.getApp().getId());
+                    app.setLaunchUri(launchScenario.getApp().getLaunchUri());
+                    app = appService.save(app);
+                    updateLaunchScenario.setApp(app);
+                }
+            } else if (launchScenario.getApp() == null & launchScenario.getCdsHook() != null) {
+                updateLaunchScenario.setCdsHook(launchScenario.getCdsHook());
+                updateLaunchScenario.setContext(launchScenario.getContext());
+            } else {
+                throw new IllegalArgumentException("Both App and CDS-Hook can't be updated together ");
+            }
             if (launchScenario.getContextParams() != null) {
                 updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
-            }
-            if (launchScenario.getApp().isCustomApp()) {
-                // Create an anonymous App for a custom launch
-                App app = appService.getById(launchScenario.getApp().getId());
-                app.setLaunchUri(launchScenario.getApp().getLaunchUri());
-                app = appService.save(app);
-                updateLaunchScenario.setApp(app);
             }
             return save(updateLaunchScenario);
         }
@@ -221,4 +241,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         return launchScenarios;
     }
 
+    @Override
+    public List<LaunchScenario> findByCdsHookIdAndSandboxId(final int cdsHookId, final String sandboxId) {
+        return repository.findByCdsHookIdAndSandboxId(cdsHookId, sandboxId);
+    }
 }

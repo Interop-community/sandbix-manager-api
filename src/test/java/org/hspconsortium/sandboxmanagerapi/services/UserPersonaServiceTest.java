@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 public class UserPersonaServiceTest {
 
     private UserPersonaRepository repository = mock(UserPersonaRepository.class);
+    private LaunchScenarioService launchScenarioService = mock(LaunchScenarioService.class);
 
     private UserPersonaServiceImpl userPersonaService = new UserPersonaServiceImpl(repository);
 
@@ -24,18 +25,24 @@ public class UserPersonaServiceTest {
     private List<UserPersona> userPersonas;
     private User user;
     private Sandbox sandbox;
+    private List<LaunchScenario> launchScenarios;
+    private LaunchScenario launchScenario;
 
     @Before
     public void setup() {
+        sandbox = new Sandbox();
+        sandbox.setSandboxId("sandboxId");
+        userPersonaService.setLaunchScenarioService(launchScenarioService);
         userPersona = new UserPersona();
         userPersona.setId(1);
         userPersona.setPersonaUserId("userPersona");
+        userPersona.setSandbox(sandbox);
         userPersonas = new ArrayList<>();
         userPersonas.add(userPersona);
         user = new User();
         user.setSbmUserId("userId");
-        sandbox = new Sandbox();
-        sandbox.setSandboxId("sandboxId");
+        launchScenarios = new ArrayList<>();
+        launchScenario = new LaunchScenario();
     }
 
     @Test
@@ -102,6 +109,15 @@ public class UserPersonaServiceTest {
 
     @Test
     public void deleteTestByObject() {
+        userPersonaService.delete(userPersona);
+        verify(repository).delete(userPersona.getId());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void deleteTestByObjectError() {
+        launchScenario.setUserPersona(userPersona);
+        launchScenarios.add(launchScenario);
+        when(launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), sandbox.getSandboxId())).thenReturn(launchScenarios);
         userPersonaService.delete(userPersona);
         verify(repository).delete(userPersona.getId());
     }

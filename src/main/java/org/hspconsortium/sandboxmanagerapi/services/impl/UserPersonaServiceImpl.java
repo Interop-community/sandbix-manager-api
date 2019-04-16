@@ -1,8 +1,10 @@
 package org.hspconsortium.sandboxmanagerapi.services.impl;
 
+import org.hspconsortium.sandboxmanagerapi.model.LaunchScenario;
 import org.hspconsortium.sandboxmanagerapi.model.UserPersona;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility;
 import org.hspconsortium.sandboxmanagerapi.repositories.UserPersonaRepository;
+import org.hspconsortium.sandboxmanagerapi.services.LaunchScenarioService;
 import org.hspconsortium.sandboxmanagerapi.services.UserPersonaService;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +18,16 @@ import java.util.List;
 public class UserPersonaServiceImpl implements UserPersonaService {
     private final UserPersonaRepository repository;
 
+    private LaunchScenarioService launchScenarioService;
+
     @Inject
     public UserPersonaServiceImpl(final UserPersonaRepository repository) {
         this.repository = repository;
+    }
+
+    @Inject
+    public void setLaunchScenarioService(LaunchScenarioService launchScenarioService) {
+        this.launchScenarioService = launchScenarioService;
     }
 
     @Override
@@ -71,6 +80,10 @@ public class UserPersonaServiceImpl implements UserPersonaService {
 
     @Override
     public void delete(UserPersona userPersona) {
+        List<LaunchScenario> launchScenarios = launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
+        if (launchScenarios.size() > 0) {
+            throw new RuntimeException("Can't delete persona. It's tied to one or more launch scenarios.");
+        }
         delete(userPersona.getId());
     }
 
