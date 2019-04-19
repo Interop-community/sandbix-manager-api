@@ -2,9 +2,16 @@ package org.hspconsortium.sandboxmanagerapi.repositories;
 
 import org.hspconsortium.sandboxmanagerapi.model.FhirProfile;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface FhirProfileRepository extends CrudRepository<FhirProfile, Integer> {
 
+    List<FhirProfile> findByFhirProfileId(@Param("fhirProfileId") Integer fhirProfileId);
+
+    FhirProfile findByFullUrlAndFhirProfileId(@Param("fullUrl") String fullUrl,
+                                                         @Param("fhirProfileId") Integer fhirProfileId);
 }
