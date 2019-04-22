@@ -1,10 +1,8 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
-import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.apache.commons.io.FilenameUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.hspconsortium.sandboxmanagerapi.model.*;
-import org.hspconsortium.sandboxmanagerapi.repositories.FhirProfileDetailRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -18,9 +16,7 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipException;
@@ -36,18 +32,16 @@ public class FhirProfileController {
     private UserService userService;
     private AuthorizationService authorizationService;
     private FhirProfileDetailService fhirProfileDetailService;
-    private FhirProfileDetailRepository repository;
 
     @Inject
     public FhirProfileController(final FhirProfileService fhirProfileService, final SandboxService sandboxService,
                                  final UserService userService, final AuthorizationService authorizationService,
-                                 final FhirProfileDetailService fhirProfileDetailService, final FhirProfileDetailRepository repository) {
+                                 final FhirProfileDetailService fhirProfileDetailService) {
         this.fhirProfileService = fhirProfileService;
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.authorizationService = authorizationService;
         this.fhirProfileDetailService = fhirProfileDetailService;
-        this.repository = repository;
     }
 
     @PostMapping(value = "/uploadProfile", params = {"sandboxId", "apiEndpoint", "profileName", "profileId"})
@@ -57,9 +51,9 @@ public class FhirProfileController {
                                      @RequestParam(value = "profileName") String profileName,
                                      @RequestParam(value = "profileId") String profileId) throws IOException {
 
-        FhirProfileDetail existingFhirProfileDetail = repository.findByProfileIdAndSandboxId(profileId, sandboxId);
+        FhirProfileDetail existingFhirProfileDetail = fhirProfileDetailService.findByProfileIdAndSandboxId(profileId, sandboxId);
         if (existingFhirProfileDetail != null) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException(profileName + " has already been uploaded");
         }
 
         String id = UUID.randomUUID().toString();
@@ -69,8 +63,9 @@ public class FhirProfileController {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         Visibility visibility = authorizationService.getDefaultVisibility(user, sandbox);
-        //TODO: add user authentication
-//        if(!sandboxService.verifyUser(request, sandboxId)) {
+
+//        TODO: Authorization
+//        if(authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox).equals(user.getSbmUserId())) {
 //            throw new UnauthorizedUserException("User not authorized");
 //        }
         if (!fileName.isEmpty() & !fileExtension.equals("tgz")) {
@@ -120,40 +115,9 @@ public class FhirProfileController {
     @GetMapping(value = "/getSDs", params = {"profileId"})
     public List<JSONObject> getStructureDefinitions () {
         List<JSONObject> structureDefinitions = new ArrayList<>();
-
+// TODO
 
         return structureDefinitions;
-    }
-
-    @PostMapping
-    public void saveProfile(HttpServletRequest request, @RequestBody List<FhirProfile> fhirProfiles) {
-        for (FhirProfile fhirProfile : fhirProfiles) {
-//            Sandbox sandbox = sandboxService.findBySandboxId(fhirProfile.getSandbox().getSandboxId());
-//            if (sandbox == null) {
-//                throw new ResourceNotFoundException("Sandbox does not exist");
-//            }
-            User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-            Timestamp timestamp = new Timestamp(new Date().getTime());
-            FhirProfileDetail fhirProfileDetail = new FhirProfileDetail();
-            fhirProfileDetail.setFhirProfiles(fhirProfiles);
-
-//            fhirProfileDetail.setProfileId(fhirProfile.getProfileId());
-//            fhirProfileDetail.setProfileName(fhirProfile.getProfileName());
-//            fhirProfileDetail.setSandbox(fhirProfile.getSandbox());
-
-            fhirProfileDetail.setCreatedBy(user);
-            fhirProfileDetail.setCreatedTimestamp(timestamp);
-            fhirProfileDetail.setLastUpdated(timestamp);
-//            fhirProfileDetail.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
-            FhirProfileDetail fhirProfileDetailSaved = fhirProfileDetailService.save(fhirProfileDetail);
-
-//            fhirProfile.setSandbox(sandbox);
-            fhirProfile.setFhirProfileId(fhirProfileDetailSaved.getId());
-            FhirProfile existingFhirProfile = fhirProfileService.findByFullUrlAndFhirProfileId(fhirProfile.getFullUrl(), fhirProfile.getFhirProfileId());
-            if (existingFhirProfile != null) {
-                fhirProfileService.save(fhirProfile);
-            }
-        }
     }
 
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
@@ -175,5 +139,37 @@ public class FhirProfileController {
         fhirProfileDetailService.delete(fhirProfileId);
     }
 
-    //TODO: Add update: OR may be not needed
+    //TODO: Add update:
 }
+
+
+//    @PostMapping
+//    public void saveProfile(HttpServletRequest request, @RequestBody List<FhirProfile> fhirProfiles) {
+//        for (FhirProfile fhirProfile : fhirProfiles) {
+////            Sandbox sandbox = sandboxService.findBySandboxId(fhirProfile.getSandbox().getSandboxId());
+////            if (sandbox == null) {
+////                throw new ResourceNotFoundException("Sandbox does not exist");
+////            }
+//            User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+//            Timestamp timestamp = new Timestamp(new Date().getTime());
+//            FhirProfileDetail fhirProfileDetail = new FhirProfileDetail();
+//            fhirProfileDetail.setFhirProfiles(fhirProfiles);
+//
+////            fhirProfileDetail.setProfileId(fhirProfile.getProfileId());
+////            fhirProfileDetail.setProfileName(fhirProfile.getProfileName());
+////            fhirProfileDetail.setSandbox(fhirProfile.getSandbox());
+//
+//            fhirProfileDetail.setCreatedBy(user);
+//            fhirProfileDetail.setCreatedTimestamp(timestamp);
+//            fhirProfileDetail.setLastUpdated(timestamp);
+////            fhirProfileDetail.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
+//            FhirProfileDetail fhirProfileDetailSaved = fhirProfileDetailService.save(fhirProfileDetail);
+//
+////            fhirProfile.setSandbox(sandbox);
+//            fhirProfile.setFhirProfileId(fhirProfileDetailSaved.getId());
+//            FhirProfile existingFhirProfile = fhirProfileService.findByFullUrlAndFhirProfileId(fhirProfile.getFullUrl(), fhirProfile.getFhirProfileId());
+//            if (existingFhirProfile != null) {
+//                fhirProfileService.save(fhirProfile);
+//            }
+//        }
+//    }

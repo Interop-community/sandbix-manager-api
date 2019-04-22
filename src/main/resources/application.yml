@@ -94,11 +94,13 @@ hspc:
     api:
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
+      fhir:
+        profileResources: StructureDefinition, CodeSystem, ValueSet, SearchParameter
     messaging:
       sendEmail: false
     syntheticData:
 #      fhirServerUrl: https://syntheticmass.mitre.org/fhir
-       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
+#       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
 #       TODO: ask what is version3, is it needed
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration

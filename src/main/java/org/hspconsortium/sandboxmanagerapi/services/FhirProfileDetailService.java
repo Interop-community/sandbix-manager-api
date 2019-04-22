@@ -32,4 +32,6 @@ public interface FhirProfileDetailService {
 
     void saveTGZfile (MultipartFile file, HttpServletRequest request, String sandboxId, String apiEndpoint, String id, String profileName, String profileId, User user, Visibility visibility) throws IOException;
 
+    FhirProfileDetail findByProfileIdAndSandboxId(String profileId, String sandboxId);
+
 }

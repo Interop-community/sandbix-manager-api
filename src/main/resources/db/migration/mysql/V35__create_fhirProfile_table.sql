@@ -6,6 +6,7 @@ CREATE TABLE fhir_profile_detail (
   sandbox_id            INT(11)          DEFAULT NULL,
   created_by_id         INT(11)          DEFAULT NULL,
   created_timestamp     DATETIME         DEFAULT NULL,
+  last_updated          DATETIME         DEFAULT NULL,
   visibility            INT(11)          DEFAULT NULL,
   PRIMARY KEY (id),
   KEY (created_by_id),

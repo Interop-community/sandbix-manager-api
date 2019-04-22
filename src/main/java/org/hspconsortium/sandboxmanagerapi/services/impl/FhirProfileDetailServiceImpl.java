@@ -41,8 +41,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Value("${hspc.platform.api.fhir.profileResources}")
     private String[] profileResources;
 
-    @Value("${hspc.platform.api.sandboxManagerApi.url}") //TODO: make the url
-    private String sandboxManagerApiUrl;
+    @Value("${hspc.platform.authorization.url}")
+    private String localhost;
 
     private FhirProfileDetailRepository repository;
     private FhirProfileService fhirProfileService;
@@ -64,22 +64,17 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     @Transactional
     public FhirProfileDetail save(FhirProfileDetail fhirProfileDetail) {
-        Sandbox sandbox = fhirProfileDetail.getSandbox();
-        FhirProfileDetail existingFhirProfileDetail = repository.findByProfileIdAndSandboxId(fhirProfileDetail.getProfileId(), sandbox.getSandboxId());
-        if (existingFhirProfileDetail != null) {
-            existingFhirProfileDetail.setLastUpdated(new Timestamp(new Date().getTime()));
-            saveFhirProfile(fhirProfileDetail.getFhirProfiles());
-            return repository.save(existingFhirProfileDetail);
-        } else {
-            saveFhirProfile(fhirProfileDetail.getFhirProfiles());
-            return repository.save(fhirProfileDetail);
-        }
-    }
-
-    private void saveFhirProfile(List<FhirProfile> fhirProfiles) {
+        FhirProfileDetail fhirProfileDetailSaved = repository.save(fhirProfileDetail);
+        List<FhirProfile> fhirProfiles = fhirProfileDetailSaved.getFhirProfiles();
         for (FhirProfile fhirProfile : fhirProfiles) {
+            fhirProfile.setFhirProfileId(fhirProfileDetailSaved.getId());
             fhirProfileService.save(fhirProfile);
         }
+        return fhirProfileDetailSaved;
+    }
+
+    public FhirProfileDetail findByProfileIdAndSandboxId(String profileId, String sandboxId) {
+        return repository.findByProfileIdAndSandboxId(profileId, sandboxId);
     }
 
     @Override
@@ -87,7 +82,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     public FhirProfileDetail update(FhirProfileDetail fhirProfileDetail) {
         //TODO: maybe not needed
         Sandbox sandbox = fhirProfileDetail.getSandbox();
-        FhirProfileDetail existingFhirProfileDetail = repository.findByProfileIdAndSandboxId(fhirProfileDetail.getProfileId(), sandbox.getSandboxId());
+        FhirProfileDetail existingFhirProfileDetail = findByProfileIdAndSandboxId(fhirProfileDetail.getProfileId(), sandbox.getSandboxId());
         existingFhirProfileDetail.setLastUpdated(new Timestamp(new Date().getTime()));
         return repository.save(existingFhirProfileDetail);
     }

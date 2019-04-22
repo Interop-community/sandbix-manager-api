@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @NamedQueries({
-        @NamedQuery(name="FhirProfileDetail.findByFhirProfileId",
+        @NamedQuery(name="FhirProfile.findByFhirProfileId",
                 query="SELECT c FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId"),
         @NamedQuery(name="FhirProfileDetail.findByFullUrlAndFhirProfileId",
                 query="SELECT c FROM FhirProfile c WHERE c.fullUrl = :fullUrl AND c.fhirProfileId = :fhirProfileId")
@@ -12,18 +12,39 @@ import javax.persistence.*;
 })
 public class FhirProfile {
 
-    private FhirProfileDetail fhirProfileId;
+    private Integer id;
+//    private FhirProfileDetail fhirProfileId;
+    private Integer fhirProfileId;
     private String fullUrl;
     private String relativeUrl;
     private String profileType;
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name="fhir_profile_id")
-    public FhirProfileDetail getFhirProfileId() {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+//    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+//    @JoinColumn(name="fhir_profile_id")
+//    public FhirProfileDetail getFhirProfileId() {
+//        return fhirProfileId;
+//    }
+//
+//    public void setFhirProfileId(FhirProfileDetail fhirProfileId) {
+//        this.fhirProfileId = fhirProfileId;
+//    }
+
+
+    public Integer getFhirProfileId() {
         return fhirProfileId;
     }
 
-    public void setFhirProfileId(FhirProfileDetail fhirProfileId) {
+    public void setFhirProfileId(Integer fhirProfileId) {
         this.fhirProfileId = fhirProfileId;
     }
 
