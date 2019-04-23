@@ -68,7 +68,7 @@ public class FhirProfileDetail extends AbstractSandboxItem {
         this.id = id;
     }
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToOne(cascade={CascadeType.MERGE})
     @JoinColumn(name="created_by_id")
     @JsonIgnoreProperties(ignoreUnknown = true, allowSetters = true,
             value={"sandboxes", "termsOfUseAcceptances", "systemRoles"})
@@ -88,7 +88,7 @@ public class FhirProfileDetail extends AbstractSandboxItem {
         this.createdTimestamp = createdTimestamp;
     }
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToOne(cascade={CascadeType.MERGE})
     @JoinColumn(name="sandbox_id")
     @JsonIgnoreProperties(ignoreUnknown = true, allowSetters = true, value={"userRoles", "imports", "dataSet"})
     public Sandbox getSandbox() {

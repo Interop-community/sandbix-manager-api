@@ -2,8 +2,6 @@ package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.FhirProfileDetail;
 import org.hspconsortium.sandboxmanagerapi.model.ProfileTask;
-import org.hspconsortium.sandboxmanagerapi.model.User;
-import org.hspconsortium.sandboxmanagerapi.model.Visibility;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,17 +18,17 @@ public interface FhirProfileDetailService {
 
     FhirProfileDetail getFhirProfileDetail(Integer fhirProfileId);
 
-    List<FhirProfileDetail> getFhirProfileDetails(String sandboxId);
+    List<FhirProfileDetail> getAllProfilesForAGivenSandbox(String sandboxId);
 
-    void delete(Integer fhirProfileId);
+    void delete( HttpServletRequest request, Integer fhirProfileId, String sandboxId);
 
-    void saveZipFile (ZipFile zipFile, HttpServletRequest request, String sandboxId, String apiEndpoint, String id, String profileName, String profileId, User user, Visibility visibility) throws IOException;
+    void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, HttpServletRequest request, String sandboxId, String id) throws IOException;
 
     ProfileTask getTaskRunning(String id);
 
     HashMap<String, ProfileTask> getIdProfileTask();
 
-    void saveTGZfile (MultipartFile file, HttpServletRequest request, String sandboxId, String apiEndpoint, String id, String profileName, String profileId, User user, Visibility visibility) throws IOException;
+    void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, HttpServletRequest request, String sandboxId, String id) throws IOException;
 
     FhirProfileDetail findByProfileIdAndSandboxId(String profileId, String sandboxId);
 

@@ -3,6 +3,7 @@ package org.hspconsortium.sandboxmanagerapi.services;
 import org.hspconsortium.sandboxmanagerapi.model.FhirProfile;
 import org.hspconsortium.sandboxmanagerapi.model.FhirProfileDetail;
 import org.hspconsortium.sandboxmanagerapi.model.ProfileTask;
+import org.json.simple.JSONObject;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,10 +16,12 @@ public interface FhirProfileService {
 
     void save(FhirProfile fhirProfile);
 
-    List<FhirProfile> getFhirProfiles(Integer fhirProfileId);
+    List<FhirProfile> getAllStructureDefinitionsForGivenProfileId(Integer fhirProfileId);
 
     void delete(Integer fhirProfileId);
 
     FhirProfile findByFullUrlAndFhirProfileId(String fullUrl, Integer fhirProfileId);
+
+
 
 }

@@ -64,5 +64,7 @@ public interface SandboxService {
 
     Iterable<Sandbox> findAll();
 
+    String getApiSchemaURL(final String apiEndpointIndex);
+
     String newSandboxesInIntervalCount(final Timestamp intervalTime, final String apiEndpointIndex);
 }

@@ -21,7 +21,9 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     public void save(FhirProfile fhirProfile) { repository.save(fhirProfile); }
 
     @Override
-    public List<FhirProfile> getFhirProfiles(Integer fhirProfileId) { return repository.findByFhirProfileId(fhirProfileId); }
+    public List<FhirProfile> getAllStructureDefinitionsForGivenProfileId(Integer fhirProfileId) {
+        return repository.findByFhirProfileId(fhirProfileId);
+    }
 
     @Override
     @Transactional

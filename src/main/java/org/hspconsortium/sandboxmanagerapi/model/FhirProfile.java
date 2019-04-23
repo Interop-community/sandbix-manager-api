@@ -13,7 +13,6 @@ import javax.persistence.*;
 public class FhirProfile {
 
     private Integer id;
-//    private FhirProfileDetail fhirProfileId;
     private Integer fhirProfileId;
     private String fullUrl;
     private String relativeUrl;
@@ -28,17 +27,6 @@ public class FhirProfile {
     public void setId(Integer id) {
         this.id = id;
     }
-
-//    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-//    @JoinColumn(name="fhir_profile_id")
-//    public FhirProfileDetail getFhirProfileId() {
-//        return fhirProfileId;
-//    }
-//
-//    public void setFhirProfileId(FhirProfileDetail fhirProfileId) {
-//        this.fhirProfileId = fhirProfileId;
-//    }
-
 
     public Integer getFhirProfileId() {
         return fhirProfileId;
@@ -73,34 +61,3 @@ public class FhirProfile {
     }
 
 }
-
-
-//    private String profileName;
-//    private String profileId;
-//    private Sandbox sandbox;
-
-//    public String getProfileName() {
-//        return profileName;
-//    }
-//
-//    public void setProfileName(String profileName) {
-//        this.profileName = profileName;
-//    }
-//
-//    public String getProfileId() {
-//        return profileId;
-//    }
-//
-//    public void setProfileId(String profileId) {
-//        this.profileId = profileId;
-//    }
-
-//    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
-//    @JoinColumn(name="sandbox_id")
-//    public Sandbox getSandbox() {
-//        return sandbox;
-//    }
-//
-//    public void setSandbox(Sandbox sandbox) {
-//        this.sandbox = sandbox;
-//    }

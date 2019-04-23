@@ -250,11 +250,6 @@ public class SandboxServiceImpl implements SandboxService {
             sandbox.setCreatedBy(user);
             sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-            // Set expiration date and message for R4 sandboxes
-            if (sandbox.getApiEndpointIndex().equals("7")) {
-                sandbox.setExpirationMessage(expirationMessage);
-                sandbox.setExpirationDate(formatDate());
-            }
 
             sandbox.setPayerUserId(user.getId());
             Sandbox savedSandbox = save(sandbox);
@@ -554,22 +549,11 @@ public class SandboxServiceImpl implements SandboxService {
         return repository.findAll();
     }
 
-    private void removeAllMembers(final Sandbox sandbox) {
-
-        List<UserRole> userRoles = sandbox.getUserRoles();
-        sandbox.setUserRoles(Collections.<UserRole>emptyList());
-        save(sandbox);
-
-        for (UserRole userRole: userRoles) {
-            userService.removeSandbox(sandbox, userRole.getUser());
-            userRoleService.delete(userRole);
-        }
-    }
-
-    private String getApiSchemaURL(final String apiEndpointIndex) {
+    @Override
+    public String getApiSchemaURL(final String apiEndpointIndex) {
 
         if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
-             return apiEndpointIndexObj.getPrev().getApiBaseURL_dstu2();
+            return apiEndpointIndexObj.getPrev().getApiBaseURL_dstu2();
         }
         if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
             return apiEndpointIndexObj.getPrev().getApiBaseURL_stu3();
@@ -587,6 +571,18 @@ public class SandboxServiceImpl implements SandboxService {
             return apiEndpointIndexObj.getCurrent().getApiBaseURL_r4();
         }
         return "";
+    }
+
+    private void removeAllMembers(final Sandbox sandbox) {
+
+        List<UserRole> userRoles = sandbox.getUserRoles();
+        sandbox.setUserRoles(Collections.<UserRole>emptyList());
+        save(sandbox);
+
+        for (UserRole userRole: userRoles) {
+            userService.removeSandbox(sandbox, userRole.getUser());
+            userRoleService.delete(userRole);
+        }
     }
 
     private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {

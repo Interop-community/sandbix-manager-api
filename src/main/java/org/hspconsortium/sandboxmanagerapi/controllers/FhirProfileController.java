@@ -16,7 +16,8 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipException;
@@ -47,7 +48,6 @@ public class FhirProfileController {
     @PostMapping(value = "/uploadProfile", params = {"sandboxId", "apiEndpoint", "profileName", "profileId"})
     public JSONObject uploadProfile (@RequestParam("file") MultipartFile file, HttpServletRequest request,
                                      @RequestParam(value = "sandboxId") String sandboxId,
-                                     @RequestParam(value = "apiEndpoint") String apiEndpoint,
                                      @RequestParam(value = "profileName") String profileName,
                                      @RequestParam(value = "profileId") String profileId) throws IOException {
 
@@ -55,7 +55,6 @@ public class FhirProfileController {
         if (existingFhirProfileDetail != null) {
             throw new IllegalArgumentException(profileName + " has already been uploaded");
         }
-
         String id = UUID.randomUUID().toString();
         String fileName = file.getOriginalFilename();
         String fileExtension = FilenameUtils.getExtension(fileName);
@@ -64,10 +63,19 @@ public class FhirProfileController {
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         Visibility visibility = authorizationService.getDefaultVisibility(user, sandbox);
 
-//        TODO: Authorization
-//        if(authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox).equals(user.getSbmUserId())) {
-//            throw new UnauthorizedUserException("User not authorized");
-//        }
+        if(!authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox).equals(user.getSbmUserId())) {
+            throw new UnauthorizedUserException("User not authorized");
+        }
+        FhirProfileDetail fhirProfileDetail = new FhirProfileDetail();
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        fhirProfileDetail.setLastUpdated(timestamp);
+        fhirProfileDetail.setCreatedTimestamp(timestamp);
+        fhirProfileDetail.setSandbox(sandbox);
+        fhirProfileDetail.setCreatedBy(user);
+        fhirProfileDetail.setProfileName(profileName);
+        fhirProfileDetail.setProfileId(profileId);
+        fhirProfileDetail.setVisibility(visibility);
+
         if (!fileName.isEmpty() & !fileExtension.equals("tgz")) {
             File zip = File.createTempFile(id, "temp");
             FileOutputStream outputStream = new FileOutputStream(zip);
@@ -75,7 +83,7 @@ public class FhirProfileController {
             outputStream.close();
             try {
                 ZipFile zipFile = new ZipFile(zip);
-                fhirProfileDetailService.saveZipFile(zipFile, request, sandboxId, apiEndpoint, id, profileName, profileId, user, visibility);
+                fhirProfileDetailService.saveZipFile(fhirProfileDetail, zipFile, request, sandboxId, id);
             } catch (ZipException e) {
                 e.printStackTrace();
             }
@@ -83,7 +91,7 @@ public class FhirProfileController {
                 zip.delete();
             }
         } else if (!fileName.isEmpty() & fileExtension.equals("tgz")) {
-            fhirProfileDetailService.saveTGZfile(file, request, sandboxId, apiEndpoint, id, profileName, profileId, user, visibility);
+            fhirProfileDetailService.saveTGZfile(fhirProfileDetail, file, request, sandboxId, id);
         } else {
             statusReturned.put("status", false);
             statusReturned.put("id", id);
@@ -112,64 +120,37 @@ public class FhirProfileController {
         }
     }
 
-    @GetMapping(value = "/getSDs", params = {"profileId"})
-    public List<JSONObject> getStructureDefinitions () {
-        List<JSONObject> structureDefinitions = new ArrayList<>();
-// TODO
-
-        return structureDefinitions;
+    @GetMapping(value = "/getProfileSDs", params = {"fhirProfileId"})
+    @ResponseBody
+    public List<FhirProfile> getStructureDefinitions (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
+        return fhirProfileService.getAllStructureDefinitionsForGivenProfileId(fhirProfileId);
     }
 
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<FhirProfileDetail> getFhirProfiles(@RequestParam(value = "sandboxId") String sandboxId) {
-        return fhirProfileDetailService.getFhirProfileDetails(sandboxId);
+        return fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
     }
 
-    @GetMapping(value = "/{fhirProfileId}", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(params = {"fhirProfileId"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public FhirProfileDetail getFhirProfile(@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
         return fhirProfileDetailService.getFhirProfileDetail(fhirProfileId);
     }
 
-    @DeleteMapping(value = "/{fhirProfileId}", produces = APPLICATION_JSON_VALUE)
+    @DeleteMapping(params = {"fhirProfileId", "sandboxId"}, produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
-    public void deleteProfile(@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
-        fhirProfileDetailService.delete(fhirProfileId);
+    public void deleteProfile(HttpServletRequest request,@RequestParam(value = "fhirProfileId") Integer fhirProfileId, @RequestParam(value = "sandboxId") String sandboxId) {
+        fhirProfileDetailService.delete(request, fhirProfileId, sandboxId);
     }
 
-    //TODO: Add update:
-}
-
-
-//    @PostMapping
-//    public void saveProfile(HttpServletRequest request, @RequestBody List<FhirProfile> fhirProfiles) {
-//        for (FhirProfile fhirProfile : fhirProfiles) {
-////            Sandbox sandbox = sandboxService.findBySandboxId(fhirProfile.getSandbox().getSandboxId());
-////            if (sandbox == null) {
-////                throw new ResourceNotFoundException("Sandbox does not exist");
-////            }
-//            User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-//            Timestamp timestamp = new Timestamp(new Date().getTime());
-//            FhirProfileDetail fhirProfileDetail = new FhirProfileDetail();
-//            fhirProfileDetail.setFhirProfiles(fhirProfiles);
-//
-////            fhirProfileDetail.setProfileId(fhirProfile.getProfileId());
-////            fhirProfileDetail.setProfileName(fhirProfile.getProfileName());
-////            fhirProfileDetail.setSandbox(fhirProfile.getSandbox());
-//
-//            fhirProfileDetail.setCreatedBy(user);
-//            fhirProfileDetail.setCreatedTimestamp(timestamp);
-//            fhirProfileDetail.setLastUpdated(timestamp);
-////            fhirProfileDetail.setVisibility(authorizationService.getDefaultVisibility(user, sandbox));
-//            FhirProfileDetail fhirProfileDetailSaved = fhirProfileDetailService.save(fhirProfileDetail);
-//
-////            fhirProfile.setSandbox(sandbox);
-//            fhirProfile.setFhirProfileId(fhirProfileDetailSaved.getId());
-//            FhirProfile existingFhirProfile = fhirProfileService.findByFullUrlAndFhirProfileId(fhirProfile.getFullUrl(), fhirProfile.getFhirProfileId());
-//            if (existingFhirProfile != null) {
-//                fhirProfileService.save(fhirProfile);
-//            }
-//        }
+    //TODO: update profiles
+//    @PutMapping(value = "/updateProfile", params = {"sandboxId", "apiEndpoint", "profileName", "profileId"})
+//    public JSONObject updateProfile (@RequestParam("file") MultipartFile file, HttpServletRequest request,
+//                                     @RequestParam(value = "sandboxId") String sandboxId,
+//                                     @RequestParam(value = "profileName") String profileName,
+//                                     @RequestParam(value = "profileId") String profileId) throws IOException {
+//        return null;
 //    }
+}
