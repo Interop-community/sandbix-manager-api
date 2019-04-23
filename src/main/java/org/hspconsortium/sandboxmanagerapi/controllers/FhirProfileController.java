@@ -123,7 +123,7 @@ public class FhirProfileController {
     @GetMapping(value = "/getProfileSDs", params = {"fhirProfileId"})
     @ResponseBody
     public List<FhirProfile> getStructureDefinitions (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
-        return fhirProfileService.getAllStructureDefinitionsForGivenProfileId(fhirProfileId);
+        return fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
     }
 
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
@@ -142,6 +142,11 @@ public class FhirProfileController {
     @Transactional
     @ResponseBody
     public void deleteProfile(HttpServletRequest request,@RequestParam(value = "fhirProfileId") Integer fhirProfileId, @RequestParam(value = "sandboxId") String sandboxId) {
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if(!authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox).equals(user.getSbmUserId())) {
+            throw new UnauthorizedUserException("User not authorized");
+        }
         fhirProfileDetailService.delete(request, fhirProfileId, sandboxId);
     }
 

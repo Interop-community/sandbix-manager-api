@@ -11,7 +11,6 @@ import org.hspconsortium.sandboxmanagerapi.services.FhirProfileService;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -99,28 +98,18 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     @Transactional
     public void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
+        List<FhirProfile> fhirProfiles = fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", request.getHeader("Authorization"));
         HttpEntity entity = new HttpEntity(headers);
         String apiSchemaURL = sandboxService.getApiSchemaURL(sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex());
-        List<String> resourceIds = new ArrayList<>();
-        for (String resourceType: profileResources)
-        {
-            String url = apiSchemaURL + "/" + sandboxId + "/data/" + resourceType;
-            //TODO: response entity is not working
-            ResponseEntity responseEntity = restTemplate.getForEntity(url, String.class);
-            JSONObject bundle = (JSONObject) responseEntity.getBody();
-            List<JSONObject> entry = (List<JSONObject>) bundle.get("entry");
-            for (JSONObject resource: entry) {
-                resourceIds.add((String)((JSONObject)(resource.get("resource"))).get("id"));
-            }
-            for(String resourceId: resourceIds) {
-                String deleteUrl = apiSchemaURL + "/" + sandboxId + "/data/" + resourceType + resourceId;
-                restTemplate.exchange(deleteUrl, HttpMethod.DELETE, entity, String.class);
-            }
+
+        for (FhirProfile fhirProfile: fhirProfiles) {
+            String url = apiSchemaURL + "/" + sandboxId + "/data/" + fhirProfile.getRelativeUrl();
+            restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
         }
         fhirProfileService.delete(fhirProfileId);
-        repository.delete(repository.findByFhirProfileId(fhirProfileId));
+        repository.delete(getFhirProfileDetail(fhirProfileId));
     }
 
     @Async("taskExecutor")

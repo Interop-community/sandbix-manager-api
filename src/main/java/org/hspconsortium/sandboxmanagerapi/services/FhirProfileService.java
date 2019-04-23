@@ -16,7 +16,7 @@ public interface FhirProfileService {
 
     void save(FhirProfile fhirProfile);
 
-    List<FhirProfile> getAllStructureDefinitionsForGivenProfileId(Integer fhirProfileId);
+    List<FhirProfile> getAllResourcesForGivenProfileId(Integer fhirProfileId);
 
     void delete(Integer fhirProfileId);
 
