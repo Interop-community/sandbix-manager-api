@@ -5,6 +5,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.json.simple.JSONObject;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class FhirProfileController {
     @Inject
     public FhirProfileController(final FhirProfileService fhirProfileService, final SandboxService sandboxService,
                                  final UserService userService, final AuthorizationService authorizationService,
-                                 final FhirProfileDetailService fhirProfileDetailService) {
+                                 @Lazy final FhirProfileDetailService fhirProfileDetailService) {
         this.fhirProfileService = fhirProfileService;
         this.sandboxService = sandboxService;
         this.userService = userService;
