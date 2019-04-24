@@ -17,14 +17,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Executor;
 
 @Configuration
+@EnableAsync
 public class SandboxManagerConfig {
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
@@ -58,4 +62,15 @@ public class SandboxManagerConfig {
 
     @Bean
     public ModelMapper modelMapper() { return new ModelMapper(); }
+
+    @Bean(name="taskExecutor")
+    public Executor threadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+//        TODO: Check on setting these values
+        executor.setCorePoolSize(100);
+        executor.setMaxPoolSize(1000);
+        executor.setQueueCapacity(Integer.MAX_VALUE);
+        executor.initialize();
+        return executor;
+    }
 }

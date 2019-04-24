@@ -82,8 +82,9 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
             cdsServiceEndpoint.setId(existingCdsServiceEndpoint.getId());
             return update(cdsServiceEndpoint);
         }
-        cdsServiceEndpoint.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-        cdsServiceEndpoint.setLastUpdated(new Timestamp(new Date().getTime()));
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        cdsServiceEndpoint.setCreatedTimestamp(timestamp);
+        cdsServiceEndpoint.setLastUpdated(timestamp);
         CdsServiceEndpoint cdsServiceEndpointSaved = save(cdsServiceEndpoint);
         List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
         for (CdsHook cdsHook: cdsHooks) {

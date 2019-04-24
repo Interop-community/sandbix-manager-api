@@ -43,7 +43,6 @@ import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 @RestController
 @RequestMapping({"/cds-services"})
 public class CdsServiceEndpointController {
-    private static Logger LOGGER = LoggerFactory.getLogger(AppController.class.getName());
 
     private final CdsServiceEndpointService cdsServiceEndpointService;
     private final CdsHookService cdsHookService;
