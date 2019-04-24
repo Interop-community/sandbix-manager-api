@@ -102,6 +102,9 @@ public class CdsServiceEndpointController {
                                                        @PathVariable Integer id,
                                                        @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
         CdsServiceEndpoint existingCdsServiceEndpoint = cdsServiceEndpointService.getById(id);
+        if (existingCdsServiceEndpoint == null) {
+            throw new ResourceNotFoundException("CDS-Service was not found");
+        }
         if (existingCdsServiceEndpoint == null || existingCdsServiceEndpoint.getId().intValue() != id.intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
                             "Response Detail : CDS-Service Id doesn't match Id in JSON body."
@@ -159,57 +162,3 @@ public class CdsServiceEndpointController {
     }
 
 }
-
-//    @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
-//    public @ResponseBody void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
-//        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-//        if (cdsServiceEndpoint == null) {
-//            throw new ResourceNotFoundException("CDS-Service not found.");
-//        }
-//        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
-//        for (CdsHook cdsHook: cdsHooks) {
-//            try {
-//                response.setHeader("Content-Type", cdsHook.getLogo().getContentType());
-//                response.getOutputStream().write(cdsHook.getLogo().getBytes());
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//    }
-//
-//    @PostMapping(value = "/{id}/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE} )
-//    @Transactional
-//    public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
-//        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-//        if (cdsServiceEndpoint == null) {
-//            throw new ResourceNotFoundException("CDS-Service does not exist. Cannot upload image.");
-//        }
-//        authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-//        cdsServiceEndpointService.save(cdsServiceEndpoint);
-//        List<CdsHook> cdsHooks = cdsServiceEndpoint.getCdsHooks();
-//        for (CdsHook cdsHook: cdsHooks) {
-//            try {
-//                Image image = new Image();
-//                image.setBytes(file.getBytes());
-//                image.setContentType(file.getContentType());
-//                cdsHookService.updateCdsHookImage(cdsHook, image);
-//            } catch (IOException e) {
-//                if(LOGGER.isErrorEnabled()){
-//                    LOGGER.error("Unable to update image", e);
-//                }
-//            }
-//        }
-//    }
-//
-//    @DeleteMapping(value = "/{id}/image")
-//    @Transactional
-//    public CdsHook deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {
-//        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-//        CdsHook cdsHook = cdsHookService.getById(id);
-//        if (cdsServiceEndpoint == null) {
-//            throw new ResourceNotFoundException("CDS-Service does not exist. Cannot delete image.");
-//        }
-//        authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-//        return cdsHookService.deleteCdsHookImage(cdsHook);
-//    }
-
