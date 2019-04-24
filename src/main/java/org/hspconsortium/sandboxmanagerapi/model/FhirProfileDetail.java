@@ -46,7 +46,6 @@ public class FhirProfileDetail extends AbstractSandboxItem {
         this.lastUpdated = lastUpdated;
     }
 
-//    @OneToMany(cascade={CascadeType.ALL})
     @Transient
     public List<FhirProfile> getFhirProfiles() {
         return fhirProfiles;
