@@ -108,6 +108,12 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             String url = apiSchemaURL + "/" + sandboxId + "/data/" + fhirProfile.getRelativeUrl();
             restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
         }
+        delete(fhirProfileId);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Integer fhirProfileId) {
         fhirProfileService.delete(fhirProfileId);
         repository.delete(getFhirProfileDetail(fhirProfileId));
     }

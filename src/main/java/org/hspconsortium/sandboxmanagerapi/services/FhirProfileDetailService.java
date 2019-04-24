@@ -20,7 +20,9 @@ public interface FhirProfileDetailService {
 
     List<FhirProfileDetail> getAllProfilesForAGivenSandbox(String sandboxId);
 
-    void delete( HttpServletRequest request, Integer fhirProfileId, String sandboxId);
+    void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId);
+
+    void delete(Integer fhirProfileId);
 
     void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, HttpServletRequest request, String sandboxId, String id) throws IOException;
 

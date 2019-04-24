@@ -73,8 +73,8 @@ public class SandboxServiceImpl implements SandboxService {
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxInviteService sandboxInviteService;
     private CloseableHttpClient httpClient;
-    private CdsHookService cdsHookService;
     private CdsServiceEndpointService cdsServiceEndpointService;
+    private FhirProfileDetailService fhirProfileDetailService;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -142,13 +142,13 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Inject
-    public void setCdsHookService(CdsHookService cdsHookService) {
-        this.cdsHookService = cdsHookService;
+    public void setCdsServiceEndpointService(CdsServiceEndpointService cdsServiceEndpointService) {
+        this.cdsServiceEndpointService = cdsServiceEndpointService;
     }
 
     @Inject
-    public void setCdsServiceEndpointService(CdsServiceEndpointService cdsServiceEndpointService) {
-        this.cdsServiceEndpointService = cdsServiceEndpointService;
+    public void setFhirProfileDetailService(FhirProfileDetailService fhirProfileDetailService) {
+        this.fhirProfileDetailService = fhirProfileDetailService;
     }
 
     @Override
@@ -225,11 +225,12 @@ public class SandboxServiceImpl implements SandboxService {
 
         List<CdsServiceEndpoint> cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxId(sandbox.getSandboxId());
         for (CdsServiceEndpoint cdsServiceEndpoint: cdsServiceEndpoints) {
-            List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
-            for (CdsHook cdsHook: cdsHooks) {
-                cdsHookService.delete(cdsHook);
-            }
             cdsServiceEndpointService.delete(cdsServiceEndpoint);
+        }
+
+        List<FhirProfileDetail> fhirProfileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandbox.getSandboxId());
+        for (FhirProfileDetail fhirProfileDetail: fhirProfileDetails) {
+            fhirProfileDetailService.delete(fhirProfileDetail.getId());
         }
 
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
