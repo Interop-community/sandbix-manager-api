@@ -102,18 +102,13 @@ public class CdsServiceEndpointController {
                                                        @PathVariable Integer id,
                                                        @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
         CdsServiceEndpoint existingCdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-        if (existingCdsServiceEndpoint == null) {
-            throw new ResourceNotFoundException("CDS-Service was not found");
-        }
         if (existingCdsServiceEndpoint == null || existingCdsServiceEndpoint.getId().intValue() != id.intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
                             "Response Detail : CDS-Service Id doesn't match Id in JSON body."
                     , HttpStatus.SC_BAD_REQUEST));
         }
-
         checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);
         authorizationService.checkSandboxUserModifyAuthorization(request, existingCdsServiceEndpoint.getSandbox(), existingCdsServiceEndpoint);
-
         return cdsServiceEndpointService.update(cdsServiceEndpoint);
     }
 
@@ -160,5 +155,4 @@ public class CdsServiceEndpointController {
             throw new ResourceNotFoundException("Could not find the CDS Service Endpoint");
         }
     }
-
 }
