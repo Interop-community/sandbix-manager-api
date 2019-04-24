@@ -47,9 +47,17 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     private SandboxService sandboxService;
 
     @Inject
-    public FhirProfileDetailServiceImpl(FhirProfileDetailRepository repository, FhirProfileService fhirProfileService, SandboxService sandboxService) {
+    public FhirProfileDetailServiceImpl(final FhirProfileDetailRepository repository) {
         this.repository = repository;
+    }
+
+    @Inject
+    public void setFhirProfileService(FhirProfileService fhirProfileService) {
         this.fhirProfileService = fhirProfileService;
+    }
+
+    @Inject
+    public void setSandboxService(SandboxService sandboxService) {
         this.sandboxService = sandboxService;
     }
 
