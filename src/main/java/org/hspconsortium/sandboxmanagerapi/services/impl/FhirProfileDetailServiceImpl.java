@@ -151,7 +151,6 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Async("taskExecutor")
     @Override
     public void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, HttpServletRequest request, String sandboxId, String id) throws IOException {
-        //TODO: Test this method
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
         String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
         String authToken = request.getHeader("Authorization");

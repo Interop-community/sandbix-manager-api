@@ -45,7 +45,7 @@ public class FhirProfileController {
         this.fhirProfileDetailService = fhirProfileDetailService;
     }
 
-    @PostMapping(value = "/uploadProfile", params = {"sandboxId", "apiEndpoint", "profileName", "profileId"})
+    @PostMapping(value = "/uploadProfile", params = {"sandboxId", "profileName", "profileId"})
     public JSONObject uploadProfile (@RequestParam("file") MultipartFile file, HttpServletRequest request,
                                      @RequestParam(value = "sandboxId") String sandboxId,
                                      @RequestParam(value = "profileName") String profileName,
@@ -151,7 +151,7 @@ public class FhirProfileController {
     }
 
     //TODO: update profiles
-//    @PutMapping(value = "/updateProfile", params = {"sandboxId", "apiEndpoint", "profileName", "profileId"})
+//    @PutMapping(value = "/updateProfile", params = {"sandboxId", "profileName", "profileId"})
 //    public JSONObject updateProfile (@RequestParam("file") MultipartFile file, HttpServletRequest request,
 //                                     @RequestParam(value = "sandboxId") String sandboxId,
 //                                     @RequestParam(value = "profileName") String profileName,
