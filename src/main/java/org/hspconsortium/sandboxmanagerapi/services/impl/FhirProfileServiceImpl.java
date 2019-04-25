@@ -26,6 +26,11 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     }
 
     @Override
+    public List<FhirProfile> getAllSDsForGivenProfileId(Integer fhirProfileId){
+        return repository.findAllSDsforAProfileByFhirProfileId(fhirProfileId);
+    }
+
+    @Override
     @Transactional
     public void delete(Integer fhirProfileId) {
         List<FhirProfile> fhirProfiles = repository.findByFhirProfileId(fhirProfileId);

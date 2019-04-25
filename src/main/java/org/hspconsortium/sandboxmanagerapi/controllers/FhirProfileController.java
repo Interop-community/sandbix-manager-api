@@ -124,7 +124,7 @@ public class FhirProfileController {
     @GetMapping(value = "/getProfileSDs", params = {"fhirProfileId"})
     @ResponseBody
     public List<FhirProfile> getStructureDefinitions (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
-        return fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
+        return fhirProfileService.getAllSDsForGivenProfileId(fhirProfileId);
     }
 
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)

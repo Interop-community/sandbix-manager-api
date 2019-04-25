@@ -18,10 +18,10 @@ public interface FhirProfileService {
 
     List<FhirProfile> getAllResourcesForGivenProfileId(Integer fhirProfileId);
 
+    List<FhirProfile> getAllSDsForGivenProfileId(Integer fhirProfileId);
+
     void delete(Integer fhirProfileId);
 
     FhirProfile findByFullUrlAndFhirProfileId(String fullUrl, Integer fhirProfileId);
-
-
 
 }
