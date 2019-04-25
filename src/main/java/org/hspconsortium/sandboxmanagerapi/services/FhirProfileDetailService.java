@@ -24,13 +24,13 @@ public interface FhirProfileDetailService {
 
     void delete(Integer fhirProfileId);
 
-    void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, HttpServletRequest request, String sandboxId, String id) throws IOException;
+    void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, String authToken, String sandboxId, String id) throws IOException;
 
     ProfileTask getTaskRunning(String id);
 
     HashMap<String, ProfileTask> getIdProfileTask();
 
-    void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, HttpServletRequest request, String sandboxId, String id) throws IOException;
+    void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, String authToken, String sandboxId, String id) throws IOException;
 
     FhirProfileDetail findByProfileIdAndSandboxId(String profileId, String sandboxId);
 

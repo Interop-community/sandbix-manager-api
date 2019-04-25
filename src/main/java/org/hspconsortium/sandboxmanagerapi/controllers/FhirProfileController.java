@@ -56,6 +56,7 @@ public class FhirProfileController {
         if (existingFhirProfileDetail != null) {
             throw new IllegalArgumentException(profileName + " has already been uploaded");
         }
+        String authToken = request.getHeader("Authorization");
         String id = UUID.randomUUID().toString();
         String fileName = file.getOriginalFilename();
         String fileExtension = FilenameUtils.getExtension(fileName);
@@ -84,7 +85,7 @@ public class FhirProfileController {
             outputStream.close();
             try {
                 ZipFile zipFile = new ZipFile(zip);
-                fhirProfileDetailService.saveZipFile(fhirProfileDetail, zipFile, request, sandboxId, id);
+                fhirProfileDetailService.saveZipFile(fhirProfileDetail, zipFile, authToken, sandboxId, id);
             } catch (ZipException e) {
                 e.printStackTrace();
             }
@@ -92,7 +93,7 @@ public class FhirProfileController {
                 zip.delete();
             }
         } else if (!fileName.isEmpty() & fileExtension.equals("tgz")) {
-            fhirProfileDetailService.saveTGZfile(fhirProfileDetail, file, request, sandboxId, id);
+            fhirProfileDetailService.saveTGZfile(fhirProfileDetail, file, authToken, sandboxId, id);
         } else {
             statusReturned.put("status", false);
             statusReturned.put("id", id);

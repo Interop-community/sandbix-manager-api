@@ -128,10 +128,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Async("taskExecutor")
     @Override
-    public void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, HttpServletRequest request, String sandboxId, String id) throws IOException {
+    public void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, String authToken, String sandboxId, String id) throws IOException {
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
         String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
-        String authToken = request.getHeader("Authorization");
         List<String> resourceSaved = new ArrayList<>();
         List<String> resourceNotSaved = new ArrayList<>();
         int totalCount = 0;
@@ -164,10 +163,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Async("taskExecutor")
     @Override
-    public void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, HttpServletRequest request, String sandboxId, String id) throws IOException {
+    public void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, String authToken, String sandboxId, String id) throws IOException {
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
         String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
-        String authToken = request.getHeader("Authorization");
         List<String> resourceSaved = new ArrayList<>();
         List<String> resourceNotSaved = new ArrayList<>();
         int totalCount = 0;
