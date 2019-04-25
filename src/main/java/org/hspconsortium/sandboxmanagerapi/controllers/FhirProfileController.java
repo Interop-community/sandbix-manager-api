@@ -17,6 +17,7 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -93,7 +94,8 @@ public class FhirProfileController {
                 zip.delete();
             }
         } else if (!fileName.isEmpty() & fileExtension.equals("tgz")) {
-            fhirProfileDetailService.saveTGZfile(fhirProfileDetail, file, authToken, sandboxId, id);
+            InputStream fileInputStream = file.getInputStream();
+            fhirProfileDetailService.saveTGZfile(fhirProfileDetail, fileInputStream, authToken, sandboxId, id);
         } else {
             statusReturned.put("status", false);
             statusReturned.put("id", id);

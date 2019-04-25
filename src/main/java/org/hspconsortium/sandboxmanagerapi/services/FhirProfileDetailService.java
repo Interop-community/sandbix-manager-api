@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.zip.ZipFile;
@@ -30,7 +31,7 @@ public interface FhirProfileDetailService {
 
     HashMap<String, ProfileTask> getIdProfileTask();
 
-    void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, String authToken, String sandboxId, String id) throws IOException;
+    void saveTGZfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException;
 
     FhirProfileDetail findByProfileIdAndSandboxId(String profileId, String sandboxId);
 

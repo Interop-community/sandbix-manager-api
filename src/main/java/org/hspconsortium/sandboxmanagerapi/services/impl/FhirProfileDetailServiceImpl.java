@@ -163,7 +163,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Async("taskExecutor")
     @Override
-    public void saveTGZfile (FhirProfileDetail fhirProfileDetail, MultipartFile file, String authToken, String sandboxId, String id) throws IOException {
+    public void saveTGZfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
         String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
         List<String> resourceSaved = new ArrayList<>();
@@ -173,7 +173,6 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         int resourceNotSavedCount = 0;
         ProfileTask profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount );
         List<FhirProfile> fhirProfiles = new ArrayList<>();
-        InputStream fileInputStream = file.getInputStream();
         TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(new GzipCompressorInputStream(fileInputStream));
         TarArchiveEntry entry;
         while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
