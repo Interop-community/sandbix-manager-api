@@ -194,6 +194,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             }
         }
         tarArchiveInputStream.close();
+        fileInputStream.close();
         profileTask.setStatus(false);
         idProfileTask.put(id, profileTask);
         fhirProfileDetail.setFhirProfiles(fhirProfiles);
