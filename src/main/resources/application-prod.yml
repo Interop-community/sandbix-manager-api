@@ -14,19 +14,6 @@ hspc:
       url: https://auth.hspconsortium.org
       adminAccess:
         clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
-#    api:
-#      version5:
-#        baseUrl: https://api-v5-dstu2.hspconsortium.org
-#      version6:
-#        baseUrl: https://api-v5-stu3.hspconsortium.org
-#      version7:
-#        baseUrl: https://api-v5-r4.hspconsortium.org
-#      version8:
-#        baseUrl: https://api-v8-dstu2.hspconsortium.org
-#      version9:
-#        baseUrl: https://api-v8-stu3.hspconsortium.org
-#      version10:
-#        baseUrl: https://api-v8-r4.hspconsortium.org
     messaging:
       sendEmail: true
       url: https://messaging.hspconsortium.org
