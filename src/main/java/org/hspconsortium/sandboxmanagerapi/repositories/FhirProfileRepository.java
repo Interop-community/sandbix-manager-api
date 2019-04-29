@@ -14,6 +14,4 @@ public interface FhirProfileRepository extends CrudRepository<FhirProfile, Integ
 
     List<FhirProfile> findByFhirProfileId(@Param("fhirProfileId") Integer fhirProfileId);
 
-    FhirProfile findByFullUrlAndFhirProfileId(@Param("fullUrl") String fullUrl,
-                                                         @Param("fhirProfileId") Integer fhirProfileId);
 }

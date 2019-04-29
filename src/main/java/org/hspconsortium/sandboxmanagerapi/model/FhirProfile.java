@@ -7,10 +7,7 @@ import javax.persistence.*;
         @NamedQuery(name="FhirProfile.findAllSDsforAProfileByFhirProfileId",
                 query="SELECT c FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId AND c.relativeUrl LIKE 'StructureDefinition/%' "),
         @NamedQuery(name="FhirProfile.findByFhirProfileId",
-                query="SELECT c FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId"),
-        @NamedQuery(name="FhirProfileDetail.findByFullUrlAndFhirProfileId",
-                query="SELECT c FROM FhirProfile c WHERE c.fullUrl = :fullUrl AND c.fhirProfileId = :fhirProfileId")
-
+                query="SELECT c FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId")
 })
 public class FhirProfile {
 

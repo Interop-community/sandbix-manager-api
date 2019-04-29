@@ -22,6 +22,4 @@ public interface FhirProfileService {
 
     void delete(Integer fhirProfileId);
 
-    FhirProfile findByFullUrlAndFhirProfileId(String fullUrl, Integer fhirProfileId);
-
 }

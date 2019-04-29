@@ -15,8 +15,6 @@ public interface FhirProfileDetailService {
 
     FhirProfileDetail save(FhirProfileDetail fhirProfileDetail);
 
-    FhirProfileDetail update(FhirProfileDetail fhirProfileDetail);
-
     FhirProfileDetail getFhirProfileDetail(Integer fhirProfileId);
 
     List<FhirProfileDetail> getAllProfilesForAGivenSandbox(String sandboxId);

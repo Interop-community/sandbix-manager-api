@@ -39,9 +39,4 @@ public class FhirProfileServiceImpl implements FhirProfileService {
         }
     }
 
-    @Override
-    public FhirProfile findByFullUrlAndFhirProfileId(String fullUrl, Integer fhirProfileId) {
-        return repository.findByFullUrlAndFhirProfileId(fullUrl, fhirProfileId);
-    }
-
 }

@@ -15,13 +15,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +27,6 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -84,16 +81,6 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     }
 
     @Override
-    @Transactional
-    public FhirProfileDetail update(FhirProfileDetail fhirProfileDetail) {
-        //TODO: maybe not needed
-        Sandbox sandbox = fhirProfileDetail.getSandbox();
-        FhirProfileDetail existingFhirProfileDetail = findByProfileIdAndSandboxId(fhirProfileDetail.getProfileId(), sandbox.getSandboxId());
-        existingFhirProfileDetail.setLastUpdated(new Timestamp(new Date().getTime()));
-        return repository.save(existingFhirProfileDetail);
-    }
-
-    @Override
     public FhirProfileDetail getFhirProfileDetail(Integer fhirProfileId) {
         return repository.findByFhirProfileId(fhirProfileId);
     }
@@ -106,15 +93,20 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     @Transactional
     public void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
+        String authToken = request.getHeader("Authorization");
         List<FhirProfile> fhirProfiles = fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", request.getHeader("Authorization"));
+        headers.set("Authorization", authToken);
         HttpEntity entity = new HttpEntity(headers);
         String apiSchemaURL = sandboxService.getApiSchemaURL(sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex());
 
         for (FhirProfile fhirProfile: fhirProfiles) {
             String url = apiSchemaURL + "/" + sandboxId + "/data/" + fhirProfile.getRelativeUrl();
-            restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+            try {
+                restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+            } catch (Exception e) {
+
+            }
         }
         delete(fhirProfileId);
     }
