@@ -239,8 +239,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         Set<Integer> stu3Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
             if (sandboxActivityLog.getSandbox() != null &&
-                    (sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getStu3()))
-                    || sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getStu3())) {
+                    (sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getStu3())
+                    || sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getStu3()))) {
                 stu3Sandbox.add(sandboxActivityLog.getSandbox().getId());
             }
         }
@@ -251,8 +251,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         Set<Integer> r4Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
             if (sandboxActivityLog.getSandbox() != null &&
-                    (sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getR4()))
-                    || sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getR4())) {
+                    (sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getR4())
+                    || sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getR4()))) {
                 r4Sandbox.add(sandboxActivityLog.getSandbox().getId());
             }
         }
