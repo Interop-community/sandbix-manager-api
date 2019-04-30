@@ -213,4 +213,9 @@ public class AnalyticsController {
        // authorizationService.checkUserSystemRole(user, SystemRole.ADMIN); 
         return analyticsService.getUserStats(user, authorizationService.getBearerToken(request));
     }
+
+    @GetMapping(value="/overallStatsMarch", produces = APPLICATION_JSON_VALUE)
+    public Statistics getStatsForMarch() {
+        return analyticsService.getSandboxStatisticsForMarch();
+    }
 }

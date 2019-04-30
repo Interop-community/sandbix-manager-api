@@ -43,4 +43,6 @@ public interface AnalyticsService {
 
     UserStatistics getUserStats(User user, String request);
 
+    Statistics getSandboxStatisticsForMarch();
+
 }
