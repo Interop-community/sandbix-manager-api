@@ -8,7 +8,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
@@ -802,6 +801,16 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
             launchScenarioService.save(newLaunchScenario);
         }
+    }
+
+    @Override
+    public String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp intervalTimeBegin, Timestamp intervalTimeEnd) {
+        return repository.newSandboxesInIntervalCountForSpecificTimePeriod(apiEndpointIndex, intervalTimeBegin, intervalTimeEnd);
+    }
+
+    @Override
+    public String intervalCountForSpecificTimePeriod(Timestamp intervalTimeBegin, Timestamp intervalTimeEnd) {
+        return repository.intervalCountForSpecificTimePeriod(intervalTimeBegin, intervalTimeEnd);
     }
 
 }

@@ -67,4 +67,9 @@ public interface SandboxService {
     String getApiSchemaURL(final String apiEndpointIndex);
 
     String newSandboxesInIntervalCount(final Timestamp intervalTime, final String apiEndpointIndex);
+
+    String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp intervalTimeBegin, Timestamp intervalTimeEnd);
+
+    String intervalCountForSpecificTimePeriod(Timestamp intervalTimeBegin, Timestamp intervalTimeEnd);
+
 }

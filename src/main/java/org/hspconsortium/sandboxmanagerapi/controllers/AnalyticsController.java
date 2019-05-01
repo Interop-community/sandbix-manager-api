@@ -11,9 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -214,8 +214,18 @@ public class AnalyticsController {
         return analyticsService.getUserStats(user, authorizationService.getBearerToken(request));
     }
 
-    @GetMapping(value="/overallStatsMarch", produces = APPLICATION_JSON_VALUE)
-    public Statistics getStatsForMarch() {
-        return analyticsService.getSandboxStatisticsForMarch();
+    @GetMapping(value="/overallStatsForSpecificTimePeriod", params = {"begin", "end"},  produces = APPLICATION_JSON_VALUE)
+    public Statistics getStatsForSpecificTimePeriod(@RequestParam(value = "begin") String begin, @RequestParam(value = "end") String end) {
+        try {
+            Date beginDate = new SimpleDateFormat("MM-dd-yyyy").parse(begin);
+            Date endDate = new SimpleDateFormat("MM-dd-yyyy").parse(end);
+            Calendar c = Calendar.getInstance();
+            c.setTime(endDate);
+            c.add(Calendar.DATE, 1);
+            endDate = c.getTime();
+            return analyticsService.getSandboxStatisticsForSpecificTimePeriod(beginDate, endDate);
+        } catch (ParseException e) {
+            return null;
+        }
     }
 }

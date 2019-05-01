@@ -5,7 +5,7 @@ import org.hspconsortium.sandboxmanagerapi.model.Statistics;
 import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.model.UserStatistics;
 
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,6 +43,6 @@ public interface AnalyticsService {
 
     UserStatistics getUserStats(User user, String request);
 
-    Statistics getSandboxStatisticsForMarch();
+    Statistics getSandboxStatisticsForSpecificTimePeriod(Date beginDate, Date endDate);
 
 }
