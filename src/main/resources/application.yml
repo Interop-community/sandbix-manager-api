@@ -92,25 +92,15 @@ hspc:
         clientId: sandman_admin
         clientSecret: secret
     api:
-      version5:
-        baseUrl: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
-      version6:
-        baseUrl: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
-      version7:
-        baseUrl: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
-      version8:
-        baseUrl: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8078}
-      version9:
-        baseUrl: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079}
-      version10:
-        baseUrl: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}
       oauthUserInfoEndpointURL: ${hspc.platform.authorization.url}/userinfo
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
+      fhir:
+        profileResources: StructureDefinition, CodeSystem, ValueSet, SearchParameter
     messaging:
       sendEmail: false
     syntheticData:
 #      fhirServerUrl: https://syntheticmass.mitre.org/fhir
-       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
+#       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
       signatureAlgorithm: HS256
@@ -171,3 +161,19 @@ tier-rules:
       transactions:
       storage:
   threshold: 0.9
+
+api_endpoint_index:
+  prev:
+    dstu2: 5
+    stu3: 6
+    r4: 7
+    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
+    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
+    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
+  current:
+    dstu2: 8
+    stu3: 9
+    r4: 10
+    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8078}
+    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079}
+    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}

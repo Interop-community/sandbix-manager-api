@@ -242,6 +242,10 @@ public class SandboxController {
         User user = userService.findBySbmUserId(userId);
         userAccessHistoryService.saveUserAccessInstance(sandbox, user);
 
+        if (!sandboxService.isSandboxMember(sandbox, user) && sandbox.getVisibility() == Visibility.PUBLIC ) {
+            sandboxService.addMember(sandbox, user);
+        }
+
         sandboxService.sandboxLogin(id, userId);
     }
 

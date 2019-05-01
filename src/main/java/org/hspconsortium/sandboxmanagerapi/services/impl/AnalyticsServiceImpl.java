@@ -7,6 +7,7 @@ import org.hspconsortium.sandboxmanagerapi.repositories.StatisticsRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +30,9 @@ import java.util.stream.Collectors;
 @Service
 public class AnalyticsServiceImpl implements AnalyticsService {
     private static Logger LOGGER = LoggerFactory.getLogger(AnalyticsServiceImpl.class.getName());
+
+    @Autowired
+    private ApiEndpointIndex apiEndpointIndexObj;
 
     @Value("${spring.datasource.base_url}")
     private String databaseUrl;
@@ -222,7 +226,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private String activeDstu2SandboxesInInterval() {
         Set<Integer> dstu2Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
-            if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("5")) {
+            if (sandboxActivityLog.getSandbox() != null &&
+                    (sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getDstu2())
+                            || sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getDstu2()))) {
                 dstu2Sandbox.add(sandboxActivityLog.getSandbox().getId());
             }
         }
@@ -232,7 +238,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private String activeStu3SandboxesInInterval() {
         Set<Integer> stu3Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
-            if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("6")) {
+            if (sandboxActivityLog.getSandbox() != null &&
+                    (sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getStu3())
+                    || sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getStu3()))) {
                 stu3Sandbox.add(sandboxActivityLog.getSandbox().getId());
             }
         }
@@ -242,7 +250,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private String activeR4SandboxesInInterval() {
         Set<Integer> r4Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
-            if (sandboxActivityLog.getSandbox() != null && sandboxActivityLog.getSandbox().getApiEndpointIndex().equals("7")) {
+            if (sandboxActivityLog.getSandbox() != null &&
+                    (sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getR4())
+                    || sandboxActivityLog.getSandbox().getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getR4()))) {
                 r4Sandbox.add(sandboxActivityLog.getSandbox().getId());
             }
         }
@@ -258,12 +268,30 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
         sandboxActivityLogListIntervalFilter(timestamp, intDays);
 
+        Integer totalDstu2SandboxesCount = getInteger(sandboxService.schemaCount(apiEndpointIndexObj.getCurrent().getDstu2()))
+                                            + getInteger(sandboxService.schemaCount(apiEndpointIndexObj.getPrev().getDstu2()));
+
+        Integer totalStu3SandboxesCount = getInteger(sandboxService.schemaCount(apiEndpointIndexObj.getCurrent().getStu3()))
+                                            + getInteger(sandboxService.schemaCount(apiEndpointIndexObj.getPrev().getStu3()));
+
+        Integer totalR4SandboxesCount = getInteger(sandboxService.schemaCount(apiEndpointIndexObj.getCurrent().getR4()))
+                                            + getInteger(sandboxService.schemaCount(apiEndpointIndexObj.getPrev().getR4()));
+
+        Integer newDstu2SandboxesInInterval = getInteger(sandboxService.newSandboxesInIntervalCount(timestamp, apiEndpointIndexObj.getCurrent().getDstu2()))
+                                            + getInteger(sandboxService.newSandboxesInIntervalCount(timestamp, apiEndpointIndexObj.getPrev().getDstu2()));
+
+        Integer newStu3SandboxesInInterval = getInteger(sandboxService.newSandboxesInIntervalCount(timestamp, apiEndpointIndexObj.getCurrent().getStu3()))
+                                            + getInteger(sandboxService.newSandboxesInIntervalCount(timestamp, apiEndpointIndexObj.getPrev().getStu3()));
+
+        Integer newR4SandboxesInInterval = getInteger(sandboxService.newSandboxesInIntervalCount(timestamp, apiEndpointIndexObj.getCurrent().getR4()))
+                                            + getInteger(sandboxService.newSandboxesInIntervalCount(timestamp, apiEndpointIndexObj.getPrev().getR4()));
+
         Statistics statistics = new Statistics();
         statistics.setCreatedTimestamp(currentTimestamp);
         statistics.setTotalSandboxesCount(sandboxService.fullCount());
-        statistics.setTotalDstu2SandboxesCount(sandboxService.schemaCount("5"));
-        statistics.setTotalStu3SandboxesCount(sandboxService.schemaCount("6"));
-        statistics.setTotalR4SandboxesCount(sandboxService.schemaCount("7"));
+        statistics.setTotalDstu2SandboxesCount(totalDstu2SandboxesCount.toString());
+        statistics.setTotalStu3SandboxesCount(totalStu3SandboxesCount.toString());
+        statistics.setTotalR4SandboxesCount(totalR4SandboxesCount.toString());
         statistics.setTotalUsersCount(userService.fullCount());
 
         statistics.setActiveSandboxesInInterval(activeSandboxCount());
@@ -273,9 +301,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         statistics.setActiveUsersInInterval(activeUserCount());
 
         statistics.setNewSandboxesInInterval(sandboxService.intervalCount(timestamp));
-        statistics.setNewDstu2SandboxesInInterval(sandboxService.newSandboxesInIntervalCount(timestamp, "5"));
-        statistics.setNewStu3SandboxesInInterval(sandboxService.newSandboxesInIntervalCount(timestamp, "6"));
-        statistics.setNewR4SandboxesInInterval(sandboxService.newSandboxesInIntervalCount(timestamp, "7"));
+        statistics.setNewDstu2SandboxesInInterval(newDstu2SandboxesInInterval.toString());
+        statistics.setNewStu3SandboxesInInterval(newStu3SandboxesInInterval.toString());
+        statistics.setNewR4SandboxesInInterval(newR4SandboxesInInterval.toString());
         statistics.setNewUsersInInterval(userService.intervalCount(timestamp));
 
         statistics.setFhirTransactions(Integer.toString(statisticsRepository.getFhirTransaction(timestamp, currentTimestamp)));
@@ -348,13 +376,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             if(yearActivityLog < targetYear || (yearActivityLog == targetYear && monthActivityLog < targetMonth)) {
                 totalSanboxCount.add(sandboxId);
                     totalUserCount.add(userId);
-                if (apiEndpointIndex.equals("5")) {
+                if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getDstu2()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
                     totalDSTU2Count.add(sandboxId);
                 }
-                if (apiEndpointIndex.equals("6")) {
+                if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getStu3()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
                     totalSTU3Count.add(sandboxId);
                 }
-                if (apiEndpointIndex.equals("7")) {
+                if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getR4()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getR4())) {
                     totalR4Count.add(sandboxId);
                 }
             } else if (monthActivityLog == targetMonth && yearActivityLog == targetYear) {
@@ -452,8 +480,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         for (String sandboxId: sandboxIds) {
             Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-            if (sandbox.getApiEndpointIndex().equals("5") || sandbox.getApiEndpointIndex().equals("6") || sandbox.getApiEndpointIndex().equals("7")) {
-                fullSandboxIds.add("hspc_5_" + sandboxId);
+            if (sandbox.getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getDstu2())
+                    || sandbox.getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getStu3())
+                    || sandbox.getApiEndpointIndex().equals(apiEndpointIndexObj.getCurrent().getR4())) {
+                fullSandboxIds.add("hspc_" + apiEndpointIndexObj.getCurrent().getDstu2() + "_" + sandboxId);
+            } else if (sandbox.getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getDstu2())
+                    || sandbox.getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getStu3())
+                    || sandbox.getApiEndpointIndex().equals(apiEndpointIndexObj.getPrev().getR4())) {
+                fullSandboxIds.add("hspc_" + apiEndpointIndexObj.getPrev().getDstu2() + "_" + sandboxId);
             } else {
                 fullSandboxIds.add("hspc_" + sandbox.getApiEndpointIndex() + "_" + sandboxId);
             }
@@ -553,13 +587,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private void addToDifferentSandboxStats (){
         if (sandboxId != 0 && !totalSanboxCount.contains(sandboxId)) {
             countNewSandbox++;
-            if (apiEndpointIndex.equals("5")) {
+            if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getDstu2()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
                 newDSTU2SandboxesInInterval.add(sandboxId);
             }
-            if (apiEndpointIndex.equals("6")) {
+            if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getStu3()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
                 newSTU3SandboxesInInterval.add(sandboxId);
             }
-            if (apiEndpointIndex.equals("7")) {
+            if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getR4()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getR4())) {
                 newR4SandboxesInInterval.add(sandboxId);
             }
         }
@@ -572,17 +606,25 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }
         activeUserInInterval.add(userId);
         totalUserCount.add(userId);
-        if (apiEndpointIndex.equals("5")) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getDstu2()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
             activeDSTU2SanboxesInInterval.add(sandboxId);
             totalDSTU2Count.add(sandboxId);
         }
-        if (apiEndpointIndex.equals("6")) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getStu3()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
             activeSTU3SandboxesInInterval.add(sandboxId);
             totalSTU3Count.add(sandboxId);
         }
-        if (apiEndpointIndex.equals("7")) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getR4()) || apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getR4())) {
             activeR4SandboxesInInterval.add(sandboxId);
             totalR4Count.add(sandboxId);
+        }
+    }
+
+    private int getInteger(String num) {
+        if (num !=null) {
+            return Integer.parseInt(num);
+        } else {
+            return 0;
         }
     }
 

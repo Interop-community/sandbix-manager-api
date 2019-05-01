@@ -11,19 +11,6 @@ hspc:
       url: https://auth-test.hspconsortium.org
       adminAccess:
         clientSecret: secret
-    api:
-      version5:
-        baseUrl: https://api-v5-dstu2-test.hspconsortium.org
-      version6:
-        baseUrl: https://api-v5-stu3-test.hspconsortium.org
-      version7:
-        baseUrl: https://api-v5-r4-test.hspconsortium.org
-      version8:
-        baseUrl: https://api-v8-dstu2-test.hspconsortium.org
-      version9:
-        baseUrl: https://api-v8-stu3-test.hspconsortium.org
-      version10:
-        baseUrl: https://api-v8-r4-test.hspconsortium.org
     messaging:
       sendEmail: true
       url: https://messaging-test.hspconsortium.org
@@ -57,3 +44,13 @@ tier-rules:
 #      users:
 #      transactions:
 #      storage:
+
+api_endpoint_index:
+  prev:
+    apiBaseURL_dstu2: https://api-v5-dstu2-test.hspconsortium.org
+    apiBaseURL_stu3: https://api-v5-stu3-test.hspconsortium.org
+    apiBaseURL_r4: https://api-v5-r4-test.hspconsortium.org
+  current:
+    apiBaseURL_dstu2: https://api-v8-dstu2-test.hspconsortium.org
+    apiBaseURL_stu3: https://api-v8-stu3-test.hspconsortium.org
+    apiBaseURL_r4: https://api-v8-r4-test.hspconsortium.org

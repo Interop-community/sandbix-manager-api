@@ -14,7 +14,9 @@ import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -45,23 +47,8 @@ public class SandboxServiceImpl implements SandboxService {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
     private final SandboxRepository repository;
 
-    @Value("${hspc.platform.api.version5.baseUrl:}")
-    private String apiBaseURL_5;
-
-    @Value("${hspc.platform.api.version6.baseUrl:}")
-    private String apiBaseURL_6;
-
-    @Value("${hspc.platform.api.version7.baseUrl:}")
-    private String apiBaseURL_7;
-
-    @Value("${hspc.platform.api.version8.baseUrl:}")
-    private String apiBaseURL_8;
-
-    @Value("${hspc.platform.api.version9.baseUrl:}")
-    private String apiBaseURL_9;
-
-    @Value("${hspc.platform.api.version10.baseUrl:}")
-    private String apiBaseURL_10;
+    @Autowired
+    private ApiEndpointIndex apiEndpointIndexObj;
 
     @Value("${hspc.platform.api.oauthUserInfoEndpointURL}")
     private String oauthUserInfoEndpointURL;
@@ -87,8 +74,8 @@ public class SandboxServiceImpl implements SandboxService {
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxInviteService sandboxInviteService;
     private CloseableHttpClient httpClient;
-    private CdsHookService cdsHookService;
     private CdsServiceEndpointService cdsServiceEndpointService;
+    private FhirProfileDetailService fhirProfileDetailService;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -156,13 +143,13 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Inject
-    public void setCdsHookService(CdsHookService cdsHookService) {
-        this.cdsHookService = cdsHookService;
+    public void setCdsServiceEndpointService(CdsServiceEndpointService cdsServiceEndpointService) {
+        this.cdsServiceEndpointService = cdsServiceEndpointService;
     }
 
     @Inject
-    public void setCdsServiceEndpointService(CdsServiceEndpointService cdsServiceEndpointService) {
-        this.cdsServiceEndpointService = cdsServiceEndpointService;
+    public void setFhirProfileDetailService(@Lazy FhirProfileDetailService fhirProfileDetailService) {
+        this.fhirProfileDetailService = fhirProfileDetailService;
     }
 
     @Override
@@ -223,27 +210,28 @@ public class SandboxServiceImpl implements SandboxService {
 
         //delete launch scenarios, context params
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(sandbox.getSandboxId());
-        for (LaunchScenario launchScenario : launchScenarios) {
+        for (LaunchScenario launchScenario: launchScenarios) {
             launchScenarioService.delete(launchScenario);
         }
 
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(sandbox.getSandboxId());
-        for (UserPersona userPersona : userPersonas) {
+        for (UserPersona userPersona: userPersonas) {
             userPersonaService.delete(userPersona);
         }
 
         List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
-        for (SandboxInvite sandboxInvite : sandboxInvites) {
+        for (SandboxInvite sandboxInvite: sandboxInvites) {
             sandboxInviteService.delete(sandboxInvite);
         }
 
         List<CdsServiceEndpoint> cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxId(sandbox.getSandboxId());
         for (CdsServiceEndpoint cdsServiceEndpoint: cdsServiceEndpoints) {
-            List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
-            for (CdsHook cdsHook: cdsHooks) {
-                cdsHookService.delete(cdsHook);
-            }
             cdsServiceEndpointService.delete(cdsServiceEndpoint);
+        }
+
+        List<FhirProfileDetail> fhirProfileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandbox.getSandboxId());
+        for (FhirProfileDetail fhirProfileDetail: fhirProfileDetails) {
+            fhirProfileDetailService.delete(fhirProfileDetail.getId());
         }
 
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
@@ -264,11 +252,6 @@ public class SandboxServiceImpl implements SandboxService {
             sandbox.setCreatedBy(user);
             sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-            // Set expiration date and message for R4 sandboxes
-            if (sandbox.getApiEndpointIndex().equals("7")) {
-                sandbox.setExpirationMessage(expirationMessage);
-                sandbox.setExpirationDate(formatDate());
-            }
 
             sandbox.setPayerUserId(user.getId());
             Sandbox savedSandbox = save(sandbox);
@@ -330,7 +313,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public Sandbox update(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException  {
+    public Sandbox update(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
         Sandbox existingSandbox = findBySandboxId(sandbox.getSandboxId());
         existingSandbox.setName(sandbox.getName());
         existingSandbox.setDescription(sandbox.getDescription());
@@ -453,7 +436,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public boolean hasMemberRole(final Sandbox sandbox, final User user, final Role role) {
         List<UserRole> userRoles = sandbox.getUserRoles();
-        for(UserRole userRole : userRoles) {
+        for (UserRole userRole: userRoles) {
             if (userRole.getUser().getSbmUserId().equalsIgnoreCase(user.getSbmUserId()) && userRole.getRole() == role) {
                 return true;
             }
@@ -476,7 +459,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public boolean isSandboxMember(final Sandbox sandbox, final User user) {
-        for(UserRole userRole : sandbox.getUserRoles()) {
+        for (UserRole userRole: sandbox.getUserRoles()) {
             if (userRole.getUser().getSbmUserId().equalsIgnoreCase(user.getSbmUserId())) {
                 return true;
             }
@@ -507,10 +490,10 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxes = user.getSandboxes();
         }
 
-        for (Sandbox sandbox : findByVisibility(Visibility.PUBLIC)){
+        for (Sandbox sandbox: findByVisibility(Visibility.PUBLIC)) {
             List<UserRole> userRoles = sandbox.getUserRoles();
             userRoles.removeIf((UserRole userRole) -> !userRole.getUser().getSbmUserId().equals(user.getSbmUserId()));
-            if (!sandboxes.contains(sandbox)){
+            if (!sandboxes.contains(sandbox)) {
                 sandboxes.add(sandbox);
             }
         }
@@ -560,12 +543,36 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public String getSystemSandboxApiURL() {
-        return getApiSchemaURL("8") + "/system";
+        return apiEndpointIndexObj.getCurrent().getApiBaseURL_dstu2() + "/system";
     }
 
     @Override
     public Iterable<Sandbox> findAll() {
         return repository.findAll();
+    }
+
+    @Override
+    public String getApiSchemaURL(final String apiEndpointIndex) {
+
+        if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
+            return apiEndpointIndexObj.getPrev().getApiBaseURL_dstu2();
+        }
+        if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
+            return apiEndpointIndexObj.getPrev().getApiBaseURL_stu3();
+        }
+        if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getR4())) {
+            return apiEndpointIndexObj.getPrev().getApiBaseURL_r4();
+        }
+        if(apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getDstu2())) {
+            return apiEndpointIndexObj.getCurrent().getApiBaseURL_dstu2();
+        }
+        if(apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getStu3())) {
+            return apiEndpointIndexObj.getCurrent().getApiBaseURL_stu3();
+        }
+        if(apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getR4())) {
+            return apiEndpointIndexObj.getCurrent().getApiBaseURL_r4();
+        }
+        return "";
     }
 
     private void removeAllMembers(final Sandbox sandbox) {
@@ -574,34 +581,10 @@ public class SandboxServiceImpl implements SandboxService {
         sandbox.setUserRoles(Collections.<UserRole>emptyList());
         save(sandbox);
 
-        for(UserRole userRole : userRoles) {
+        for (UserRole userRole: userRoles) {
             userService.removeSandbox(sandbox, userRole.getUser());
             userRoleService.delete(userRole);
         }
-    }
-
-    private String getApiSchemaURL(final String apiEndpointIndex) {
-        String url;
-        switch (apiEndpointIndex){
-            case "5":
-                url = apiBaseURL_5;
-                break;
-            case "6":
-                url = apiBaseURL_6;
-                break;
-            case "7":
-                url = apiBaseURL_7;
-                break;
-            case "8":
-                url = apiBaseURL_8;
-                break;
-            case "9":
-                url = apiBaseURL_9;
-                break;
-            default:
-                url = apiBaseURL_10;
-        }
-        return url;
     }
 
     private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {
