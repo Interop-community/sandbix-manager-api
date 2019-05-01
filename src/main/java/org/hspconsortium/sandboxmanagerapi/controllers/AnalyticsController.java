@@ -131,8 +131,6 @@ public class AnalyticsController {
         return analyticsService.handleFhirTransaction(user, transactionInfo, authorizationService.getBearerToken(request));
     }
 
-    //TODO: make interval not required such that interval=null means to use all sandboxes
-
     @GetMapping(value="/getStats", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody void getStats(HttpServletRequest request) throws UnsupportedEncodingException {
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
@@ -210,12 +208,18 @@ public class AnalyticsController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-       // authorizationService.checkUserSystemRole(user, SystemRole.ADMIN); 
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.getUserStats(user, authorizationService.getBearerToken(request));
     }
 
     @GetMapping(value="/overallStatsForSpecificTimePeriod", params = {"begin", "end"},  produces = APPLICATION_JSON_VALUE)
-    public Statistics getStatsForSpecificTimePeriod(@RequestParam(value = "begin") String begin, @RequestParam(value = "end") String end) {
+    public Statistics getStatsForSpecificTimePeriod(HttpServletRequest request, @RequestParam(value = "begin") String begin, @RequestParam(value = "end") String end) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+
         try {
             Date beginDate = new SimpleDateFormat("MM-dd-yyyy").parse(begin);
             Date endDate = new SimpleDateFormat("MM-dd-yyyy").parse(end);
@@ -225,7 +229,7 @@ public class AnalyticsController {
             endDate = c.getTime();
             return analyticsService.getSandboxStatisticsForSpecificTimePeriod(beginDate, endDate);
         } catch (ParseException e) {
-            return null;
+            throw new IllegalArgumentException(e.getMessage() + ". Please enter date in MM-DD-YYYY format");
         }
     }
 }
