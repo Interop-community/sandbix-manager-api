@@ -31,6 +31,7 @@ public class CdsHook {
     private JsonNode prefetch;
     private Integer cdsServiceEndpointId;
     private String hookUrl;
+    private String scope;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -118,4 +119,13 @@ public class CdsHook {
     public void setHookUrl(String hookUrl) {
         this.hookUrl = hookUrl;
     }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
 }
