@@ -66,13 +66,11 @@ public class CdsServiceEndpointController {
 
     @PostMapping(produces = APPLICATION_JSON_VALUE)
     @Transactional
-    @ResponseBody
-    public CdsServiceEndpoint createCdsServiceEndpoint(final HttpServletRequest request,
+    public @ResponseBody CdsServiceEndpoint createCdsServiceEndpoint(final HttpServletRequest request,
                                         @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
 
         checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);
-        authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
-
+//        authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
         return cdsServiceEndpointService.create(cdsServiceEndpoint, sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId()));
     }
 
@@ -86,6 +84,7 @@ public class CdsServiceEndpointController {
             return null;
         }
         String sbmUserId = authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox);
+        authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
 
         cdsServiceEndpoint.setSandbox(sandbox);
         User user = userService.findBySbmUserId(sbmUserId);
