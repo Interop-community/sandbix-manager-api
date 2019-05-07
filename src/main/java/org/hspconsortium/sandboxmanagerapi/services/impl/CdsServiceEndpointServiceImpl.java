@@ -59,7 +59,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Override
     @Transactional
     public void delete(final CdsServiceEndpoint cdsServiceEndpoint) {
-        // Delete all associated CDS-Hook and  CDS-Hook Launch Scenarios
+        // Delete all associated CDS-Hook and CDS-Hook Launch Scenarios
         List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
         for (CdsHook cdsHook: cdsHooks) {
             for (LaunchScenario launchScenario: launchScenarioService.findByCdsHookIdAndSandboxId(cdsHook.getId(), cdsServiceEndpoint.getSandbox().getSandboxId())) {

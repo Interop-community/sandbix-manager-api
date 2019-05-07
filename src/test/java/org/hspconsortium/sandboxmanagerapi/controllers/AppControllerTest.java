@@ -5,6 +5,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -13,13 +14,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -59,6 +61,8 @@ public class AppControllerTest {
     @MockBean
     private AuthorizationService authorizationService;
 
+//    private HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);  // Mockito.spy(HttpServletResponse.class);
+
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     @Autowired
@@ -76,9 +80,11 @@ public class AppControllerTest {
     private App app;
     private Sandbox sandbox;
     private User user;
+    private MockHttpServletResponse mockHttpServletResponse;
 
     @Before
     public void setup() {
+        mockHttpServletResponse = new MockHttpServletResponse();
         app = new App();
         app.setId(1);
         user = new User();
@@ -137,6 +143,22 @@ public class AppControllerTest {
                 .andExpect(content().json(json));
     }
 
+    @Test(expected = NestedServletException.class)
+    public void getAppsTestSandboxNotFound() throws Exception {
+        List<App> apps = new ArrayList<>();
+        apps.add(app);
+        String json = json(apps);
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(authorizationService.checkSandboxUserReadAuthorization(any(), any())).thenReturn(user.getSbmUserId());
+        when(appService.findBySandboxIdAndCreatedByOrVisibility(sandbox.getSandboxId(), user.getSbmUserId(), Visibility.PUBLIC)).thenReturn(apps);
+        mvc
+                .perform(get("/app?sandboxId=" + sandbox.getSandboxId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(json));
+    }
+
     @Test
     public void createAppTest() throws Exception {
         String json = json(app);
@@ -154,6 +176,21 @@ public class AppControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(json));
+    }
+
+    @Test
+    public void createTestUserCantCreateApp() throws Exception {
+        String json = json(app);
+        when(sandboxService.findBySandboxId(app.getSandbox().getSandboxId())).thenReturn(sandbox);
+        when(ruleService.checkIfUserCanCreateApp(sandbox)).thenReturn(false);
+        when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
+        when(appService.create(any(), any())).thenReturn(app);
+        mvc
+                .perform(
+                        post("/app")
+                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                                .content(json))
+                .andExpect(status().isOk());
     }
 
     @Test(expected = NestedServletException.class)
@@ -232,6 +269,20 @@ public class AppControllerTest {
         mvc
                 .perform(get("/app/" + app.getId() + "/image"));
     }
+
+//    @SuppressWarnings("unchecked")
+//    @Test(expected = NestedServletException.class)
+//    public void getFullImageTestIOException() throws Exception {
+//        when(appService.getById(app.getId())).thenReturn(app);
+//        when(mockHttpServletResponse.getOutputStream()).thenThrow(IOException.class);
+////        doThrow(IOException.class).when(httpServletResponse).getOutputStream();
+//
+////        doThrow(IOException.class).when(httpServletResponse).getOutputStream();
+//
+////        doThrow(IOException.class).when(mockHttpServletResponse).getOutputStream();
+//        mvc
+//                .perform(get("/app/" + app.getId() + "/image"));
+//    }
 
     @Test
     public void putFullImageTest() throws Exception {

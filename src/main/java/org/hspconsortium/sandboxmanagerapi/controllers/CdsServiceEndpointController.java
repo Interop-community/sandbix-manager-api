@@ -71,6 +71,7 @@ public class CdsServiceEndpointController {
 
         checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);
 //        authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
+//        TODO: check if moving the above auth to the "checkUserAuthorizationAndModifyCdsServiceEndpoint" breaks anything
         return cdsServiceEndpointService.create(cdsServiceEndpoint, sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId()));
     }
 
@@ -129,11 +130,11 @@ public class CdsServiceEndpointController {
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public CdsServiceEndpoint getCdsServicEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
+    public CdsServiceEndpoint getCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
-        List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
-        cdsServiceEndpoint.setCdsHooks(cdsHooks);
         if (cdsServiceEndpoint != null) {
+            List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
+            cdsServiceEndpoint.setCdsHooks(cdsHooks);
             authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
             return cdsServiceEndpoint;
         } else {

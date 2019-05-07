@@ -58,34 +58,37 @@ public class CdsHookController {
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
         CdsHook cdsHook = cdsHookService.getById(id);
-        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
-        if (cdsHook == null) {
+        if (cdsHook != null) {
+            CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
+            authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
+            cdsHook.setLogoUri(request.getRequestURL().toString());
+            cdsHookService.save(cdsHook);
+            try {
+                Image image = new Image();
+                image.setBytes(file.getBytes());
+                image.setContentType(file.getContentType());
+                cdsHookService.updateCdsHookImage(cdsHook, image);
+            } catch (IOException e) {
+                if(LOGGER.isErrorEnabled()){
+                    LOGGER.error("Unable to update image", e);
+                }
+            }
+        } else {
             throw new ResourceNotFoundException("CDS-Hook does not exist. Cannot upload image.");
         }
-        authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-        cdsHook.setLogoUri(request.getRequestURL().toString());
-        cdsHookService.save(cdsHook);
-        try {
-            Image image = new Image();
-            image.setBytes(file.getBytes());
-            image.setContentType(file.getContentType());
-            cdsHookService.updateCdsHookImage(cdsHook, image);
-        } catch (IOException e) {
-            if(LOGGER.isErrorEnabled()){
-                LOGGER.error("Unable to update image", e);
-            }
-        }
+
     }
 
     @DeleteMapping(value = "/{id}/image")
     @Transactional
     public CdsHook deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {
         CdsHook cdsHook = cdsHookService.getById(id);
-        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
-        if (cdsHook == null) {
+        if (cdsHook != null) {
+            CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
+            authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
+            return cdsHookService.deleteCdsHookImage(cdsHook);
+        } else {
             throw new ResourceNotFoundException("CDS-Hook does not exist. Cannot delete image.");
         }
-        authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);
-        return cdsHookService.deleteCdsHookImage(cdsHook);
     }
 }
