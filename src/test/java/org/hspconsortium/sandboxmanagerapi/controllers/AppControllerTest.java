@@ -5,7 +5,6 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -61,7 +60,7 @@ public class AppControllerTest {
     @MockBean
     private AuthorizationService authorizationService;
 
-//    private HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);  // Mockito.spy(HttpServletResponse.class);
+    private HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -270,16 +269,18 @@ public class AppControllerTest {
                 .perform(get("/app/" + app.getId() + "/image"));
     }
 
-//    @SuppressWarnings("unchecked")
+////    @SuppressWarnings("unchecked")
 //    @Test(expected = NestedServletException.class)
 //    public void getFullImageTestIOException() throws Exception {
 //        when(appService.getById(app.getId())).thenReturn(app);
-//        when(mockHttpServletResponse.getOutputStream()).thenThrow(IOException.class);
+////        when(httpServletResponse.getOutputStream()).thenThrow(IOException.class);
+////        when(httpServletResponse.getOutputStream()).thenThrow(new IOException());
 ////        doThrow(IOException.class).when(httpServletResponse).getOutputStream();
-//
-////        doThrow(IOException.class).when(httpServletResponse).getOutputStream();
-//
 ////        doThrow(IOException.class).when(mockHttpServletResponse).getOutputStream();
+////        when(mockHttpServletResponse.getOutputStream()).thenThrow(IOException.class);
+//
+//        HttpServletResponse response = spy(new HttpServletResponse());
+//
 //        mvc
 //                .perform(get("/app/" + app.getId() + "/image"));
 //    }
