@@ -130,6 +130,12 @@ public class FhirProfileController {
         return fhirProfileService.getAllSDsForGivenProfileId(fhirProfileId);
     }
 
+    @GetMapping(value = "/getProfileResources", params = {"fhirProfileId"})
+    @ResponseBody
+    public List<FhirProfile> getAllResourcesForGivenProfileId (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
+        return fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
+    }
+
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<FhirProfileDetail> getFhirProfiles(@RequestParam(value = "sandboxId") String sandboxId) {
@@ -154,12 +160,4 @@ public class FhirProfileController {
         fhirProfileDetailService.delete(request, fhirProfileId, sandboxId);
     }
 
-    //TODO: update profiles
-//    @PutMapping(value = "/updateProfile", params = {"sandboxId", "profileName", "profileId"})
-//    public JSONObject updateProfile (@RequestParam("file") MultipartFile file, HttpServletRequest request,
-//                                     @RequestParam(value = "sandboxId") String sandboxId,
-//                                     @RequestParam(value = "profileName") String profileName,
-//                                     @RequestParam(value = "profileId") String profileId) throws IOException {
-//        return null;
-//    }
 }
