@@ -16,6 +16,6 @@ public interface SandboxActivityLogRepository extends CrudRepository<SandboxActi
     List<SandboxActivityLog> findBySandboxId(@Param("sandboxId") String sandboxId);
     List<SandboxActivityLog> findBySandboxActivity(@Param("sandboxActivity") SandboxActivity sandboxActivity);
     String intervalActive(@Param("intervalTime") Timestamp intervalTime);
-    List<SandboxActivityLog> findAllForSpecificTimePeriod(@Param("begin") Timestamp begin,
-                                                          @Param("end") Timestamp end);
+    List<SandboxActivityLog> findAllForSpecificTimePeriod(@Param("beginDate") Timestamp beginDate,
+                                                          @Param("endDate") Timestamp endDate);
 }

@@ -814,13 +814,13 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
-    public String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp intervalTimeBegin, Timestamp intervalTimeEnd) {
-        return repository.newSandboxesInIntervalCountForSpecificTimePeriod(apiEndpointIndex, intervalTimeBegin, intervalTimeEnd);
+    public String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp beginDate, Timestamp endDate) {
+        return repository.newSandboxesInIntervalCountForSpecificTimePeriod(apiEndpointIndex, beginDate, endDate);
     }
 
     @Override
-    public String intervalCountForSpecificTimePeriod(Timestamp intervalTimeBegin, Timestamp intervalTimeEnd) {
-        return repository.intervalCountForSpecificTimePeriod(intervalTimeBegin, intervalTimeEnd);
+    public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
+        return repository.intervalCountForSpecificTimePeriod(beginDate, endDate);
     }
 
 }

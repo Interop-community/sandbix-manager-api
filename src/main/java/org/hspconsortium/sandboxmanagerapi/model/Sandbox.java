@@ -31,14 +31,14 @@ import java.util.List;
                 query="SELECT COUNT(*) FROM Sandbox c WHERE c.apiEndpointIndex = :apiEndpointIndex AND c.createdTimestamp <= :endDate"),
         // Used for statistics
         @NamedQuery(name="Sandbox.intervalCount",
-                query="SELECT COUNT(*) FROM Sandbox c WHERE c.createdTimestamp  >= :intervalTime"),
+                query="SELECT COUNT(*) FROM Sandbox c WHERE c.createdTimestamp >= :intervalTime"),
         @NamedQuery(name="Sandbox.newSandboxesInIntervalCount",
                 query="SELECT COUNT(*) FROM Sandbox c WHERE c.createdTimestamp >= :intervalTime" +
                             " AND c.apiEndpointIndex = :apiEndpointIndex"),
         @NamedQuery(name="Sandbox.newSandboxesInIntervalCountForSpecificTimePeriod",
-                query="SELECT COUNT(*) FROM Sandbox c WHERE c.apiEndpointIndex = :apiEndpointIndex AND (c.createdTimestamp BETWEEN :intervalTimeBegin AND :intervalTimeEnd)"),
+                query="SELECT COUNT(*) FROM Sandbox c WHERE c.apiEndpointIndex = :apiEndpointIndex AND (c.createdTimestamp BETWEEN :beginDate AND :endDate)"),
         @NamedQuery(name="Sandbox.intervalCountForSpecificTimePeriod",
-                query="SELECT COUNT(*) FROM Sandbox c WHERE c.createdTimestamp BETWEEN :intervalTimeBegin AND :intervalTimeEnd")
+                query="SELECT COUNT(*) FROM Sandbox c WHERE c.createdTimestamp BETWEEN :beginDate AND :endDate")
 })
 public class Sandbox extends AbstractItem {
 

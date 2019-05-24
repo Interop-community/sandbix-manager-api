@@ -72,8 +72,8 @@ public interface SandboxService {
 
     String newSandboxesInIntervalCount(final Timestamp intervalTime, final String apiEndpointIndex);
 
-    String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp intervalTimeBegin, Timestamp intervalTimeEnd);
+    String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp beginDate, Timestamp endDate);
 
-    String intervalCountForSpecificTimePeriod(Timestamp intervalTimeBegin, Timestamp intervalTimeEnd);
+    String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
 
 }

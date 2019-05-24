@@ -18,13 +18,13 @@ public interface SandboxRepository extends CrudRepository<Sandbox, Integer> {
     String fullCountForSpecificTimePeriod(@Param("endDate") Timestamp endDate);
     String schemaCount(@Param("apiEndpointIndex") String apiEndpointIndex);
     String schemaCountForSpecificTimePeriod(@Param("apiEndpointIndex") String apiEndpointIndex,
-                                        @Param("endDate") Timestamp endDate);
+                                            @Param("endDate") Timestamp endDate);
     String intervalCount(@Param("intervalTime") Timestamp intervalTime);
     String newSandboxesInIntervalCount(@Param("intervalTime") Timestamp intervalTime,
                                        @Param("apiEndpointIndex") String apiEndpointIndex);
     String newSandboxesInIntervalCountForSpecificTimePeriod(@Param("apiEndpointIndex") String apiEndpointIndex,
-                                               @Param("intervalTimeBegin") Timestamp intervalTimeBegin,
-                                               @Param("intervalTimeEnd") Timestamp intervalTimeEnd);
-    String intervalCountForSpecificTimePeriod(@Param("intervalTimeBegin") Timestamp intervalTimeBegin,
-                                 @Param("intervalTimeEnd") Timestamp intervalTimeEnd);
+                                                            @Param("beginDate") Timestamp beginDate,
+                                                            @Param("endDate") Timestamp endDate);
+    String intervalCountForSpecificTimePeriod(@Param("beginDate") Timestamp beginDate,
+                                              @Param("endDate") Timestamp endDate);
 }

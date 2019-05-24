@@ -21,7 +21,7 @@ import java.sql.Timestamp;
                 query="SELECT c FROM SandboxActivityLog c WHERE c.activity = :sandboxActivity"),
         // Used for statistics
         @NamedQuery(name="SandboxActivityLog.findAllForSpecificTimePeriod",
-                    query="SELECT c FROM SandboxActivityLog c WHERE c.timestamp BETWEEN :begin AND :end"),
+                    query="SELECT c FROM SandboxActivityLog c WHERE c.timestamp BETWEEN :beginDate AND :endDate"),
         // Used for statistics
         @NamedQuery(name="SandboxActivityLog.intervalActive",
                 query="SELECT COUNT(DISTINCT c.user) FROM SandboxActivityLog c WHERE c.timestamp  >= :intervalTime")
