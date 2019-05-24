@@ -21,8 +21,14 @@ import java.util.Set;
         @NamedQuery(name="User.fullCount",
                 query="SELECT COUNT(*) FROM User c"),
         // Used for statistics
+        @NamedQuery(name="User.fullCountForSpecificTimePeriod",
+                query="SELECT COUNT(*) FROM User c WHERE c.createdTimestamp <= :endDate"),
+        // Used for statistics
         @NamedQuery(name="User.intervalCount",
-                query="SELECT COUNT(*) FROM User c WHERE c.createdTimestamp  >= :intervalTime")
+                query="SELECT COUNT(*) FROM User c WHERE c.createdTimestamp >= :intervalTime"),
+        // Used for statistics
+        @NamedQuery(name="User.intervalCountForSpecificTimePeriod",
+                query="SELECT COUNT(*) FROM User c WHERE c.createdTimestamp BETWEEN :beginDate AND :endDate")
 
 })
 public class User {

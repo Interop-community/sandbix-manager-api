@@ -11,9 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -131,8 +131,6 @@ public class AnalyticsController {
         return analyticsService.handleFhirTransaction(user, transactionInfo, authorizationService.getBearerToken(request));
     }
 
-    //TODO: make interval not required such that interval=null means to use all sandboxes
-
     @GetMapping(value="/getStats", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody void getStats(HttpServletRequest request) throws UnsupportedEncodingException {
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
@@ -210,7 +208,28 @@ public class AnalyticsController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
         }
-       // authorizationService.checkUserSystemRole(user, SystemRole.ADMIN); 
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
         return analyticsService.getUserStats(user, authorizationService.getBearerToken(request));
+    }
+
+    @GetMapping(value="/overallStatsForSpecificTimePeriod", params = {"begin", "end"},  produces = APPLICATION_JSON_VALUE)
+    public Statistics getStatsForSpecificTimePeriod(HttpServletRequest request, @RequestParam(value = "begin") String begin, @RequestParam(value = "end") String end) {
+        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found in authorization header.");
+        }
+        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+
+        try {
+            Date beginDate = new SimpleDateFormat("MM-dd-yyyy").parse(begin);
+            Date endDate = new SimpleDateFormat("MM-dd-yyyy").parse(end);
+            Calendar c = Calendar.getInstance();
+            c.setTime(endDate);
+            c.add(Calendar.DATE, 1);
+            endDate = c.getTime();
+            return analyticsService.getSandboxStatisticsForSpecificTimePeriod(beginDate, endDate);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(e.getMessage() + ". Please enter date in MM-DD-YYYY format");
+        }
     }
 }
