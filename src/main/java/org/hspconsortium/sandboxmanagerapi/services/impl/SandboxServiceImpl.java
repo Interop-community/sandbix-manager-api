@@ -516,8 +516,18 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
+    public String fullCountForSpecificTimePeriod(Timestamp endDate) {
+        return repository.fullCountForSpecificTimePeriod(endDate);
+    }
+
+    @Override
     public String schemaCount(String apiEndpointIndex) {
         return repository.schemaCount(apiEndpointIndex);
+    }
+
+    @Override
+    public String schemaCountForSpecificTimePeriod(final String apiEndpointIndex, final Timestamp endDate) {
+        return repository.schemaCountForSpecificTimePeriod(apiEndpointIndex, endDate);
     }
 
     @Override

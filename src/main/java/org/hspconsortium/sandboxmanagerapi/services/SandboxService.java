@@ -56,7 +56,11 @@ public interface SandboxService {
 
     String fullCount();
 
+    String fullCountForSpecificTimePeriod(Timestamp endDate);
+
     String schemaCount(final String apiEndpointIndex);
+
+    String schemaCountForSpecificTimePeriod(final String apiEndpointIndex, final Timestamp endDate);
 
     String intervalCount(final Timestamp intervalTime);
 

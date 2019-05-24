@@ -214,6 +214,11 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     }
 
     @Override
+    public List<SandboxActivityLog> findAllForSpecificTimePeriod(Timestamp begin, Timestamp end) {
+        return repository.findAllForSpecificTimePeriod(begin, end);
+    }
+
+    @Override
     public String intervalActive(final Timestamp intervalTime) {
         return repository.intervalActive(intervalTime);
     }

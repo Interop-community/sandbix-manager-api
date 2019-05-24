@@ -92,12 +92,24 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
     public String fullCount() {
         return repository.fullCount();
     }
 
+    @Override
+    public String fullCountForSpecificPeriod(Timestamp endDate) {
+        return repository.fullCountForSpecificTimePeriod(endDate);
+    }
+
+    @Override
     public String intervalCount(final Timestamp intervalTime) {
         return repository.intervalCount(intervalTime);
+    }
+
+    @Override
+    public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
+        return repository.intervalCountForSpecificTimePeriod(beginDate, endDate);
     }
 
     @Override
