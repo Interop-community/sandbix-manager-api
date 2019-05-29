@@ -22,4 +22,6 @@ public interface FhirProfileService {
 
     void delete(Integer fhirProfileId);
 
+    FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String profileType);
+
 }

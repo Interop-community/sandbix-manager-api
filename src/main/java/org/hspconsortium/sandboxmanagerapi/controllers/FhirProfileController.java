@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -140,6 +141,20 @@ public class FhirProfileController {
     @ResponseBody
     public List<FhirProfileDetail> getFhirProfiles(@RequestParam(value = "sandboxId") String sandboxId) {
         return fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
+    }
+
+    @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public List<FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
+        List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
+        List<FhirProfile> fhirProfiles = new ArrayList<>();
+        for (Integer fhirProfileId: fhirProfileIds) {
+            FhirProfile fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
+            if (fhirProfile != null) {
+                fhirProfiles.add(fhirProfile);
+            }
+        }
+        return fhirProfiles;
     }
 
     @GetMapping(params = {"fhirProfileId"}, produces = APPLICATION_JSON_VALUE)

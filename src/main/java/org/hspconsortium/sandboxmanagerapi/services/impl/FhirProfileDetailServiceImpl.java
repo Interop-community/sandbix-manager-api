@@ -91,6 +91,16 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     }
 
     @Override
+    public FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type) {
+        return fhirProfileService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
+    }
+
+    @Override
+    public List<Integer> getAllFhirProfileIdsAssociatedWithASandbox(String sandboxId) {
+        return repository.findAllFhirProfileIdsBySandboxId(sandboxId);
+    }
+
+    @Override
     @Transactional
     public void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
         String authToken = request.getHeader("Authorization");

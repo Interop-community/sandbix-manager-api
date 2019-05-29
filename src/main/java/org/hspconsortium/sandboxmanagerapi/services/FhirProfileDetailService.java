@@ -1,5 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
+import org.hspconsortium.sandboxmanagerapi.model.FhirProfile;
 import org.hspconsortium.sandboxmanagerapi.model.FhirProfileDetail;
 import org.hspconsortium.sandboxmanagerapi.model.ProfileTask;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,8 @@ public interface FhirProfileDetailService {
 
     List<FhirProfileDetail> getAllProfilesForAGivenSandbox(String sandboxId);
 
+    FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type);
+
     void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId);
 
     void delete(Integer fhirProfileId);
@@ -32,5 +35,7 @@ public interface FhirProfileDetailService {
     void saveTGZfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException;
 
     FhirProfileDetail findByProfileIdAndSandboxId(String profileId, String sandboxId);
+
+    List<Integer> getAllFhirProfileIdsAssociatedWithASandbox(String sandboxId);
 
 }

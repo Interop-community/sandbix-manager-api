@@ -15,4 +15,6 @@ public interface FhirProfileDetailRepository extends CrudRepository<FhirProfileD
     List<FhirProfileDetail> findBySandboxId(@Param("sandboxId") String sandboxId);
 
     FhirProfileDetail findByProfileIdAndSandboxId(@Param("profileId") String profileId, @Param("sandboxId") String sandboxId);
+
+    List<Integer> findAllFhirProfileIdsBySandboxId(@Param("sandboxId") String sandboxId);
 }
