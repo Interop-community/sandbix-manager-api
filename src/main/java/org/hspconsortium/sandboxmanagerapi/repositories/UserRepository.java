@@ -13,5 +13,8 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     User findByUserEmail(@Param("email") String email);
     User findById(@Param("id") Integer id);
     String fullCount();
+    String fullCountForSpecificTimePeriod(@Param("endDate") Timestamp endDate);
     String intervalCount(@Param("intervalTime") Timestamp intervalTime);
+    String intervalCountForSpecificTimePeriod(@Param("beginDate") Timestamp beginDate,
+                                              @Param("endDate") Timestamp endDate);
 }

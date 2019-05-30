@@ -14,6 +14,8 @@ import java.util.List;
                 query="SELECT c FROM FhirProfileDetail c WHERE c.sandbox.sandboxId = :sandboxId"),
         @NamedQuery(name="FhirProfileDetail.findByProfileIdAndSandboxId",
                 query="SELECT c FROM FhirProfileDetail c WHERE c.profileId = :profileId AND c.sandbox.sandboxId = :sandboxId"),
+        @NamedQuery(name="FhirProfileDetail.findAllFhirProfileIdsBySandboxId",
+                query="SELECT c.id FROM FhirProfileDetail c WHERE c.sandbox.sandboxId = :sandboxId")
 })
 public class FhirProfileDetail extends AbstractSandboxItem {
 

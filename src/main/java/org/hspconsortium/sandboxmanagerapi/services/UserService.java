@@ -21,7 +21,11 @@ public interface UserService {
 
     String fullCount();
 
+    String fullCountForSpecificPeriod(Timestamp endDate);
+
     String intervalCount(final Timestamp intervalTime);
+
+    String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
 
     void removeSandbox(final Sandbox sandbox, final User user);
 

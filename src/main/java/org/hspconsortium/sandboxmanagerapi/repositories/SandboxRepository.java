@@ -15,8 +15,16 @@ public interface SandboxRepository extends CrudRepository<Sandbox, Integer> {
     List<Sandbox> findByVisibility(@Param("visibility") Visibility visibility);
     List<Sandbox> findByPayerUserId(@Param("payerId") Integer payerId);
     String fullCount();
+    String fullCountForSpecificTimePeriod(@Param("endDate") Timestamp endDate);
     String schemaCount(@Param("apiEndpointIndex") String apiEndpointIndex);
+    String schemaCountForSpecificTimePeriod(@Param("apiEndpointIndex") String apiEndpointIndex,
+                                            @Param("endDate") Timestamp endDate);
     String intervalCount(@Param("intervalTime") Timestamp intervalTime);
     String newSandboxesInIntervalCount(@Param("intervalTime") Timestamp intervalTime,
                                        @Param("apiEndpointIndex") String apiEndpointIndex);
+    String newSandboxesInIntervalCountForSpecificTimePeriod(@Param("apiEndpointIndex") String apiEndpointIndex,
+                                                            @Param("beginDate") Timestamp beginDate,
+                                                            @Param("endDate") Timestamp endDate);
+    String intervalCountForSpecificTimePeriod(@Param("beginDate") Timestamp beginDate,
+                                              @Param("endDate") Timestamp endDate);
 }

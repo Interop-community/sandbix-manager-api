@@ -53,5 +53,7 @@ public interface SandboxActivityLogService {
 
     Iterable<SandboxActivityLog> findAll();
 
+    List<SandboxActivityLog> findAllForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
+
     String intervalActive(final Timestamp intervalTime);
 }

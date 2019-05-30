@@ -14,6 +14,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.isAlphanumeric;
+
 @Service
 public class UserPersonaServiceImpl implements UserPersonaService {
     private final UserPersonaRepository repository;
@@ -102,6 +104,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     }
 
     private UserPersona createOrUpdate(final UserPersona userPersona) {
+        if (!isAlphanumeric(userPersona.getPersonaUserId())) {
+            throw new IllegalArgumentException("Persona was not created. Please make sure User Id has only alphanumeric characters.");
+        }
         return save(userPersona);
     }
 

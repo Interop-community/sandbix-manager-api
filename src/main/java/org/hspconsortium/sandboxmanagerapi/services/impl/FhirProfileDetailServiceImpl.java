@@ -91,6 +91,16 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     }
 
     @Override
+    public FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type) {
+        return fhirProfileService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
+    }
+
+    @Override
+    public List<Integer> getAllFhirProfileIdsAssociatedWithASandbox(String sandboxId) {
+        return repository.findAllFhirProfileIdsBySandboxId(sandboxId);
+    }
+
+    @Override
     @Transactional
     public void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
         String authToken = request.getHeader("Authorization");
@@ -149,8 +159,12 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         }
         profileTask.setStatus(false);
         idProfileTask.put(id, profileTask);
-        fhirProfileDetail.setFhirProfiles(fhirProfiles);
-        save(fhirProfileDetail);
+        if (profileTask.getError() == null && fhirProfiles.size() != 0) {
+            fhirProfileDetail.setFhirProfiles(fhirProfiles);
+            save(fhirProfileDetail);
+        } else {
+            throw new RuntimeException("Unable to open the file. The profile was not uploaded"); //TODO: ask about this exception
+        }
     }
 
     @Async("taskExecutor")
@@ -189,8 +203,12 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         fileInputStream.close();
         profileTask.setStatus(false);
         idProfileTask.put(id, profileTask);
-        fhirProfileDetail.setFhirProfiles(fhirProfiles);
-        save(fhirProfileDetail);
+        if (profileTask.getError() == null && fhirProfiles.size() != 0) {
+            fhirProfileDetail.setFhirProfiles(fhirProfiles);
+            save(fhirProfileDetail);
+        } else {
+            throw new RuntimeException("Unable to open the file. The profile was not uploaded"); //TODO: ask about this exception
+        }
     }
 
     private JSONObject saveProfileResource(String apiSchemaURL, String authToken, String sandboxId, String apiEndpoint, String id, InputStream inputStream, String fileName, ProfileTask profileTask) {
@@ -223,7 +241,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         return profileTaskAndFhirProfile;
-                    } else if (apiEndpoint.equals("9") && !fhirVersion.equals("3.0.1")) {
+                    } else if (apiEndpoint.equals("9") && !(fhirVersion.equals("3.0.1") || fhirVersion.equals("3.1.0"))) {
                         errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (3.0.1). The profile was not saved.";
                         profileTask.setError(errorMessage);
                         profileTask.setStatus(false);

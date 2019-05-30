@@ -8,7 +8,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.hspconsortium.sandboxmanagerapi.controllers.UnauthorizedException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
@@ -517,8 +516,18 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
+    public String fullCountForSpecificTimePeriod(Timestamp endDate) {
+        return repository.fullCountForSpecificTimePeriod(endDate);
+    }
+
+    @Override
     public String schemaCount(String apiEndpointIndex) {
         return repository.schemaCount(apiEndpointIndex);
+    }
+
+    @Override
+    public String schemaCountForSpecificTimePeriod(final String apiEndpointIndex, final Timestamp endDate) {
+        return repository.schemaCountForSpecificTimePeriod(apiEndpointIndex, endDate);
     }
 
     @Override
@@ -802,6 +811,16 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
             launchScenarioService.save(newLaunchScenario);
         }
+    }
+
+    @Override
+    public String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp beginDate, Timestamp endDate) {
+        return repository.newSandboxesInIntervalCountForSpecificTimePeriod(apiEndpointIndex, beginDate, endDate);
+    }
+
+    @Override
+    public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
+        return repository.intervalCountForSpecificTimePeriod(beginDate, endDate);
     }
 
 }
