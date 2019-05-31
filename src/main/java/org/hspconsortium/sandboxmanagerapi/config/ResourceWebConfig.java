@@ -19,11 +19,4 @@ public class ResourceWebConfig extends WebMvcConfigurerAdapter {
             }
         };
     }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-//                .allowedOrigins("https://sandbox-test.hspconsortium.org", "https://sandbox.hspconsortium.org")
-                .allowedMethods("GET", "POST", "PUT", "DELETE");
-    }
 }
