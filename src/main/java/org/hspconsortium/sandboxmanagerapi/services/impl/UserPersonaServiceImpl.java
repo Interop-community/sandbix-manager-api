@@ -104,9 +104,6 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     }
 
     private UserPersona createOrUpdate(final UserPersona userPersona) {
-        if (!isAlphanumeric(userPersona.getPersonaUserId())) {
-            throw new IllegalArgumentException("Persona was not created. Please make sure User Id has only alphanumeric characters.");
-        }
         return save(userPersona);
     }
 
