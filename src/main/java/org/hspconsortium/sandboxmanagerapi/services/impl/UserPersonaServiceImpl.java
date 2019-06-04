@@ -14,8 +14,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.isAlphanumeric;
-
 @Service
 public class UserPersonaServiceImpl implements UserPersonaService {
     private final UserPersonaRepository repository;
