@@ -234,7 +234,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                     String profileType = jsonObject.get("type").toString();
                     fhirProfile.setProfileType(profileType);
                     String errorMessage = "";
-                    if (apiEndpoint.equals("8") && !fhirVersion.equals("1.0.2")) {
+                    if (apiEndpoint.equals("8") && !(fhirVersion.equals("1.0.1") || fhirVersion.equals("1.0.2"))) {
                         errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (1.0.2). The profile was not saved.";
                         profileTask.setError(errorMessage);
                         profileTask.setStatus(false);
