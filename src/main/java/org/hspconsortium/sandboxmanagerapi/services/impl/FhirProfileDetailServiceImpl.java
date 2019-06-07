@@ -231,8 +231,16 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                 String fullUrl = jsonObject.get("url").toString();
                 if (resourceType.equals("StructureDefinition")) {
                     String fhirVersion = jsonObject.get("fhirVersion").toString();
-                    String profileType = jsonObject.get("type").toString();
-                    fhirProfile.setProfileType(profileType);
+                    try {
+                        String profileType = jsonObject.get("type").toString();
+                        fhirProfile.setProfileType(profileType);
+                    } catch (Exception e) {
+                        profileTask.setError("The StructureDefinition under file name: " + fileName + " is missing 'type' parameter. The profile was not saved.");
+                        profileTask.setStatus(false);
+                        idProfileTask.put(id, profileTask);
+                        profileTaskAndFhirProfile.put("profileTask", profileTask);
+                        return profileTaskAndFhirProfile;
+                    }
                     String errorMessage = "";
                     if (apiEndpoint.equals("8") && !(fhirVersion.equals("1.0.1") || fhirVersion.equals("1.0.2"))) {
                         errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (1.0.2). The profile was not saved.";
@@ -241,7 +249,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         return profileTaskAndFhirProfile;
-                    } else if (apiEndpoint.equals("9") && !(fhirVersion.equals("3.0.1") || fhirVersion.equals("3.1.0"))) {
+                    } else if (apiEndpoint.equals("9") && !(fhirVersion.equals("3.0.1") || fhirVersion.equals("3.1.0") || fhirVersion.equals("3.0.0"))) {
                         errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (3.0.1). The profile was not saved.";
                         profileTask.setError(errorMessage);
                         profileTask.setStatus(false);
