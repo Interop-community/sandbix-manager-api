@@ -5,6 +5,10 @@ server:
     protocol_header: x-forwarded-proto
 
 spring:
+  http:
+    multipart:
+      max-file-size: 512MB
+      max-request-size: 512MB
   application:
     name: HSPC Sandbox Manager
   profiles:
