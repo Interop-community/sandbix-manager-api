@@ -57,18 +57,21 @@ public class SandboxInviteController {
     private final EmailService emailService;
     private final SandboxActivityLogService sandboxActivityLogService;
     private final AuthorizationService authorizationService;
+    private final UserAccessHistoryService userAccessHistoryService;
 
     @Inject
     public SandboxInviteController(final SandboxInviteService sandboxInviteService, final UserService userService,
                                    final SandboxService sandboxService,
                                    final EmailService emailService, final SandboxActivityLogService sandboxActivityLogService,
-                                   final AuthorizationService authorizationService) {
+                                   final AuthorizationService authorizationService,
+                                   final UserAccessHistoryService userAccessHistoryService) {
         this.sandboxInviteService = sandboxInviteService;
         this.userService = userService;
         this.sandboxService = sandboxService;
         this.emailService = emailService;
         this.sandboxActivityLogService = sandboxActivityLogService;
         this.authorizationService = authorizationService;
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @PutMapping(consumes = APPLICATION_JSON_VALUE)
@@ -200,6 +203,7 @@ public class SandboxInviteController {
                 sandboxService.addMember(sandbox, invitee);
             }
             sandboxActivityLogService.sandboxUserInviteAccepted(sandbox, invitee);
+            userAccessHistoryService.saveUserAccessInstance(sandbox, invitee);
 
             sandboxInvite.setStatus(status);
             sandboxInviteService.save(sandboxInvite);
