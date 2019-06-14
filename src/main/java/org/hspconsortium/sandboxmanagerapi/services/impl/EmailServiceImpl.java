@@ -148,6 +148,7 @@ public class EmailServiceImpl implements EmailService {
                 this.mailSender.send(mimeMessage);
             } catch (Exception e) {
                 LOGGER.error("Error sending email message", e);
+                throw new IllegalArgumentException(e + " Sandbox invite email was not sent");
             }
 
         }
