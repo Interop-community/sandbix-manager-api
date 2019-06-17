@@ -10,13 +10,11 @@ import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.services.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamSource;
-import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -26,8 +24,6 @@ import org.thymeleaf.spring4.SpringTemplateEngine;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -102,7 +98,7 @@ public class EmailServiceImpl implements EmailService {
                 sendEmailByJavaMail(message);
             } catch (MessagingException e) {
                 e.printStackTrace();
-                throw new IllegalArgumentException(e + "Email was not sent");
+                throw new RuntimeException(e + " Email was not sent");
             }
         }
     }

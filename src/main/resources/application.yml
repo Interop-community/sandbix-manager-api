@@ -102,9 +102,6 @@ hspc:
         profileResources: StructureDefinition, CodeSystem, ValueSet, SearchParameter
     messaging:
       sendEmail: false
-#      sendEmail: true
-#      url: https://messaging-test.hspconsortium.org
-#      emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
 
     syntheticData:
 #      fhirServerUrl: https://syntheticmass.mitre.org/fhir

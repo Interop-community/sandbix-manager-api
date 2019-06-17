@@ -83,8 +83,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId());
         User invitedBy = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());
         if (!ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())) {
-//            return null;
-            throw new IllegalArgumentException("User can't be added to this sandbox");
+            return null;
         }
         User checkInvitee = null;
         if (sandboxInvite.getInvitee().getSbmUserId() != null) {
@@ -119,8 +118,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
             sandboxActivityLogService.sandboxUserInvited(sandbox, invitedBy, invitee);
             return sandboxInviteSaved;
         }
-//        return null;
-        throw new IllegalArgumentException("Email was not sent");
+        return null;
     }
 
     @Override

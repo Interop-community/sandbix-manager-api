@@ -85,18 +85,17 @@ public class SandboxInviteServiceTest {
         verify(sandboxActivityLogService).sandboxUserInvited(any(), any(), any());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createTestCantCreate() throws IOException {
         when(sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(inviter);
         when(ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())).thenReturn(false);
         when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
-        sandboxInviteService.create(sandboxInvite);
-//        SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
-//        assertEquals(null, returnedSandboxInvite);
+        SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
+        assertEquals(null, returnedSandboxInvite);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createTestCheckInviteeIsNullAndAlreadyMember() throws IOException {
         when(sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(inviter);
@@ -104,9 +103,8 @@ public class SandboxInviteServiceTest {
         when(userService.findBySbmUserId(sandboxInvite.getInvitee().getSbmUserId())).thenReturn(invitee);
         when(sandboxService.isSandboxMember(any(), any())).thenReturn(true);
         when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
-        sandboxInviteService.create(sandboxInvite);
-//        SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
-//        assertEquals(null, returnedSandboxInvite);
+        SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
+        assertEquals(null, returnedSandboxInvite);
     }
 
     @Test
