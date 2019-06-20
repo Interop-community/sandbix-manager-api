@@ -140,33 +140,18 @@ public class FhirProfileController {
         return fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
     }
 
-//    @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
-//    @ResponseBody
-//    public List<FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
-//        List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
-//        List<FhirProfile> fhirProfiles = new ArrayList<>();
-//        for (Integer fhirProfileId: fhirProfileIds) {
-//            FhirProfile fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
-//            if (fhirProfile != null) {
-//                fhirProfiles.add(fhirProfile);
-//            }
-//        }
-//        return fhirProfiles;
-//    }
-
     @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public HashMap<String, FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
-        HashMap<String, FhirProfile> profileNameAndFhirProfile = new HashMap<>();
+    public List<FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
         List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
+        List<FhirProfile> fhirProfiles = new ArrayList<>();
         for (Integer fhirProfileId: fhirProfileIds) {
             FhirProfile fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
             if (fhirProfile != null) {
-                String profileName = fhirProfileDetailService.getFhirProfileDetail(fhirProfileId).getProfileName();
-                profileNameAndFhirProfile.put(profileName, fhirProfile);
+                fhirProfiles.add(fhirProfile);
             }
         }
-        return profileNameAndFhirProfile;
+        return fhirProfiles;
     }
 
     @GetMapping(params = {"fhirProfileId"}, produces = APPLICATION_JSON_VALUE)
