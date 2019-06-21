@@ -6,6 +6,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxInviteServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
 import java.util.ArrayList;

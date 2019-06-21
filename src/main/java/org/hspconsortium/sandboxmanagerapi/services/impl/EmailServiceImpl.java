@@ -10,7 +10,6 @@ import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.services.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
@@ -99,6 +98,7 @@ public class EmailServiceImpl implements EmailService {
                 sendEmailByJavaMail(message);
             } catch (MessagingException e) {
                 e.printStackTrace();
+                throw new RuntimeException(e + " Email was not sent");
             }
         }
     }

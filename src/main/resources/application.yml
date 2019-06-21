@@ -102,6 +102,7 @@ hspc:
         profileResources: StructureDefinition, CodeSystem, ValueSet, SearchParameter
     messaging:
       sendEmail: false
+
     syntheticData:
 #      fhirServerUrl: https://syntheticmass.mitre.org/fhir
 #       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open

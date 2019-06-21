@@ -65,6 +65,9 @@ public class SandboxInviteControllerTest {
     @MockBean
     private AuthorizationService authorizationService;
 
+    @MockBean
+    private UserAccessHistoryService userAccessHistoryService;
+
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 
@@ -118,6 +121,7 @@ public class SandboxInviteControllerTest {
         when(sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())).thenReturn(false);
         when(sandboxInviteService.save(any())).thenReturn(sandboxInvite);
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(user);
+        doNothing().when(userAccessHistoryService).saveUserAccessInstance(sandbox, user);
         doNothing().when(emailService).sendEmail(any(), any(), any(), anyInt());
         mvc
                 .perform(put("/sandboxinvite")
@@ -139,6 +143,7 @@ public class SandboxInviteControllerTest {
         when(sandboxInviteService.findInvitesByInviteeEmailAndSandboxId(sandboxInvite.getInvitee().getEmail(), sandboxInvite.getSandbox().getSandboxId())).thenReturn(sandboxInvites);
         when(sandboxService.isSandboxMember(sandbox, sandboxInvite.getInvitee())).thenReturn(false);
         when(sandboxInviteService.save(any())).thenReturn(sandboxInvite);
+        doNothing().when(userAccessHistoryService).saveUserAccessInstance(sandbox, user);
         doNothing().when(emailService).sendEmail(any(), any(), any(), anyInt());
         mvc
                 .perform(put("/sandboxinvite")
