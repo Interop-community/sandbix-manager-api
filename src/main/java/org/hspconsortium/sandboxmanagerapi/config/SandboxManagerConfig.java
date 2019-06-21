@@ -66,7 +66,6 @@ public class SandboxManagerConfig {
     @Bean(name="taskExecutor")
     public Executor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-//        TODO: Check on setting these values
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(10);
         executor.setQueueCapacity(25);
