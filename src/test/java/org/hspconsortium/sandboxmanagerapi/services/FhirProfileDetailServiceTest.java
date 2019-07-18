@@ -118,62 +118,22 @@ public class FhirProfileDetailServiceTest {
 
     @Test
     public void saveZipFileTest() throws Exception {
-        File tempFile = tempFolder.newFile("tempFile.txt");
-        FileUtils.writeStringToFile(tempFile, "hello world");
-        ZipFile zipFile = new ZipFile(tempFile); //TODO: Can't zip the file
+        ZipFile zipFile = new ZipFile("src/test/resources/testUSCoreProfile.zip");
         when(sandboxService.findBySandboxId("sandbox")).thenReturn(sandbox);
         when(sandboxService.getApiSchemaURL("apiEndpointIndex")).thenReturn("localhost");
-        fhirProfileDetailService.saveZipFile(fhirProfileDetail, zipFile, anyString(), anyString(), anyString());
-        verify(sandboxService).findBySandboxId("1");
+        when(repository.save(fhirProfileDetail)).thenReturn(fhirProfileDetail);
+        fhirProfileDetailService.saveZipFile(fhirProfileDetail, zipFile, "a", "sandbox", "1");
+        verify(repository).save(fhirProfileDetail);
     }
 
     @Test
     public void saveTGZfile() throws Exception {
-        File file = new File(".txt"); //TODO: Add file here
+        File file = new File("src/test/resources/testUSCoreProfile.tgz");
         InputStream fileInputStream = new FileInputStream(file);
-        fhirProfileDetailService.saveTGZfile(fhirProfileDetail, fileInputStream, "abcd", "1", "1");
-        verify(sandboxService).findBySandboxId("1");
+        when(sandboxService.findBySandboxId("sandbox")).thenReturn(sandbox);
+        when(sandboxService.getApiSchemaURL("apiEndpointIndex")).thenReturn("localhost");
+        when(repository.save(fhirProfileDetail)).thenReturn(fhirProfileDetail);
+        fhirProfileDetailService.saveTGZfile(fhirProfileDetail, fileInputStream, "a", "sandbox", "1");
+        verify(sandboxService).findBySandboxId("sandbox");
     }
-
-    public static void createZipFile () {
-        try {
-            FileOutputStream fos = new FileOutputStream("sample.zip");
-            ZipOutputStream zipOS = new ZipOutputStream(fos);
-
-            String file1 = "ValueSet.json";
-            String file2 = "SearchParameter.json";
-            String file3 = "StructureDefinition.json";
-            String file4 = "CodeSystem.json";
-
-            writeToZipFile(file1, zipOS);
-            writeToZipFile(file2, zipOS);
-            writeToZipFile(file3, zipOS);
-            writeToZipFile(file4, zipOS);
-
-            zipOS.close();
-            fos.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void writeToZipFile(String path, ZipOutputStream zipStream) throws FileNotFoundException, IOException {
-        File aFile = new File(path);
-        FileInputStream fis = new FileInputStream(aFile);
-        ZipEntry zipEntry = new ZipEntry(path);
-        zipStream.putNextEntry(zipEntry);
-
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fis.read(bytes)) >= 0) {
-            zipStream.write(bytes, 0, length);
-        }
-
-        zipStream.closeEntry();
-        fis.close();
-    }
-
 }
