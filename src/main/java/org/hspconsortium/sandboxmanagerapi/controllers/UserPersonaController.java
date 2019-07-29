@@ -178,4 +178,29 @@ public class UserPersonaController {
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"message\": \"Authentication failed, bad username/password.\"}");
     }
+
+//    @PostMapping(value="/hookAuthenticate", produces = APPLICATION_JSON_VALUE)
+//    public ResponseEntity hookAuthenticate(@RequestBody UserPersonaCredentials userPersonaCredentials){
+//
+//        if(userPersonaCredentials == null ||
+//                userPersonaCredentials.getUsername() == null ||
+//                StringUtils.isEmpty(userPersonaCredentials.getUsername())){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"message\": \"Username is required.\"}");
+//        }
+//
+//        UserPersona userPersona = userPersonaService.findByPersonaUserId(userPersonaCredentials.getUsername());
+//
+//        if (userPersona == null) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"message\": \"Cannot find user persona with that username.\"}");
+//        }
+//
+//
+//        if (userPersona.getPassword().equals(userPersonaCredentials.getPassword())) {
+//            String jwt = jwtService.createSignedHookJwt(userPersonaCredentials.getUsername());
+//            userPersonaCredentials.setJwt(jwt);
+//            return ResponseEntity.ok(userPersonaCredentials);
+//        }
+//
+//        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"message\": \"Authentication failed, bad username/password.\"}");
+//    }
 }

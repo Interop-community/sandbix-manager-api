@@ -1,7 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.CdsHook;
-import org.hspconsortium.sandboxmanagerapi.model.CdsServiceEndpoint;
 import org.hspconsortium.sandboxmanagerapi.model.Image;
 
 import java.util.List;

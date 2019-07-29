@@ -32,6 +32,7 @@ public class CdsHook {
     private Integer cdsServiceEndpointId;
     private String hookUrl;
     private String scope;
+    private JsonNode context;
 
     @Id // @Id indicates that this it a unique primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,6 +79,8 @@ public class CdsHook {
         this.title = title;
     }
 
+
+    @Column(columnDefinition="LONGTEXT")
     public String getDescription() {
         return description;
     }
@@ -128,4 +131,13 @@ public class CdsHook {
         this.scope = scope;
     }
 
+    @Type(type = "jsonb-node")
+    @Column(columnDefinition = "json")
+    public JsonNode getContext() {
+        return context;
+    }
+
+    public void setContext(JsonNode context) {
+        this.context = context;
+    }
 }

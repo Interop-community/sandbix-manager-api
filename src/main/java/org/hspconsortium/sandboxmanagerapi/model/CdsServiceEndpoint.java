@@ -102,6 +102,7 @@ public class CdsServiceEndpoint extends AbstractSandboxItem {
         this.title = title;
     }
 
+    @Column(columnDefinition="LONGTEXT")
     public String getDescription() {
         return description;
     }
