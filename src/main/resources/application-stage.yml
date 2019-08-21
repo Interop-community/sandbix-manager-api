@@ -2,25 +2,25 @@ spring:
   datasource:
     base_url: jdbc:mysql://sandboxdb-stage.hspconsortium.org:3306
     username: system
-    password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
+    password: ENC(E1mkzTQkF1mOsMiZap1WAs0icuMzPKMd)
   mail:
-    password: ENC(drTNjE8xqhmgZ9IUlTXQiwI4lJoCvV5GH5giC7OG5cl8g/FeQRRtbPQc5nkVmeiue8yqMHl37P8=)
+#    password: todo
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
 hspc:
   platform:
     authorization:
-      url: https://auth.hspconsortium.org
+      url: https://auth-stage.hspconsortium.org
       adminAccess:
-        clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
+#        clientSecret: ENC(todo)
     messaging:
       sendEmail: true
       url: https://messaging.hspconsortium.org
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
-      key: ENC(32oeS4V7gZfqPfndJXegT0cEHIU805Xbn/2qt5p8/5WriF926qEn58gJJdy+6+6ayCAJYN09y43R/9tcIktIXA3Yg6scHRMLzfx+9a4eybo=)
-    frontend: https://sandbox.hspconsortium.org
+#      key: ENC(todo)
+    frontend: https://sandbox-stage.hspconsortium.org
 
 endpoints:
   health:
