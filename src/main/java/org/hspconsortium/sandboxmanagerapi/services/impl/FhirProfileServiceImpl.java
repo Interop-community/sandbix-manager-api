@@ -43,4 +43,9 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     public FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String profileType) {
         return repository.findFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, profileType);
     }
+
+    @Override
+    public List<String> getAllProfileTypesForAGivenProfileId(Integer fhirProfileId) {
+        return repository.findAllProfileTypeForAGivenProfileId(fhirProfileId);
+    }
 }

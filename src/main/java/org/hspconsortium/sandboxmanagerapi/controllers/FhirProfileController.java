@@ -140,24 +140,51 @@ public class FhirProfileController {
         return fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
     }
 
+//    @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
+//    @ResponseBody
+//    public List<FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
+//        List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
+//        List<FhirProfile> fhirProfiles = new ArrayList<>();
+//        for (Integer fhirProfileId: fhirProfileIds) {
+//            FhirProfile fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
+//            if (fhirProfile != null) {
+//                fhirProfiles.add(fhirProfile);
+//            }
+//        }
+//        return fhirProfiles;
+//    }
+
     @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public List<FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
+    public HashMap<String, FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
+        HashMap<String, FhirProfile> profileNameAndFhirProfile = new HashMap<>();
         List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
-        List<FhirProfile> fhirProfiles = new ArrayList<>();
         for (Integer fhirProfileId: fhirProfileIds) {
             FhirProfile fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
             if (fhirProfile != null) {
-                fhirProfiles.add(fhirProfile);
+                String profileName = fhirProfileDetailService.getFhirProfileDetail(fhirProfileId).getProfileName();
+                profileNameAndFhirProfile.put(profileName, fhirProfile);
             }
         }
-        return fhirProfiles;
+        return profileNameAndFhirProfile;
     }
 
     @GetMapping(params = {"fhirProfileId"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public FhirProfileDetail getFhirProfile(@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
         return fhirProfileDetailService.getFhirProfileDetail(fhirProfileId);
+    }
+
+    @GetMapping(value = "/getAllProfileTypes", params = {"sandboxId"})
+    @ResponseBody
+    public Set<String> getAllProfileTypes (@RequestParam(value = "sandboxId") String sandboxId) {
+        List<FhirProfileDetail> fhirProfiles = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
+        Set<String> types = new HashSet<>();
+        for (FhirProfileDetail fhirProfile: fhirProfiles) {
+            List<String> typesFound = fhirProfileService.getAllProfileTypesForAGivenProfileId(fhirProfile.getId());
+            types.addAll(typesFound);
+        }
+        return types;
     }
 
     @DeleteMapping(params = {"fhirProfileId", "sandboxId"}, produces = APPLICATION_JSON_VALUE)
@@ -171,5 +198,4 @@ public class FhirProfileController {
         }
         fhirProfileDetailService.delete(request, fhirProfileId, sandboxId);
     }
-
 }

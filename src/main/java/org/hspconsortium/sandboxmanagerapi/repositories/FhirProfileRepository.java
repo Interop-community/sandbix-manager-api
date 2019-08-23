@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface FhirProfileRepository extends CrudRepository<FhirProfile, Integer> {
@@ -16,5 +17,6 @@ public interface FhirProfileRepository extends CrudRepository<FhirProfile, Integ
 
     FhirProfile findFhirProfileWithASpecificTypeForAGivenSandbox(@Param("fhirProfileId") Integer fhirProfileId,
                                                                        @Param("profileType") String profileType);
+    List<String> findAllProfileTypeForAGivenProfileId(@Param("fhirProfileId") Integer fhirProfileId);
 
 }

@@ -9,7 +9,9 @@ import javax.persistence.*;
         @NamedQuery(name="FhirProfile.findByFhirProfileId",
                 query="SELECT c FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId"),
         @NamedQuery(name="FhirProfile.findFhirProfileWithASpecificTypeForAGivenSandbox",
-                query="SELECT c FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId AND c.profileType = :profileType")
+                query="SELECT c FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId AND c.profileType = :profileType"),
+        @NamedQuery(name="FhirProfile.findAllProfileTypeForAGivenProfileId",
+                query="SELECT c.profileType FROM FhirProfile c WHERE c.fhirProfileId = :fhirProfileId")
 })
 public class FhirProfile {
 

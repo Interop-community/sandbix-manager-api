@@ -85,6 +85,9 @@ public class SandboxController {
     @Transactional
     public @ResponseBody Sandbox cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
         Sandbox newSandbox = sandboxes.get("newSandbox");
+        if (newSandbox.getName().equalsIgnoreCase("test")) {
+            throw new IllegalArgumentException("Test is a reserved sandbox name. Please change your sandbox name and try again.");
+        }
         Sandbox clonedSandbox = sandboxes.get("clonedSandbox");
         // Don't need to check authorization of who created the template sandboxes
         if (!Arrays.asList(templateSandboxIds).contains(clonedSandbox.getSandboxId())) {
