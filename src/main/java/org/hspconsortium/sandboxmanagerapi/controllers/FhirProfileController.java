@@ -156,11 +156,11 @@ public class FhirProfileController {
 
     @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public HashMap<String, FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
-        HashMap<String, FhirProfile> profileNameAndFhirProfile = new HashMap<>();
+    public HashMap<String, List<FhirProfile>> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
+        HashMap<String, List<FhirProfile>> profileNameAndFhirProfile = new HashMap<>();
         List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
         for (Integer fhirProfileId: fhirProfileIds) {
-            FhirProfile fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
+            List<FhirProfile> fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
             if (fhirProfile != null) {
                 String profileName = fhirProfileDetailService.getFhirProfileDetail(fhirProfileId).getProfileName();
                 profileNameAndFhirProfile.put(profileName, fhirProfile);

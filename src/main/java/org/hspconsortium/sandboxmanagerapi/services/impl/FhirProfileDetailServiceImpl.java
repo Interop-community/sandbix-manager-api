@@ -91,7 +91,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     }
 
     @Override
-    public FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type) {
+    public List<FhirProfile> getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type) {
         return fhirProfileService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
     }
 

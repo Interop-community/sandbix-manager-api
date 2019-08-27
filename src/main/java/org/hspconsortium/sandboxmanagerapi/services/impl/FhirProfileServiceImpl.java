@@ -40,7 +40,7 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     }
 
     @Override
-    public FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String profileType) {
+    public List<FhirProfile> getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String profileType) {
         return repository.findFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, profileType);
     }
 
