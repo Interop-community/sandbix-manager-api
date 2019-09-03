@@ -166,6 +166,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     // Can manage user's is for inviting users to a sandbox
     // Only Admin's can delete Users
+    // Only Admin can invite Users, users with MANAGE_USERS role can't invite, since all the old invited users got this role by default and it is too hard to
+    // revoke this role now given the current database setup, it is just easier to just allow the ADMIN user only to be able to invite other users
+    // to their sandbox
     @Override
     public String checkSystemUserCanManageSandboxUsersAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         String oauthUserId = oAuthService.getOAuthUserId(request);
@@ -173,7 +176,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             // If the Sandbox is PRIVATE, only an Admin or data manager can manage users.
             // If the Sandbox is PUBLIC, a system sandbox creator or system Admin can manage users.
             if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user) ||
-                    ((sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.MANAGE_USERS)))) {
+                    ((sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.ADMIN)))) {
                 return oauthUserId;
             }
 
