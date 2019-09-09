@@ -107,6 +107,7 @@ public class SandboxControllerTest {
         sandbox.setSandboxId("sandbox");
         sandbox.setCreatedBy(user);
         sandbox.setId(1);
+        sandbox.setName("sandbox");
 
         Set<SystemRole> systemRoles = new HashSet<>();
         systemRoles.add(SystemRole.ADMIN);

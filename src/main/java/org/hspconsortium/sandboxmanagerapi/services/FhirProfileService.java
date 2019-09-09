@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipFile;
 
 public interface FhirProfileService {
@@ -22,6 +23,8 @@ public interface FhirProfileService {
 
     void delete(Integer fhirProfileId);
 
-    FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String profileType);
+    List<FhirProfile> getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String profileType);
+
+    List<String> getAllProfileTypesForAGivenProfileId(Integer fhirProfileId);
 
 }

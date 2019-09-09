@@ -20,7 +20,7 @@ public interface FhirProfileDetailService {
 
     List<FhirProfileDetail> getAllProfilesForAGivenSandbox(String sandboxId);
 
-    FhirProfile getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type);
+    List<FhirProfile> getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type);
 
     void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId);
 

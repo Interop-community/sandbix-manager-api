@@ -50,6 +50,46 @@ pipelines:
             - . ci-0-set-properties.sh
             - . ci-5-aws-service-update.sh
     master:
+#   deploy to stage
+      - step:
+          name: build the source code
+          caches:
+            - maven
+          script:
+            - export TARGET_ENV=stage
+            - export CREDENTIALS=${ENC_PW_STAGE}
+            - cd ci
+            - . ci-0-set-properties.sh
+            - if [[ ! ${PROJECT_VERSION} =~ ${VERSION_RELEASE_REGEX} ]]; then echo "not a release version"; exit 1; fi
+            - export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE},aws-metrics
+            - . ci-1-prepare-sources.sh
+            - . ci-2-build-project.sh
+          artifacts:
+            - target/*.jar
+            - aws/task-definition.json
+      - step:
+          name: build docker and upload to docker hub
+          script:
+            - export TARGET_ENV=stage
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-3-docker-image.sh
+      - step:
+          name: update the aws task definition
+          script:
+            - export TARGET_ENV=stage
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-4-aws-task-update.sh
+      - step:
+          name: update the aws service
+          deployment: stage
+          script:
+            - export TARGET_ENV=stage
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-5-aws-service-update.sh
+      # deploy to prod
       - step:
           name: build the source code
           caches:

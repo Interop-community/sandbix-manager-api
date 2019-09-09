@@ -76,7 +76,7 @@ hspc:
     # When a user is added to a PUBLIC sandbox, these are their default Sandbox Roles
     defaultPublicSandboxRoles: USER
     # When a user is added to a PRIVATE sandbox, these are their default Sandbox Roles
-    defaultPrivateSandboxRoles: USER,MANAGE_USERS,MANAGE_DATA
+    defaultPrivateSandboxRoles: USER,MANAGE_DATA
     # When a user creates a brand new sandbox, these are the default Sandbox Roles they are given in the new sandbox
     defaultSandboxCreatorRoles: ADMIN,MANAGE_USERS,MANAGE_DATA
     # When a user logs in to Sandbox Manager for the first time, these are the System Roles they are given

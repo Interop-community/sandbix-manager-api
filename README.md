@@ -12,7 +12,7 @@ Welcome to the HSPC Sandbox Manager API!
 This project uses Java 8. Please make sure that your Project SDK is set to use Java 8.
 
 #### Step 1: Prerequisites
- * build "sandman" schema in local mysql. Check application.yml that name has not changed.
+ * Create "sandman" schema in local mysql. Check application.yml that name has not changed.  This schema will be populated as you start your server.
 
 #### Step 2: Maven Build
 

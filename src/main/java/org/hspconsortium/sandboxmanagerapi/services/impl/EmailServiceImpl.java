@@ -72,22 +72,22 @@ public class EmailServiceImpl implements EmailService {
 
             message.setSenderName(inviter.getName());
             message.setSenderEmail(HSPC_EMAIL);
-            message.addRecipient(invitee.getName(), invitee.getEmail());
+            message.addRecipient(invitee.getName(), invitee.getEmail().trim());
 
             message.setTemplateFormat(Message.TemplateFormat.HTML);
 
             if (inviter.getName() != null) {
                 message.addVariable("inviter", inviter.getName());
             } else {
-                message.addVariable("inviter", inviter.getEmail());
+                message.addVariable("inviter", inviter.getEmail().trim());
             }
             if (invitee.getName() != null) {
                 message.addVariable("invitee", invitee.getName());
             } else {
-                message.addVariable("invitee", invitee.getEmail());
+                message.addVariable("invitee", invitee.getEmail().trim());
             }
             message.addVariable("sandboxName", sandbox.getName());
-            message.addVariable("inviteeEmail", invitee.getEmail());
+            message.addVariable("inviteeEmail", invitee.getEmail().trim());
             message.addVariable("invitationId", invitationId);
             message.addVariable("baseURL", baseURL);
 
@@ -116,8 +116,8 @@ public class EmailServiceImpl implements EmailService {
                     = new MimeMessageHelper(mimeMessage, emailMessage.isMultipart(), emailMessage.getEncoding());
 
             messageHelper.setSubject(emailMessage.getSubject());
-            messageHelper.setFrom(emailMessage.getSenderEmail());
-            messageHelper.setTo(recipient.getEmail());
+            messageHelper.setFrom(emailMessage.getSenderEmail().trim());
+            messageHelper.setTo(recipient.getEmail().trim());
             if (emailMessage.isAuditEnabled() && (recipient.getReplyTo() == null)) {
                 messageHelper.setReplyTo(UUID.randomUUID().toString().toLowerCase() + "@" + emailMessage.getSenderEmail().split("@")[1]);
             } else if (recipient.getReplyTo() != null) {

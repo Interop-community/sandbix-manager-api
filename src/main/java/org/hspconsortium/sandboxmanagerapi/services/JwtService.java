@@ -6,4 +6,6 @@ package org.hspconsortium.sandboxmanagerapi.services;
 public interface JwtService {
 
     String createSignedJwt(String subject);
+
+//    String createSignedHookJwt(String subject);
 }
