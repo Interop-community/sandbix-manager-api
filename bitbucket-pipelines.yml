@@ -92,6 +92,8 @@ pipelines:
       # deploy to prod
       - step:
           name: build the source code
+          deployment: production
+          trigger: manual
           caches:
             - maven
           script:
@@ -113,8 +115,6 @@ pipelines:
             - . ci-4-aws-task-update.sh
       - step:
           name: update the aws service
-          deployment: production
-          trigger: manual
           script:
             - export TARGET_ENV=prod
             - cd ci
