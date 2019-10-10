@@ -91,17 +91,6 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
     @Override
     @Transactional
-    public void deleteAssociatedLaunchScenarios(List<LaunchScenario> launchScenarios) {
-        for (LaunchScenario launchScenario: launchScenarios) {
-            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
-                userLaunchService.delete(userLaunch.getId());
-            }
-            delete(launchScenario.getId());
-        }
-    }
-
-    @Override
-    @Transactional
     public LaunchScenario create(final LaunchScenario launchScenario) {
         Sandbox sandbox = launchScenario.getSandbox();
         launchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
