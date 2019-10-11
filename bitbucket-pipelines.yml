@@ -43,7 +43,6 @@ pipelines:
             - . ci-4-aws-task-update.sh
       - step:
           name: update the aws service
-          deployment: test
           script:
             - export TARGET_ENV=test
             - cd ci
