@@ -108,6 +108,9 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
         for (CdsHook existingCdsHook: existingCdsHooks) {
             List<CdsHook> c = cdsHooks.stream().filter(p1 -> existingCdsHook.getHookId().equals(p1.getHookId())).collect(Collectors.toList());
             if (c.size() == 0) {
+                // Delete all associated Launch Scenarios
+                List<LaunchScenario> launchScenarios = launchScenarioService.findByCdsHookIdAndSandboxId(existingCdsHook.getId(), existingCdsServiceEndpoint.getSandbox().getSandboxId());
+                launchScenarioService.deleteAssociatedLaunchScenarios(launchScenarios);
                 cdsHookService.delete(existingCdsHook);
             }
         }

@@ -15,6 +15,8 @@ public interface LaunchScenarioService {
 
     void delete(final LaunchScenario launchScenario);
 
+    void deleteAssociatedLaunchScenarios(List<LaunchScenario> launchScenarios);
+
     LaunchScenario create(final LaunchScenario launchScenario);
 
     LaunchScenario update(final LaunchScenario launchScenario);
