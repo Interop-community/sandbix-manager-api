@@ -13,7 +13,7 @@ hspc:
         clientSecret: secret
     messaging:
       sendEmail: true
-      url: https://messaging-test.hspconsortium.org
+      url: https://messaging-test.logicahealth.org
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
