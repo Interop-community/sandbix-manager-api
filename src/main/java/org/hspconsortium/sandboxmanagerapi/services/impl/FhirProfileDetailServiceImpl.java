@@ -226,11 +226,44 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         try {
             JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
             String resourceType = jsonObject.get("resourceType").toString();
+            String resourceId = "";
+            String fullUrl = "";
+            String fhirVersion = "";
             if (Arrays.stream(profileResources).anyMatch(resourceType::equals)) {
-                String resourceId = jsonObject.get("id").toString();
-                String fullUrl = jsonObject.get("url").toString();
+                if (jsonObject.containsKey("id")) {
+                    resourceId = jsonObject.get("id").toString();
+                } else if (!jsonObject.containsKey("id") && jsonObject.containsKey("name")) {
+                    resourceId = jsonObject.get("name").toString();
+                    jsonObject.put("id", resourceId);
+                } else {
+                    profileTask.setError("The file name: " + fileName + " is missing some metadata. The profile was not saved.");
+                    profileTask.setStatus(false);
+                    idProfileTask.put(id, profileTask);
+                    profileTaskAndFhirProfile.put("profileTask", profileTask);
+                    return profileTaskAndFhirProfile;
+                }
+
+                if (jsonObject.containsKey("url")) {
+                    fullUrl = jsonObject.get("url").toString();
+                } else {
+                    profileTask.setError("The file name: " + fileName + " is missing url metadata. The profile was not saved.");
+                    profileTask.setStatus(false);
+                    idProfileTask.put(id, profileTask);
+                    profileTaskAndFhirProfile.put("profileTask", profileTask);
+                    return profileTaskAndFhirProfile;
+                }
+
                 if (resourceType.equals("StructureDefinition")) {
-                    String fhirVersion = jsonObject.get("fhirVersion").toString();
+                    if (jsonObject.containsKey("fhirVersion")) {
+                        fhirVersion = jsonObject.get("fhirVersion").toString();
+                    } else {
+                        profileTask.setError("The StructureDefinition under file name: " + fileName + " is missing fhirVersion. The profile was not saved.");
+                        profileTask.setStatus(false);
+                        idProfileTask.put(id, profileTask);
+                        profileTaskAndFhirProfile.put("profileTask", profileTask);
+                        return profileTaskAndFhirProfile;
+                    }
+
                     try {
                         String profileType = jsonObject.get("type").toString();
                         fhirProfile.setProfileType(profileType);
