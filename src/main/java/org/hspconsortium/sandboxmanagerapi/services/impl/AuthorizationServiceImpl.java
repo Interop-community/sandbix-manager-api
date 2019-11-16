@@ -180,7 +180,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 return oauthUserId;
             }
 
-            throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
+            throw new UnauthorizedException("User is not authorized.");
         }
         return oauthUserId;
     }

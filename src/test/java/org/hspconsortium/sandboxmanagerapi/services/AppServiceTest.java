@@ -114,8 +114,8 @@ public class AppServiceTest {
         when(userLaunchService.findByLaunchScenarioId(launchScenario.getId())).thenReturn(userLaunches);
         appService.delete(app);
         verify(oAuthClientService).deleteOAuthClientWithClientId(app.getClientId());
-        verify(userLaunchService).delete(userLaunch.getId());
-        verify(launchScenarioService).delete(launchScenario.getId());
+        verify(launchScenarioService).findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+        verify(launchScenarioService).deleteAssociatedLaunchScenarios(launchScenarios);
         verify(imageService).delete(logo.getId());
     }
 

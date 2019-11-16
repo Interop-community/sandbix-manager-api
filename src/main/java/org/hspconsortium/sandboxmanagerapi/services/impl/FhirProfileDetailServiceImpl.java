@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -226,11 +227,35 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         try {
             JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
             String resourceType = jsonObject.get("resourceType").toString();
+            String resourceId = "";
+            String fullUrl = "";
+            String fhirVersion = "";
             if (Arrays.stream(profileResources).anyMatch(resourceType::equals)) {
-                String resourceId = jsonObject.get("id").toString();
-                String fullUrl = jsonObject.get("url").toString();
+                if (jsonObject.containsKey("id")) {
+                    resourceId = jsonObject.get("id").toString();
+                }
+
+                if (jsonObject.containsKey("url")) {
+                    fullUrl = jsonObject.get("url").toString();
+                } else {
+                    profileTask.setError("The file name: " + fileName + " is missing url metadata. The profile was not saved.");
+                    profileTask.setStatus(false);
+                    idProfileTask.put(id, profileTask);
+                    profileTaskAndFhirProfile.put("profileTask", profileTask);
+                    return profileTaskAndFhirProfile;
+                }
+
                 if (resourceType.equals("StructureDefinition")) {
-                    String fhirVersion = jsonObject.get("fhirVersion").toString();
+                    if (jsonObject.containsKey("fhirVersion")) {
+                        fhirVersion = jsonObject.get("fhirVersion").toString();
+                    } else {
+                        profileTask.setError("The StructureDefinition under file name: " + fileName + " is missing fhirVersion. The profile was not saved.");
+                        profileTask.setStatus(false);
+                        idProfileTask.put(id, profileTask);
+                        profileTaskAndFhirProfile.put("profileTask", profileTask);
+                        return profileTaskAndFhirProfile;
+                    }
+
                     try {
                         String profileType = jsonObject.get("type").toString();
                         fhirProfile.setProfileType(profileType);
@@ -256,7 +281,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         return profileTaskAndFhirProfile;
-                    } else if (apiEndpoint.equals("10") && !fhirVersion.equals("4.0.0")) {
+                    } else if (apiEndpoint.equals("10") && !(fhirVersion.equals("4.0.0") || fhirVersion.equals("1.8.0"))) {
                         errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (4.0.0). The profile was not saved.";
                         profileTask.setError(errorMessage);
                         profileTask.setStatus(false);
@@ -269,28 +294,60 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", authToken);
                 headers.set("Content-Type", "application/json");
-                String url = apiSchemaURL + "/" + sandboxId + "/data/" + resourceType + "/" + resourceId;
                 HttpEntity entity = new HttpEntity(jsonBody, headers);
-                try {
-                    restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
-                    resourceSaved.add(resourceType + " - " + resourceId);
-                    totalCount++;
-                    resourceSavedCount++;
-                    profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
-                    idProfileTask.put(id, profileTask);
-                    profileTaskAndFhirProfile.put("profileTask", profileTask);
+                String url = "";
+                if (!resourceId.isEmpty()) {
+                    url = apiSchemaURL + "/" + sandboxId + "/data/" + resourceType + "/" + resourceId;
+                    try {
+                        restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
+                        resourceSaved.add(resourceType + " - " + resourceId);
+                        totalCount++;
+                        resourceSavedCount++;
+                        profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
+                        idProfileTask.put(id, profileTask);
+                        profileTaskAndFhirProfile.put("profileTask", profileTask);
 
-                    fhirProfile.setFullUrl(fullUrl);
-                    fhirProfile.setRelativeUrl(resourceType + "/" + resourceId);
-                    profileTaskAndFhirProfile.put("fhirProfile", fhirProfile);
+                        fhirProfile.setFullUrl(fullUrl);
+                        fhirProfile.setRelativeUrl(resourceType + "/" + resourceId);
+                        profileTaskAndFhirProfile.put("fhirProfile", fhirProfile);
 
-                } catch (HttpServerErrorException | HttpClientErrorException e) {
-                    resourceNotSaved.add(resourceType + " - " + resourceId + " - " + e.getMessage());
-                    totalCount++;
-                    resourceNotSavedCount++;
-                    profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
-                    idProfileTask.put(id, profileTask);
-                    profileTaskAndFhirProfile.put("profileTask", profileTask);
+                    } catch (HttpServerErrorException | HttpClientErrorException e) {
+                        resourceNotSaved.add(resourceType + " - " + resourceId + " - " + e.getMessage());
+                        totalCount++;
+                        resourceNotSavedCount++;
+                        profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
+                        idProfileTask.put(id, profileTask);
+                        profileTaskAndFhirProfile.put("profileTask", profileTask);
+                    }
+                } else {
+                    url = apiSchemaURL + "/" + sandboxId + "/data/" + resourceType;
+                    try {
+                        ResponseEntity responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+                        try {
+                            JSONObject savedResource = (JSONObject)jsonParser.parse(responseEntity.getBody().toString());
+                            resourceId = savedResource.get("id").toString();
+                            resourceSaved.add(resourceType + " - " + resourceId);
+                            totalCount++;
+                            resourceSavedCount++;
+                            profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
+                            idProfileTask.put(id, profileTask);
+                            profileTaskAndFhirProfile.put("profileTask", profileTask);
+
+                            fhirProfile.setFullUrl(fullUrl);
+                            fhirProfile.setRelativeUrl(resourceType + "/" + resourceId);
+                            profileTaskAndFhirProfile.put("fhirProfile", fhirProfile);
+
+                        } catch (Exception e) {
+                            throw new RuntimeException(e.getMessage());
+                        }
+                    } catch (HttpServerErrorException | HttpClientErrorException e) {
+                        resourceNotSaved.add(resourceType + " - " + resourceId + " - " + e.getMessage());
+                        totalCount++;
+                        resourceNotSavedCount++;
+                        profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
+                        idProfileTask.put(id, profileTask);
+                        profileTaskAndFhirProfile.put("profileTask", profileTask);
+                    }
                 }
             }
         } catch (Exception e) {
