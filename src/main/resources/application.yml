@@ -36,7 +36,7 @@ spring:
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
   mail:
     sender:
-      address: noreply@hspconsortium.org
+      address: noreply@logicahealth.org
     host: email-smtp.us-east-1.amazonaws.com
     port: 587
     protocol: smtp
