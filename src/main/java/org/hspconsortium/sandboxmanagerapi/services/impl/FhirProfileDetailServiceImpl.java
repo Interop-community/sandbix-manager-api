@@ -274,15 +274,15 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         return profileTaskAndFhirProfile;
-                    } else if (apiEndpoint.equals("9") && !(fhirVersion.equals("3.0.1") || fhirVersion.equals("3.1.0") || fhirVersion.equals("3.0.0"))) {
-                        errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (3.0.1). The profile was not saved.";
+                    } else if (apiEndpoint.equals("9") && !(fhirVersion.equals("3.0.1") || fhirVersion.equals("3.0.2") || fhirVersion.equals("3.1.0") || fhirVersion.equals("3.0.0"))) {
+                        errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (3.0.2). The profile was not saved.";
                         profileTask.setError(errorMessage);
                         profileTask.setStatus(false);
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         return profileTaskAndFhirProfile;
-                    } else if (apiEndpoint.equals("10") && !(fhirVersion.equals("4.0.0") || fhirVersion.equals("1.8.0"))) {
-                        errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (4.0.0). The profile was not saved.";
+                    } else if (apiEndpoint.equals("10") && !(fhirVersion.equals("4.0.0") || fhirVersion.equals("4.0.1") || fhirVersion.equals("1.8.0"))) {
+                        errorMessage = fileName + " FHIR version (" + fhirVersion + ") is incompatible with your current sandbox's FHIR version (4.0.1). The profile was not saved.";
                         profileTask.setError(errorMessage);
                         profileTask.setStatus(false);
                         idProfileTask.put(id, profileTask);
