@@ -37,7 +37,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     public void setAppService(AppService appService) { this.appService = appService; }
 
     @Inject
-    public void setdsHookService(CdsHookService cdsHookService) {
+    public void setCdsHookService(CdsHookService cdsHookService) {
         this.cdsHookService = cdsHookService;
     }
 
@@ -93,7 +93,11 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Transactional
     public void deleteAssociatedLaunchScenarios(List<LaunchScenario> launchScenarios) {
         for (LaunchScenario launchScenario: launchScenarios) {
-            for (UserLaunch userLaunch: userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
+            for (ContextParams contextParams : launchScenario.getContextParams()) {
+                contextParamsService.delete(contextParams);
+            }
+
+            for (UserLaunch userLaunch : userLaunchService.findByLaunchScenarioId(launchScenario.getId())) {
                 userLaunchService.delete(userLaunch.getId());
             }
             delete(launchScenario.getId());
