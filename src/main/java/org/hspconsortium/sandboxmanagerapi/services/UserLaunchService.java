@@ -23,6 +23,4 @@ public interface UserLaunchService {
     List<UserLaunch> findByUserId(final String sbmUserId);
 
     List<UserLaunch> findByLaunchScenarioId(final int launchScenarioId);
-
-//    List<UserLaunch> findByLaunchScenarioCdsServiceEndpointId(final int launchScenarioCdsServiceEndpointId);
 }

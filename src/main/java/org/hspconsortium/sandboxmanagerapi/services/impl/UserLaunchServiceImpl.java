@@ -77,9 +77,4 @@ public class UserLaunchServiceImpl implements UserLaunchService {
         return repository.findByLaunchScenarioId(launchScenarioId);
     }
 
-//    @Override
-//    public List<UserLaunch> findByLaunchScenarioCdsServiceEndpointId(int launchScenarioCdsServiceEndpointId) {
-//        return repository.findByLaunchScenarioCdsServiceEndpointId(launchScenarioCdsServiceEndpointId);
-//    }
-
 }
