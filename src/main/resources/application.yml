@@ -168,17 +168,18 @@ tier-rules:
   threshold: 0.9
 
 api_endpoint_index:
+  manager: http://${API_MANAGER_HOST:localhost}:${API_MANAGER_PORT:8082}
   prev:
     dstu2: 5
     stu3: 6
     r4: 7
-    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
-    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
-    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
+    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075} # 8075
+    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076} # 8076
+    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077} # 8077
   current:
     dstu2: 8
     stu3: 9
     r4: 10
-    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8078}
-    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079}
-    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}
+    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8078} # TODO: changed the port 8082 to match it to new reference-api-manager
+    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079} # 8079
+    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070} # 8070

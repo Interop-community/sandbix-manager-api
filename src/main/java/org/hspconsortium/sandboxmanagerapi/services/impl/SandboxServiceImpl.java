@@ -236,39 +236,12 @@ public class SandboxServiceImpl implements SandboxService {
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
-    // TODO: create no longer used
-    @Override
-    @Transactional
-    public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
-
-        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
-        if (!canCreate) {
-            return null;
-        }
-        UserPersona userPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
-
-        if (userPersona == null && callCreateOrUpdateSandboxAPI(sandbox, bearerToken)) {
-            sandbox.setCreatedBy(user);
-            sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-            sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-
-            sandbox.setPayerUserId(user.getId());
-            Sandbox savedSandbox = save(sandbox);
-            addMember(savedSandbox, user, Role.ADMIN);
-            for (String roleName : defaultSandboxCreatorRoles) {
-                addMemberRole(sandbox, user, Role.valueOf(roleName));
-            }
-            sandboxActivityLogService.sandboxCreate(sandbox, user);
-            return savedSandbox;
-        }
-        return null;
-    }
-
     @Override
     @Transactional
     public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
+            LOGGER.info("User unauthorized to create sandbox");
             return null;
         }
         UserPersona initialUserPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
@@ -549,6 +522,10 @@ public class SandboxServiceImpl implements SandboxService {
     public String getSandboxApiURL(final Sandbox sandbox) {
         return getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId();
     }
+    @Override
+    public String getSandboxManagerUrl () {
+        return apiEndpointIndexObj.getManager();
+    }
 
     @Override
     public String getSystemSandboxApiURL() {
@@ -638,8 +615,9 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
+
     private boolean callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
-        String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
+        String url = getSandboxManagerUrl() + "/" + newSandbox.getSandboxId() + "/sandbox/clone";
 
         // TODO: change to using 'simpleRestTemplate'
         HttpPut putRequest = new HttpPut(url);
@@ -657,9 +635,10 @@ public class SandboxServiceImpl implements SandboxService {
                 "}";
         entity = new StringEntity(jsonString);
         putRequest.setEntity(entity);
-        putRequest.setHeader("Authorization", "BEARER " + bearerToken);
+//        putRequest.setHeader("Authorization", "BEARER " + bearerToken);
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
+            LOGGER.info("Cloning Sandbox API: " + newSandbox.getSandboxId());
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);

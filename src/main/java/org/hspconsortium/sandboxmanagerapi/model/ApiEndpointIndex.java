@@ -9,6 +9,7 @@ public class ApiEndpointIndex {
 
     private FhirVersion prev;
     private FhirVersion current;
+    private String manager;
 
     public FhirVersion getPrev() {
         return prev;
@@ -33,6 +34,13 @@ public class ApiEndpointIndex {
         this.current = current;
     }
 
+    public String getManager() {
+        return manager;
+    }
+
+    public void setManager(String manager) {
+        this.manager = manager;
+    }
 }
 
 

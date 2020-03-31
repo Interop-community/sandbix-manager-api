@@ -16,8 +16,6 @@ public interface SandboxService {
 
     void delete(final Sandbox sandbox, final String bearerToken, final User isAdmin, final boolean sync);
 
-    Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException;
-
     Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException;
 
     Sandbox update(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException;
@@ -45,6 +43,8 @@ public interface SandboxService {
     boolean isSandboxMember(final Sandbox sandbox, final User user);
 
     String getSandboxApiURL(final Sandbox sandbox);
+
+    String getSandboxManagerUrl();
 
     String getSystemSandboxApiURL();
 

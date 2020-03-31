@@ -122,31 +122,16 @@ public class SandboxControllerTest {
         ReflectionTestUtils.setField(sandboxController, "templateSandboxIds", new String[1]);
     }
 
-    @Test
-    public void createSandboxTest() throws Exception {
-        String json = json(sandbox);
-        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        when(sandboxService.create(any(), any(), any())).thenReturn(sandbox);
-        mvc
-                .perform(
-                        post("/sandbox")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
-    }
-
-    @Test(expected = NestedServletException.class)
-    public void createSandboxTestDuplicateSandboxId() throws Exception {
-        String json = json(sandbox);
-        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        mvc
-                .perform(
-                        post("/sandbox")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json));
-    }
+//    @Test(expected = NestedServletException.class)
+//    public void createSandboxTestDuplicateSandboxId() throws Exception {
+//        String json = json(sandbox);
+//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+//        mvc
+//                .perform(
+//                        post("/sandbox")
+//                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                                .content(json));
+//    }
 
     @Test
     public void cloneSandboxTest() throws Exception {
