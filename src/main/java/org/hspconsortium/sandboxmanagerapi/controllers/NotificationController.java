@@ -32,6 +32,7 @@ public class NotificationController {
         this.authorizationService = authorizationService;
     }
 
+    // NEED THIS
     @GetMapping(value = "", params = {"userId"})
     public List<Notification> getAllNotificationsByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());

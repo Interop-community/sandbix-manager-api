@@ -71,6 +71,7 @@ public class LaunchScenarioController {
         this.cdsServiceEndpointService = cdsServiceEndpointService;
     }
 
+    // NEED THIS
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody LaunchScenario createLaunchScenario(HttpServletRequest request, @RequestBody final LaunchScenario launchScenario) {
@@ -96,6 +97,7 @@ public class LaunchScenarioController {
         return createdLaunchScenario;
     }
 
+    // NEED THIS
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody LaunchScenario updateLaunchScenario(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
@@ -113,6 +115,7 @@ public class LaunchScenarioController {
         return launchScenarioService.update(launchScenario);
     }
 
+    // NEED THIS
     @PutMapping(value = "/{id}/launched", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void updateLaunchTimestamp(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
@@ -136,30 +139,31 @@ public class LaunchScenarioController {
         }
     }
 
-    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"appId"})
-    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
-                                                                           @RequestParam(value = "appId") int appId) {
-        App app = appService.getById(appId);
-        if (app == null) {
-            throw new ResourceNotFoundException("App not found.");
-        }
-        authorizationService.checkSandboxUserReadAuthorization(request, app.getSandbox());
+    // TODO: Didn't find the use case for these two endpoints, double check if it is needed
+//    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"appId"})
+//    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
+//                                                                           @RequestParam(value = "appId") int appId) {
+//        App app = appService.getById(appId);
+//        if (app == null) {
+//            throw new ResourceNotFoundException("App not found.");
+//        }
+//        authorizationService.checkSandboxUserReadAuthorization(request, app.getSandbox());
+//
+//        return launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
+//    }
 
-        return launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId());
-    }
-
-    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"cdsHookId"})
-    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForCdsHook(HttpServletRequest request,
-                                                                           @RequestParam(value = "cdsHookId") int cdsHookId) {
-        CdsHook cdsHook = cdsHookService.getById(cdsHookId);
-        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
-        if (cdsHook == null) {
-            throw new ResourceNotFoundException("CDS-Hook not found.");
-        }
-        authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
-
-        return launchScenarioService.findByCdsHookIdAndSandboxId(cdsHook.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
-    }
+//    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"cdsHookId"})
+//    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForCdsHook(HttpServletRequest request,
+//                                                                           @RequestParam(value = "cdsHookId") int cdsHookId) {
+//        CdsHook cdsHook = cdsHookService.getById(cdsHookId);
+//        CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
+//        if (cdsHook == null) {
+//            throw new ResourceNotFoundException("CDS-Hook not found.");
+//        }
+//        authorizationService.checkSandboxUserReadAuthorization(request, cdsServiceEndpoint.getSandbox());
+//
+//        return launchScenarioService.findByCdsHookIdAndSandboxId(cdsHook.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
+//    }
 
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userPersonaId"})
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForPersona(HttpServletRequest request,
@@ -174,6 +178,7 @@ public class LaunchScenarioController {
         return launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
     }
 
+    // NEED THIS
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void deleteLaunchScenario(HttpServletRequest request, @PathVariable Integer id) {
@@ -189,6 +194,7 @@ public class LaunchScenarioController {
         launchScenarioService.delete(launchScenario);
     }
 
+    // NEED THIS
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId"})
     @SuppressWarnings("unchecked")
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenarios(HttpServletRequest request,

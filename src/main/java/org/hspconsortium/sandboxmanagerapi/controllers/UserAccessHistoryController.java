@@ -41,6 +41,7 @@ public class UserAccessHistoryController {
         return userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSandbox(sandbox);
     }
 
+    // NEED THIS
     @GetMapping(params = {"sbmUserId"})
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSbmUserId(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded) throws UnsupportedEncodingException {

@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AliveController {
 
-    @RequestMapping(value = "/alive", method = RequestMethod.GET)
-    public String aliveEndpoint(){
-        return "{\"status\": \"alive\"}";
-    }
+    // Didn't find this endpoint
+//    @RequestMapping(value = "/alive", method = RequestMethod.GET)
+//    public String aliveEndpoint(){
+//        return "{\"status\": \"alive\"}";
+//    }
 }

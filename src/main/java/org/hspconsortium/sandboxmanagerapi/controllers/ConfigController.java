@@ -32,6 +32,7 @@ import java.util.List;
 @RequestMapping("/config")
 public class ConfigController {
 
+    // NEED ALL THIS
     private final ConfigService configurationService;
 
     @Inject

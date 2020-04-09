@@ -61,6 +61,7 @@ public class AppController {
         this.ruleService = ruleService;
     }
 
+    // NEED THIS
     @PostMapping
     @Transactional
     public @ResponseBody App createApp(final HttpServletRequest request, @RequestBody App app) {
@@ -81,6 +82,7 @@ public class AppController {
         return appService.create(app, sandbox);
     }
 
+    // NEED THIS
     @GetMapping(params = {"sandboxId"})
     public @ResponseBody List<App> getApps(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
@@ -91,6 +93,7 @@ public class AppController {
         return appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
     }
 
+    // NEED THIS
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody App getApp(final HttpServletRequest request, @PathVariable Integer id) {
         App app = appService.getById(id);
@@ -102,6 +105,7 @@ public class AppController {
         }
     }
 
+    // NEED THIS
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void deleteApp(final HttpServletRequest request, @PathVariable Integer id) {
@@ -114,6 +118,7 @@ public class AppController {
         }
     }
 
+    // NEED THIS
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody App updateApp(final HttpServletRequest request, @PathVariable Integer id, @RequestBody App app) {
@@ -128,6 +133,7 @@ public class AppController {
     }
 
 
+    // NEED THIS
     @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
     public @ResponseBody void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
         App app = appService.getById(id);
@@ -142,6 +148,7 @@ public class AppController {
         }
     }
 
+    // NEED THIS
     @PostMapping(value = "/{id}/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE} )
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
@@ -164,6 +171,7 @@ public class AppController {
         }
     }
 
+    // NEED THIS
     @DeleteMapping(value = "/{id}/image")
     @Transactional
     public App deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {

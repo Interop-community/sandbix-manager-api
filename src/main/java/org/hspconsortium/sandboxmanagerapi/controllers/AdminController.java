@@ -41,6 +41,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("/admin")
 public class AdminController {
 
+    // MOSTLY GETS USED FOR SANDBOX CLEANUP AND MAINTENANCE, WE CAN PRESERVE THIS CODE SHOULD WE NEED IT LATER
+    // HOWEVER IT DOES NOT HAVE CURRENT USAGE.
     private final UserService userService;
     private final SandboxService sandboxService;
     private final AdminService adminService;

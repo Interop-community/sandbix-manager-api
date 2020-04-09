@@ -24,6 +24,7 @@ import static org.springframework.http.MediaType.*;
 @RestController
 @RequestMapping({"/cds-hook"})
 public class CdsHookController {
+    // NEED ALL OF THESE
     private static Logger LOGGER = LoggerFactory.getLogger(AppController.class.getName());
 
     private final CdsHookService cdsHookService;

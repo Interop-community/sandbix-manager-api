@@ -44,6 +44,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping("/termsofuse")
 public class TermsOfUseController  {
+
+    // DON'T NEED THIS
     private static Logger LOGGER = LoggerFactory.getLogger(TermsOfUseController.class.getName());
 
     private final TermsOfUseService termsOfUseService;

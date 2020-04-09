@@ -64,6 +64,7 @@ public class CdsServiceEndpointController {
         this.authorizationService = authorizationService;
     }
 
+    // NEED THIS
     @PostMapping(produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
@@ -94,6 +95,7 @@ public class CdsServiceEndpointController {
         return cdsServiceEndpoint;
     }
 
+    // NEED THIS
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
@@ -111,6 +113,7 @@ public class CdsServiceEndpointController {
         return cdsServiceEndpointService.update(cdsServiceEndpoint);
     }
 
+    // NEED THIS
     @GetMapping(params = {"sandboxId"})
     @ResponseBody
     public List<CdsServiceEndpoint> getCdsServiceEndpoints(final HttpServletRequest request,
@@ -128,6 +131,7 @@ public class CdsServiceEndpointController {
         return cdsServiceEndpoints;
     }
 
+    // NEED THIS
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public CdsServiceEndpoint getCdsServicEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
@@ -142,6 +146,7 @@ public class CdsServiceEndpointController {
         }
     }
 
+    // NEED THIS
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody

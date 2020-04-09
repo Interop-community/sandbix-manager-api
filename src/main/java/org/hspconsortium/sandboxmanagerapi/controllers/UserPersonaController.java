@@ -60,6 +60,7 @@ public class UserPersonaController {
         this.authorizationService = authorizationService;
     }
 
+    // NEED THIS
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody UserPersona createUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
@@ -76,18 +77,20 @@ public class UserPersonaController {
         return userPersonaService.create(userPersona);
     }
 
-    @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @Transactional
-    public @ResponseBody UserPersona updateUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
+    // Don't NEED THIS
+//    @PutMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+//    @Transactional
+//    public @ResponseBody UserPersona updateUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
+//
+//        Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
+//        if (sandbox == null) {
+//            throw new ResourceNotFoundException("Sandbox not found.");
+//        }
+//        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, userPersona);
+//        return userPersonaService.update(userPersona);
+//    }
 
-        Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
-        if (sandbox == null) {
-            throw new ResourceNotFoundException("Sandbox not found.");
-        }
-        authorizationService.checkSandboxUserModifyAuthorization(request, sandbox, userPersona);
-        return userPersonaService.update(userPersona);
-    }
-
+    // NEED THIS
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId"})
     @SuppressWarnings("unchecked")
     public @ResponseBody Iterable<UserPersona> getSandboxUserPersona(HttpServletRequest request,
@@ -102,6 +105,7 @@ public class UserPersonaController {
         return userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
 
+    // NEED THIS
     @GetMapping(value = "/default", produces = APPLICATION_JSON_VALUE, params = {"sandboxId"})
     @SuppressWarnings("unchecked")
     public @ResponseBody UserPersona getSandboxDefaultUserPersona(HttpServletRequest request,
@@ -122,6 +126,7 @@ public class UserPersonaController {
         return (userPersona == null) ? null : userPersona.getPersonaUserId();
     }
 
+    // NEED THIS
     @DeleteMapping(value = "/{id}")
     @Transactional
     public ResponseEntity deleteSandboxUserPersona(HttpServletRequest request, @PathVariable Integer id) {
@@ -138,6 +143,7 @@ public class UserPersonaController {
         return ResponseEntity.ok("OK");
     }
 
+    // NEED THIS
     @GetMapping(value = "/{personaUserId}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody UserPersonaDto readUserPersona(HttpServletResponse response, @PathVariable String personaUserId) {
         UserPersona userPersona = userPersonaService.findByPersonaUserId(personaUserId);
@@ -155,6 +161,7 @@ public class UserPersonaController {
         return userPersonaDto;
     }
 
+    // NEED THIS
     @PostMapping(value="/authenticate", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity authenticateUserPersona(@RequestBody UserPersonaCredentials userPersonaCredentials){
 

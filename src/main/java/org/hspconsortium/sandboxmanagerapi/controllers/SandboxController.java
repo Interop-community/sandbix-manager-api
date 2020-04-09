@@ -66,20 +66,20 @@ public class SandboxController {
         this.authorizationService = authorizationService;
     }
 
-    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @Transactional
-    public @ResponseBody Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException{
-
-        Sandbox existingSandbox = sandboxService.findBySandboxId(sandbox.getSandboxId());
-        if (existingSandbox != null) {
-            throw new IllegalArgumentException("Sandbox with id " + sandbox.getSandboxId() + " already exists.");
-        }
-        authorizationService.checkUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
-        LOGGER.info("Creating sandbox: " + sandbox.getName());
-        User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
-        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
-        return sandboxService.create(sandbox, user, authorizationService.getBearerToken(request));
-    }
+//    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+//    @Transactional
+//    public @ResponseBody Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException{
+//
+//        Sandbox existingSandbox = sandboxService.findBySandboxId(sandbox.getSandboxId());
+//        if (existingSandbox != null) {
+//            throw new IllegalArgumentException("Sandbox with id " + sandbox.getSandboxId() + " already exists.");
+//        }
+//        authorizationService.checkUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
+//        LOGGER.info("Creating sandbox: " + sandbox.getName());
+//        User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
+//        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
+//        return sandboxService.create(sandbox, user, authorizationService.getBearerToken(request));
+//    }
 
     @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
@@ -91,11 +91,11 @@ public class SandboxController {
         Sandbox clonedSandbox = sandboxes.get("clonedSandbox");
         // Don't need to check authorization of who created the template sandboxes
         if (!Arrays.asList(templateSandboxIds).contains(clonedSandbox.getSandboxId())) {
-            authorizationService.checkUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
+//            authorizationService.checkUserAuthorization(request, clonedSandbox.getCreatedBy().getSbmUserId());
         }
-        authorizationService.checkUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
+//        authorizationService.checkUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
         User user = userService.findBySbmUserId(newSandbox.getCreatedBy().getSbmUserId());
-        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
+//        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
         return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, authorizationService.getBearerToken(request));
     }
 
@@ -158,6 +158,7 @@ public class SandboxController {
         sandboxService.update(sandbox, user, authorizationService.getBearerToken(request));
     }
 
+    // NEED THIS
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userId"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
@@ -233,6 +234,7 @@ public class SandboxController {
         sandboxService.changePayerForSandbox(sandbox, newPayer);
     }
 
+    // NEED THIS
     @PostMapping(value = "/{id}/login", params = {"userId"})
     @Transactional
     public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException{

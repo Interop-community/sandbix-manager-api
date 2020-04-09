@@ -45,6 +45,7 @@ public class FhirProfileController {
         this.fhirProfileDetailService = fhirProfileDetailService;
     }
 
+    // NEED ALL OF THESE
     @PostMapping(value = "/uploadProfile", params = {"sandboxId", "profileName", "profileId"})
     public JSONObject uploadProfile (@RequestParam("file") MultipartFile file, HttpServletRequest request,
                                      @RequestParam(value = "sandboxId") String sandboxId,
@@ -106,6 +107,7 @@ public class FhirProfileController {
         return statusReturned;
     }
 
+    // NEED THIS
     @RequestMapping(value = "/profileUploadStatus", params = {"id"})
     @ResponseBody
     public ProfileTask fetchStatus(@RequestParam(value = "id") String id) {
@@ -139,20 +141,6 @@ public class FhirProfileController {
     public List<FhirProfileDetail> getFhirProfiles(@RequestParam(value = "sandboxId") String sandboxId) {
         return fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
     }
-
-//    @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
-//    @ResponseBody
-//    public List<FhirProfile> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
-//        List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
-//        List<FhirProfile> fhirProfiles = new ArrayList<>();
-//        for (Integer fhirProfileId: fhirProfileIds) {
-//            FhirProfile fhirProfile = fhirProfileDetailService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type);
-//            if (fhirProfile != null) {
-//                fhirProfiles.add(fhirProfile);
-//            }
-//        }
-//        return fhirProfiles;
-//    }
 
     @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody

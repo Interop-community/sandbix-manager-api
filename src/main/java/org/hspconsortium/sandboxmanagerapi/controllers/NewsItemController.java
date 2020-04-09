@@ -18,6 +18,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping({"/newsItem"})
 public class NewsItemController {
+
+    // Don't NEED THIS
     private final NewsItemService newsItemService;
     private final AuthorizationService authorizationService;
     private final UserService userService;
