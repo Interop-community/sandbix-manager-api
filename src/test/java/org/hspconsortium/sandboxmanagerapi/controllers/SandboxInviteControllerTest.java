@@ -192,23 +192,23 @@ public class SandboxInviteControllerTest {
 //                .andExpect(content().json(json));
 //    }
 
-    @Test
-    public void getSandboxInvitesByInviteeTest() throws Exception {
-        when(sandboxInviteService.findInvitesByInviteeIdAndStatus(user.getSbmUserId(), sandboxInvite.getStatus())).thenReturn(sandboxInvites);
-        mvc
-                .perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
-    }
+//    @Test
+//    public void getSandboxInvitesByInviteeTest() throws Exception {
+//        when(sandboxInviteService.findInvitesByInviteeIdAndStatus(user.getSbmUserId(), sandboxInvite.getStatus())).thenReturn(sandboxInvites);
+//        mvc
+//                .perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+//    }
 
-    @Test
-    public void getSandboxInvitesByInviteeTestReturnsEmpty() throws Exception {
-        when(sandboxInviteService.findInvitesByInviteeIdAndStatus(user.getSbmUserId(), sandboxInvite.getStatus())).thenReturn(null);
-        mvc
-                .perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
-    }
+//    @Test
+//    public void getSandboxInvitesByInviteeTestReturnsEmpty() throws Exception {
+//        when(sandboxInviteService.findInvitesByInviteeIdAndStatus(user.getSbmUserId(), sandboxInvite.getStatus())).thenReturn(null);
+//        mvc
+//                .perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().string("[]"));
+//    }
 
 //    @Test
 //    public void getSandboxInvitesBySandboxTest() throws Exception {

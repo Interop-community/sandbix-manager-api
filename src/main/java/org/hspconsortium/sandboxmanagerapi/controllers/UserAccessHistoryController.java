@@ -30,9 +30,10 @@ public class UserAccessHistoryController {
         this.authorizationService = authorizationService;
     }
 
+    // NEED THIS
     @GetMapping(params = {"sandboxId"})
     public @ResponseBody
-    List<UserAccessHistory> getLastSandboxAccessWithSandboxId(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
+    List<UserAccessHistory> getLastSandboxAccessWithSandboxId(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -54,21 +55,22 @@ public class UserAccessHistoryController {
         return userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSbmUser(user);
     }
 
-    @GetMapping(params = {"sbmUserId", "sandboxId"})
-    public @ResponseBody
-    Timestamp getLastSandboxAccess(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded,
-                                   @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
-        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
-        authorizationService.checkUserAuthorization(request, userId);
-        User user = userService.findBySbmUserId(userId);
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found.");
-        }
-        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        if (sandbox == null) {
-            throw new ResourceNotFoundException("Sandbox not found.");
-        }
-        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
-        return userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user);
-    }
+    // Don't NEED THIS - didn't find use of it
+//    @GetMapping(params = {"sbmUserId", "sandboxId"})
+//    public @ResponseBody
+//    Timestamp getLastSandboxAccess(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded,
+//                                   @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
+//        String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
+//        authorizationService.checkUserAuthorization(request, userId);
+//        User user = userService.findBySbmUserId(userId);
+//        if (user == null) {
+//            throw new ResourceNotFoundException("User not found.");
+//        }
+//        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+//        if (sandbox == null) {
+//            throw new ResourceNotFoundException("Sandbox not found.");
+//        }
+//        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
+//        return userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user);
+//    }
 }

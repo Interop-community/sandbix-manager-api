@@ -120,11 +120,12 @@ public class UserPersonaController {
         return userPersonaService.findDefaultBySandboxId(sandboxId, oauthUserId, Visibility.PUBLIC);
     }
 
-    @GetMapping(params = {"lookUpId"})
-    public @ResponseBody String checkForUserPersonaById(@RequestParam(value = "lookUpId")  String id) {
-        UserPersona userPersona = userPersonaService.findByPersonaUserId(id);
-        return (userPersona == null) ? null : userPersona.getPersonaUserId();
-    }
+    // Probably Don't NEED THIS - Double check with Dimitar
+//    @GetMapping(params = {"lookUpId"})
+//    public @ResponseBody String checkForUserPersonaById(@RequestParam(value = "lookUpId")  String id) {
+//        UserPersona userPersona = userPersonaService.findByPersonaUserId(id);
+//        return (userPersona == null) ? null : userPersona.getPersonaUserId();
+//    }
 
     // NEED THIS
     @DeleteMapping(value = "/{id}")

@@ -133,32 +133,32 @@ public class UserPersonaControllerTest {
                                 .content(json));
     }
 
-    @Test
-    public void updateUserPersonaTest() throws Exception {
-        String json = json(userPersona);
-        when(userPersonaService.update(any())).thenReturn(userPersona);
+//    @Test
+//    public void updateUserPersonaTest() throws Exception {
+//        String json = json(userPersona);
+//        when(userPersonaService.update(any())).thenReturn(userPersona);
+//
+//        mvc
+//                .perform(
+//                        put("/userPersona")
+//                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                                .content(json))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().json(json));
+//    }
 
-        mvc
-                .perform(
-                        put("/userPersona")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
-    }
-
-    @Test(expected = NestedServletException.class)
-    public void updateUserPersonaTestSandboxNotFound() throws Exception {
-        String json = json(userPersona);
-        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-
-        mvc
-                .perform(
-                        put("/userPersona")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json));
-    }
+//    @Test(expected = NestedServletException.class)
+//    public void updateUserPersonaTestSandboxNotFound() throws Exception {
+//        String json = json(userPersona);
+//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+//
+//        mvc
+//                .perform(
+//                        put("/userPersona")
+//                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                                .content(json));
+//    }
 
     @Test
     public void getSandboxUserPersonaTest() throws Exception {
@@ -200,28 +200,28 @@ public class UserPersonaControllerTest {
                         get("/userPersona/default?sandboxId=" + sandbox.getSandboxId()));
     }
 
-    @Test
-    public void checkForUserPersonaByIdTest() throws Exception {
-        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(userPersona);
+//    @Test
+//    public void checkForUserPersonaByIdTest() throws Exception {
+//        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(userPersona);
+//
+//        mvc
+//                .perform(
+//                        get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+//                .andExpect(content().string(userPersona.getPersonaUserId()));
+//    }
 
-        mvc
-                .perform(
-                        get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string(userPersona.getPersonaUserId()));
-    }
-
-    @Test
-    public void checkForUserPersonaByIdTestReturnsNothing() throws Exception {
-        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
-
-        mvc
-                .perform(
-                        get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
-    }
+//    @Test
+//    public void checkForUserPersonaByIdTestReturnsNothing() throws Exception {
+//        when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
+//
+//        mvc
+//                .perform(
+//                        get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().string(""));
+//    }
 
     @Test
     public void deleteSandboxUserPersonaTest() throws Exception {

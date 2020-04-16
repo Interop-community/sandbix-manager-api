@@ -90,33 +90,33 @@ public class TermsOfUseControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    public void createTermsOfUseTest() throws Exception {
-        String json = json(termsOfUse);
-        User user = new User();
-        Set<SystemRole> systemRoleList = new HashSet<>();
-        systemRoleList.add(SystemRole.ADMIN);
-        user.setSystemRoles(systemRoleList);
-        when(userService.findBySbmUserId(any())).thenReturn(user);
-        when(termsOfUseService.save(any())).thenReturn(termsOfUse);
-        mvc
-                .perform(post("/termsofuse")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
-    }
+//    @Test
+//    public void createTermsOfUseTest() throws Exception {
+//        String json = json(termsOfUse);
+//        User user = new User();
+//        Set<SystemRole> systemRoleList = new HashSet<>();
+//        systemRoleList.add(SystemRole.ADMIN);
+//        user.setSystemRoles(systemRoleList);
+//        when(userService.findBySbmUserId(any())).thenReturn(user);
+//        when(termsOfUseService.save(any())).thenReturn(termsOfUse);
+//        mvc
+//                .perform(post("/termsofuse")
+//                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                        .content(json))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().json(json));
+//    }
 
-    @Test(expected = NestedServletException.class)
-    public void createTermsOfUseTestUserNotFound() throws Exception {
-        String json = json(termsOfUse);
-        when(userService.findBySbmUserId(any())).thenReturn(null);
-        mvc
-                .perform(post("/termsofuse")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json));
-    }
+//    @Test(expected = NestedServletException.class)
+//    public void createTermsOfUseTestUserNotFound() throws Exception {
+//        String json = json(termsOfUse);
+//        when(userService.findBySbmUserId(any())).thenReturn(null);
+//        mvc
+//                .perform(post("/termsofuse")
+//                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                        .content(json));
+//    }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {

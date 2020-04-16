@@ -12,9 +12,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@WebMvcTest(value = AliveController.class, secure = false)
-@ContextConfiguration(classes = AliveController.class)
+//@RunWith(SpringRunner.class)
+//@WebMvcTest(value = AliveController.class, secure = false)
+//@ContextConfiguration(classes = AliveController.class)
 public class AliveControllerTest {
 
 //    @Autowired

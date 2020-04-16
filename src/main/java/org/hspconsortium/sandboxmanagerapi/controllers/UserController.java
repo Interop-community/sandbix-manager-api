@@ -99,6 +99,7 @@ public class UserController {
         return user;
     }
 
+    // NEED THIS
     @GetMapping(value = "/all")
     @Transactional
     public @ResponseBody
@@ -111,6 +112,7 @@ public class UserController {
         return userService.findAll();
     }
 
+    // NEED THIS
     @PostMapping(value = "/acceptterms", params = {"sbmUserId", "termsId"})
     @Transactional
     public void acceptTermsOfUse(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId,
@@ -121,6 +123,7 @@ public class UserController {
         userService.acceptTermsOfUse(user, termsId);
     }
 
+    // NEED THIS
     @PostMapping(value = "/authorize")
     @Transactional
     public ResponseEntity authorizeUserForReferenceApi(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
@@ -153,6 +156,7 @@ public class UserController {
         return ResponseEntity.status(org.springframework.http.HttpStatus.OK).body("User is authorized.");
     }
 
+    // NEED THIS
     private User createUserIfNotExists(String sbmUserId, String oauthUsername, String oauthUserEmail) {
         User user = userService.findBySbmUserId(sbmUserId);
         if (user == null) {

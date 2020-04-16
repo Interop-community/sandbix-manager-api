@@ -238,43 +238,43 @@ public class LaunchScenarioControllerTest {
                         .content(json));
     }
 
-    @Test
-    public void getLaunchScenariosForAppTest() throws Exception {
-        String json = json(launchScenarios);
-        when(appService.getById(app.getId())).thenReturn(app);
-        when(launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId())).thenReturn(launchScenarios);
-        mvc
-                .perform(get("/launchScenario?appId=" + app.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
-    }
+//    @Test
+//    public void getLaunchScenariosForAppTest() throws Exception {
+//        String json = json(launchScenarios);
+//        when(appService.getById(app.getId())).thenReturn(app);
+//        when(launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId())).thenReturn(launchScenarios);
+//        mvc
+//                .perform(get("/launchScenario?appId=" + app.getId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().json(json));
+//    }
 
-    @Test(expected = NestedServletException.class)
-    public void getLaunchScenariosForAppTestAppNotFound() throws Exception {
-        when(appService.getById(app.getId())).thenReturn(null);
-        mvc
-                .perform(get("/launchScenario?appId=" + app.getId()));
-    }
+//    @Test(expected = NestedServletException.class)
+//    public void getLaunchScenariosForAppTestAppNotFound() throws Exception {
+//        when(appService.getById(app.getId())).thenReturn(null);
+//        mvc
+//                .perform(get("/launchScenario?appId=" + app.getId()));
+//    }
 
-    @Test
-    public void getLaunchScenariosForPersonaTest() throws Exception {
-        String json = json(launchScenarios);
-        when(userPersonaService.getById(userPersona.getId())).thenReturn(userPersona);
-        when(launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId())).thenReturn(launchScenarios);
-        mvc
-                .perform(get("/launchScenario?userPersonaId=" + userPersona.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
-    }
+//    @Test
+//    public void getLaunchScenariosForPersonaTest() throws Exception {
+//        String json = json(launchScenarios);
+//        when(userPersonaService.getById(userPersona.getId())).thenReturn(userPersona);
+//        when(launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId())).thenReturn(launchScenarios);
+//        mvc
+//                .perform(get("/launchScenario?userPersonaId=" + userPersona.getId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().json(json));
+//    }
 
-    @Test(expected = NestedServletException.class)
-    public void getLaunchScenariosForPersonaTestUserPersonaNotFound() throws Exception {
-        when(userPersonaService.getById(userPersona.getId())).thenReturn(null);
-        mvc
-                .perform(get("/launchScenario?userPersonaId=" + userPersona.getId()));
-    }
+//    @Test(expected = NestedServletException.class)
+//    public void getLaunchScenariosForPersonaTestUserPersonaNotFound() throws Exception {
+//        when(userPersonaService.getById(userPersona.getId())).thenReturn(null);
+//        mvc
+//                .perform(get("/launchScenario?userPersonaId=" + userPersona.getId()));
+//    }
 
     @Test
     public void deleteLaunchScenarioTest() throws Exception {

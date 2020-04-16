@@ -135,18 +135,18 @@ public class UserAccessHistoryControllerTest {
                 .andExpect(content().json(json));
     }
 
-    @Test
-    public void getLastSandboxAccessTest() throws Exception {
-        Timestamp timestamp = new Timestamp(new Date().getTime());
-        when(userService.findBySbmUserId(any())).thenReturn(user);
-        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        when(userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user)).thenReturn(timestamp);
-        mvc
-                .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId() + "&sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(Long.toString(timestamp.getTime())));
-    }
+//    @Test
+//    public void getLastSandboxAccessTest() throws Exception {
+//        Timestamp timestamp = new Timestamp(new Date().getTime());
+//        when(userService.findBySbmUserId(any())).thenReturn(user);
+//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
+//        when(userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user)).thenReturn(timestamp);
+//        mvc
+//                .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId() + "&sandboxId=" + sandbox.getSandboxId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().json(Long.toString(timestamp.getTime())));
+//    }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {

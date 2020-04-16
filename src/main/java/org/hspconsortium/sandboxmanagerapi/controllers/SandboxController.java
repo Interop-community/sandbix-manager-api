@@ -81,6 +81,7 @@ public class SandboxController {
 //        return sandboxService.create(sandbox, user, authorizationService.getBearerToken(request));
 //    }
 
+    // NEED THIS - TODO: REMEMBER TO UNCOMMENT THE AUTHORIZATION CHECK
     @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody Sandbox cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
@@ -99,24 +100,27 @@ public class SandboxController {
         return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, authorizationService.getBearerToken(request));
     }
 
-    @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String checkForSandboxById(@RequestParam(value = "lookUpId")  String id) {
-        Sandbox sandbox = sandboxService.findBySandboxId(id);
-        if (sandbox != null) {
-            return  "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\"}";
-        }
-        return null;
-    }
+    // Don't NEED THIS, didn't find the use
+//    @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
+//    public @ResponseBody String checkForSandboxById(@RequestParam(value = "lookUpId")  String id) {
+//        Sandbox sandbox = sandboxService.findBySandboxId(id);
+//        if (sandbox != null) {
+//            return  "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\"}";
+//        }
+//        return null;
+//    }
 
-    @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String getSandboxById(@RequestParam(value = "sandboxId")  String id) {
-        Sandbox sandbox = sandboxService.findBySandboxId(id);
-        if (sandbox != null) {
-            return  "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
-        }
-        return null;
-    }
+    // Don't NEED THIS, didn't find the use
+//    @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
+//    public @ResponseBody String getSandboxById(@RequestParam(value = "sandboxId")  String id) {
+//        Sandbox sandbox = sandboxService.findBySandboxId(id);
+//        if (sandbox != null) {
+//            return  "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
+//        }
+//        return null;
+//    }
 
+    // NEED THIS
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody Sandbox getSandboxById(HttpServletRequest request, @PathVariable String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
@@ -131,6 +135,7 @@ public class SandboxController {
         return sandbox;
     }
 
+    // NEED THIS
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {
@@ -150,6 +155,7 @@ public class SandboxController {
         sandboxService.delete(sandbox, authorizationService.getBearerToken(request));
     }
 
+    // NEED THIS
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void updateSandboxById(HttpServletRequest request, @PathVariable String id, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException {
@@ -172,6 +178,7 @@ public class SandboxController {
         return sandboxService.getAllowedSandboxes(user);
     }
 
+    // NEED THIS
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, params = {"removeUserId"})
     @Transactional
     public void removeSandboxMember(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "removeUserId") String userIdEncoded) throws UnsupportedEncodingException {
@@ -191,7 +198,7 @@ public class SandboxController {
         }
     }
 
-
+    // NEED THIS
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, params = {"editUserRole", "role", "add"})
     @Transactional
     public void updateSandboxMemberRole(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "editUserRole") String userIdEncoded,
@@ -218,6 +225,7 @@ public class SandboxController {
         }
     }
 
+    // CURRENTLY DON'T NEED THIS - TODO: WE WILL NEED THIS WHEN MOVING TO PAID MODEL
     @PutMapping(value = "/{id}/changePayer", params = {"newPayerId"})
     @Transactional
     public void changePayerForSandbox(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "newPayerId") String newPayerIdEncoded) throws UnsupportedEncodingException {
@@ -254,17 +262,18 @@ public class SandboxController {
         sandboxService.sandboxLogin(id, userId);
     }
 
-    @GetMapping(value = "/all")
-    @Transactional
-    public @ResponseBody
-    Iterable<Sandbox> getAllSandboxes(final HttpServletRequest request) {
-        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found in authorization header.");
-        }
-        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
-        return sandboxService.findAll();
-    }
+    // don't NEED THIS - Didn't find it
+//    @GetMapping(value = "/all")
+//    @Transactional
+//    public @ResponseBody
+//    Iterable<Sandbox> getAllSandboxes(final HttpServletRequest request) {
+//        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+//        if (user == null) {
+//            throw new ResourceNotFoundException("User not found in authorization header.");
+//        }
+//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+//        return sandboxService.findAll();
+//    }
 
     /**
      * A user can be removed from a sandbox if they are

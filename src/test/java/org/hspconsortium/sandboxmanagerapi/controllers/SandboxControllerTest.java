@@ -148,43 +148,43 @@ public class SandboxControllerTest {
                 .andExpect(content().json(json2));
     }
 
-    @Test
-    public void checkForSandboxByIdTest() throws Exception {
-        String response = "{\"sandboxId\": \"" + sandbox.getSandboxId() +"\"}";
-        mvc
-                .perform(get("/sandbox?lookUpId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().string(response));
-    }
+//    @Test
+//    public void checkForSandboxByIdTest() throws Exception {
+//        String response = "{\"sandboxId\": \"" + sandbox.getSandboxId() +"\"}";
+//        mvc
+//                .perform(get("/sandbox?lookUpId=" + sandbox.getSandboxId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().string(response));
+//    }
+//
+//    @Test
+//    public void checkForSandboxByIdTestSandboxNotFound() throws Exception {
+//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+//        mvc
+//                .perform(get("/sandbox?lookUpId=" + sandbox.getSandboxId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().string(""));
+//    }
 
-    @Test
-    public void checkForSandboxByIdTestSandboxNotFound() throws Exception {
-        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        mvc
-                .perform(get("/sandbox?lookUpId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
-    }
-
-    @Test
-    public void getSandboxByIdTest() throws Exception {
-        String response = "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
-        mvc
-                .perform(get("/sandbox?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().string(response));
-    }
-
-    @Test
-    public void getSandboxByIdTestSandboxNotFound() throws Exception {
-        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        mvc
-                .perform(get("/sandbox?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
-    }
+//    @Test
+//    public void getSandboxByIdTest() throws Exception {
+//        String response = "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
+//        mvc
+//                .perform(get("/sandbox?sandboxId=" + sandbox.getSandboxId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+//                .andExpect(content().string(response));
+//    }
+//
+//    @Test
+//    public void getSandboxByIdTestSandboxNotFound() throws Exception {
+//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
+//        mvc
+//                .perform(get("/sandbox?sandboxId=" + sandbox.getSandboxId()))
+//                .andExpect(status().isOk())
+//                .andExpect(content().string(""));
+//    }
 
     @Test
     public void getSandboxByIdTest2() throws Exception {

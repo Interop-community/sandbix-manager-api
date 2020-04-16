@@ -45,7 +45,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("/termsofuse")
 public class TermsOfUseController  {
 
-    // DON'T NEED THIS
+    // NEED THIS
     private static Logger LOGGER = LoggerFactory.getLogger(TermsOfUseController.class.getName());
 
     private final TermsOfUseService termsOfUseService;
@@ -70,15 +70,16 @@ public class TermsOfUseController  {
         }
     }
 
-    @PostMapping(produces = APPLICATION_JSON_VALUE)
-    public TermsOfUse createTermsOfUse(HttpServletRequest request, @RequestBody final TermsOfUse termsOfUse) {
-        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found");
-        }
-        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
-
-        termsOfUse.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-        return termsOfUseService.save(termsOfUse);
-    }
+    // Don't NEED THIS - Ask Dimitar
+//    @PostMapping(produces = APPLICATION_JSON_VALUE)
+//    public TermsOfUse createTermsOfUse(HttpServletRequest request, @RequestBody final TermsOfUse termsOfUse) {
+//        User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+//        if (user == null) {
+//            throw new ResourceNotFoundException("User not found");
+//        }
+//        authorizationService.checkUserSystemRole(user, SystemRole.ADMIN);
+//
+//        termsOfUse.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+//        return termsOfUseService.save(termsOfUse);
+//    }
 }

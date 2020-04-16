@@ -41,6 +41,7 @@ public class NotificationController {
         return notificationService.getAllNotificationsByUser(user);
     }
 
+    // probably NEED THIS/THESE - ASK DIMITAR
     @PostMapping(value = "", params = {"userId"})
     public void createNotificationsForAllUsers(HttpServletRequest request, @RequestParam(value = "userId") String userId, @RequestBody final NewsItem newsItem) {
         authorizationService.checkUserAuthorization(request, userId);

@@ -139,7 +139,7 @@ public class LaunchScenarioController {
         }
     }
 
-    // TODO: Didn't find the use case for these two endpoints, double check if it is needed
+    // TODO: Didn't find the use case for these two endpoints, didn't find on the front-end code either
 //    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"appId"})
 //    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
 //                                                                           @RequestParam(value = "appId") int appId) {
@@ -165,18 +165,19 @@ public class LaunchScenarioController {
 //        return launchScenarioService.findByCdsHookIdAndSandboxId(cdsHook.getId(), cdsServiceEndpoint.getSandbox().getSandboxId());
 //    }
 
-    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userPersonaId"})
-    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForPersona(HttpServletRequest request,
-                                                                           @RequestParam(value = "userPersonaId") int personaId) {
-
-        UserPersona userPersona = userPersonaService.getById(personaId);
-        if (userPersona == null) {
-            throw new ResourceNotFoundException("UserPersona not found.");
-        }
-        authorizationService.checkSandboxUserReadAuthorization(request, userPersona.getSandbox());
-
-        return launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
-    }
+    // DON'T NEED THIS, TODO: didn't find use case for this
+//    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"userPersonaId"})
+//    public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForPersona(HttpServletRequest request,
+//                                                                           @RequestParam(value = "userPersonaId") int personaId) {
+//
+//        UserPersona userPersona = userPersonaService.getById(personaId);
+//        if (userPersona == null) {
+//            throw new ResourceNotFoundException("UserPersona not found.");
+//        }
+//        authorizationService.checkSandboxUserReadAuthorization(request, userPersona.getSandbox());
+//
+//        return launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
+//    }
 
     // NEED THIS
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)

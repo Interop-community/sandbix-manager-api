@@ -74,6 +74,7 @@ public class SandboxInviteController {
         this.userAccessHistoryService = userAccessHistoryService;
     }
 
+    // NEED THIS
     @PutMapping(consumes = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody SandboxInvite createOrUpdateSandboxInvite(HttpServletRequest request, @RequestBody final SandboxInvite sandboxInvite) throws IOException {
@@ -118,31 +119,32 @@ public class SandboxInviteController {
         return sandboxInviteReturned;
     }
 
-    // NEED THIS
-    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sbmUserId", "status"})
-    public @ResponseBody
-    @SuppressWarnings("unchecked")
-    List<SecuredSandboxInviteDto> getSandboxInvitesByInvitee(HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserIdEncoded,
-                                                             @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
-        String sbmUserId = java.net.URLDecoder.decode(sbmUserIdEncoded, StandardCharsets.UTF_8.name());
-        authorizationService.checkUserAuthorization(request, sbmUserId);
-//        if (status == null) {
-//            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeId(sbmUserId);
-//            if (sandboxInvites != null) {
-//                return sandboxInvites;
-//            }
-//        } else {
-        List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeIdAndStatus(sbmUserId, status);
-        if (sandboxInvites != null) {
-            return sandboxInvites
-                    .stream()
-                    .map(sandboxInvite -> modelMapper.map(sandboxInvite, SecuredSandboxInviteDto.class))
-                    .collect(Collectors.toList());
-        }
+    // Don't NEED THIS - didn't find use - ask Dimitar
+//    @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sbmUserId", "status"})
+//    public @ResponseBody
+//    @SuppressWarnings("unchecked")
+//    List<SecuredSandboxInviteDto> getSandboxInvitesByInvitee(HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserIdEncoded,
+//                                                             @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
+//        String sbmUserId = java.net.URLDecoder.decode(sbmUserIdEncoded, StandardCharsets.UTF_8.name());
+//        authorizationService.checkUserAuthorization(request, sbmUserId);
+////        if (status == null) {
+////            List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeId(sbmUserId);
+////            if (sandboxInvites != null) {
+////                return sandboxInvites;
+////            }
+////        } else {
+//        List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesByInviteeIdAndStatus(sbmUserId, status);
+//        if (sandboxInvites != null) {
+//            return sandboxInvites
+//                    .stream()
+//                    .map(sandboxInvite -> modelMapper.map(sandboxInvite, SecuredSandboxInviteDto.class))
+//                    .collect(Collectors.toList());
 //        }
-        return Collections.emptyList();
-    }
+////        }
+//        return Collections.emptyList();
+//    }
 
+    // NEED THIS
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"sandboxId", "status"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
@@ -175,6 +177,7 @@ public class SandboxInviteController {
         return Collections.emptyList();
     }
 
+    // NEED THIS
     @PutMapping(value = "/{id}", params = {"status"})
     public @ResponseBody
     @SuppressWarnings("unchecked")
