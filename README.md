@@ -56,3 +56,11 @@ https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platf
 | SANDMAN-API-DSTU2       | 12000 |
 | SANDMAN-API-DSTU2-DEBUG | 12005 |
 | MySQL                   |  3306 |
+
+### Add an user to a sandbox
+
+Do a PUT call through Postman
+https://sandbox-api.logicahealth.org/sandbox/REPLACE_THIS_WITH_SANDBOXID?editUserRole=REPLACE_THIS_SBM_USERID&role=USER&add=true
+
+The authorization token and Content-Type = application/json is required to make this call.
+Role could also be changed to be either ADMIN, USER, READONLY, MANAGE_USERS or MANAGE_DATA.
