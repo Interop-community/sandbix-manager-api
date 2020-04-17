@@ -4,7 +4,7 @@ spring:
     username: system
     password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
   mail:
-    password: ENC(drTNjE8xqhmgZ9IUlTXQiwI4lJoCvV5GH5giC7OG5cl8g/FeQRRtbPQc5nkVmeiue8yqMHl37P8=)
+    password: ENC(tYnPIPVwvikZfJQsn6jDsC/MXXXHTkrK2Q4uOXZe09GUBAYuBL7VlXzs71q6QsLCfirbaTpbs48=)
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
