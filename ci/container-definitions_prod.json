@@ -1,0 +1,36 @@
+[
+  {
+    "name": "sandbox-manager-api-prod",
+    "image": "hspconsortium/sandbox-manager-api:{{PROJECT_VERSION}}",
+    "cpu": 0,
+    "portMappings": [
+      {
+        "containerPort": 12000,
+        "hostPort": 0,
+        "protocol": "tcp"
+      }
+    ],
+    "memoryReservation": 400,
+    "essential": true,
+    "secrets": [
+      {
+        "name": "JASYPT_ENCRYPTOR_PASSWORD",
+        "valueFrom": "arn:aws:secretsmanager:us-west-2:657600230790:secret:hspconsortium/stage/master-encryption-key-iF6zVd"
+      }
+    ],
+    "environment": [
+      {
+        "name": "SPRING_PROFILES_ACTIVE",
+        "value": "prod,email,aws-metrics"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/sandbox-manager-api-prod",
+        "awslogs-region": "us-west-2",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]

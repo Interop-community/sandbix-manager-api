@@ -1,0 +1,37 @@
+[
+  {
+    "name": "sandbox-manager-api-test",
+    "image": "hspconsortium/sandbox-manager-api:{{PROJECT_VERSION}}",
+    "cpu": 0,
+    "portMappings": [
+      {
+        "containerPort": 12000,
+        "hostPort": 0,
+        "protocol": "tcp"
+      }
+    ],
+    "memory": 0,
+    "memoryReservation": 400,
+    "essential": true,
+    "secrets": [ TODO: ASK. For sandbox-manager-api the value is in the task_definition/container_definition, it doesnt come from secrets manager,
+      {
+        "name": "JASYPT_ENCRYPTOR_PASSWORD",
+        "valueFrom": "arn:aws:secretsmanager:us-west-2:657600230790:secret:hspconsortium/test/master-encryption-key-Ji0AKX"
+      }
+    ],
+    "environment": [
+      {
+        "name": "SPRING_PROFILES_ACTIVE",
+        "value": "test,email"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/sandbox-manager-api-test",
+        "awslogs-region": "us-west-2",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]

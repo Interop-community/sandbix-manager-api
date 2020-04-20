@@ -1,0 +1,122 @@
+# This project uses the GitFlow Workflow as defined here:
+#   https://www.atlassian.com/git/tutorials/comparing-workflows#GitFlow-workflow
+
+# TODO: this image location comes from the reference-auth, but the original code had image at hspconsortium/hspc-ubuntu-base
+# image: hspconsortium/ci-base-image:latest
+
+# TODO: ask if we need the clone depth and the image to be used here
+
+image: hspconsortium/hspc-ubuntu-base
+clone:           # the 'clone' section
+  depth: 1       # the depth, in this case the clone will contain last one commits
+
+pipelines:
+  branches:
+    # In the GitFlow Workflow, the develop branch is the main development branch
+    # and the parent to all feature branches.
+    # CD Pipeline:
+    #  - Commits to develop are automatically pushed to dev
+    #  - Commits to develop are released to the maven repo as snapshot versions
+    develop:
+      - step:
+          name: Build and push to Test
+          script:
+            # maven test, build and deploy artifact to maven-snapshots
+            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
+            # build dynamic container-definitions
+            - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            - sed -i -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" ci/container-definitions_test.json
+            - cat ci/container-definitions_test.json
+            # build docker image and push to docker
+            - export IMAGE_NAME=$(cat ci/container-definitions_test.json | jq --raw-output '.[0].image')
+            - echo "image name - $IMAGE_NAME"
+            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+            - docker build -t $IMAGE_NAME .
+            - docker push $IMAGE_NAME
+            # register the ECS task definition and capture the version TODO: don't have execution-role
+            - export TASK_VERSION=$(aws ecs register-task-definition --region us-west-2 --execution-role-arn arn:aws:iam::657600230790:role/ecsTaskExecutionRole --family sandbox-manager-api-test --container-definitions $(cat ci/container-definitions_test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - echo "Registered ECS Task Definition - " $TASK_VERSION
+            # update the service to use the latest task definition
+            - aws ecs update-service --cluster hspc-test --service sandbox-manager-api-test --task-definition sandbox-manager-api-test:$TASK_VERSION
+      - step:
+          name: Create Release (this will cause the master branch to build and release to test)
+          trigger: manual
+          script:
+            # This mess of bash commands implements the gitflow release process
+            - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            - export RELEASE_VERSION=$(echo $PROJECT_VERSION | cut -d '-' -f 1)
+            - MAJOR_VER=$(echo $RELEASE_VERSION | cut -d "." -f 1) && MINOR_VER=$(echo $RELEASE_VERSION | cut -d "." -f 2) && PATCH_VER=$(echo $RELEASE_VERSION | cut -d "." -f 3) && NEXT_PATCH_VER=$((PATCH_VER+1)) && export NEXT_VERSION=$MAJOR_VER.$MINOR_VER.$NEXT_PATCH_VER-SNAPSHOT
+            #- git fetch --unshallow
+            - git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+            - git fetch origin
+            - git checkout -b release/$RELEASE_VERSION
+            - cat pom.xml
+            - xmlstarlet ed -P -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $RELEASE_VERSION pom.xml | sponge pom.xml
+            - cat pom.xml
+            - git add .
+            - git commit -m "Incrementing to next release version $RELEASE_VERSION"
+            - git checkout -b master origin/master
+            - git merge release/$RELEASE_VERSION
+            - git tag $RELEASE_VERSION
+            - git push origin master
+            - git push origin $RELEASE_VERSION
+            - git checkout develop
+            - git merge release/$RELEASE_VERSION
+            - cat pom.xml
+            - xmlstarlet ed -P -N my=http://maven.apache.org/POM/4.0.0 -u my:project/my:version -v $NEXT_VERSION pom.xml | sponge pom.xml
+            - cat pom.xml
+            - git add .
+            - git commit -m "Incrementing to next snapshot version $NEXT_VERSION"
+            - git push origin develop
+    feature/*:
+      - step:
+          caches:
+            - maven
+          script:
+            - mvn clean verify
+    hotfix/*:
+      - step:
+          caches:
+            - maven
+          script:
+            - mvn clean verify
+    master:
+      - step:
+          caches:
+            - maven
+          name: Deploy to Stage
+          deployment: test
+          script:
+            # maven test, build and deploy artifact to nexus.interopion.com/maven-snapshots
+            - mvn -V -B -s settings.xml deploy -P DEPLOY-HSPC,hspc-nexus
+            # build dynamic container-definitions
+            - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            - sed -i -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" ci/container-definitions_stage.json
+            # build docker image and push to nexus.interopion.com:18083 (docker-interopion)
+            - export IMAGE_NAME=$(cat ci/container-definitions_stage.json | jq --raw-output '.[0].image')
+            - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+            - docker build -t $IMAGE_NAME .
+            - docker push $IMAGE_NAME
+            # register the ECS task definition and capture the version // TODO: we don't have execution-role for sandbox-manager-api
+            - export TASK_VERSION=$(aws ecs register-task-definition --execution-role-arn arn:aws:iam::657600230790:role/ecsTaskExecutionRole --family sandbox-manager-api-stage --container-definitions $(cat ci/container-definitions_stage.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - echo "Registered ECS Task Definition - " $TASK_VERSION
+            # update the service to use the latest task definition
+            - aws ecs update-service --cluster hspc-stage --service sandbox-manager-api-stage --task-definition sandbox-manager-api-stage:$TASK_VERSION
+      - step:
+          caches:
+            - maven
+          name: Deploy to Prod
+          deployment: production
+          trigger: manual
+          script:
+            # build dynamic container-definitions
+            - export PROJECT_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            - sed -i -e "s/{{PROJECT_VERSION}}/$PROJECT_VERSION/g" ci/container-definitions_prod.json
+            # register the ECS task definition and capture the version // TODO: we don't have execution-role for sandbox-manager-api
+            - export TASK_VERSION=$(aws ecs register-task-definition --execution-role-arn arn:aws:iam::657600230790:role/ecsTaskExecutionRole --family sandbox-manager-api-prod --container-definitions $(cat ./ci/container-definitions_prod.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - echo "Task definition:" $TASK_VERSION
+            # update the service to use the latest task definition
+            - aws ecs update-service --cluster hspc-prod --service sandbox-manager-api-prod --task-definition sandbox-manager-api-prod:$TASK_VERSION
+
+options:
+  docker: true
