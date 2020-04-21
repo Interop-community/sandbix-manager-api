@@ -15,7 +15,7 @@
     "secrets": [
       {
         "name": "JASYPT_ENCRYPTOR_PASSWORD",
-        "valueFrom": "arn:aws:secretsmanager:us-west-2:657600230790:secret:hspconsortium/stage/master-encryption-key-iF6zVd"
+        "valueFrom": "arn:aws:secretsmanager:us-east-1:657600230790:secret:hspconsortium/stage/master-encryption-key-iF6zVd"
       }
     ],
     "environment": [
@@ -28,7 +28,7 @@
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "/ecs/sandbox-manager-api-prod",
-        "awslogs-region": "us-west-2",
+        "awslogs-region": "us-east-1",
         "awslogs-stream-prefix": "ecs"
       }
     }

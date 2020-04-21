@@ -34,7 +34,7 @@ pipelines:
             - docker build -t $IMAGE_NAME .
             - docker push $IMAGE_NAME
             # register the ECS task definition and capture the version TODO: don't have execution-role
-            - export TASK_VERSION=$(aws ecs register-task-definition --region us-west-2 --execution-role-arn arn:aws:iam::657600230790:role/ecsTaskExecutionRole --family sandbox-manager-api-test --container-definitions $(cat ci/container-definitions_test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
+            - export TASK_VERSION=$(aws ecs register-task-definition --region us-east-1 --execution-role-arn arn:aws:iam::657600230790:role/ecsTaskExecutionRole --family sandbox-manager-api-test --container-definitions $(cat ci/container-definitions_test.json | jq -c '.')  | jq --raw-output '.taskDefinition.revision')
             - echo "Registered ECS Task Definition - " $TASK_VERSION
             # update the service to use the latest task definition
             - aws ecs update-service --cluster hspc-test --service sandbox-manager-api-test --task-definition sandbox-manager-api-test:$TASK_VERSION
