@@ -236,6 +236,34 @@ public class SandboxServiceImpl implements SandboxService {
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
+    // TODO: create no longer used
+//    @Override
+//    @Transactional
+//    public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
+//
+//        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
+//        if (!canCreate) {
+//            return null;
+//        }
+//        UserPersona userPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
+//
+//        if (userPersona == null && callCreateOrUpdateSandboxAPI(sandbox, bearerToken)) {
+//            sandbox.setCreatedBy(user);
+//            sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+//            sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
+//
+//            sandbox.setPayerUserId(user.getId());
+//            Sandbox savedSandbox = save(sandbox);
+//            addMember(savedSandbox, user, Role.ADMIN);
+//            for (String roleName : defaultSandboxCreatorRoles) {
+//                addMemberRole(sandbox, user, Role.valueOf(roleName));
+//            }
+//            sandboxActivityLogService.sandboxCreate(sandbox, user);
+//            return savedSandbox;
+//        }
+//        return null;
+//    }
+
     @Override
     @Transactional
     public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {

@@ -66,20 +66,21 @@ public class SandboxController {
         this.authorizationService = authorizationService;
     }
 
-    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @Transactional
-    public @ResponseBody Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException{
-
-        Sandbox existingSandbox = sandboxService.findBySandboxId(sandbox.getSandboxId());
-        if (existingSandbox != null) {
-            throw new IllegalArgumentException("Sandbox with id " + sandbox.getSandboxId() + " already exists.");
-        }
-        authorizationService.checkUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
-        LOGGER.info("Creating sandbox: " + sandbox.getName());
-        User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
-        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
-        return sandboxService.create(sandbox, user, authorizationService.getBearerToken(request));
-    }
+    // TODO: delete related services and tests
+//    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+//    @Transactional
+//    public @ResponseBody Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException{
+//
+//        Sandbox existingSandbox = sandboxService.findBySandboxId(sandbox.getSandboxId());
+//        if (existingSandbox != null) {
+//            throw new IllegalArgumentException("Sandbox with id " + sandbox.getSandboxId() + " already exists.");
+//        }
+//        authorizationService.checkUserAuthorization(request, sandbox.getCreatedBy().getSbmUserId());
+//        LOGGER.info("Creating sandbox: " + sandbox.getName());
+//        User user = userService.findBySbmUserId(sandbox.getCreatedBy().getSbmUserId());
+//        authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
+//        return sandboxService.create(sandbox, user, authorizationService.getBearerToken(request));
+//    }
 
     @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
