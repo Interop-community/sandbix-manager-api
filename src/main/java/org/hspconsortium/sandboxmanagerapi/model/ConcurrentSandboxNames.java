@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @NamedQueries({
-        @NamedQuery(name="ConcurrentSandboxNames.findAllSDsforAProfileByFhirProfileId",
+        @NamedQuery(name="ConcurrentSandboxNames.findAllConcurrentSandboxNames",
                 query="SELECT c FROM ConcurrentSandboxNames c")
 })
 public class ConcurrentSandboxNames {

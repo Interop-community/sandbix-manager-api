@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ConcurrentSandboxNamesRepository extends CrudRepository<ConcurrentSandboxNames, Integer> {
+public interface ConcurrentSandboxNamesRepository extends CrudRepository<String, Integer> {
 
-    List<ConcurrentSandboxNames> findAllSandboxName();
+    List<String> findAllSandboxName();
 
 }

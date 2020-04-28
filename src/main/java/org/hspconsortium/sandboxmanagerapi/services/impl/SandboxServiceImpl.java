@@ -75,6 +75,7 @@ public class SandboxServiceImpl implements SandboxService {
     private CloseableHttpClient httpClient;
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
+    private ConcurrentSandboxNameService concurrentSandboxNameService;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -149,6 +150,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setFhirProfileDetailService(@Lazy FhirProfileDetailService fhirProfileDetailService) {
         this.fhirProfileDetailService = fhirProfileDetailService;
+    }
+
+    @Inject
+    public void setConcurrentSandboxNameService(ConcurrentSandboxNameService concurrentSandboxNameService) {
+        this.concurrentSandboxNameService = concurrentSandboxNameService;
     }
 
     @Override
@@ -267,6 +273,8 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+
+
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             LOGGER.info("User unauthorized to create sandbox");
@@ -828,6 +836,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
         return repository.intervalCountForSpecificTimePeriod(beginDate, endDate);
+    }
+
+    @Override
+    public void addToConcurrentSandboxName(String currentSandboxName) {
+        concurrentSandboxNameService.save(currentSandboxName);
     }
 
 }

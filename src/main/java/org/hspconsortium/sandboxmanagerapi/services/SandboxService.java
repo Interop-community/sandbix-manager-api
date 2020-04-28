@@ -78,4 +78,6 @@ public interface SandboxService {
 
     String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
 
+    void addToConcurrentSandboxName(String currentSandboxName);
+
 }
