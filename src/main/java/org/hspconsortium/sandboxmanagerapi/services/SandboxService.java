@@ -16,8 +16,6 @@ public interface SandboxService {
 
     void delete(final Sandbox sandbox, final String bearerToken, final User isAdmin, final boolean sync);
 
-//    Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException;
-
     Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException;
 
     Sandbox update(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException;
@@ -77,7 +75,5 @@ public interface SandboxService {
     String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp beginDate, Timestamp endDate);
 
     String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
-
-    void addToConcurrentSandboxName(String currentSandboxName);
 
 }

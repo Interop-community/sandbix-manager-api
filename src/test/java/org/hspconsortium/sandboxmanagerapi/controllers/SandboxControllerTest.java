@@ -122,17 +122,6 @@ public class SandboxControllerTest {
         ReflectionTestUtils.setField(sandboxController, "templateSandboxIds", new String[1]);
     }
 
-//    @Test(expected = NestedServletException.class)
-//    public void createSandboxTestDuplicateSandboxId() throws Exception {
-//        String json = json(sandbox);
-//        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-//        mvc
-//                .perform(
-//                        post("/sandbox")
-//                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-//                                .content(json));
-//    }
-
     @Test
     public void cloneSandboxTest() throws Exception {
         String json1 = json(sandboxHashMap);

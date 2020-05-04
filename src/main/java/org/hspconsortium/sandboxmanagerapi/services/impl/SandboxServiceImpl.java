@@ -75,7 +75,6 @@ public class SandboxServiceImpl implements SandboxService {
     private CloseableHttpClient httpClient;
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
-    private ConcurrentSandboxNameService concurrentSandboxNameService;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -150,11 +149,6 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setFhirProfileDetailService(@Lazy FhirProfileDetailService fhirProfileDetailService) {
         this.fhirProfileDetailService = fhirProfileDetailService;
-    }
-
-    @Inject
-    public void setConcurrentSandboxNameService(ConcurrentSandboxNameService concurrentSandboxNameService) {
-        this.concurrentSandboxNameService = concurrentSandboxNameService;
     }
 
     @Override
@@ -242,38 +236,9 @@ public class SandboxServiceImpl implements SandboxService {
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
     }
 
-    // TODO: create no longer used
-//    @Override
-//    @Transactional
-//    public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
-//
-//        Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
-//        if (!canCreate) {
-//            return null;
-//        }
-//        UserPersona userPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
-//
-//        if (userPersona == null && callCreateOrUpdateSandboxAPI(sandbox, bearerToken)) {
-//            sandbox.setCreatedBy(user);
-//            sandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-//            sandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-//
-//            sandbox.setPayerUserId(user.getId());
-//            Sandbox savedSandbox = save(sandbox);
-//            addMember(savedSandbox, user, Role.ADMIN);
-//            for (String roleName : defaultSandboxCreatorRoles) {
-//                addMemberRole(sandbox, user, Role.valueOf(roleName));
-//            }
-//            sandboxActivityLogService.sandboxCreate(sandbox, user);
-//            return savedSandbox;
-//        }
-//        return null;
-//    }
-
     @Override
     @Transactional
-    public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
-
+    public synchronized Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
@@ -284,7 +249,7 @@ public class SandboxServiceImpl implements SandboxService {
         Sandbox clonedSandbox = findBySandboxId(clonedSandboxId);
         Sandbox newSandboxExists = findBySandboxId(newSandbox.getSandboxId());
         if (newSandboxExists != null) {
-            throw new IllegalArgumentException("Sandbox with id " + newSandbox.getSandboxId() + " already exists.");
+            throw new IllegalArgumentException("Sandbox name " + newSandbox.getSandboxId() + " is already taken. Please try another.");
         }
         if (clonedSandbox == null) {
             throw new ResourceNotFoundException("Cloned sandbox does not exist.");
@@ -293,8 +258,8 @@ public class SandboxServiceImpl implements SandboxService {
             newSandbox.setCreatedBy(user);
             newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-
             newSandbox.setPayerUserId(user.getId());
+            newSandbox.setStatus("in progress");
             Sandbox savedSandbox = save(newSandbox);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {
@@ -313,6 +278,7 @@ public class SandboxServiceImpl implements SandboxService {
                     cloneApps(savedSandbox, clonedSandbox, user);
                 }
             }
+            newSandbox.setStatus("created");
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             return savedSandbox;
         }
@@ -836,11 +802,6 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
         return repository.intervalCountForSpecificTimePeriod(beginDate, endDate);
-    }
-
-    @Override
-    public void addToConcurrentSandboxName(String currentSandboxName) {
-        concurrentSandboxNameService.save(currentSandboxName);
     }
 
 }

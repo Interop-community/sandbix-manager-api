@@ -55,6 +55,7 @@ public class Sandbox extends AbstractItem {
     private String expirationMessage;
     private Date expirationDate;
     private Integer payerUserId;
+    private String status;
 
     /******************* Sandbox Property Getter/Setters ************************/
 
@@ -200,5 +201,13 @@ public class Sandbox extends AbstractItem {
 
     public void setPayerUserId(Integer payerUserId) {
         this.payerUserId = payerUserId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
