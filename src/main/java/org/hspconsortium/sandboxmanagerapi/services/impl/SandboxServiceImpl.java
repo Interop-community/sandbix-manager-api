@@ -261,6 +261,7 @@ public class SandboxServiceImpl implements SandboxService {
             newSandbox.setPayerUserId(user.getId());
             newSandbox.setStatus("in progress");
             Sandbox savedSandbox = save(newSandbox);
+//            callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {
                 addMemberRole(savedSandbox, user, Role.valueOf(roleName));
@@ -280,6 +281,7 @@ public class SandboxServiceImpl implements SandboxService {
             }
             newSandbox.setStatus("created");
             callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
+//            savedSandbox = save(newSandbox);
             return savedSandbox;
         }
         return null;
@@ -619,7 +621,8 @@ public class SandboxServiceImpl implements SandboxService {
 
 
     private boolean callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
-        String url = getSandboxManagerUrl() + "/" + newSandbox.getSandboxId() + "/sandbox/clone";
+//        String url = getSandboxManagerUrl() + "/" + newSandbox.getSandboxId() + "/sandbox/clone";
+        String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
 
         // TODO: change to using 'simpleRestTemplate'
         HttpPut putRequest = new HttpPut(url);
@@ -637,7 +640,7 @@ public class SandboxServiceImpl implements SandboxService {
                 "}";
         entity = new StringEntity(jsonString);
         putRequest.setEntity(entity);
-//        putRequest.setHeader("Authorization", "BEARER " + bearerToken);
+        putRequest.setHeader("Authorization", "BEARER " + bearerToken); // TODO: comment it for the new reference-api-manager
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
             LOGGER.info("Cloning Sandbox API: " + newSandbox.getSandboxId());

@@ -208,7 +208,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             fhirProfileDetail.setFhirProfiles(fhirProfiles);
             save(fhirProfileDetail);
         } else {
-            throw new RuntimeException("Unable to open the file. The profile was not uploaded"); //TODO: ask about this exception
+            throw new RuntimeException("Unable to open the file. The profile was not uploaded");
         }
     }
 

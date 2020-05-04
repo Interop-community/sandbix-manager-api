@@ -49,7 +49,7 @@ spring:
           ssl:
             enable: false
           quitwait: false
-    username: AKIAJE2TPBVK7V7YB3VQ
+    username: AKIAZSHAHGWDPACREPTA
     password: ThisIsNotTheRightPW
   thymeleaf:
       cache: false
@@ -168,7 +168,7 @@ tier-rules:
   threshold: 0.9
 
 api_endpoint_index:
-  manager: http://${API_MANAGER_HOST:localhost}:${API_MANAGER_PORT:8089} # TODO: change the port to 8082 to match it to new reference-api-manager
+#  manager: http://${API_MANAGER_HOST:localhost}:${API_MANAGER_PORT:8082} # TODO: change the port to 8082 to match it to new reference-api-manager
   prev:
     dstu2: 5
     stu3: 6
