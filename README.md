@@ -9,7 +9,7 @@ Welcome to the Logica Sandbox Manager API!
 [Logica Sandbox](https://sandbox.logicahealth.org)
 
 ### How do I get set up?
-This project uses Java 8. Please make sure that your Project SDK is set to use Java 8.
+This project uses Java 8 and MySQL version 5.7.24. Please make sure that your Project SDK is set to use Java 8.
 
 #### Step 1: Prerequisites
  * Create "sandman" schema in local mysql. Check application.yml that name has not changed.  This schema will be populated as you start your server.
