@@ -158,7 +158,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public void delete(final Sandbox sandbox, final String bearerToken, final User admin, final boolean sync) {
+    public synchronized void delete(final Sandbox sandbox, final String bearerToken, final User admin, final boolean sync) {
         if (!sync) {
             // Want this done first in case there's an error with Reference API so that everything else doesn't get deleted
             try {
@@ -190,7 +190,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public void delete(final Sandbox sandbox, final String bearerToken) {
+    public synchronized void delete(final Sandbox sandbox, final String bearerToken) {
         delete(sandbox, bearerToken, null, false);
     }
 
@@ -266,7 +266,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+    public synchronized Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
