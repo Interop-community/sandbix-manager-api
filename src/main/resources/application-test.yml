@@ -1,11 +1,11 @@
 spring:
   datasource:
     base_url: jdbc:mysql://sandboxdb-test.logicahealth.org:3306
+    username: system
+    password: ENC(eTe28H24x7ir3WTFLKeYurHJHMn3NeRb)
 #    username: sandman_api
 #    password: ENC(rHDEF2U5A5X9o/Jca3P9CkRvYKs1mSTP)
   # TODO: We need understand the reason for why the sandman_api restricted account was used here. - SS - 2020-06-02
-    username: system
-    password: ENC(eTe28H24x7ir3WTFLKeYurHJHMn3NeRb)
   mail:
     password: ENC(cYJTFXqQKNniUyjsHV4VBU2ig7E1oxEvQy4saGPhV/LA8OMJ5GFPaJM3UPBe5kw3DPXPxmRsAqw=)
 hspc:
