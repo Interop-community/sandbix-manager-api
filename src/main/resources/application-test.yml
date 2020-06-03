@@ -13,7 +13,7 @@ hspc:
     authorization:
       url: https://auth-test.logicahealth.org
       adminAccess:
-        clientSecret: secret
+        clientSecret: ENC(38zd6mj1buFAIQMh+3wMKi51Uwglzr2MYjmuQsTruQ7P/DoyTs6UmPXtlwjpbOC2kSEgIYPwAo376GqXvY8HETj4aKe4gWQDoyTcz1aK/zuUgC10mCuMnKNE1BHtC7Nt)   #secret
     messaging:
       sendEmail: true
       url: https://messaging-test.logicahealth.org
