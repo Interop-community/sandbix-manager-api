@@ -55,6 +55,8 @@ public class Sandbox extends AbstractItem {
     private String expirationMessage;
     private Date expirationDate;
     private Integer payerUserId;
+    @Enumerated(EnumType.STRING)
+    private SandboxCreationStatus creationStatus;
 
     /******************* Sandbox Property Getter/Setters ************************/
 
@@ -201,4 +203,11 @@ public class Sandbox extends AbstractItem {
     public void setPayerUserId(Integer payerUserId) {
         this.payerUserId = payerUserId;
     }
-}
+
+    public SandboxCreationStatus getCreationStatus() {
+        return creationStatus;
+    }
+
+    public void setCreationStatus(SandboxCreationStatus creationStatus) {
+        this.creationStatus = creationStatus;
+    }}

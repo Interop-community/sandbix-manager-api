@@ -15,6 +15,7 @@ import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -30,6 +31,9 @@ import java.util.concurrent.Executor;
 @Configuration
 @EnableAsync
 public class SandboxManagerConfig {
+
+    @Value("${hspc.platform.simultaneousSandboxCreationTasksLimit}")
+    private int sandboxCloneTaskActiveThreadCount;
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
 
@@ -61,9 +65,11 @@ public class SandboxManagerConfig {
     }
 
     @Bean
-    public ModelMapper modelMapper() { return new ModelMapper(); }
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
 
-    @Bean(name="taskExecutor")
+    @Bean(name = "taskExecutor")
     public Executor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
@@ -72,4 +78,15 @@ public class SandboxManagerConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean(name = "sandboxCloneTaskExecutor")
+    public Executor sandboxCloneTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(sandboxCloneTaskActiveThreadCount);
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.initialize();
+        return executor;
+    }
+
 }

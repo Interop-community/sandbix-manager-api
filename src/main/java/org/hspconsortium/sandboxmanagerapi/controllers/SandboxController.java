@@ -26,6 +26,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,7 +69,8 @@ public class SandboxController {
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     @Transactional
-    public @ResponseBody Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException{
+    public @ResponseBody
+    Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException {
 
         Sandbox existingSandbox = sandboxService.findBySandboxId(sandbox.getSandboxId());
         if (existingSandbox != null) {
@@ -81,9 +83,9 @@ public class SandboxController {
         return sandboxService.create(sandbox, user, authorizationService.getBearerToken(request));
     }
 
-    @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @Transactional
-    public @ResponseBody Sandbox cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
+    @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public void cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
         Sandbox newSandbox = sandboxes.get("newSandbox");
         if (newSandbox.getName().equalsIgnoreCase("test")) {
             throw new IllegalArgumentException("Test is a reserved sandbox name. Please change your sandbox name and try again.");
@@ -96,35 +98,49 @@ public class SandboxController {
         authorizationService.checkUserAuthorization(request, newSandbox.getCreatedBy().getSbmUserId());
         User user = userService.findBySbmUserId(newSandbox.getCreatedBy().getSbmUserId());
         authorizationService.checkUserSystemRole(user, SystemRole.CREATE_SANDBOX);
-        return sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, authorizationService.getBearerToken(request));
+        sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, authorizationService.getBearerToken(request));
+    }
+
+    @GetMapping(value = "/creationStatus/{id}", produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody
+    SandboxCreationStatus getSandboxCreationStatus(HttpServletRequest request, @RequestParam(value = "id") String sandboxId) {
+        authorizationService.checkUserAuthorization(request, authorizationService.getSystemUserId(request));
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
+        return sandbox.getCreationStatus();
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String checkForSandboxById(@RequestParam(value = "lookUpId")  String id) {
+    public @ResponseBody
+    String checkForSandboxById(@RequestParam(value = "lookUpId") String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {
-            return  "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\"}";
+            return "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\"}";
         }
         return null;
     }
 
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String getSandboxById(@RequestParam(value = "sandboxId")  String id) {
+    public @ResponseBody
+    String getSandboxById(@RequestParam(value = "sandboxId") String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {
-            return  "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
+            return "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
         }
         return null;
     }
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody Sandbox getSandboxById(HttpServletRequest request, @PathVariable String id) {
+    public @ResponseBody
+    Sandbox getSandboxById(HttpServletRequest request, @PathVariable String id) {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-        if (!sandboxService.isSandboxMember(sandbox, user) && sandbox.getVisibility() == Visibility.PUBLIC ) {
+        if (!sandboxService.isSandboxMember(sandbox, user) && sandbox.getVisibility() == Visibility.PUBLIC) {
             sandboxService.addMember(sandbox, user);
         }
         authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
@@ -185,7 +201,7 @@ public class SandboxController {
         if (user == null) {
             throw new ResourceNotFoundException("User not found.");
         }
-        if(canRemoveUser(sandbox, removedUser)){
+        if (canRemoveUser(sandbox, removedUser)) {
             sandboxService.removeMember(sandbox, removedUser, authorizationService.getBearerToken(request));
         }
     }
@@ -194,7 +210,7 @@ public class SandboxController {
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, params = {"editUserRole", "role", "add"})
     @Transactional
     public void updateSandboxMemberRole(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "editUserRole") String userIdEncoded,
-                @RequestParam(value = "role") Role role, @RequestParam(value = "add") boolean add) throws UnsupportedEncodingException {
+                                        @RequestParam(value = "role") Role role, @RequestParam(value = "add") boolean add) throws UnsupportedEncodingException {
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -235,7 +251,7 @@ public class SandboxController {
 
     @PostMapping(value = "/{id}/login", params = {"userId"})
     @Transactional
-    public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException{
+    public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         Sandbox sandbox = sandboxService.findBySandboxId(id);
@@ -245,7 +261,7 @@ public class SandboxController {
         User user = userService.findBySbmUserId(userId);
         userAccessHistoryService.saveUserAccessInstance(sandbox, user);
 
-        if (!sandboxService.isSandboxMember(sandbox, user) && sandbox.getVisibility() == Visibility.PUBLIC ) {
+        if (!sandboxService.isSandboxMember(sandbox, user) && sandbox.getVisibility() == Visibility.PUBLIC) {
             sandboxService.addMember(sandbox, user);
         }
 
@@ -266,10 +282,10 @@ public class SandboxController {
 
     /**
      * A user can be removed from a sandbox if they are
-     *  - not an {@link Role#ADMIN } user
-     *  - more than one {@link Role#ADMIN} users exist
+     * - not an {@link Role#ADMIN } user
+     * - more than one {@link Role#ADMIN} users exist
      *
-     * @param sandbox - the sandbox to remove a user from
+     * @param sandbox     - the sandbox to remove a user from
      * @param removedUser the user to remove
      * @return true if the user can be removed
      */

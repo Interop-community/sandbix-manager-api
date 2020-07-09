@@ -88,6 +88,8 @@ hspc:
     templateSandboxIds: MasterDstu2Empty, MasterDstu2Smart, MasterStu3Empty, MasterStu3Smart, MasterR4Empty, MasterR4Smart, MasterStu3Synthea
     dontDeleteInSync: dstu2, stu3, hspc, hspc3, hspc4, hspc5, hspc6, hspc7
     sandboxesAllUsersCanAccess: hspc5, hspc6, hspc8, hspc9, DaVinciDemoPayer, DaVinciCOLPayer, DaVinciCOLProvider, DaVinciMRPPayer, DaVinciMRPProvider, DaVinciPDexPayer, DaVinciPDexProvider, DaVinciMRPProviderR4, DaVinciMRPPayerR4
+    # How many sandbox creation tasks can run in parallel
+    simultaneousSandboxCreationTasksLimit: 1
     authorization:
       url: http://${AUTH_HOST:localhost}:${AUTH_PORT:8060}
       tokenEndpoint: ${hspc.platform.authorization.url}/token
