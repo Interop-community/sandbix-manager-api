@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -76,6 +75,7 @@ public class SandboxServiceImpl implements SandboxService {
     private CloseableHttpClient httpClient;
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
+    private SandboxBackgroundTasksService sandboxBackgroundTasksService;
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -150,6 +150,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setFhirProfileDetailService(@Lazy FhirProfileDetailService fhirProfileDetailService) {
         this.fhirProfileDetailService = fhirProfileDetailService;
+    }
+
+    @Inject
+    public void setSandboxBackgroundTasksService(@Lazy SandboxBackgroundTasksService sandboxBackgroundTasksService) {
+        this.sandboxBackgroundTasksService = sandboxBackgroundTasksService;
     }
 
     @Override
@@ -305,7 +310,7 @@ public class SandboxServiceImpl implements SandboxService {
                     cloneApps(savedSandbox, clonedSandbox, user);
                 }
             }
-            callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
+            this.sandboxBackgroundTasksService.cloneSandbox(newSandbox, clonedSandbox, bearerToken, getSandboxApiURL(newSandbox));
         }
     }
 
@@ -635,60 +640,6 @@ public class SandboxServiceImpl implements SandboxService {
 //                LOGGER.error("Error closing HttpClient");
 //            }
         }
-    }
-
-    @Async("sandboxCloneTaskExecutor")
-    public void callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
-        String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
-
-        // TODO: change to using 'simpleRestTemplate'
-        HttpPut putRequest = new HttpPut(url);
-        putRequest.addHeader("Content-Type", "application/json");
-        StringEntity entity;
-
-        String jsonString = "{\"newSandbox\": {" +
-                "\"teamId\": \"" + newSandbox.getSandboxId() +
-                "\",\"allowOpenAccess\": \"" + newSandbox.isAllowOpenAccess() + "\"" +
-                "}," +
-                "\"clonedSandbox\": {" +
-                "\"teamId\": \"" + clonedSandbox.getSandboxId() +
-                "\",\"allowOpenAccess\": \"" + clonedSandbox.isAllowOpenAccess() + "\"" +
-                "}" +
-                "}";
-        entity = new StringEntity(jsonString);
-        putRequest.setEntity(entity);
-        putRequest.setHeader("Authorization", "BEARER " + bearerToken);
-
-        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                HttpEntity rEntity = closeableHttpResponse.getEntity();
-                String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
-                String errorMsg = String.format("There was a problem cloning the sandbox.\n" +
-                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                        closeableHttpResponse.getStatusLine(),
-                        responseString,
-                        url);
-                LOGGER.error(errorMsg);
-                updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.ERRORED);
-                throw new RuntimeException(errorMsg);
-            }
-            updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.CREATED);
-        } catch (IOException e) {
-            updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.ERRORED);
-            LOGGER.error("Error posting to " + url, e);
-            throw new RuntimeException(e);
-        } finally {
-//            try {
-//                httpClient.close();
-//            } catch (IOException e) {
-//                LOGGER.error("Error closing HttpClient");
-//            }
-        }
-    }
-
-    private void updateSandboxCreationStatus(Sandbox newSandbox, SandboxCreationStatus status) {
-        newSandbox.setCreationStatus(status);
-        save(newSandbox);
     }
 
     private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken) {

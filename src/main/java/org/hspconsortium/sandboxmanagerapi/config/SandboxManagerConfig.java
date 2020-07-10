@@ -65,9 +65,7 @@ public class SandboxManagerConfig {
     }
 
     @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
+    public ModelMapper modelMapper() { return new ModelMapper(); }
 
     @Bean(name = "taskExecutor")
     public Executor threadPoolTaskExecutor() {
@@ -88,5 +86,4 @@ public class SandboxManagerConfig {
         executor.initialize();
         return executor;
     }
-
 }
