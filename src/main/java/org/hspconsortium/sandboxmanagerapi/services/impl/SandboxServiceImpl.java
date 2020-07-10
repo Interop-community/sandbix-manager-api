@@ -638,7 +638,7 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Async("sandboxCloneTaskExecutor")
-    void callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
+    public void callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
         String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
 
         // TODO: change to using 'simpleRestTemplate'

@@ -84,7 +84,7 @@ public class SandboxController {
     }
 
     @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
         Sandbox newSandbox = sandboxes.get("newSandbox");
         if (newSandbox.getName().equalsIgnoreCase("test")) {
@@ -102,8 +102,8 @@ public class SandboxController {
     }
 
     @GetMapping(value = "/creationStatus/{id}", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody
-    SandboxCreationStatus getSandboxCreationStatus(HttpServletRequest request, @RequestParam(value = "id") String sandboxId) {
+    @ResponseStatus(HttpStatus.OK)
+    public @ResponseBody SandboxCreationStatus getSandboxCreationStatus(HttpServletRequest request, @PathVariable (value = "id") String sandboxId) {
         authorizationService.checkUserAuthorization(request, authorizationService.getSystemUserId(request));
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {

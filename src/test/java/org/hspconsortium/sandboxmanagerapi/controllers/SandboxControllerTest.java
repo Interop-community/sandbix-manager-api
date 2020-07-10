@@ -2,7 +2,6 @@ package org.hspconsortium.sandboxmanagerapi.controllers;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -21,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -108,6 +107,7 @@ public class SandboxControllerTest {
         sandbox.setCreatedBy(user);
         sandbox.setId(1);
         sandbox.setName("sandbox");
+        sandbox.setCreationStatus(SandboxCreationStatus.CREATED);
 
         Set<SystemRole> systemRoles = new HashSet<>();
         systemRoles.add(SystemRole.ADMIN);
@@ -153,19 +153,16 @@ public class SandboxControllerTest {
         String json1 = json(sandboxHashMap);
         String json2 = json(sandbox);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        when(sandboxService.clone(any(), any(), any(), any())).thenReturn(sandbox);
         mvc
                 .perform(post("/sandbox/clone")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json1))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json2));
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(json1))
+                .andExpect(status().isAccepted());
     }
 
     @Test
     public void checkForSandboxByIdTest() throws Exception {
-        String response = "{\"sandboxId\": \"" + sandbox.getSandboxId() +"\"}";
+        String response = "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\"}";
         mvc
                 .perform(get("/sandbox?lookUpId=" + sandbox.getSandboxId()))
                 .andExpect(status().isOk())
@@ -441,4 +438,27 @@ public class SandboxControllerTest {
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
+
+    @Test(expected = NestedServletException.class)
+    public void sandboxCreationStatusTestUserNotAuthorized() throws Exception {
+        doThrow(UnauthorizedException.class).when(authorizationService).checkUserAuthorization(any(HttpServletRequest.class), anyString());
+        mvc.perform(get("/sandbox/creationStatus/sandboxId"));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void sandboxCreationStatusTestSandboxIdNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(anyString())).thenReturn(null);
+        mvc.perform(get("/sandbox/creationStatus/sandboxId"));
+    }
+
+    @Test
+    public void sandboxCreationStatusReturned() throws Exception {
+        doNothing().when(authorizationService).checkUserAuthorization(any(HttpServletRequest.class), anyString());
+        when(sandboxService.findBySandboxId(anyString())).thenReturn(sandbox);
+        mvc.perform(get("/sandbox/creationStatus/sandboxId"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().string("\"" + SandboxCreationStatus.CREATED.toString() + "\""));
+    }
+
 }
