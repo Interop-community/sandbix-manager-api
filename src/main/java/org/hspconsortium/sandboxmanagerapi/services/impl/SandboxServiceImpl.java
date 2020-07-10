@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -271,11 +271,18 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
-    @Transactional
     public void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+        Sandbox clonedSandbox = startCloning(newSandbox, clonedSandboxId, user, bearerToken);
+        if (clonedSandbox != null) {
+            this.sandboxBackgroundTasksService.cloneSandbox(newSandbox, clonedSandbox, bearerToken, getSandboxApiURL(newSandbox));
+        }
+   }
+
+    @Transactional
+    public Sandbox startCloning(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
-            return;
+            return null;
         }
         UserPersona initialUserPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
         Sandbox clonedSandbox = findBySandboxId(clonedSandboxId);
@@ -310,8 +317,9 @@ public class SandboxServiceImpl implements SandboxService {
                     cloneApps(savedSandbox, clonedSandbox, user);
                 }
             }
-            this.sandboxBackgroundTasksService.cloneSandbox(newSandbox, clonedSandbox, bearerToken, getSandboxApiURL(newSandbox));
+            return clonedSandbox;
         }
+        return null;
     }
 
     @Override
