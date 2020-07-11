@@ -42,7 +42,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     @Async("sandboxCloneTaskExecutor")
-    public void cloneSandbox(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken, final String sandboxApiURL) throws UnsupportedEncodingException {
+    public void cloneSandboxSchema(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken, final String sandboxApiURL) throws UnsupportedEncodingException {
         TransactionSynchronizationManager.setActualTransactionActive(true);
         String url = sandboxApiURL + "/sandbox/clone";
 

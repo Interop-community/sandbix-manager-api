@@ -272,14 +272,14 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
-        Sandbox clonedSandbox = startCloning(newSandbox, clonedSandboxId, user, bearerToken);
+        Sandbox clonedSandbox = cloneSandbox(newSandbox, clonedSandboxId, user, bearerToken);
         if (clonedSandbox != null) {
-            this.sandboxBackgroundTasksService.cloneSandbox(newSandbox, clonedSandbox, bearerToken, getSandboxApiURL(newSandbox));
+            this.sandboxBackgroundTasksService.cloneSandboxSchema(newSandbox, clonedSandbox, bearerToken, getSandboxApiURL(newSandbox));
         }
    }
 
     @Transactional
-    public Sandbox startCloning(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
+    public Sandbox cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
