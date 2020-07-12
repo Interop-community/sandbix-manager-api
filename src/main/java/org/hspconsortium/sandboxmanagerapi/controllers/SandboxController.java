@@ -101,17 +101,6 @@ public class SandboxController {
         sandboxService.clone(newSandbox, clonedSandbox.getSandboxId(), user, authorizationService.getBearerToken(request));
     }
 
-    @GetMapping(value = "/creationStatus/{id}", produces = APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody SandboxCreationStatus getSandboxCreationStatus(HttpServletRequest request, @PathVariable (value = "id") String sandboxId) {
-        authorizationService.checkUserAuthorization(request, authorizationService.getSystemUserId(request));
-        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        if (sandbox == null) {
-            throw new ResourceNotFoundException("Sandbox not found.");
-        }
-        return sandbox.getCreationStatus();
-    }
-
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
     String checkForSandboxById(@RequestParam(value = "lookUpId") String id) {
