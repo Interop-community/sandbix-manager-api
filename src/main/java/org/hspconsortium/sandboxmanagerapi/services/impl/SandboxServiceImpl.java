@@ -271,6 +271,7 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
+    @Transactional
     public void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
         Sandbox clonedSandbox = cloneSandbox(newSandbox, clonedSandboxId, user, bearerToken);
         if (clonedSandbox != null) {
@@ -278,8 +279,7 @@ public class SandboxServiceImpl implements SandboxService {
         }
    }
 
-    @Transactional
-    public Sandbox cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
+    private Sandbox cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
