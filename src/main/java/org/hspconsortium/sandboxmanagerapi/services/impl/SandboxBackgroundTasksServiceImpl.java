@@ -20,7 +20,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 
 @Service
 public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasksService {
@@ -74,7 +73,6 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                 throw new RuntimeException(errorMsg);
             }
             updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.CREATED);
-            System.out.println(new Timestamp(new java.util.Date().getTime()) + "Sandbox created: " + newSandbox.getSandboxId());
         } catch (IOException e) {
             updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.ERRORED);
             LOGGER.error("Error posting to " + url, e);
