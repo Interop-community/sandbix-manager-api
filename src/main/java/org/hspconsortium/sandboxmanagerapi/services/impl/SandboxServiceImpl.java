@@ -77,6 +77,10 @@ public class SandboxServiceImpl implements SandboxService {
     private FhirProfileDetailService fhirProfileDetailService;
     private SandboxBackgroundTasksService sandboxBackgroundTasksService;
 
+    private static final int SANDBOXES_TO_RETURN = 2;
+    private static final String CLONED_SANDBOX = "cloned";
+    private static final String SAVED_SANDBOX = "saved";
+
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
         this.repository = repository;
@@ -273,13 +277,13 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
-        Sandbox clonedSandbox = cloneSandbox(newSandbox, clonedSandboxId, user, bearerToken);
-        if (clonedSandbox != null) {
-            this.sandboxBackgroundTasksService.cloneSandboxSchema(newSandbox, clonedSandbox, bearerToken, getSandboxApiURL(newSandbox));
+        Map<String, Sandbox> savedAndClonedSandboxes = cloneSandbox(newSandbox, clonedSandboxId, user, bearerToken);
+        if (savedAndClonedSandboxes != null) {
+            this.sandboxBackgroundTasksService.cloneSandboxSchema(savedAndClonedSandboxes.get(SAVED_SANDBOX), savedAndClonedSandboxes.get((CLONED_SANDBOX)), bearerToken, getSandboxApiURL(newSandbox));
         }
-   }
+    }
 
-    private Sandbox cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
+    private Map<String, Sandbox> cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
@@ -317,7 +321,10 @@ public class SandboxServiceImpl implements SandboxService {
                     cloneApps(savedSandbox, clonedSandbox, user);
                 }
             }
-            return clonedSandbox;
+            Map<String, Sandbox> savedAndClonedSandboxes = new HashMap<>(SANDBOXES_TO_RETURN);
+            savedAndClonedSandboxes.put(SAVED_SANDBOX, savedSandbox);
+            savedAndClonedSandboxes.put(CLONED_SANDBOX, clonedSandbox);
+            return savedAndClonedSandboxes;
         }
         return null;
     }
