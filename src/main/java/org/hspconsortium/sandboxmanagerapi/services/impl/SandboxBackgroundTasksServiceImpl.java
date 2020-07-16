@@ -8,13 +8,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SandboxCreationStatus;
+import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxBackgroundTasksService;
-import org.hspconsortium.sandboxmanagerapi.services.SandboxSaveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
@@ -25,17 +26,18 @@ import java.nio.charset.StandardCharsets;
 public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasksService {
 
     private final CloseableHttpClient httpClient;
-    private final SandboxSaveService sandboxSaveService;
+    private final SandboxRepository repository;
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxBackgroundTasksServiceImpl.class.getName());
 
     @Autowired
-    public SandboxBackgroundTasksServiceImpl(CloseableHttpClient httpClient, SandboxSaveService sandboxSaveService) {
+    public SandboxBackgroundTasksServiceImpl(CloseableHttpClient httpClient, SandboxRepository repository) {
         this.httpClient = httpClient;
-        this.sandboxSaveService = sandboxSaveService;
+        this.repository = repository;
     }
 
     @Override
+    @Transactional
     @Async("sandboxCloneTaskExecutor")
     public void cloneSandboxSchema(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken, final String sandboxApiURL) throws UnsupportedEncodingException {
         TransactionSynchronizationManager.setActualTransactionActive(true);
@@ -81,7 +83,9 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     }
 
     private void updateSandboxCreationStatus(Sandbox newSandbox, SandboxCreationStatus status) {
-        this.sandboxSaveService.saveSandbox(newSandbox, status);
+        newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
+        newSandbox.setCreationStatus(status);
+        this.repository.save(newSandbox);
     }
 
 }
