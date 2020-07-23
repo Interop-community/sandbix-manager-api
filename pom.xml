@@ -127,6 +127,7 @@
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
             <artifactId>spring-security-oauth2</artifactId>
+            <version>2.1.2.RELEASE</version>
         </dependency>
 
         <dependency>
@@ -153,7 +154,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
+            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${org.apache.commons.version}</version>
         </dependency>
@@ -161,7 +162,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <!--<version>${org.json.version}</version>-->
+            <version>20200518</version>
         </dependency>
 
         <dependency>
@@ -190,8 +191,9 @@
 
         <!-- Hibernate validator -->
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
+            <version>6.1.5.Final</version>
         </dependency>
 
         <dependency>
@@ -286,7 +288,7 @@
         <dependency>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.1</version>
+            <version>0.8.4</version>
         </dependency>
 
         <dependency>
@@ -325,7 +327,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.1</version>
+                <version>0.8.4</version>
                 <executions>
 
                     <!--This execution checks to see how much of the code is covered by the code checks
