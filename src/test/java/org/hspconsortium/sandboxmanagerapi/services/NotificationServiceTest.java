@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,7 +70,7 @@ public class NotificationServiceTest {
 
     @Test
     public void findByIdTest() {
-        when(notificationRepository.findOne(newsItem.getId())).thenReturn(notification);
+        when(notificationRepository.findById(newsItem.getId())).thenReturn(of(notification));
         Notification returnedNotification = notificationService.findById(newsItem.getId());
         assertEquals(notification, returnedNotification);
     }
@@ -80,7 +80,7 @@ public class NotificationServiceTest {
         Notification originalNotification = new Notification();
         originalNotification.setSeen(true);
         originalNotification.setHidden(true);
-        when(notificationRepository.findOne(newsItem.getId())).thenReturn(originalNotification);
+        when(notificationRepository.findById(newsItem.getId())).thenReturn(of(originalNotification));
         notificationService.update(notification);
         assertEquals(notification.getHidden(), originalNotification.getHidden());
         assertEquals(notification.getSeen(), originalNotification.getSeen());
@@ -88,7 +88,7 @@ public class NotificationServiceTest {
 
     @Test(expected = ResourceNotFoundException.class)
     public void updateTestNotFound() {
-        when(notificationRepository.findOne(newsItem.getId())).thenReturn(null);
+        when(notificationRepository.findById(newsItem.getId())).thenReturn(null);
         notificationService.update(notification);
     }
 
@@ -137,7 +137,7 @@ public class NotificationServiceTest {
     @Test
     public void deleteTest() {
         notificationService.delete(notification.getId());
-        verify(notificationRepository).delete(notification.getId());
+        verify(notificationRepository).deleteById(notification.getId());
     }
 
 }

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,7 +53,7 @@ public class SandboxActivityLogServiceTest {
     @Test
     public void deleteTest() {
         sandboxActivityLogService.delete(sandboxActivityLog);
-        verify(repository).delete(sandboxActivityLog.getId());
+        verify(repository).delete(sandboxActivityLog);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class SandboxActivityLogServiceTest {
         when(repository.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandboxActivityLogs);
         sandboxActivityLogService.sandboxDelete(sandbox, user);
         verify(repository).save(any(SandboxActivityLog.class));
-        verify(repository).delete(user.getId());
+        verify(repository).delete(any(SandboxActivityLog.class));
     }
 
     @Test
@@ -152,7 +152,7 @@ public class SandboxActivityLogServiceTest {
     public void userDeleteTest() {
         sandboxActivityLogService.userDelete(user);
         verify(repository).save(any(SandboxActivityLog.class));
-        verify(repository).delete(user.getId());
+        verify(repository).delete(any(SandboxActivityLog.class));
     }
 
     @Test

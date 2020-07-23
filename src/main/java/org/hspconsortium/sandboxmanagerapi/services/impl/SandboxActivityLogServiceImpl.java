@@ -33,7 +33,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     @Transactional
     public void delete(SandboxActivityLog sandboxActivityLog) {
-        repository.deleteById(sandboxActivityLog.getId());
+        repository.delete(sandboxActivityLog);
     }
 
     @Override

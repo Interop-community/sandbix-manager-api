@@ -35,6 +35,6 @@ public class ImageServiceTest {
     @Test
     public void deleteTest() {
         imageService.delete(image.getId());
-        verify(repository).delete(image.getId());
+        verify(repository).deleteById(image.getId());
     }
 }

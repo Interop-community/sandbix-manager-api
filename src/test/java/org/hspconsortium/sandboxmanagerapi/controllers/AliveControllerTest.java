@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(value = AliveController.class, secure = false)
+@WebMvcTest(value = AliveController.class)
 @ContextConfiguration(classes = AliveController.class)
 public class AliveControllerTest {
 

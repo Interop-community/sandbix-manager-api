@@ -26,14 +26,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(value = SandboxController.class, secure = false)
+@WebMvcTest(value = SandboxController.class)
 @ContextConfiguration(classes = SandboxController.class)
 public class SandboxControllerTest {
 

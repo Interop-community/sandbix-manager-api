@@ -30,18 +30,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.contains;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(value = AnalyticsController.class, secure = false)
+@WebMvcTest(value = AnalyticsController.class)
 @ContextConfiguration(classes = AnalyticsController.class)
 public class AnalyticsControllerTest {
 
@@ -677,8 +674,8 @@ public class AnalyticsControllerTest {
 
     @Test(expected = NestedServletException.class)
     public void usersPerSandboxStatsNullUserTest() throws Exception {
-        Integer interval = 1000;
-        Integer n = -1;
+        int interval = 1000;
+        int n = -1;
         String json = json(stringObjectHashMap);
 
         when(authorizationService.getSystemUserId(any())).thenReturn("");

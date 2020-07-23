@@ -36,6 +36,6 @@ public class SandboxImportServiceTest {
     @Test
     public void deleteTest() {
         sandboxImportService.delete(sandboxImport.getId());
-        verify(repository).delete(sandboxImport.getId());
+        verify(repository).deleteById(sandboxImport.getId());
     }
 }

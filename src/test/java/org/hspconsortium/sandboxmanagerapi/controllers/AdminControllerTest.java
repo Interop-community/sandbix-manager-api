@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(value = AdminController.class, secure = false)
+@WebMvcTest(value = AdminController.class)
 @ContextConfiguration(classes = AdminController.class)
 public class AdminControllerTest {
 

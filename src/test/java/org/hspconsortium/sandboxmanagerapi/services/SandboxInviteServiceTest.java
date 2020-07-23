@@ -2,18 +2,18 @@ package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxInviteRepository;
-import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxInviteServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class SandboxInviteServiceTest {
@@ -70,7 +70,7 @@ public class SandboxInviteServiceTest {
     @Test
     public void deleteTest() {
         sandboxInviteService.delete(sandboxInvite.getId());
-        verify(repository).delete(sandboxInvite.getId());
+        verify(repository).deleteById(sandboxInvite.getId());
     }
 
     @Test
@@ -92,7 +92,7 @@ public class SandboxInviteServiceTest {
         when(ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())).thenReturn(false);
         when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
         SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
-        assertEquals(null, returnedSandboxInvite);
+        assertNull(returnedSandboxInvite);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class SandboxInviteServiceTest {
         when(sandboxService.isSandboxMember(any(), any())).thenReturn(true);
         when(sandboxInviteService.save(sandboxInvite)).thenReturn(sandboxInvite);
         SandboxInvite returnedSandboxInvite = sandboxInviteService.create(sandboxInvite);
-        assertEquals(null, returnedSandboxInvite);
+        assertNull(returnedSandboxInvite);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class SandboxInviteServiceTest {
 
     @Test
     public void getByIdTest() {
-        when(repository.findOne(sandboxInvite.getId())).thenReturn(sandboxInvite);
+        when(repository.findById(sandboxInvite.getId())).thenReturn(of(sandboxInvite));
         SandboxInvite returnedSandboxInvite = sandboxInviteService.getById(sandboxInvite.getId());
         assertEquals(sandboxInvite, returnedSandboxInvite);
     }

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 public class SandboxServiceTest {
@@ -173,7 +174,7 @@ public class SandboxServiceTest {
     @Test
     public void deleteTest() {
         sandboxService.delete(sandbox.getId());
-        verify(repository).delete(sandbox.getId());
+        verify(repository).deleteById(sandbox.getId());
     }
 
     @Test
@@ -307,7 +308,7 @@ public class SandboxServiceTest {
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(userPersona);
         Sandbox returnedSandbox = sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
-        assertEquals(null, returnedSandbox);
+        assertNull(returnedSandbox);
     }
 
     @Test(expected = NullPointerException.class)
@@ -322,7 +323,7 @@ public class SandboxServiceTest {
     public void cloneTestCantClone() throws IOException {
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(false);
         Sandbox returnedSandbox = sandboxService.clone(sandbox, sandbox.getSandboxId(), user, bearerToken);
-        assertEquals(null, returnedSandbox);
+        assertNull(returnedSandbox);
     }
 
     @Test(expected = RuntimeException.class)

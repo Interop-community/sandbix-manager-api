@@ -2,20 +2,16 @@ package org.hspconsortium.sandboxmanagerapi.services;
 
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.LaunchScenarioRepository;
-import org.hspconsortium.sandboxmanagerapi.services.AppService;
-import org.hspconsortium.sandboxmanagerapi.services.ContextParamsService;
-import org.hspconsortium.sandboxmanagerapi.services.UserLaunchService;
-import org.hspconsortium.sandboxmanagerapi.services.UserPersonaService;
 import org.hspconsortium.sandboxmanagerapi.services.impl.LaunchScenarioServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class LaunchScenarioServiceTest {
@@ -85,7 +81,7 @@ public class LaunchScenarioServiceTest {
         user.setId(1);
         user.setSbmUserId("me");
         launchScenario.setCreatedBy(user);
-        when(repository.findOne(launchScenario.getId())).thenReturn(launchScenario);
+        when(repository.findById(launchScenario.getId())).thenReturn(of(launchScenario));
     }
 
     @Test
@@ -98,7 +94,7 @@ public class LaunchScenarioServiceTest {
     @Test
     public void deleteWithIdTest() {
         launchScenarioService.delete(launchScenario.getId());
-        verify(repository).delete(launchScenario.getId());
+        verify(repository).deleteById(launchScenario.getId());
     }
 
     @Test
@@ -167,7 +163,7 @@ public class LaunchScenarioServiceTest {
 
     @Test
     public void updateTest() {
-        when(repository.findOne(launchScenario.getId())).thenReturn(launchScenario);
+        when(repository.findById(launchScenario.getId())).thenReturn(of(launchScenario));
         when(userPersonaService.getById(launchScenario.getUserPersona().getId())).thenReturn(userPersona);
         when(appService.getById(launchScenario.getApp().getId())).thenReturn(app);
         launchScenarioService.update(launchScenario);
@@ -177,7 +173,7 @@ public class LaunchScenarioServiceTest {
 
     @Test
     public void updateTestNotFound() {
-        when(repository.findOne(launchScenario.getId())).thenReturn(null);
+        when(repository.findById(launchScenario.getId())).thenReturn(null);
         launchScenarioService.update(launchScenario);
         verify(appService, times(0)).getById(launchScenario.getApp().getId());
         verify(userPersonaService, times(0)).getById(launchScenario.getUserPersona().getId());
@@ -211,12 +207,7 @@ public class LaunchScenarioServiceTest {
 
     @Test
     public void findAllTest() {
-        Iterable<LaunchScenario> launchScenarios = new Iterable<LaunchScenario>() {
-            @Override
-            public Iterator<LaunchScenario> iterator() {
-                return null;
-            }
-        };
+        Iterable<LaunchScenario> launchScenarios = () -> null;
         when(repository.findAll()).thenReturn(launchScenarios);
         Iterable<LaunchScenario> returnedLaunchScenarios = launchScenarioService.findAll();
         assertEquals(launchScenarios, returnedLaunchScenarios);

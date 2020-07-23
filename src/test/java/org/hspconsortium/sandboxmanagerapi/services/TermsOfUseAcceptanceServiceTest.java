@@ -6,6 +6,7 @@ import org.hspconsortium.sandboxmanagerapi.services.impl.TermsOfUseAcceptanceSer
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,7 +34,7 @@ public class TermsOfUseAcceptanceServiceTest {
 
     @Test
     public void getByIdTest() {
-        when(repository.findOne(termsOfUseAcceptance.getId())).thenReturn(termsOfUseAcceptance);
+        when(repository.findById(termsOfUseAcceptance.getId())).thenReturn(of(termsOfUseAcceptance));
         TermsOfUseAcceptance returnedTermsOfUseAcceptance = termsOfUseAcceptanceService.getById(termsOfUseAcceptance.getId());
         assertEquals(termsOfUseAcceptance, returnedTermsOfUseAcceptance);
     }
