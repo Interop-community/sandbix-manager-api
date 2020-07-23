@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
@@ -173,7 +174,7 @@ public class LaunchScenarioServiceTest {
 
     @Test
     public void updateTestNotFound() {
-        when(repository.findById(launchScenario.getId())).thenReturn(null);
+        when(repository.findById(launchScenario.getId())).thenReturn(Optional.empty());
         launchScenarioService.update(launchScenario);
         verify(appService, times(0)).getById(launchScenario.getApp().getId());
         verify(userPersonaService, times(0)).getById(launchScenario.getUserPersona().getId());
