@@ -21,14 +21,14 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Override
     @Transactional
     public void delete(final int id){
-        repository.delete(id);
-    };
+        repository.deleteById(id);
+    }
 
     @Override
     @Transactional
     public void delete(final UserRole userRole){
         delete(userRole.getId());
-    };
+    }
 
     @Override
     @Transactional

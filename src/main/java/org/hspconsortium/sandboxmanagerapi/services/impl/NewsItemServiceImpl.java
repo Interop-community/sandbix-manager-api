@@ -32,7 +32,7 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Override
     @Transactional
     public NewsItem update(NewsItem newsItem) {
-        NewsItem existingNewsItem = repository.findOne(newsItem.getId());
+        NewsItem existingNewsItem = repository.findById(newsItem.getId()).orElse(null);
         if (existingNewsItem != null) {
             existingNewsItem.setActive(newsItem.getActive());
             existingNewsItem.setDescription(newsItem.getDescription());
@@ -48,7 +48,7 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Override
     @Transactional
     public NewsItem findById(Integer id) {
-        return repository.findOne(id);
+        return repository.findById(id).orElse(null);
     }
 
 }

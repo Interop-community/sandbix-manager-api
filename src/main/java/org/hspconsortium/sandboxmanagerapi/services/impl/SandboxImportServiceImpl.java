@@ -27,7 +27,7 @@ public class SandboxImportServiceImpl implements SandboxImportService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override

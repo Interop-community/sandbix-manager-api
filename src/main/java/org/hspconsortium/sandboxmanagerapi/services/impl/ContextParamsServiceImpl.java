@@ -27,7 +27,7 @@ public class ContextParamsServiceImpl implements ContextParamsService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override

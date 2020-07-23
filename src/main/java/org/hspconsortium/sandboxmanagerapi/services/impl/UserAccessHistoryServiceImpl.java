@@ -55,14 +55,14 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
     public void deleteUserAccessInstancesForSandbox(Sandbox sandbox) {
         List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySandboxId(sandbox.getSandboxId());
         for (UserAccessHistory userAccessHistory: userAccessHistories) {
-            userAccessHistoryRepository.delete(userAccessHistory.getId());
+            userAccessHistoryRepository.delete(userAccessHistory);
         }
     }
 
     public void deleteUserAccessInstancesForUser(User user) {
         List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserId(user.getSbmUserId());
         for (UserAccessHistory userAccessHistory: userAccessHistories) {
-            userAccessHistoryRepository.delete(userAccessHistory.getId());
+            userAccessHistoryRepository.delete(userAccessHistory);
         }
     }
 }
