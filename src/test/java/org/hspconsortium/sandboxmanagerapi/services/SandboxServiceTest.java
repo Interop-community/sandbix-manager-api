@@ -351,8 +351,8 @@ public class SandboxServiceTest {
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         sandboxService.update(sandbox, user, bearerToken);
-        verify(sandbox).setName(anyString());
-        verify(sandbox).setDescription(anyString());
+        verify(sandbox).setName(null);
+        verify(sandbox).setDescription(null);
         verify(sandboxActivityLogService, times(0)).sandboxOpenEndpoint(any(), any(), any());
     }
 

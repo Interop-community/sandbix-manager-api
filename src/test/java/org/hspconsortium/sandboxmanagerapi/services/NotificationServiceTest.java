@@ -88,7 +88,7 @@ public class NotificationServiceTest {
 
     @Test(expected = ResourceNotFoundException.class)
     public void updateTestNotFound() {
-        when(notificationRepository.findById(newsItem.getId())).thenReturn(null);
+        when(notificationRepository.findById(newsItem.getId())).thenReturn(Optional.empty());
         notificationService.update(notification);
     }
 

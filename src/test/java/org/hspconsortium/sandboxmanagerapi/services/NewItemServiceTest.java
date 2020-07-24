@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
@@ -44,7 +45,7 @@ public class NewItemServiceTest {
 
     @Test(expected = ResourceNotFoundException.class)
     public void updateTestNotFound() {
-        when(repository.findById(newsItem.getId())).thenReturn(null);
+        when(repository.findById(newsItem.getId())).thenReturn(Optional.empty());
         newsItemService.update(newsItem);
     }
 

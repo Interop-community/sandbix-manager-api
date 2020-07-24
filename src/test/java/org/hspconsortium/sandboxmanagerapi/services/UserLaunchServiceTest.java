@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
@@ -85,7 +86,7 @@ public class UserLaunchServiceTest {
 
     @Test
     public void updateTestReturnsNull() {
-        when(repository.findById(userLaunch.getId())).thenReturn(null);
+        when(repository.findById(userLaunch.getId())).thenReturn(Optional.empty());
         UserLaunch returnedUserLaunch = userLaunchService.update(userLaunch);
         assertNull(returnedUserLaunch);
     }
