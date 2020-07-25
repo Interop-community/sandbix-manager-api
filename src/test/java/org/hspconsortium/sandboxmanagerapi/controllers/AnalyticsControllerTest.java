@@ -1,14 +1,10 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
-import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,11 +15,11 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +27,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -42,8 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = AnalyticsController.class)
 public class AnalyticsControllerTest {
 
-    @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @MockBean
     private OAuthService oAuthService;
@@ -81,12 +80,12 @@ public class AnalyticsControllerTest {
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
-                .findAny()
-                .orElse(null);
+                                                         .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+                                                         .findAny()
+                                                         .orElse(null);
 
         assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+                      this.mappingJackson2HttpMessageConverter);
     }
 
     private Sandbox sandbox;
@@ -122,11 +121,12 @@ public class AnalyticsControllerTest {
         stringObjectSize = stringObjectHashMap.size();
 
         statistics = new Statistics();
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test
     public void countSandboxesByUserTest() throws Exception {
-        List<Sandbox>  userCreatedSandboxes = new ArrayList<>();
+        List<Sandbox> userCreatedSandboxes = new ArrayList<>();
         userCreatedSandboxes.add(sandbox);
         int numberOfSandboxes = userCreatedSandboxes.size();
 
@@ -134,21 +134,17 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findByPayerId(user.getId())).thenReturn(userCreatedSandboxes);
 
-        mvc
-                .perform(
-                        get("/analytics/sandboxes?userId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().string(Integer.toString(numberOfSandboxes)));
+        mvc.perform(get("/analytics/sandboxes?userId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().string(Integer.toString(numberOfSandboxes)));
     }
 
-    @Test(expected=NestedServletException.class)
+    @Test(expected = NestedServletException.class)
     public void countSandboxesByUserNullUserTest() throws Exception {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        get("/analytics/sandboxes?userId=" + user.getSbmUserId()));
+        mvc.perform(get("/analytics/sandboxes?userId=" + user.getSbmUserId()));
     }
 
     @Test
@@ -160,12 +156,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.countUsersPerSandboxByUser(user)).thenReturn(sandboxIdAndUniqueUserCount);
 
-        mvc
-                .perform(
-                        get("/analytics/users?userId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/users?userId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -176,12 +170,10 @@ public class AnalyticsControllerTest {
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        get("/analytics/users?userId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/users?userId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -193,12 +185,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.countAppsPerSandboxByUser(user)).thenReturn(sandboxIdAndAppsCount);
 
-        mvc
-                .perform(
-                        get("/analytics/apps?userId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/apps?userId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -209,12 +199,10 @@ public class AnalyticsControllerTest {
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        get("/analytics/apps?userId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/apps?userId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -227,12 +215,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.retrieveTotalMemoryByUser(user, "")).thenReturn(memoryUsedInMB);
 
-        mvc
-                .perform(
-                        get("/analytics/memory?userId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/memory?userId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -243,12 +229,10 @@ public class AnalyticsControllerTest {
         doNothing().when(authorizationService).checkUserAuthorization(any(), any());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        get("/analytics/memory?userId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/memory?userId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -265,16 +249,14 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(userPersona);
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.handleFhirTransaction(user, transactionInfo,"")).thenReturn(fhirTransaction);
+        when(analyticsService.handleFhirTransaction(user, transactionInfo, "")).thenReturn(fhirTransaction);
 
-        mvc
-                .perform(
-                        post("/analytics/transaction")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(ft));
+        mvc.perform(post("/analytics/transaction")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(ft));
     }
 
     @Test
@@ -288,16 +270,14 @@ public class AnalyticsControllerTest {
         String ft = json(fhirTransaction);
 
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(fhirTransaction);
+        when(analyticsService.handleFhirTransaction(null, transactionInfo, "")).thenReturn(fhirTransaction);
 
-        mvc
-                .perform(
-                        post("/analytics/transaction")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(ft));
+        mvc.perform(post("/analytics/transaction")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(ft));
     }
 
     @Test
@@ -311,16 +291,14 @@ public class AnalyticsControllerTest {
         String ft = json(fhirTransaction);
 
         when(authorizationService.getBearerToken(any())).thenReturn("");
-        when(analyticsService.handleFhirTransaction(null, transactionInfo,"")).thenReturn(fhirTransaction);
+        when(analyticsService.handleFhirTransaction(null, transactionInfo, "")).thenReturn(fhirTransaction);
 
-        mvc
-                .perform(
-                        post("/analytics/transaction")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(ft));
+        mvc.perform(post("/analytics/transaction")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(ft));
     }
 
 //    @Test
@@ -412,12 +390,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n))
-                        .andExpect(status().isOk())
-                        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                        .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=2&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -429,12 +405,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=2&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -446,12 +420,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=2&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -463,12 +435,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=2&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -480,12 +450,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=2&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -497,12 +465,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(2, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=2&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=2&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -515,12 +481,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(interval, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -533,12 +497,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(interval, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -551,12 +513,10 @@ public class AnalyticsControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(analyticsService.transactionStats(interval, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/transactions?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/transactions?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -570,12 +530,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/sandboxMemory?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -589,12 +547,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/sandboxMemory?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -608,12 +564,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/sandboxMemory?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -627,12 +581,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.sandboxMemoryStats(interval, n, "")).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/sandboxMemory?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -645,12 +597,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.sandboxMemoryStats(interval, null, "")).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/sandboxMemory?interval=" + interval) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/sandboxMemory?interval=" + interval))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -664,12 +614,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.usersPerSandboxStats(interval, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/usersPerSandbox?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/usersPerSandbox?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -681,12 +629,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getSystemUserId(any())).thenReturn("");
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/usersPerSandbox?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/usersPerSandbox?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -700,12 +646,10 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.sandboxesPerUserStats(interval, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/sandboxesPerUser?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/sandboxesPerUser?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -719,19 +663,16 @@ public class AnalyticsControllerTest {
         when(authorizationService.getBearerToken(any())).thenReturn("");
         when(analyticsService.sandboxesPerUserStats(interval, n)).thenReturn(stringObjectHashMap);
 
-        mvc
-                .perform(
-                        get("/analytics/overallStats/sandboxesPerUser?interval=" + interval +"&n=" + n) )
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/analytics/overallStats/sandboxesPerUser?interval=" + interval + "&n=" + n))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
 }

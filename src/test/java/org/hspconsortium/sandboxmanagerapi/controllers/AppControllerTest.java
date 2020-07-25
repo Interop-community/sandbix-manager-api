@@ -17,9 +17,10 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,7 +28,7 @@ import java.util.*;
 
 import static ch.qos.logback.core.encoder.ByteArrayUtil.hexStringToByteArray;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -38,8 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = AppController.class)
 public class AppControllerTest {
 
-    @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -65,12 +68,12 @@ public class AppControllerTest {
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
-                .findAny()
-                .orElse(null);
+                                                         .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+                                                         .findAny()
+                                                         .orElse(null);
 
         assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+                      this.mappingJackson2HttpMessageConverter);
     }
 
     private App app;
@@ -98,13 +101,13 @@ public class AppControllerTest {
         image.setContentType("png");
         image.setBytes(hexStringToByteArray("e04fd020ea3a6910a2d808002b30309d"));
         app.setLogo(image);
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test(expected = NestedServletException.class)
     public void getAppNotFoundTest() throws Exception {
         when(appService.getById(app.getId())).thenReturn(null);
-        mvc
-                .perform(get("/app/" + app.getId()));
+        mvc.perform(get("/app/" + app.getId()));
     }
 
     @Test
@@ -114,11 +117,10 @@ public class AppControllerTest {
         when(appService.getById(app.getId())).thenReturn(app);
         when(appService.getClientJSON(app)).thenReturn(app);
 
-        mvc
-                .perform(get("/app/" + app.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/app/" + app.getId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -130,11 +132,10 @@ public class AppControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.checkSandboxUserReadAuthorization(any(), any())).thenReturn(user.getSbmUserId());
         when(appService.findBySandboxIdAndCreatedByOrVisibility(sandbox.getSandboxId(), user.getSbmUserId(), Visibility.PUBLIC)).thenReturn(apps);
-        mvc
-                .perform(get("/app?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/app?sandboxId=" + sandbox.getSandboxId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -146,14 +147,12 @@ public class AppControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(appService.create(any(), any())).thenReturn(app);
 
-        mvc
-                .perform(
-                        post("/app")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(post("/app")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -162,11 +161,9 @@ public class AppControllerTest {
 
         when(sandboxService.findBySandboxId(app.getSandbox().getSandboxId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        post("/app")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json));
+        mvc.perform(post("/app")
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json));
     }
 
     @Test
@@ -176,14 +173,12 @@ public class AppControllerTest {
         when(appService.getById(app.getId())).thenReturn(app);
         when(appService.update(any())).thenReturn(app);
 
-        mvc
-                .perform(
-                        put("/app/" + app.getId())
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(put("/app/" + app.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -192,45 +187,39 @@ public class AppControllerTest {
 
         when(appService.update(any())).thenReturn(app);
 
-        mvc
-                .perform(
-                        put("/app/" + app.getId())
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(put("/app/" + app.getId())
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
     public void deleteTest() throws Exception {
         when(appService.getById(app.getId())).thenReturn(app);
         doNothing().when(appService).delete(app);
-        mvc
-                .perform(delete("/app/" + app.getId()))
-                .andExpect(status().isOk());
+        mvc.perform(delete("/app/" + app.getId()))
+           .andExpect(status().isOk());
     }
 
     @Test(expected = NestedServletException.class)
     public void deleteTestAppNotFound() throws Exception {
         doNothing().when(appService).delete(app);
-        mvc
-                .perform(delete("/app/" + app.getId()));
+        mvc.perform(delete("/app/" + app.getId()));
     }
 
     @Test
     public void getFullImageTest() throws Exception {
         when(appService.getById(app.getId())).thenReturn(app);
-        mvc
-                .perform(get("/app/" + app.getId() + "/image"))
-                .andExpect(status().isOk());
+        mvc.perform(get("/app/" + app.getId() + "/image"))
+           .andExpect(status().isOk());
     }
 
     @Test(expected = NestedServletException.class)
     public void getFullImageTestAppNotFound() throws Exception {
         when(appService.getById(app.getId())).thenReturn(null);
-        mvc
-                .perform(get("/app/" + app.getId() + "/image"));
+        mvc.perform(get("/app/" + app.getId() + "/image"));
     }
 
     @Test
@@ -238,9 +227,8 @@ public class AppControllerTest {
         when(appService.getById(app.getId())).thenReturn(app);
         byte[] bytes = Files.readAllBytes(Paths.get(resourceLoader.getResource("classpath:templates/hspc-sndbx-logo.png").getURI()));
         MockMultipartFile file = new MockMultipartFile("file", "hspc-sndbx-logo.png", "image/jpeg", bytes);
-        mvc
-                .perform(fileUpload("/app/" + app.getId() + "/image").file(file))
-                .andExpect(status().isOk());
+        mvc.perform(fileUpload("/app/" + app.getId() + "/image").file(file))
+           .andExpect(status().isOk());
     }
 
     @Test(expected = NestedServletException.class)
@@ -248,42 +236,36 @@ public class AppControllerTest {
         when(appService.getById(app.getId())).thenReturn(null);
         byte[] bytes = Files.readAllBytes(Paths.get(resourceLoader.getResource("classpath:templates/hspc-sndbx-logo.png").getURI()));
         MockMultipartFile file = new MockMultipartFile("file", "hspc-sndbx-logo.png", "image/jpeg", bytes);
-        mvc
-                .perform(fileUpload("/app/" + app.getId() + "/image").file(file));
+        mvc.perform(fileUpload("/app/" + app.getId() + "/image").file(file));
     }
 
     @Test
     public void putFullImageTestImageError() throws Exception {
         when(appService.getById(app.getId())).thenReturn(app);
-        when(appService.updateAppImage(any(), any())).thenThrow(IOException.class);
         byte[] bytes = Files.readAllBytes(Paths.get(resourceLoader.getResource("classpath:templates/hspc-sndbx-logo.png").getURI()));
         MockMultipartFile file = new MockMultipartFile("file", "hspc-sndbx-logo.png", "image/jpeg", bytes);
-        mvc
-                .perform(fileUpload("/app/" + app.getId() + "/image").file(file))
-                .andExpect(status().isOk());
+        mvc.perform(fileUpload("/app/" + app.getId() + "/image").file(file))
+           .andExpect(status().isOk());
     }
 
     @Test
     public void deleteFullImageTest() throws Exception {
         when(appService.getById(app.getId())).thenReturn(app);
         when(appService.deleteAppImage(app)).thenReturn(app);
-        mvc
-                .perform(delete("/app/" + app.getId() + "/image"))
-                .andExpect(status().isOk());
+        mvc.perform(delete("/app/" + app.getId() + "/image"))
+           .andExpect(status().isOk());
     }
 
     @Test(expected = NestedServletException.class)
     public void deleteFullImageTestAppNotFound() throws Exception {
         when(appService.getById(app.getId())).thenReturn(null);
-        mvc
-                .perform(delete("/app/" + app.getId() + "/image"));
+        mvc.perform(delete("/app/" + app.getId() + "/image"));
     }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
 }

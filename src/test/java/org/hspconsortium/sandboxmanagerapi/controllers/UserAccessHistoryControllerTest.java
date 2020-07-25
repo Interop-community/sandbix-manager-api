@@ -1,7 +1,13 @@
 package org.hspconsortium.sandboxmanagerapi.controllers;
 
-import org.hspconsortium.sandboxmanagerapi.model.*;
-import org.hspconsortium.sandboxmanagerapi.services.*;
+import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
+import org.hspconsortium.sandboxmanagerapi.model.User;
+import org.hspconsortium.sandboxmanagerapi.model.UserAccessHistory;
+import org.hspconsortium.sandboxmanagerapi.model.UserRole;
+import org.hspconsortium.sandboxmanagerapi.services.AuthorizationService;
+import org.hspconsortium.sandboxmanagerapi.services.SandboxService;
+import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
+import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,10 +21,14 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,8 +46,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = UserAccessHistoryController.class)
 public class UserAccessHistoryControllerTest {
 
-    @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -57,12 +69,12 @@ public class UserAccessHistoryControllerTest {
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
-                .findAny()
-                .orElse(null);
+                                                         .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+                                                         .findAny()
+                                                         .orElse(null);
 
         assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+                      this.mappingJackson2HttpMessageConverter);
     }
 
     private Sandbox sandbox;
@@ -85,6 +97,7 @@ public class UserAccessHistoryControllerTest {
         userAccessHistory = new UserAccessHistory();
         userAccessHistoryList = new ArrayList<>();
         userAccessHistoryList.add(userAccessHistory);
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test
@@ -92,11 +105,10 @@ public class UserAccessHistoryControllerTest {
         String json = json(userAccessHistoryList);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSandbox(sandbox)).thenReturn(userAccessHistoryList);
-        mvc
-                .perform(get("/sandbox-access?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/sandbox-access?sandboxId=" + sandbox.getSandboxId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -104,11 +116,10 @@ public class UserAccessHistoryControllerTest {
         String json = json(userAccessHistoryList);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
         when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSandbox(sandbox)).thenReturn(userAccessHistoryList);
-        mvc
-                .perform(get("/sandbox-access?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/sandbox-access?sandboxId=" + sandbox.getSandboxId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -116,11 +127,10 @@ public class UserAccessHistoryControllerTest {
         String json = json(userAccessHistoryList);
         when(userService.findBySbmUserId(any())).thenReturn(user);
         when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSbmUser(user)).thenReturn(userAccessHistoryList);
-        mvc
-                .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -128,31 +138,34 @@ public class UserAccessHistoryControllerTest {
         String json = json(userAccessHistoryList);
         when(userService.findBySbmUserId(any())).thenReturn(null);
         when(userAccessHistoryService.getLatestUserAccessHistoryInstancesWithSbmUser(user)).thenReturn(userAccessHistoryList);
-        mvc
-                .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+           .andExpect(content().json(json));
     }
 
     @Test
     public void getLastSandboxAccessTest() throws Exception {
         Timestamp timestamp = new Timestamp(new Date().getTime());
+        ZonedDateTime zonedDateTime = timestamp.toLocalDateTime().atZone(ZoneId.systemDefault());
         when(userService.findBySbmUserId(any())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user)).thenReturn(timestamp);
-        mvc
-                .perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId() + "&sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(Long.toString(timestamp.getTime())));
+        mvc.perform(get("/sandbox-access?sbmUserId=" + user.getSbmUserId() + "&sandboxId=" + sandbox.getSandboxId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content -> {
+               String timestampString = timestamp.toInstant().toString();
+               if (!content.getResponse().getContentAsString().contains(timestampString.substring(0, timestampString.length()-1))) {
+                   throw new Exception();
+               }
+           });
     }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
 }

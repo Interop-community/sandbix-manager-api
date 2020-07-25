@@ -15,6 +15,8 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
@@ -35,8 +37,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = LaunchScenarioController.class)
 public class LaunchScenarioControllerTest {
 
-    @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -74,12 +78,12 @@ public class LaunchScenarioControllerTest {
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
-                .findAny()
-                .orElse(null);
+                                                         .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+                                                         .findAny()
+                                                         .orElse(null);
 
         assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+                      this.mappingJackson2HttpMessageConverter);
     }
 
     private Sandbox sandbox;
@@ -116,6 +120,7 @@ public class LaunchScenarioControllerTest {
         userPersona = new UserPersona();
         userPersona.setSandbox(sandbox);
         userPersona.setId(1);
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test
@@ -125,23 +130,21 @@ public class LaunchScenarioControllerTest {
         when(userService.findBySbmUserId(launchScenario.getCreatedBy().getSbmUserId())).thenReturn(user);
         when(launchScenarioService.create(any())).thenReturn(launchScenario);
         when(userLaunchService.create(any())).thenReturn(userLaunch);
-        mvc
-                .perform(post("/launchScenario")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(post("/launchScenario")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void createLaunchScenarioTestSandboxNotFound() throws Exception {
         String json = json(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(null);
-        mvc
-                .perform(post("/launchScenario")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json));
+        mvc.perform(post("/launchScenario")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -149,10 +152,9 @@ public class LaunchScenarioControllerTest {
         String json = json(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(launchScenario.getCreatedBy().getSbmUserId())).thenReturn(null);
-        mvc
-                .perform(post("/launchScenario")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json));
+        mvc.perform(post("/launchScenario")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json));
     }
 
     @Test
@@ -161,23 +163,21 @@ public class LaunchScenarioControllerTest {
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(sandbox);
         when(launchScenarioService.update(any())).thenReturn(launchScenario);
-        mvc
-                .perform(put("/launchScenario/" + launchScenario.getId())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(put("/launchScenario/" + launchScenario.getId())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void updateLaunchScenarioTestLaunchScenarioNotFound() throws Exception {
         String json = json(launchScenario);
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(null);
-        mvc
-                .perform(put("/launchScenario/" + launchScenario.getId())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json));
+        mvc.perform(put("/launchScenario/" + launchScenario.getId())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -185,10 +185,9 @@ public class LaunchScenarioControllerTest {
         String json = json(launchScenario);
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(null);
-        mvc
-                .perform(put("/launchScenario/" + launchScenario.getId())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json));
+        mvc.perform(put("/launchScenario/" + launchScenario.getId())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json));
     }
 
     @Test
@@ -197,11 +196,10 @@ public class LaunchScenarioControllerTest {
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(sandbox);
         when(userLaunchService.findByUserIdAndLaunchScenarioId(user.getSbmUserId(), launchScenario.getId())).thenReturn(userLaunch);
-        mvc
-                .perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json))
-                .andExpect(status().isOk());
+        mvc.perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json))
+           .andExpect(status().isOk());
     }
 
     @Test
@@ -210,21 +208,19 @@ public class LaunchScenarioControllerTest {
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(sandbox);
         when(userLaunchService.findByUserIdAndLaunchScenarioId(user.getSbmUserId(), launchScenario.getId())).thenReturn(null);
-        mvc
-                .perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json))
-                .andExpect(status().isOk());
+        mvc.perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json))
+           .andExpect(status().isOk());
     }
 
     @Test(expected = NestedServletException.class)
     public void updateLaunchTimestampTestLaunchScenarioNotFound() throws Exception {
         String json = json(launchScenario);
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(null);
-        mvc
-                .perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json));
+        mvc.perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -232,10 +228,9 @@ public class LaunchScenarioControllerTest {
         String json = json(launchScenario);
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(null);
-        mvc
-                .perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json));
+        mvc.perform(put("/launchScenario/" + launchScenario.getId() + "/launched")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(json));
     }
 
     @Test
@@ -243,18 +238,16 @@ public class LaunchScenarioControllerTest {
         String json = json(launchScenarios);
         when(appService.getById(app.getId())).thenReturn(app);
         when(launchScenarioService.findByAppIdAndSandboxId(app.getId(), app.getSandbox().getSandboxId())).thenReturn(launchScenarios);
-        mvc
-                .perform(get("/launchScenario?appId=" + app.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/launchScenario?appId=" + app.getId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void getLaunchScenariosForAppTestAppNotFound() throws Exception {
         when(appService.getById(app.getId())).thenReturn(null);
-        mvc
-                .perform(get("/launchScenario?appId=" + app.getId()));
+        mvc.perform(get("/launchScenario?appId=" + app.getId()));
     }
 
     @Test
@@ -262,18 +255,16 @@ public class LaunchScenarioControllerTest {
         String json = json(launchScenarios);
         when(userPersonaService.getById(userPersona.getId())).thenReturn(userPersona);
         when(launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId())).thenReturn(launchScenarios);
-        mvc
-                .perform(get("/launchScenario?userPersonaId=" + userPersona.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/launchScenario?userPersonaId=" + userPersona.getId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void getLaunchScenariosForPersonaTestUserPersonaNotFound() throws Exception {
         when(userPersonaService.getById(userPersona.getId())).thenReturn(null);
-        mvc
-                .perform(get("/launchScenario?userPersonaId=" + userPersona.getId()));
+        mvc.perform(get("/launchScenario?userPersonaId=" + userPersona.getId()));
     }
 
     @Test
@@ -281,17 +272,15 @@ public class LaunchScenarioControllerTest {
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(sandbox);
         doNothing().when(launchScenarioService).delete(launchScenario);
-        mvc
-                .perform(delete("/launchScenario/" + launchScenario.getId()))
-                .andExpect(status().isOk());
+        mvc.perform(delete("/launchScenario/" + launchScenario.getId()))
+           .andExpect(status().isOk());
     }
 
     @Test(expected = NestedServletException.class)
     public void deleteLaunchScenarioTestLaunchScenarioNotFound() throws Exception {
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(null);
         doNothing().when(launchScenarioService).delete(launchScenario);
-        mvc
-                .perform(delete("/launchScenario/" + launchScenario.getId()));
+        mvc.perform(delete("/launchScenario/" + launchScenario.getId()));
     }
 
     @Test(expected = NestedServletException.class)
@@ -299,8 +288,7 @@ public class LaunchScenarioControllerTest {
         when(launchScenarioService.getById(launchScenario.getId())).thenReturn(launchScenario);
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(null);
         doNothing().when(launchScenarioService).delete(launchScenario);
-        mvc
-                .perform(delete("/launchScenario/" + launchScenario.getId()));
+        mvc.perform(delete("/launchScenario/" + launchScenario.getId()));
     }
 
     @Test
@@ -311,25 +299,22 @@ public class LaunchScenarioControllerTest {
         when(launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandbox.getSandboxId(), user.getSbmUserId(), Visibility.PUBLIC)).thenReturn(launchScenarios);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(launchScenarioService.updateLastLaunchForCurrentUser(launchScenarios, user)).thenReturn(launchScenarios);
-        mvc
-                .perform(get("/launchScenario?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/launchScenario?sandboxId=" + sandbox.getSandboxId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void getLaunchScenariosTestSandboxNotFound() throws Exception {
         when(sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId())).thenReturn(null);
-        mvc
-                .perform(get("/launchScenario?sandboxId=" + sandbox.getSandboxId()));
+        mvc.perform(get("/launchScenario?sandboxId=" + sandbox.getSandboxId()));
     }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
 }

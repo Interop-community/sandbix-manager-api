@@ -16,6 +16,8 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
@@ -42,8 +44,10 @@ public class SandboxInviteControllerTest {
     @MockBean
     private ModelMapper modelMapper;
 
-    @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -72,12 +76,12 @@ public class SandboxInviteControllerTest {
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
-                .findAny()
-                .orElse(null);
+                                                         .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+                                                         .findAny()
+                                                         .orElse(null);
 
         assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+                      this.mappingJackson2HttpMessageConverter);
     }
 
     private Sandbox sandbox;
@@ -110,6 +114,7 @@ public class SandboxInviteControllerTest {
         sandboxInvite.setId(1);
         sandboxInvites = new ArrayList<>();
         sandboxInvites.add(sandboxInvite);
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test
@@ -123,12 +128,11 @@ public class SandboxInviteControllerTest {
         when(userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId())).thenReturn(user);
         doNothing().when(userAccessHistoryService).saveUserAccessInstance(sandbox, user);
         doNothing().when(emailService).sendEmail(any(), any(), any(), anyInt());
-        mvc
-                .perform(put("/sandboxinvite")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(put("/sandboxinvite")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -145,12 +149,11 @@ public class SandboxInviteControllerTest {
         when(sandboxInviteService.save(any())).thenReturn(sandboxInvite);
         doNothing().when(userAccessHistoryService).saveUserAccessInstance(sandbox, user);
         doNothing().when(emailService).sendEmail(any(), any(), any(), anyInt());
-        mvc
-                .perform(put("/sandboxinvite")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(put("/sandboxinvite")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -161,23 +164,21 @@ public class SandboxInviteControllerTest {
         when(sandboxInviteService.findInvitesByInviteeIdAndSandboxId(sandboxInvite.getInvitee().getSbmUserId(), sandboxInvite.getSandbox().getSandboxId())).thenReturn(new ArrayList<>());
         when(sandboxInviteService.findInvitesByInviteeEmailAndSandboxId(sandboxInvite.getInvitee().getEmail(), sandboxInvite.getSandbox().getSandboxId())).thenReturn(new ArrayList<>());
         when(sandboxInviteService.create(any())).thenReturn(sandboxInvite);
-        mvc
-                .perform(put("/sandboxinvite")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(put("/sandboxinvite")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void createOrUpdateSandboxInviteTestSandboxNotFound() throws Exception {
         String json = json(sandboxInvite);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        mvc
-                .perform(put("/sandboxinvite")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json));
+        mvc.perform(put("/sandboxinvite")
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json));
     }
 
 //    @Test
@@ -195,19 +196,17 @@ public class SandboxInviteControllerTest {
     @Test
     public void getSandboxInvitesByInviteeTest() throws Exception {
         when(sandboxInviteService.findInvitesByInviteeIdAndStatus(user.getSbmUserId(), sandboxInvite.getStatus())).thenReturn(sandboxInvites);
-        mvc
-                .perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
     public void getSandboxInvitesByInviteeTestReturnsEmpty() throws Exception {
         when(sandboxInviteService.findInvitesByInviteeIdAndStatus(user.getSbmUserId(), sandboxInvite.getStatus())).thenReturn(null);
-        mvc
-                .perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+        mvc.perform(get("/sandboxinvite?sbmUserId=" + user.getSbmUserId() + "&status=" + sandboxInvite.getStatus().toString()))
+           .andExpect(status().isOk())
+           .andExpect(content().string("[]"));
     }
 
 //    @Test
@@ -230,10 +229,9 @@ public class SandboxInviteControllerTest {
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(sandboxInviteService.findInvitesBySandboxIdAndStatus(sandbox.getSandboxId(), sandboxInvite.getStatus())).thenReturn(sandboxInvites);
-        mvc
-                .perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -242,25 +240,22 @@ public class SandboxInviteControllerTest {
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxInviteService.findInvitesBySandboxIdAndStatus(sandbox.getSandboxId(), sandboxInvite.getStatus())).thenReturn(null);
-        mvc
-                .perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+        mvc.perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()))
+           .andExpect(status().isOk())
+           .andExpect(content().string("[]"));
     }
 
     @Test(expected = NestedServletException.class)
     public void getSandboxInvitesBySandboxTestSandboxNotFound() throws Exception {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        mvc
-                .perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()));
+        mvc.perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()));
     }
 
     @Test(expected = NestedServletException.class)
     public void getSandboxInvitesBySandboxTestUserNotFound() throws Exception {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-        mvc
-                .perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()));
+        mvc.perform(get("/sandboxinvite?sandboxId=" + sandbox.getSandboxId() + "&status=" + sandboxInvite.getStatus().toString()));
     }
 
     @Test
@@ -269,11 +264,10 @@ public class SandboxInviteControllerTest {
         when(sandboxInviteService.getById(sandboxInvite.getId())).thenReturn(sandboxInvite);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        mvc
-                .perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.ACCEPTED.toString())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk());
+        mvc.perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.ACCEPTED.toString())
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json))
+           .andExpect(status().isOk());
         verify(sandboxActivityLogService).sandboxUserInviteAccepted(sandbox, user);
         verify(sandboxInviteService).save(sandboxInvite);
     }
@@ -282,10 +276,9 @@ public class SandboxInviteControllerTest {
     public void updateSandboxInviteTestInviteNotFound() throws Exception {
         String json = json(sandboxInvite);
         when(sandboxInviteService.getById(sandboxInvite.getId())).thenReturn(null);
-        mvc
-                .perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.ACCEPTED.toString())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json));
+        mvc.perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.ACCEPTED.toString())
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -293,10 +286,9 @@ public class SandboxInviteControllerTest {
         String json = json(sandboxInvite);
         when(sandboxInviteService.getById(sandboxInvite.getId())).thenReturn(sandboxInvite);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(null);
-        mvc
-                .perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.ACCEPTED.toString())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json));
+        mvc.perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.ACCEPTED.toString())
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json));
     }
 
     @Test
@@ -305,11 +297,10 @@ public class SandboxInviteControllerTest {
         when(sandboxInviteService.getById(sandboxInvite.getId())).thenReturn(sandboxInvite);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        mvc
-                .perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.REJECTED.toString())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk());
+        mvc.perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.REJECTED.toString())
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json))
+           .andExpect(status().isOk());
         verify(sandboxActivityLogService).sandboxUserInviteRejected(sandboxInvite.getSandbox(), sandboxInvite.getInvitee());
     }
 
@@ -319,19 +310,17 @@ public class SandboxInviteControllerTest {
         when(sandboxInviteService.getById(sandboxInvite.getId())).thenReturn(sandboxInvite);
         when(userService.findBySbmUserId(any())).thenReturn(user);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
-        mvc
-                .perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.REVOKED.toString())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(json))
-                .andExpect(status().isOk());
+        mvc.perform(put("/sandboxinvite/" + sandboxInvite.getId() + "?status=" + InviteStatus.REVOKED.toString())
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json))
+           .andExpect(status().isOk());
         verify(sandboxActivityLogService).sandboxUserInviteRevoked(sandboxInvite.getSandbox(), user);
     }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
 }

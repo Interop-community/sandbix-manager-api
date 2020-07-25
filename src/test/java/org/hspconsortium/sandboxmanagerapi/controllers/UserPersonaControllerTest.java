@@ -17,6 +17,8 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
 import java.io.IOException;
@@ -37,8 +39,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(value = UserPersonaController.class)
 @ContextConfiguration(classes = UserPersonaController.class)
 public class UserPersonaControllerTest {
-    @Autowired
+
     private MockMvc mvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
@@ -61,12 +66,12 @@ public class UserPersonaControllerTest {
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.stream(converters)
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
-                .findAny()
-                .orElse(null);
+                                                         .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+                                                         .findAny()
+                                                         .orElse(null);
 
         assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+                      this.mappingJackson2HttpMessageConverter);
     }
 
     private Sandbox sandbox;
@@ -104,6 +109,7 @@ public class UserPersonaControllerTest {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandbox);
         when(userService.findBySbmUserId(user.getSbmUserId())).thenReturn(user);
         when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test
@@ -111,14 +117,12 @@ public class UserPersonaControllerTest {
         String json = json(userPersona);
         when(userPersonaService.create(any())).thenReturn(userPersona);
 
-        mvc
-                .perform(
-                        post("/userPersona")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(post("/userPersona")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -126,11 +130,9 @@ public class UserPersonaControllerTest {
         String json = json(userPersona);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        post("/userPersona")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json));
+        mvc.perform(post("/userPersona")
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json));
     }
 
     @Test
@@ -138,14 +140,12 @@ public class UserPersonaControllerTest {
         String json = json(userPersona);
         when(userPersonaService.update(any())).thenReturn(userPersona);
 
-        mvc
-                .perform(
-                        put("/userPersona")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(put("/userPersona")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
@@ -153,84 +153,68 @@ public class UserPersonaControllerTest {
         String json = json(userPersona);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        put("/userPersona")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json));
+        mvc.perform(put("/userPersona")
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json));
     }
 
     @Test
     public void getSandboxUserPersonaTest() throws Exception {
         String json = json(userPersonas);
         when(userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandbox.getSandboxId(), user.getSbmUserId(), Visibility.PUBLIC)).thenReturn(userPersonas);
-        mvc
-                .perform(
-                        get("/userPersona?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/userPersona?sandboxId=" + sandbox.getSandboxId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void getSandboxUserPersonaTestSandboxNotFound() throws Exception {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        mvc
-                .perform(
-                        get("/userPersona?sandboxId=" + sandbox.getSandboxId()));
+        mvc.perform(get("/userPersona?sandboxId=" + sandbox.getSandboxId()));
     }
 
     @Test
     public void getSandboxDefaultUserPersonaTest() throws Exception {
         String json = json(userPersona);
         when(userPersonaService.findDefaultBySandboxId(sandbox.getSandboxId(), user.getSbmUserId(), Visibility.PUBLIC)).thenReturn(userPersona);
-        mvc
-                .perform(
-                        get("/userPersona/default?sandboxId=" + sandbox.getSandboxId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/userPersona/default?sandboxId=" + sandbox.getSandboxId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test(expected = NestedServletException.class)
     public void getSandboxDefaultUserPersonaTestSandboxNotFound() throws Exception {
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        mvc
-                .perform(
-                        get("/userPersona/default?sandboxId=" + sandbox.getSandboxId()));
+        mvc.perform(get("/userPersona/default?sandboxId=" + sandbox.getSandboxId()));
     }
 
     @Test
     public void checkForUserPersonaByIdTest() throws Exception {
         when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(userPersona);
 
-        mvc
-                .perform(
-                        get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string(userPersona.getPersonaUserId()));
+        mvc.perform(get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType("text/plain;charset=UTF-8"))
+           .andExpect(content().string(userPersona.getPersonaUserId()));
     }
 
     @Test
     public void checkForUserPersonaByIdTestReturnsNothing() throws Exception {
         when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
 
-        mvc
-                .perform(
-                        get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+        mvc.perform(get("/userPersona?lookUpId=" + userPersona.getPersonaUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().string(""));
     }
 
     @Test
     public void deleteSandboxUserPersonaTest() throws Exception {
         when(userPersonaService.getById(userPersona.getId())).thenReturn(userPersona);
         doNothing().when(userPersonaService).delete(userPersona);
-        mvc
-                .perform(
-                        delete("/userPersona/" + userPersona.getId()))
-                .andExpect(status().isOk());
+        mvc.perform(delete("/userPersona/" + userPersona.getId()))
+           .andExpect(status().isOk());
         verify(userPersonaService).delete(userPersona);
     }
 
@@ -246,21 +230,17 @@ public class UserPersonaControllerTest {
     public void readUserPersonaTest() throws Exception {
         String json = json(userPersonaDto);
         when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(userPersona);
-        mvc
-                .perform(
-                        get("/userPersona/" + userPersona.getPersonaUserId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(get("/userPersona/" + userPersona.getPersonaUserId()))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
     public void readUserPersonaTestUserPersonaNotFound() throws Exception {
         when(userPersonaService.findByPersonaUserId(userPersona.getPersonaUserId())).thenReturn(null);
-        mvc
-                .perform(
-                        get("/userPersona/" + userPersona.getPersonaUserId()))
-                .andExpect(status().isNotFound());
+        mvc.perform(get("/userPersona/" + userPersona.getPersonaUserId()))
+           .andExpect(status().isNotFound());
     }
 
 
@@ -274,14 +254,12 @@ public class UserPersonaControllerTest {
         when(userPersonaService.findByPersonaUserId(userPersonaCredentials.getUsername())).thenReturn(userPersona);
         userPersona.setPassword("password");
         when(jwtService.createSignedJwt(userPersonaCredentials.getUsername())).thenReturn("jwt");
-        mvc
-                .perform(
-                        post("/userPersona/authenticate")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(json));
+        mvc.perform(post("/userPersona/authenticate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(content().json(json));
     }
 
     @Test
@@ -294,12 +272,10 @@ public class UserPersonaControllerTest {
         when(userPersonaService.findByPersonaUserId(userPersonaCredentials.getUsername())).thenReturn(userPersona);
         userPersona.setPassword("different-password");
         when(jwtService.createSignedJwt(userPersonaCredentials.getUsername())).thenReturn("jwt");
-        mvc
-                .perform(
-                        post("/userPersona/authenticate")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isForbidden());
+        mvc.perform(post("/userPersona/authenticate")
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json))
+           .andExpect(status().isForbidden());
     }
 
     @Test
@@ -309,39 +285,32 @@ public class UserPersonaControllerTest {
         userPersonaCredentials.setPassword("password");
         String json = json(userPersonaCredentials);
         when(userPersonaService.findByPersonaUserId(userPersonaCredentials.getUsername())).thenReturn(null);
-        mvc
-                .perform(
-                        post("/userPersona/authenticate")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isNotFound());
+        mvc.perform(post("/userPersona/authenticate")
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json))
+           .andExpect(status().isNotFound());
     }
 
     @Test
     public void authenticateUserPersonaTestUserCredentialsHasNoUserName() throws Exception {
         UserPersonaCredentials userPersonaCredentials = new UserPersonaCredentials();
         String json = json(userPersonaCredentials);
-        mvc
-                .perform(
-                        post("/userPersona/authenticate")
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .content(json))
-                .andExpect(status().isBadRequest());
+        mvc.perform(post("/userPersona/authenticate")
+                            .contentType(MediaType.APPLICATION_JSON_UTF8)
+                            .content(json))
+           .andExpect(status().isBadRequest());
     }
 
     @Test
     public void authenticateUserPersonaTestUserPersonaCredentialsNull() throws Exception {
-        mvc
-                .perform(
-                        post("/userPersona/authenticate"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(post("/userPersona/authenticate"))
+           .andExpect(status().isBadRequest());
     }
 
     @SuppressWarnings("unchecked")
     private String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
 }
