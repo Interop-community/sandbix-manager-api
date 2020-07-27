@@ -13,7 +13,7 @@ public class ContextParams {
     }
 
     @Id // @Id indicates that this it a unique primary key
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer getId() {
         return id;
     }
