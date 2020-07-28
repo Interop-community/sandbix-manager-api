@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-jenv local 1.8
+jenv local 11
 
 java \
   -Xms256M \
