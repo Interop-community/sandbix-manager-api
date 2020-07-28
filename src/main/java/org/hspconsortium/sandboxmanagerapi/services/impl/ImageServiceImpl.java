@@ -27,6 +27,6 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 }

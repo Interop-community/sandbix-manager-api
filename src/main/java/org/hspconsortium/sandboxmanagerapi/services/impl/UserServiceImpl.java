@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public User findById(final Integer id) {
-        User user = repository.findById(id);
+        User user = repository.findById(id).orElse(null);
 
         if(user == null)
             return null;

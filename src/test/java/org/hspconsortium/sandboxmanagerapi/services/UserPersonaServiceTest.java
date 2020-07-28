@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -54,7 +55,7 @@ public class UserPersonaServiceTest {
 
     @Test
     public void getByIdTest() {
-        when(repository.findOne(userPersona.getId())).thenReturn(userPersona);
+        when(repository.findById(userPersona.getId())).thenReturn(of(userPersona));
         UserPersona returnedUserPersona = userPersonaService.getById(userPersona.getId());
         assertEquals(userPersona, returnedUserPersona);
     }
@@ -103,14 +104,14 @@ public class UserPersonaServiceTest {
 
     @Test
     public void deleteTest() {
-        userPersonaService.delete(userPersona.getId());
-        verify(repository).delete(userPersona.getId());
+        userPersonaService.delete(userPersona);
+        verify(repository).deleteById(userPersona.getId());
     }
 
     @Test
     public void deleteTestByObject() {
         userPersonaService.delete(userPersona);
-        verify(repository).delete(userPersona.getId());
+        verify(repository).deleteById(userPersona.getId());
     }
 
     @Test(expected = RuntimeException.class)
@@ -119,7 +120,7 @@ public class UserPersonaServiceTest {
         launchScenarios.add(launchScenario);
         when(launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), sandbox.getSandboxId())).thenReturn(launchScenarios);
         userPersonaService.delete(userPersona);
-        verify(repository).delete(userPersona.getId());
+        verify(repository).deleteById(userPersona.getId());
     }
 
     @Test

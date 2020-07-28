@@ -53,7 +53,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
 
     @Override
     public CdsServiceEndpoint getById(final int id) {
-        return repository.findOne(id);
+        return repository.findById(id).orElse(null);
     }
 
     @Override

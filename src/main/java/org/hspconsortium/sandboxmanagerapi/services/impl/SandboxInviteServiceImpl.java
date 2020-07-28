@@ -68,7 +68,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
 
     @Override
     public SandboxInvite getById(final int id) {
-        return repository.findOne(id);
+        return repository.findById(id).orElse(null);
     }
 
     @Override

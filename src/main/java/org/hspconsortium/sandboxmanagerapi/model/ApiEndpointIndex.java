@@ -1,10 +1,8 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@ConfigurationProperties("api_endpoint_index")
-@Configuration
+@ConfigurationProperties("api-endpoint-index")
 public class ApiEndpointIndex {
 
     private FhirVersion prev;

@@ -68,7 +68,7 @@ public class AppServiceImpl implements AppService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
@@ -203,7 +203,7 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public App getById(final int id) {
-        return repository.findOne(id);
+        return repository.findById(id).orElse(null);
     }
 
     @Override

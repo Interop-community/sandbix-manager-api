@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import static java.util.Optional.of;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -105,7 +106,7 @@ public class AppServiceTest {
     @Test
     public void deleteWithIdTest() {
         appService.delete(1);
-        verify(appRepository).delete(1);
+        verify(appRepository).deleteById(1);
     }
 
     @Test
@@ -145,14 +146,14 @@ public class AppServiceTest {
 
     @Test
     public void updateTest() {
-        when(appRepository.findOne(app.getId())).thenReturn(app);
+        when(appRepository.findById(app.getId())).thenReturn(of(app));
         appService.update(app);
         verify(oAuthClientService).putOAuthClientWithClientId(app.getClientId(), app.getClientJSON());
     }
 
     @Test
     public void updateTestClientNameNull() {
-        when(appRepository.findOne(app2.getId())).thenReturn(app2);
+        when(appRepository.findById(app2.getId())).thenReturn(of(app2));
         appService.update(app2);
         verify(oAuthClientService).putOAuthClientWithClientId(app2.getClientId(), app2.getClientJSON());
     }
@@ -160,7 +161,7 @@ public class AppServiceTest {
     @Test(expected = RuntimeException.class)
     public void updateTestWithBadClientJSON() {
         app.setClientJSON("not an object");
-        when(appRepository.findOne(app.getId())).thenReturn(app);
+        when(appRepository.findById(app.getId())).thenReturn(of(app));
         appService.update(app);
         verify(oAuthClientService).putOAuthClientWithClientId(app.getClientId(), app.getClientJSON());
     }
@@ -168,7 +169,7 @@ public class AppServiceTest {
     @Test
     public void updateTestReplicaCopy() {
         app.setCopyType(CopyType.REPLICA);
-        when(appRepository.findOne(app.getId())).thenReturn(app);
+        when(appRepository.findById(app.getId())).thenReturn(of(app));
         App returnedApp = appService.update(app);
         verify(oAuthClientService, times(0)).putOAuthClientWithClientId(app.getClientId(), app.getClientJSON());
         assertEquals(app, returnedApp);
@@ -238,7 +239,7 @@ public class AppServiceTest {
 
     @Test
     public void getByIdTest() {
-        when(appRepository.findOne(app.getId())).thenReturn(app);
+        when(appRepository.findById(app.getId())).thenReturn(of(app));
         App returnedApp = appService.getById(app.getId());
         assertEquals(app, returnedApp);
     }

@@ -60,7 +60,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
@@ -214,7 +214,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
     @Override
     public LaunchScenario getById(final int id) {
-        return repository.findOne(id);
+        return repository.findById(id).orElse(null);
     }
 
     @Override

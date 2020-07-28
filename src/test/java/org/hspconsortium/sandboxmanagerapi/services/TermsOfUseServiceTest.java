@@ -9,7 +9,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +38,7 @@ public class TermsOfUseServiceTest {
 
     @Test
     public void getByIdTest() {
-        when(repository.findOne(termsOfUse.getId())).thenReturn(termsOfUse);
+        when(repository.findById(termsOfUse.getId())).thenReturn(of(termsOfUse));
         TermsOfUse returnedTermsOfUse = termsOfUseService.getById(termsOfUse.getId());
         assertEquals(termsOfUse, returnedTermsOfUse);
     }
@@ -54,13 +56,13 @@ public class TermsOfUseServiceTest {
     public void mostRecentTestNoneFound() {
         when(repository.orderByCreatedTimestamp()).thenReturn(new ArrayList<>());
         TermsOfUse returnedTermsOfUse = termsOfUseService.mostRecent();
-        assertEquals(null, returnedTermsOfUse);
+        assertNull(returnedTermsOfUse);
     }
 
     @Test
     public void mostRecentTestNullList() {
         when(repository.orderByCreatedTimestamp()).thenReturn(null);
         TermsOfUse returnedTermsOfUse = termsOfUseService.mostRecent();
-        assertEquals(null, returnedTermsOfUse);
+        assertNull(returnedTermsOfUse);
     }
 }
