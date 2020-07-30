@@ -7,12 +7,12 @@
       "cpu": 0,
       "portMappings": [
         {
-          "containerPort": 400,
+          "containerPort": 12000,
           "hostPort": 0,
           "protocol": "tcp"
         }
       ],
-      "memoryReservation": 1024,
+      "memoryReservation": 400,
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
