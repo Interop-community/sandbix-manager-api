@@ -60,6 +60,8 @@ spring:
       encoding: UTF-8
       prefix: classpath:/templates/
       suffix: .html
+  flyway:
+    table: schema_version
 
 flyway:
   locations: classpath:db/migration/{vendor}
