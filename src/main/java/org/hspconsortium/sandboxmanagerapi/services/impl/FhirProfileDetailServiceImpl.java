@@ -142,6 +142,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             if (fileName.endsWith(".json")) {
                 InputStream inputStream = zipFile.getInputStream(entry);
                 JSONObject profileTaskAndFhirProfile = saveProfileResource(sandboxService.getApiSchemaURL(apiEndpoint), authToken, sandboxId, apiEndpoint, id, inputStream, fileName, profileTask);
+                profileTask = (ProfileTask) profileTaskAndFhirProfile.get("profileTask");
                 if(!addToFhirProfiles(profileTaskAndFhirProfile, fhirProfiles)) {
                     break;
                 }
@@ -192,6 +193,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             String fileExtension = FilenameUtils.getExtension(fileName);
             if (fileExtension.equals("json")) {
                 JSONObject profileTaskAndFhirProfile = saveProfileResource(apiSchemaURL, authToken, sandboxId, apiEndpoint, id, tarArchiveInputStream, fileName, profileTask);
+                profileTask = (ProfileTask) profileTaskAndFhirProfile.get("profileTask");
                 if (!addToFhirProfiles(profileTaskAndFhirProfile, fhirProfiles)) {
                     break;
                 }
