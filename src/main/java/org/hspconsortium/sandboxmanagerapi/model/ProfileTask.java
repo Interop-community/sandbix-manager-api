@@ -1,13 +1,14 @@
 package org.hspconsortium.sandboxmanagerapi.model;
 
 import java.util.List;
+import java.util.Map;
 
 public class ProfileTask {
     private String id;
     private Boolean status;
     private String error;
-    private List<String> resourceSaved;
-    private List<String> resourceNotSaved;
+    private Map<String, List<String>> resourceSaved;
+    private Map<String, List<String>> resourceNotSaved;
     private int totalCount;
     private int resourceSavedCount;
     private int resourceNotSavedCount;
@@ -36,19 +37,19 @@ public class ProfileTask {
         this.status = status;
     }
 
-    public List<String> getResourceSaved() {
+    public Map<String, List<String>> getResourceSaved() {
         return resourceSaved;
     }
 
-    public void setResourceSaved(List<String> resourceSaved) {
+    public void setResourceSaved(Map<String, List<String>> resourceSaved) {
         this.resourceSaved = resourceSaved;
     }
 
-    public List<String> getResourceNotSaved() {
+    public Map<String, List<String>> getResourceNotSaved() {
         return resourceNotSaved;
     }
 
-    public void setResourceNotSaved(List<String> resourceNotSaved) {
+    public void setResourceNotSaved(Map<String, List<String>> resourceNotSaved) {
         this.resourceNotSaved = resourceNotSaved;
     }
 
@@ -75,4 +76,5 @@ public class ProfileTask {
     public void setResourceNotSavedCount(int resourceNotSavedCount) {
         this.resourceNotSavedCount = resourceNotSavedCount;
     }
+
 }

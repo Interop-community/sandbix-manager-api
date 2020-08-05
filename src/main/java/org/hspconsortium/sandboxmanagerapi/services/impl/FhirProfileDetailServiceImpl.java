@@ -61,9 +61,13 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     private HashMap<String, ProfileTask> idProfileTask = new HashMap<>();
 
-    public ProfileTask getTaskRunning(String id) { return idProfileTask.get(id); }
+    public ProfileTask getTaskRunning(String id) {
+        return idProfileTask.get(id);
+    }
 
-    public HashMap<String, ProfileTask> getIdProfileTask() { return idProfileTask; }
+    public HashMap<String, ProfileTask> getIdProfileTask() {
+        return idProfileTask;
+    }
 
     @Override
     @Transactional
@@ -109,9 +113,10 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authToken);
         HttpEntity entity = new HttpEntity(headers);
-        String apiSchemaURL = sandboxService.getApiSchemaURL(sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex());
+        String apiSchemaURL = sandboxService.getApiSchemaURL(sandboxService.findBySandboxId(sandboxId)
+                                                                           .getApiEndpointIndex());
 
-        for (FhirProfile fhirProfile: fhirProfiles) {
+        for (FhirProfile fhirProfile : fhirProfiles) {
             String url = apiSchemaURL + "/" + sandboxId + "/data/" + fhirProfile.getRelativeUrl();
             try {
                 restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
@@ -131,18 +136,14 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Async("taskExecutor")
     @Override
-    public void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, String authToken, String sandboxId, String id) throws IOException {
-        String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
+    public void saveZipFile(FhirProfileDetail fhirProfileDetail, ZipFile zipFile, String authToken, String sandboxId, String id) throws IOException {
+        String apiEndpoint = sandboxService.findBySandboxId(sandboxId)
+                                           .getApiEndpointIndex();
         String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
-        List<String> resourceSaved = new ArrayList<>();
-        List<String> resourceNotSaved = new ArrayList<>();
-        int totalCount = 0;
-        int resourceSavedCount = 0;
-        int resourceNotSavedCount = 0;
-        ProfileTask profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount );
+        ProfileTask profileTask = addToProfileTask(id, true, new HashMap<>(), new HashMap<>(), 0, 0, 0);
         List<FhirProfile> fhirProfiles = new ArrayList<>();
         Enumeration zipFileEntries = zipFile.entries();
-        while(zipFileEntries.hasMoreElements()) {
+        while (zipFileEntries.hasMoreElements()) {
             ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
             String fileName = entry.getName();
             if (fileName.endsWith(".json")) {
@@ -170,15 +171,11 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Async("taskExecutor")
     @Override
-    public void saveTGZfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
-        String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
+    public void saveTGZfile(FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
+        String apiEndpoint = sandboxService.findBySandboxId(sandboxId)
+                                           .getApiEndpointIndex();
         String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
-        List<String> resourceSaved = new ArrayList<>();
-        List<String> resourceNotSaved = new ArrayList<>();
-        int totalCount = 0;
-        int resourceSavedCount = 0;
-        int resourceNotSavedCount = 0;
-        ProfileTask profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount );
+        ProfileTask profileTask = addToProfileTask(id, true, new HashMap<>(), new HashMap<>(), 0, 0, 0);
         List<FhirProfile> fhirProfiles = new ArrayList<>();
         TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(new GzipCompressorInputStream(fileInputStream));
         TarArchiveEntry entry;
@@ -214,8 +211,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     private JSONObject saveProfileResource(String apiSchemaURL, String authToken, String sandboxId, String apiEndpoint, String id, InputStream inputStream, String fileName, ProfileTask profileTask) {
         JSONObject profileTaskAndFhirProfile = new JSONObject();
-        List<String> resourceSaved = profileTask.getResourceSaved();
-        List<String> resourceNotSaved = profileTask.getResourceNotSaved();
+        var resourceSaved = profileTask.getResourceSaved();
+        var resourceNotSaved = profileTask.getResourceNotSaved();
         int totalCount = profileTask.getTotalCount();
         int resourceSavedCount = profileTask.getResourceSavedCount();
         int resourceNotSavedCount = profileTask.getResourceNotSavedCount();
@@ -225,18 +222,22 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         FhirProfile fhirProfile = new FhirProfile();
         JSONParser jsonParser = new JSONParser();
         try {
-            JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
-            String resourceType = jsonObject.get("resourceType").toString();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
+            String resourceType = jsonObject.get("resourceType")
+                                            .toString();
             String resourceId = "";
             String fullUrl = "";
             String fhirVersion = "";
-            if (Arrays.stream(profileResources).anyMatch(resourceType::equals)) {
+            if (Arrays.stream(profileResources)
+                      .anyMatch(resourceType::equals)) {
                 if (jsonObject.containsKey("id")) {
-                    resourceId = jsonObject.get("id").toString();
+                    resourceId = jsonObject.get("id")
+                                           .toString();
                 }
 
                 if (jsonObject.containsKey("url")) {
-                    fullUrl = jsonObject.get("url").toString();
+                    fullUrl = jsonObject.get("url")
+                                        .toString();
                 } else {
                     profileTask.setError("The file name: " + fileName + " is missing url metadata. The profile was not saved.");
                     profileTask.setStatus(false);
@@ -247,7 +248,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
                 if (resourceType.equals("StructureDefinition")) {
                     if (jsonObject.containsKey("fhirVersion")) {
-                        fhirVersion = jsonObject.get("fhirVersion").toString();
+                        fhirVersion = jsonObject.get("fhirVersion")
+                                                .toString();
                     } else {
                         profileTask.setError("The StructureDefinition under file name: " + fileName + " is missing fhirVersion. The profile was not saved.");
                         profileTask.setStatus(false);
@@ -257,7 +259,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                     }
 
                     try {
-                        String profileType = jsonObject.get("type").toString();
+                        String profileType = jsonObject.get("type")
+                                                       .toString();
                         fhirProfile.setProfileType(profileType);
                     } catch (Exception e) {
                         profileTask.setError("The StructureDefinition under file name: " + fileName + " is missing 'type' parameter. The profile was not saved.");
@@ -300,7 +303,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                     url = apiSchemaURL + "/" + sandboxId + "/data/" + resourceType + "/" + resourceId;
                     try {
                         restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
-                        resourceSaved.add(resourceType + " - " + resourceId);
+                        resourceSaved.computeIfAbsent(resourceType, k -> new ArrayList<>())
+                                     .add(resourceId);
                         totalCount++;
                         resourceSavedCount++;
                         profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
@@ -312,7 +316,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         profileTaskAndFhirProfile.put("fhirProfile", fhirProfile);
 
                     } catch (HttpServerErrorException | HttpClientErrorException e) {
-                        resourceNotSaved.add(resourceType + " - " + resourceId + " - " + e.getMessage());
+                        resourceNotSaved.computeIfAbsent(resourceType, k -> new ArrayList<>())
+                                        .add(resourceId + " - " + e.getMessage());
                         totalCount++;
                         resourceNotSavedCount++;
                         profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
@@ -324,9 +329,12 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                     try {
                         ResponseEntity responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
                         try {
-                            JSONObject savedResource = (JSONObject)jsonParser.parse(responseEntity.getBody().toString());
-                            resourceId = savedResource.get("id").toString();
-                            resourceSaved.add(resourceType + " - " + resourceId);
+                            JSONObject savedResource = (JSONObject) jsonParser.parse(responseEntity.getBody()
+                                                                                                   .toString());
+                            resourceId = savedResource.get("id")
+                                                      .toString();
+                            resourceSaved.computeIfAbsent(resourceType, k -> new ArrayList<>())
+                                         .add(resourceId);
                             totalCount++;
                             resourceSavedCount++;
                             profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
@@ -341,7 +349,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                             throw new RuntimeException(e.getMessage());
                         }
                     } catch (HttpServerErrorException | HttpClientErrorException e) {
-                        resourceNotSaved.add(resourceType + " - " + resourceId + " - " + e.getMessage());
+                        resourceNotSaved.computeIfAbsent(resourceType, k -> new ArrayList<>())
+                                        .add(resourceId + " - " + e.getMessage());
                         totalCount++;
                         resourceNotSavedCount++;
                         profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount);
@@ -356,9 +365,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         return profileTaskAndFhirProfile;
     }
 
-    private ProfileTask addToProfileTask(String id, Boolean runStatus, List<String> resourceSaved,
-                                         List<String> resourceNotSaved, int totalCount, int resourceSavedCount,
-                                         int resourceNotSavedCount){
+    private ProfileTask addToProfileTask(String id, Boolean runStatus, Map<String, List<String>> resourceSaved,
+                                         Map<String, List<String>> resourceNotSaved, int totalCount, int resourceSavedCount,
+                                         int resourceNotSavedCount) {
         ProfileTask profileTask = new ProfileTask();
         profileTask.setId(id);
         profileTask.setStatus(runStatus);
@@ -371,8 +380,6 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     }
 
 }
-
-
 
 
 //            if (fileName.endsWith(".xml")) {
