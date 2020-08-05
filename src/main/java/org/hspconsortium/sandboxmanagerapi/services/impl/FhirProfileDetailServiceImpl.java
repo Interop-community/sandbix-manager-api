@@ -206,16 +206,10 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public void saveTarballfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
-        String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
-        List<String> resourceSaved = new ArrayList<>();
-        List<String> resourceNotSaved = new ArrayList<>();
-        int totalCount = 0;
-        int resourceSavedCount = 0;
-        int resourceNotSavedCount = 0;
-        ProfileTask profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount );
+        ProfileTask profileTask = addToProfileTask(id, true, new ArrayList<>(), new ArrayList<>(), 0, 0, 0 );
         List<FhirProfile> fhirProfiles = new ArrayList<>();
         TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(fileInputStream);
-        importFromTarball(fhirProfileDetail, fileInputStream, authToken, sandboxId, id, apiEndpoint, apiSchemaURL, profileTask, fhirProfiles, tarArchiveInputStream);
+        importFromTarball(fhirProfileDetail, fileInputStream, authToken, sandboxId, id, apiEndpoint, sandboxService.getApiSchemaURL(apiEndpoint), profileTask, fhirProfiles, tarArchiveInputStream);
     }
 
     private JSONObject saveProfileResource(String apiSchemaURL, String authToken, String sandboxId, String apiEndpoint, String id, InputStream inputStream, String fileName, ProfileTask profileTask) {
