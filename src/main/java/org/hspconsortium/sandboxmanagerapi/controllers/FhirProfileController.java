@@ -58,7 +58,7 @@ public class FhirProfileController {
         String authToken = request.getHeader("Authorization");
         String id = UUID.randomUUID().toString();
         String fileName = file.getOriginalFilename();
-        String fileExtension = FilenameUtils.getExtension(fileName);
+        String fileExtension = Objects.requireNonNull(FilenameUtils.getExtension(fileName)).toLowerCase();
         JSONObject statusReturned = new JSONObject();
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
@@ -77,29 +77,44 @@ public class FhirProfileController {
         fhirProfileDetail.setProfileId(profileId);
         fhirProfileDetail.setVisibility(visibility);
 
-        if (!fileName.isEmpty() & !fileExtension.equals("tgz")) {
-            File zip = File.createTempFile(id, "temp");
-            FileOutputStream outputStream = new FileOutputStream(zip);
-            IOUtil.copy(file.getInputStream(), outputStream);
-            outputStream.close();
-            try {
-                ZipFile zipFile = new ZipFile(zip);
-                fhirProfileDetailService.saveZipFile(fhirProfileDetail, zipFile, authToken, sandboxId, id);
-            } catch (ZipException e) {
-                e.printStackTrace();
-            }
-            finally {
-                zip.delete();
-            }
-        } else if (!fileName.isEmpty() & fileExtension.equals("tgz")) {
-            InputStream fileInputStream = file.getInputStream();
-            fhirProfileDetailService.saveTGZfile(fhirProfileDetail, fileInputStream, authToken, sandboxId, id);
-        } else {
+        if (fileName.isEmpty()) {
             statusReturned.put("status", false);
             statusReturned.put("id", id);
             statusReturned.put("responseEntity", HttpStatus.BAD_REQUEST);
             return statusReturned;
         }
+
+        switch(fileExtension) {
+            case FhirProfileDetailService.TARBALL_ARCHIVE:
+                InputStream fileInputStream = file.getInputStream();
+                fhirProfileDetailService.saveTarballfile(fhirProfileDetail, fileInputStream, authToken, sandboxId, id);
+                break;
+            case FhirProfileDetailService.TARBALL_GZIP_ARCHIVE:
+                fileInputStream = file.getInputStream();
+                fhirProfileDetailService.saveTGZfile(fhirProfileDetail, fileInputStream, authToken, sandboxId, id);
+                break;
+            case FhirProfileDetailService.ZIP_ARCHIVE:
+                File zip = File.createTempFile(id, "temp");
+                FileOutputStream outputStream = new FileOutputStream(zip);
+                IOUtil.copy(file.getInputStream(), outputStream);
+                outputStream.close();
+                try {
+                    ZipFile zipFile = new ZipFile(zip);
+                    fhirProfileDetailService.saveZipFile(fhirProfileDetail, zipFile, authToken, sandboxId, id);
+                } catch (ZipException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    zip.delete();
+                }
+                break;
+            default:
+                statusReturned.put("status", false);
+                statusReturned.put("id", id);
+                statusReturned.put("responseEntity", HttpStatus.BAD_REQUEST);
+                return statusReturned;
+        }
+
         statusReturned.put("status", true);
         statusReturned.put("id", id);
         statusReturned.put("responseEntity", HttpStatus.OK);
@@ -111,14 +126,12 @@ public class FhirProfileController {
     public ProfileTask fetchStatus(@RequestParam(value = "id") String id) {
         ProfileTask profileTask = fhirProfileDetailService.getTaskRunning(id);
         if (profileTask != null) {
-            ProfileTask profileTaskCopy = profileTask;
             if (!profileTask.getStatus()){
                 fhirProfileDetailService.getIdProfileTask().remove(id);
             }
-            return profileTaskCopy;
+            return profileTask;
         } else {
-            ProfileTask profileTaskNull = new ProfileTask();
-            return profileTaskNull;
+            return new ProfileTask();
         }
     }
 

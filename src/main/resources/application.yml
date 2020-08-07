@@ -5,10 +5,6 @@ server:
     protocol_header: x-forwarded-proto
 
 spring:
-  http:
-    multipart:
-      max-file-size: 512MB
-      max-request-size: 512MB
   application:
     name: HSPC Sandbox Manager
   profiles:
@@ -62,6 +58,10 @@ spring:
       suffix: .html
   flyway:
     table: schema_version
+  servlet:
+    multipart:
+      max-file-size: 512MB
+      max-request-size: 512MB
 
 flyway:
   locations: classpath:db/migration/{vendor}
