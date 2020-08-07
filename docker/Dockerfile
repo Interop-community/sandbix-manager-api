@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:11.0.7-jdk-slim
 
 # mapped to host for filesystem mounting
 VOLUME /tmp

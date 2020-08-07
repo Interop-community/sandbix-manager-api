@@ -115,7 +115,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             String url = apiSchemaURL + "/" + sandboxId + "/data/" + fhirProfile.getRelativeUrl();
             try {
                 restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
-            } catch (Exception e) {
+            } catch (Exception ignored) {
 
             }
         }
@@ -133,13 +133,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public void saveZipFile (FhirProfileDetail fhirProfileDetail, ZipFile zipFile, String authToken, String sandboxId, String id) throws IOException {
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
-        String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
-        List<String> resourceSaved = new ArrayList<>();
-        List<String> resourceNotSaved = new ArrayList<>();
-        int totalCount = 0;
-        int resourceSavedCount = 0;
-        int resourceNotSavedCount = 0;
-        ProfileTask profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount );
+        ProfileTask profileTask = addToProfileTask(id, true, new ArrayList<>(), new ArrayList<>(), 0, 0, 0 );
         List<FhirProfile> fhirProfiles = new ArrayList<>();
         Enumeration zipFileEntries = zipFile.entries();
         while(zipFileEntries.hasMoreElements()) {
@@ -147,17 +141,17 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             String fileName = entry.getName();
             if (fileName.endsWith(".json")) {
                 InputStream inputStream = zipFile.getInputStream(entry);
-                JSONObject profileTaskAndFhirProfile = saveProfileResource(apiSchemaURL, authToken, sandboxId, apiEndpoint, id, inputStream, fileName, profileTask);
+                JSONObject profileTaskAndFhirProfile = saveProfileResource(sandboxService.getApiSchemaURL(apiEndpoint), authToken, sandboxId, apiEndpoint, id, inputStream, fileName, profileTask);
                 profileTask = (ProfileTask) profileTaskAndFhirProfile.get("profileTask");
-                if (profileTask.getError() != null) {
+                if(!addToFhirProfiles(profileTaskAndFhirProfile, fhirProfiles)) {
                     break;
-                }
-                FhirProfile fhirProfile = (FhirProfile) profileTaskAndFhirProfile.get("fhirProfile");
-                if (fhirProfile != null) {
-                    fhirProfiles.add(fhirProfile);
                 }
             }
         }
+        saveFhirProfileDetail(fhirProfileDetail, id, profileTask, fhirProfiles);
+    }
+
+    private void saveFhirProfileDetail(FhirProfileDetail fhirProfileDetail, String id, ProfileTask profileTask, List<FhirProfile> fhirProfiles) {
         profileTask.setStatus(false);
         idProfileTask.put(id, profileTask);
         if (profileTask.getError() == null && fhirProfiles.size() != 0) {
@@ -168,19 +162,28 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         }
     }
 
+    private boolean addToFhirProfiles(JSONObject profileTaskAndFhirProfile, List<FhirProfile> fhirProfiles) {
+        ProfileTask profileTask = (ProfileTask) profileTaskAndFhirProfile.get("profileTask");
+        if (profileTask.getError() != null) {
+            return false;
+        }
+        FhirProfile fhirProfile = (FhirProfile) profileTaskAndFhirProfile.get("fhirProfile");
+        if (fhirProfile != null) {
+            fhirProfiles.add(fhirProfile);
+        }
+        return true;
+    }
+
     @Async("taskExecutor")
     @Override
     public void saveTGZfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
-        String apiSchemaURL = sandboxService.getApiSchemaURL(apiEndpoint);
-        List<String> resourceSaved = new ArrayList<>();
-        List<String> resourceNotSaved = new ArrayList<>();
-        int totalCount = 0;
-        int resourceSavedCount = 0;
-        int resourceNotSavedCount = 0;
-        ProfileTask profileTask = addToProfileTask(id, true, resourceSaved, resourceNotSaved, totalCount, resourceSavedCount, resourceNotSavedCount );
-        List<FhirProfile> fhirProfiles = new ArrayList<>();
+        ProfileTask profileTask = addToProfileTask(id, true, new ArrayList<>(), new ArrayList<>(), 0, 0, 0 );
         TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(new GzipCompressorInputStream(fileInputStream));
+        importFromTarball(fhirProfileDetail, fileInputStream, authToken, sandboxId, id, apiEndpoint, sandboxService.getApiSchemaURL(apiEndpoint), profileTask, new ArrayList<>(), tarArchiveInputStream);
+    }
+
+    private void importFromTarball(FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id, String apiEndpoint, String apiSchemaURL, ProfileTask profileTask, List<FhirProfile> fhirProfiles, TarArchiveInputStream tarArchiveInputStream) throws IOException {
         TarArchiveEntry entry;
         while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
             if (entry.isDirectory()) {
@@ -191,25 +194,24 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             if (fileExtension.equals("json")) {
                 JSONObject profileTaskAndFhirProfile = saveProfileResource(apiSchemaURL, authToken, sandboxId, apiEndpoint, id, tarArchiveInputStream, fileName, profileTask);
                 profileTask = (ProfileTask) profileTaskAndFhirProfile.get("profileTask");
-                if (profileTask.getError() != null) {
+                if (!addToFhirProfiles(profileTaskAndFhirProfile, fhirProfiles)) {
                     break;
-                }
-                FhirProfile fhirProfile = (FhirProfile) profileTaskAndFhirProfile.get("fhirProfile");
-                if (fhirProfile != null) {
-                    fhirProfiles.add(fhirProfile);
                 }
             }
         }
         tarArchiveInputStream.close();
         fileInputStream.close();
-        profileTask.setStatus(false);
-        idProfileTask.put(id, profileTask);
-        if (profileTask.getError() == null && fhirProfiles.size() != 0) {
-            fhirProfileDetail.setFhirProfiles(fhirProfiles);
-            save(fhirProfileDetail);
-        } else {
-            throw new RuntimeException("Unable to open the file. The profile was not uploaded"); //TODO: ask about this exception
-        }
+        saveFhirProfileDetail(fhirProfileDetail, id, profileTask, fhirProfiles);
+    }
+
+    @Async("taskExecutor")
+    @Override
+    public void saveTarballfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
+        String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
+        ProfileTask profileTask = addToProfileTask(id, true, new ArrayList<>(), new ArrayList<>(), 0, 0, 0 );
+        List<FhirProfile> fhirProfiles = new ArrayList<>();
+        TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(fileInputStream);
+        importFromTarball(fhirProfileDetail, fileInputStream, authToken, sandboxId, id, apiEndpoint, sandboxService.getApiSchemaURL(apiEndpoint), profileTask, fhirProfiles, tarArchiveInputStream);
     }
 
     private JSONObject saveProfileResource(String apiSchemaURL, String authToken, String sandboxId, String apiEndpoint, String id, InputStream inputStream, String fileName, ProfileTask profileTask) {
@@ -350,7 +352,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
         return profileTaskAndFhirProfile;
@@ -371,50 +373,4 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     }
 
 }
-
-
-
-
-//            if (fileName.endsWith(".xml")) {
-//                beginsWith = fileName.substring(0, fileName.indexOf("-"));
-//                if(beginsWith.equals("StructureDefinition") || (beginsWith.equals("ValueSet")) || (beginsWith.equals("CodeSystem"))) {
-//                    InputStream inputStream = zipFile.getInputStream(entry);
-//
-//                    try {
-//                        BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-//                        StringBuilder stringBuilder = new StringBuilder();
-//                        String inline = "";
-//                        while ((inline = inputReader.readLine()) != null) {
-//                            stringBuilder.append(inline);
-//                        }
-//                        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-//                        DocumentBuilder builder = factory.newDocumentBuilder();
-//                        InputSource source = new InputSource();
-//                        source.setCharacterStream(new StringReader(stringBuilder.toString()));
-//
-//                        Document doc = builder.parse(source);
-//
-////                        Document doc = builder.parse(new InputSource (new ByteArrayInputStream(stringBuilder.toString().getBytes(StandardCharsets.UTF_8))));
-////                        InputStream inputStream2 = new    ByteArrayInputStream(stringBuilder.toString().getBytes(StandardCharsets.UTF_8));
-////                        org.w3c.dom.Document doc = builder.parse(inputStream2);
-//
-//                        Element element = doc.getDocumentElement();
-//                        String id = element.getAttribute("id value");
-//
-//                        HttpHeaders headers = new HttpHeaders();
-//                        headers.set("Authorization", "BEARER " + authToken);
-//                        headers.set("Content-Type", "application/xml");
-//
-//                        String url = localhost + "/" + sandboxId + "/data/" +  beginsWith + "/" + element.getAttribute("id value");
-//                        HttpEntity entity = new HttpEntity(stringBuilder.toString(), headers);
-//                        try {
-//                            restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
-//                        } catch (HttpClientErrorException e) {
-//                            logger.error("File not saved: " + fileName);
-//                        }
-//                    } catch (Exception e) {
-//                        logger.error(e.getMessage() + "Unsupported file " + fileName);
-//                    }
-//                }
-//            }
 

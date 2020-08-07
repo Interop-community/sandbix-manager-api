@@ -3,7 +3,6 @@ package org.hspconsortium.sandboxmanagerapi.services;
 import org.hspconsortium.sandboxmanagerapi.model.FhirProfile;
 import org.hspconsortium.sandboxmanagerapi.model.FhirProfileDetail;
 import org.hspconsortium.sandboxmanagerapi.model.ProfileTask;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -13,6 +12,10 @@ import java.util.List;
 import java.util.zip.ZipFile;
 
 public interface FhirProfileDetailService {
+
+    String TARBALL_ARCHIVE = "tar";
+    String TARBALL_GZIP_ARCHIVE = "tgz";
+    String ZIP_ARCHIVE = "zip";
 
     FhirProfileDetail save(FhirProfileDetail fhirProfileDetail);
 
@@ -38,4 +41,5 @@ public interface FhirProfileDetailService {
 
     List<Integer> getAllFhirProfileIdsAssociatedWithASandbox(String sandboxId);
 
+    void saveTarballfile(FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException;
 }

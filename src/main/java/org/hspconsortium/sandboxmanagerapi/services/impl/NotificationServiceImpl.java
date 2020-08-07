@@ -72,7 +72,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification findById(Integer id) {
-        return notificationRepository.findOne(id);
+        return notificationRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     public void delete(Integer id) {
-        notificationRepository.delete(id);
+        notificationRepository.deleteById(id);
     }
 
     @Override

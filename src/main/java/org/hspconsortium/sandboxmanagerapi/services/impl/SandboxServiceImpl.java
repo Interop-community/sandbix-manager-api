@@ -153,7 +153,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
@@ -587,7 +587,7 @@ public class SandboxServiceImpl implements SandboxService {
     private void removeAllMembers(final Sandbox sandbox) {
 
         List<UserRole> userRoles = sandbox.getUserRoles();
-        sandbox.setUserRoles(Collections.<UserRole>emptyList());
+        sandbox.setUserRoles(Collections.emptyList());
         save(sandbox);
 
         for (UserRole userRole: userRoles) {

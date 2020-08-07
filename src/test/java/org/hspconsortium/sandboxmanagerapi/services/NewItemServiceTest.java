@@ -8,8 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.Optional;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -36,7 +37,7 @@ public class NewItemServiceTest {
 
     @Test
     public void updateTest() {
-        when(repository.findOne(newsItem.getId())).thenReturn(newsItem);
+        when(repository.findById(newsItem.getId())).thenReturn(of(newsItem));
         when(repository.save(newsItem)).thenReturn(newsItem);
         NewsItem returnedNewsItem = newsItemService.save(newsItem);
         assertEquals(newsItem, returnedNewsItem);
@@ -44,31 +45,26 @@ public class NewItemServiceTest {
 
     @Test(expected = ResourceNotFoundException.class)
     public void updateTestNotFound() {
-        when(repository.findOne(newsItem.getId())).thenReturn(null);
+        when(repository.findById(newsItem.getId())).thenReturn(Optional.empty());
         newsItemService.update(newsItem);
     }
 
     @Test
     public void deleteTest() {
         newsItemService.delete(newsItem.getId());
-        verify(repository).delete(newsItem.getId());
+        verify(repository).deleteById(newsItem.getId());
     }
 
     @Test
     public void findAllTest() {
-        when(repository.findAll()).thenReturn(new Iterable<NewsItem>() {
-            @Override
-            public Iterator<NewsItem> iterator() {
-                return Collections.emptyIterator();
-            }
-        });
+        when(repository.findAll()).thenReturn(Collections::emptyIterator);
         newsItemService.findAll();
         verify(repository).findAll();
     }
 
     @Test
     public void findByIdTest() {
-        when(repository.findOne(newsItem.getId())).thenReturn(newsItem);
+        when(repository.findById(newsItem.getId())).thenReturn(of(newsItem));
         NewsItem returnedNewsItem = newsItemService.findById(newsItem.getId());
         assertEquals(newsItem, returnedNewsItem);
     }

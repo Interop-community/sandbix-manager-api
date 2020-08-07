@@ -11,7 +11,6 @@ import java.sql.Timestamp;
 public interface UserRepository extends CrudRepository<User, Integer> {
     User findBySbmUserId(@Param("sbmUserId") String sbmUserId);
     User findByUserEmail(@Param("email") String email);
-    User findById(@Param("id") Integer id);
     String fullCount();
     String fullCountForSpecificTimePeriod(@Param("endDate") Timestamp endDate);
     String intervalCount(@Param("intervalTime") Timestamp intervalTime);

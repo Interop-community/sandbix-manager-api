@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 public class UserAccessHistoryServiceTest {
@@ -50,7 +51,7 @@ public class UserAccessHistoryServiceTest {
     public void getLatestUserAccessHistoryInstanceTestReturnsNull() {
         when(userAccessHistoryRepository.findBySbmUserIdAndSandboxId(user.getSbmUserId(), sandbox.getSandboxId())).thenReturn(new ArrayList<>());
         Timestamp returnedTimestamp = userAccessHistoryService.getLatestUserAccessHistoryInstance(sandbox, user);
-        assertEquals(null, returnedTimestamp);
+        assertNull(returnedTimestamp);
     }
 
     @Test
@@ -85,13 +86,13 @@ public class UserAccessHistoryServiceTest {
     public void deleteUserAccessInstancesForSandboxTest() {
         when(userAccessHistoryRepository.findBySandboxId(sandbox.getSandboxId())).thenReturn(userAccessHistoryList);
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
-        verify(userAccessHistoryRepository).delete(userAccessHistory.getId());
+        verify(userAccessHistoryRepository).delete(userAccessHistory);
     }
 
     @Test
     public void deleteUserAccessInstancesForUserTest() {
         when(userAccessHistoryRepository.findBySbmUserId(user.getSbmUserId())).thenReturn(userAccessHistoryList);
         userAccessHistoryService.deleteUserAccessInstancesForUser(user);
-        verify(userAccessHistoryRepository).delete(userAccessHistory.getId());
+        verify(userAccessHistoryRepository).delete(userAccessHistory);
     }
 }

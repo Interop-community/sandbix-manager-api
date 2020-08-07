@@ -31,7 +31,7 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Override
     @Transactional
     public void delete(final int id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class UserLaunchServiceImpl implements UserLaunchService {
 
     @Override
     public UserLaunch getById(final int id) {
-        return  repository.findOne(id);
+        return repository.findById(id).orElse(null);
     }
 
     @Override

@@ -27,7 +27,7 @@ public class TermsOfUseServiceImpl implements TermsOfUseService {
 
     @Override
     public TermsOfUse getById(final int id) {
-        return  repository.findOne(id);
+        return  repository.findById(id).orElse(null);
     }
 
     @Override

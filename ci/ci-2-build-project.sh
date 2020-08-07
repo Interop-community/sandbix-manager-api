@@ -7,4 +7,4 @@ if [[ ${rc} -ne 0 ]] ; then
 fi
 
 rm ../target/*-sources.jar
-rm ../target/*-javadoc.jar
+# rm ../target/*-javadoc.jar

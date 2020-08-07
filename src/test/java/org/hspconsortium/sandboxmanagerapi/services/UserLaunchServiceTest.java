@@ -10,9 +10,11 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.notNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,13 +53,13 @@ public class UserLaunchServiceTest {
     @Test
     public void deleteTest() {
         userLaunchService.delete(userLaunch.getId());
-        verify(repository).delete(userLaunch.getId());
+        verify(repository).deleteById(userLaunch.getId());
     }
 
     @Test
     public void deleteTestWithUserLaunchObject() {
         userLaunchService.delete(userLaunch);
-        verify(repository).delete(userLaunch.getId());
+        verify(repository).deleteById(userLaunch.getId());
     }
 
     @Test
@@ -69,14 +71,14 @@ public class UserLaunchServiceTest {
 
     @Test
     public void getByIdTest() {
-        when(repository.findOne(userLaunch.getId())).thenReturn(userLaunch);
+        when(repository.findById(userLaunch.getId())).thenReturn(of(userLaunch));
         UserLaunch returnedUserLaunch = userLaunchService.getById(userLaunch.getId());
         assertEquals(userLaunch, returnedUserLaunch);
     }
 
     @Test
     public void updateTest() {
-        when(repository.findOne(userLaunch.getId())).thenReturn(userLaunch);
+        when(repository.findById(userLaunch.getId())).thenReturn(of(userLaunch));
         when(repository.save(userLaunch)).thenReturn(userLaunch);
         UserLaunch returnedUserLaunch = userLaunchService.update(userLaunch);
         assertEquals(userLaunch, returnedUserLaunch);
@@ -84,9 +86,9 @@ public class UserLaunchServiceTest {
 
     @Test
     public void updateTestReturnsNull() {
-        when(repository.findOne(userLaunch.getId())).thenReturn(null);
+        when(repository.findById(userLaunch.getId())).thenReturn(Optional.empty());
         UserLaunch returnedUserLaunch = userLaunchService.update(userLaunch);
-        assertEquals(null, returnedUserLaunch);
+        assertNull(returnedUserLaunch);
     }
 
     @Test

@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:11.0.7-jdk-slim
 ADD target/hspc-sandbox-manager-api-*.jar app.jar
 ENV JAVA_OPTS=""
 # install curl for local testing

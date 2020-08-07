@@ -15,9 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +35,7 @@ public class OAuthServiceTest {
         oAuthService.setRestTemplate(restTemplate);
         ReflectionTestUtils.setField(oAuthService, "oauthUserInfoEndpointURL", "oauthUserInfoEndpointURL");
         jsonString = "{\"sub\": \"userId\", \"name\": \"userName\", \"preferred_username\": \"user@email.com\"}";
-        responseEntity = new ResponseEntity<String>(jsonString, HttpStatus.ACCEPTED);
+        responseEntity = new ResponseEntity<>(jsonString, HttpStatus.ACCEPTED);
         when(request.getHeader("Authorization")).thenReturn("Bearer auth-token");
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
     }
@@ -61,7 +61,7 @@ public class OAuthServiceTest {
 
     @Test(expected = JSONException.class)
     public void getOAuthUserIdTestSubNotFound() {
-        responseEntity = new ResponseEntity<String>("{}", HttpStatus.ACCEPTED);
+        responseEntity = new ResponseEntity<>("{}", HttpStatus.ACCEPTED);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
         String ouAuthUserId = oAuthService.getOAuthUserId(request);
         assertNull(ouAuthUserId);
@@ -69,7 +69,7 @@ public class OAuthServiceTest {
 
     @Test(expected = RuntimeException.class)
     public void getOAuthUserIdTestJSONObjectNotParsed() {
-        responseEntity = new ResponseEntity<String>("not-object", HttpStatus.ACCEPTED);
+        responseEntity = new ResponseEntity<>("not-object", HttpStatus.ACCEPTED);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
         oAuthService.getOAuthUserId(request);
     }
@@ -88,7 +88,7 @@ public class OAuthServiceTest {
 
     @Test(expected = JSONException.class)
     public void getOAuthUserNameTestNameNotFound() {
-        responseEntity = new ResponseEntity<String>("{}", HttpStatus.ACCEPTED);
+        responseEntity = new ResponseEntity<>("{}", HttpStatus.ACCEPTED);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
         String ouAuthUserId = oAuthService.getOAuthUserName(request);
         assertNull(ouAuthUserId);
@@ -96,7 +96,7 @@ public class OAuthServiceTest {
 
     @Test(expected = RuntimeException.class)
     public void getOAuthUserNameTestJSONObjectNotParsed() {
-        responseEntity = new ResponseEntity<String>("not-object", HttpStatus.ACCEPTED);
+        responseEntity = new ResponseEntity<>("not-object", HttpStatus.ACCEPTED);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
         oAuthService.getOAuthUserName(request);
     }
@@ -109,7 +109,7 @@ public class OAuthServiceTest {
 
     @Test(expected = JSONException.class)
     public void getOAuthUserEmailTestEmailNotFound() {
-        responseEntity = new ResponseEntity<String>("{}", HttpStatus.ACCEPTED);
+        responseEntity = new ResponseEntity<>("{}", HttpStatus.ACCEPTED);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
         String ouAuthUserId = oAuthService.getOAuthUserEmail(request);
         assertNull(ouAuthUserId);
@@ -117,7 +117,7 @@ public class OAuthServiceTest {
 
     @Test(expected = RuntimeException.class)
     public void getOAuthUserEmailTestJSONObjectNotParsed() {
-        responseEntity = new ResponseEntity<String>("not-object", HttpStatus.ACCEPTED);
+        responseEntity = new ResponseEntity<>("not-object", HttpStatus.ACCEPTED);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(String.class))).thenReturn(responseEntity);
         oAuthService.getOAuthUserEmail(request);
     }

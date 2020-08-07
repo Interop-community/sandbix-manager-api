@@ -36,6 +36,6 @@ public class ContextParamsServiceTest {
     @Test
     public void deleteTest() {
         contextParamsService.delete(contextParams.getId());
-        verify(contextParamsRepository).delete(contextParams.getId());
+        verify(contextParamsRepository).deleteById(contextParams.getId());
     }
 }

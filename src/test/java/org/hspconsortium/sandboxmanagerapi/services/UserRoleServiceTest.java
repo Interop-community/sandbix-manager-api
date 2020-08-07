@@ -28,13 +28,13 @@ public class UserRoleServiceTest {
     @Test
     public void deleteTest() {
         userRoleService.delete(userRole.getId());
-        verify(repository).delete(userRole.getId());
+        verify(repository).deleteById(userRole.getId());
     }
 
     @Test
     public void deleteTestByObject() {
         userRoleService.delete(userRole);
-        verify(repository).delete(userRole.getId());
+        verify(repository).deleteById(userRole.getId());
     }
 
     @Test
