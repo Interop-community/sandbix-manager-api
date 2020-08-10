@@ -25,7 +25,7 @@ public interface FhirProfileDetailService {
 
     List<FhirProfile> getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type);
 
-    void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId);
+    boolean delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId);
 
     void delete(Integer fhirProfileId);
 
