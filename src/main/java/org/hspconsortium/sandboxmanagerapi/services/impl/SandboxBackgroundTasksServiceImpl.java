@@ -2,7 +2,7 @@ package org.hspconsortium.sandboxmanagerapi.services.impl;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -44,7 +44,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         String url = sandboxApiURL + "/sandbox/clone";
 
         // TODO: change to using 'simpleRestTemplate'
-        HttpPost cloneRequest = new HttpPost(url);
+        HttpPut cloneRequest = new HttpPut(url);
         cloneRequest.addHeader("Content-Type", "application/json");
         StringEntity entity;
 

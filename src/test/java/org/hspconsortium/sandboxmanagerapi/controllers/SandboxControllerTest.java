@@ -430,7 +430,7 @@ public class SandboxControllerTest {
         when(sandboxService.findBySandboxId(anyString())).thenReturn(sandbox);
         mvc.perform(get("/sandbox/creationStatus/sandboxId"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string("\"" + SandboxCreationStatus.CREATED.toString() + "\""));
     }
 

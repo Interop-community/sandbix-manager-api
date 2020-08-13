@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 public class SandboxServiceTest {
@@ -43,6 +42,7 @@ public class SandboxServiceTest {
     private FhirProfileDetailService fhirProfileDetailService = mock(FhirProfileDetailService.class);
     private CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
     private CloseableHttpResponse response = spy(CloseableHttpResponse.class);
+    private SandboxBackgroundTasksService sandboxBackgroundTasksService = mock(SandboxBackgroundTasksService.class);
 
     private SandboxServiceImpl sandboxService = new SandboxServiceImpl(repository);
 
@@ -85,6 +85,7 @@ public class SandboxServiceTest {
         sandboxService.setHttpClient(httpClient);
         sandboxService.setCdsServiceEndpointService(cdsServiceEndpointService);
         sandboxService.setFhirProfileDetailService(fhirProfileDetailService);
+        sandboxService.setSandboxBackgroundTasksService(sandboxBackgroundTasksService);
 
         sandbox.setId(1);
         sandbox.setSandboxId("sandboxId");
@@ -313,38 +314,11 @@ public class SandboxServiceTest {
         verify(repository, times(0)).save(any(Sandbox.class));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void cloneTestInitialPersonaNull() throws IOException {
-        ReflectionTestUtils.setField(sandboxService, "expirationDate", "afdfd");
-        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
-        when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
-        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
-    }
-
     @Test
     public void cloneTestCantClone() throws IOException {
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(false);
         sandboxService.clone(sandbox, sandbox.getSandboxId(), user, bearerToken);
         verify(repository, times(0)).save(any(Sandbox.class));
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void cloneTestErrorInCallToReferenceApi() throws IOException {
-        statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_UNAUTHORIZED, "NOT FINE!");
-        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
-        when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
-        when(httpClient.execute(any())).thenReturn(response);
-        when(response.getStatusLine()).thenReturn(statusLine);
-        when(response.getEntity()).thenReturn(mock(HttpEntity.class));
-        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void cloneTestThrowsExceptionInApiCall() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
-        when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
-        when(httpClient.execute(any())).thenThrow(IOException.class);
-        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
     }
 
     @Test
