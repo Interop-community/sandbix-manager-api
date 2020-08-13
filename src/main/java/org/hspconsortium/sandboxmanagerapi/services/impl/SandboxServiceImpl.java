@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -75,6 +75,11 @@ public class SandboxServiceImpl implements SandboxService {
     private CloseableHttpClient httpClient;
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
+    private SandboxBackgroundTasksService sandboxBackgroundTasksService;
+
+    private static final int SANDBOXES_TO_RETURN = 2;
+    private static final String CLONED_SANDBOX = "cloned";
+    private static final String SAVED_SANDBOX = "saved";
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -151,6 +156,11 @@ public class SandboxServiceImpl implements SandboxService {
         this.fhirProfileDetailService = fhirProfileDetailService;
     }
 
+    @Inject
+    public void setSandboxBackgroundTasksService(@Lazy SandboxBackgroundTasksService sandboxBackgroundTasksService) {
+        this.sandboxBackgroundTasksService = sandboxBackgroundTasksService;
+    }
+
     @Override
     public void delete(final int id) {
         repository.deleteById(id);
@@ -209,27 +219,27 @@ public class SandboxServiceImpl implements SandboxService {
 
         //delete launch scenarios, context params
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(sandbox.getSandboxId());
-        for (LaunchScenario launchScenario: launchScenarios) {
+        for (LaunchScenario launchScenario : launchScenarios) {
             launchScenarioService.delete(launchScenario);
         }
 
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(sandbox.getSandboxId());
-        for (UserPersona userPersona: userPersonas) {
+        for (UserPersona userPersona : userPersonas) {
             userPersonaService.delete(userPersona);
         }
 
         List<SandboxInvite> sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandbox.getSandboxId());
-        for (SandboxInvite sandboxInvite: sandboxInvites) {
+        for (SandboxInvite sandboxInvite : sandboxInvites) {
             sandboxInviteService.delete(sandboxInvite);
         }
 
         List<CdsServiceEndpoint> cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxId(sandbox.getSandboxId());
-        for (CdsServiceEndpoint cdsServiceEndpoint: cdsServiceEndpoints) {
+        for (CdsServiceEndpoint cdsServiceEndpoint : cdsServiceEndpoints) {
             cdsServiceEndpointService.delete(cdsServiceEndpoint);
         }
 
         List<FhirProfileDetail> fhirProfileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandbox.getSandboxId());
-        for (FhirProfileDetail fhirProfileDetail: fhirProfileDetails) {
+        for (FhirProfileDetail fhirProfileDetail : fhirProfileDetails) {
             fhirProfileDetailService.delete(fhirProfileDetail.getId());
         }
 
@@ -266,7 +276,14 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public synchronized Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+    public void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+        Map<String, Sandbox> savedAndClonedSandboxes = cloneSandbox(newSandbox, clonedSandboxId, user, bearerToken);
+        if (savedAndClonedSandboxes != null) {
+            this.sandboxBackgroundTasksService.cloneSandboxSchema(savedAndClonedSandboxes.get(SAVED_SANDBOX), savedAndClonedSandboxes.get((CLONED_SANDBOX)), bearerToken, getSandboxApiURL(newSandbox));
+        }
+    }
+
+    private Map<String, Sandbox> cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             return null;
@@ -284,8 +301,8 @@ public class SandboxServiceImpl implements SandboxService {
             newSandbox.setCreatedBy(user);
             newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-
             newSandbox.setPayerUserId(user.getId());
+            newSandbox.setCreationStatus(SandboxCreationStatus.QUEUED);
             Sandbox savedSandbox = save(newSandbox);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {
@@ -304,8 +321,10 @@ public class SandboxServiceImpl implements SandboxService {
                     cloneApps(savedSandbox, clonedSandbox, user);
                 }
             }
-            callCloneSandboxApi(newSandbox, clonedSandbox, bearerToken);
-            return savedSandbox;
+            Map<String, Sandbox> savedAndClonedSandboxes = new HashMap<>(SANDBOXES_TO_RETURN);
+            savedAndClonedSandboxes.put(SAVED_SANDBOX, savedSandbox);
+            savedAndClonedSandboxes.put(CLONED_SANDBOX, clonedSandbox);
+            return savedAndClonedSandboxes;
         }
         return null;
     }
@@ -435,7 +454,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public boolean hasMemberRole(final Sandbox sandbox, final User user, final Role role) {
         List<UserRole> userRoles = sandbox.getUserRoles();
-        for (UserRole userRole: userRoles) {
+        for (UserRole userRole : userRoles) {
             if (userRole.getUser().getSbmUserId().equalsIgnoreCase(user.getSbmUserId()) && userRole.getRole() == role) {
                 return true;
             }
@@ -458,7 +477,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public boolean isSandboxMember(final Sandbox sandbox, final User user) {
-        for (UserRole userRole: sandbox.getUserRoles()) {
+        for (UserRole userRole : sandbox.getUserRoles()) {
             if (userRole.getUser().getSbmUserId().equalsIgnoreCase(user.getSbmUserId())) {
                 return true;
             }
@@ -489,7 +508,7 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxes = user.getSandboxes();
         }
 
-        for (Sandbox sandbox: findByVisibility(Visibility.PUBLIC)) {
+        for (Sandbox sandbox : findByVisibility(Visibility.PUBLIC)) {
             List<UserRole> userRoles = sandbox.getUserRoles();
             userRoles.removeIf((UserRole userRole) -> !userRole.getUser().getSbmUserId().equals(user.getSbmUserId()));
             if (!sandboxes.contains(sandbox)) {
@@ -563,22 +582,22 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String getApiSchemaURL(final String apiEndpointIndex) {
 
-        if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
             return apiEndpointIndexObj.getPrev().getApiBaseURL_dstu2();
         }
-        if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
             return apiEndpointIndexObj.getPrev().getApiBaseURL_stu3();
         }
-        if(apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getR4())) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getR4())) {
             return apiEndpointIndexObj.getPrev().getApiBaseURL_r4();
         }
-        if(apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getDstu2())) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getDstu2())) {
             return apiEndpointIndexObj.getCurrent().getApiBaseURL_dstu2();
         }
-        if(apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getStu3())) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getStu3())) {
             return apiEndpointIndexObj.getCurrent().getApiBaseURL_stu3();
         }
-        if(apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getR4())) {
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getR4())) {
             return apiEndpointIndexObj.getCurrent().getApiBaseURL_r4();
         }
         return "";
@@ -590,15 +609,15 @@ public class SandboxServiceImpl implements SandboxService {
         sandbox.setUserRoles(Collections.emptyList());
         save(sandbox);
 
-        for (UserRole userRole: userRoles) {
+        for (UserRole userRole : userRoles) {
             userService.removeSandbox(sandbox, userRole.getUser());
             userRoleService.delete(userRole);
         }
     }
 
-    private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {
+    private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken) throws UnsupportedEncodingException {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
-        if (!sandbox.getDataSet().equals(DataSet.NA)){
+        if (!sandbox.getDataSet().equals(DataSet.NA)) {
             url = getSandboxApiURL(sandbox) + "/sandbox?dataSet=" + sandbox.getDataSet();
         }
 
@@ -638,54 +657,7 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private boolean callCloneSandboxApi(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken) throws UnsupportedEncodingException {
-        String url = getSandboxApiURL(newSandbox) + "/sandbox/clone";
-
-        // TODO: change to using 'simpleRestTemplate'
-        HttpPut putRequest = new HttpPut(url);
-        putRequest.addHeader("Content-Type", "application/json");
-        StringEntity entity;
-
-        String jsonString = "{\"newSandbox\": {" +
-                "\"teamId\": \"" + newSandbox.getSandboxId() +
-                "\",\"allowOpenAccess\": \"" + newSandbox.isAllowOpenAccess() + "\"" +
-                "}," +
-                "\"clonedSandbox\": {" +
-                "\"teamId\": \"" + clonedSandbox.getSandboxId() +
-                "\",\"allowOpenAccess\": \"" + clonedSandbox.isAllowOpenAccess() + "\"" +
-                "}" +
-                "}";
-        entity = new StringEntity(jsonString);
-        putRequest.setEntity(entity);
-        putRequest.setHeader("Authorization", "BEARER " + bearerToken);
-
-        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                HttpEntity rEntity = closeableHttpResponse.getEntity();
-                String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
-                String errorMsg = String.format("There was a problem cloning the sandbox.\n" +
-                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                        closeableHttpResponse.getStatusLine(),
-                        responseString,
-                        url);
-                LOGGER.error(errorMsg);
-                throw new RuntimeException(errorMsg);
-            }
-
-            return true;
-        } catch (IOException e) {
-            LOGGER.error("Error posting to " + url, e);
-            throw new RuntimeException(e);
-        } finally {
-//            try {
-//                httpClient.close();
-//            } catch (IOException e) {
-//                LOGGER.error("Error closing HttpClient");
-//            }
-        }
-    }
-
-    private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken ) {
+    private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken) {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
 
         // TODO: change to using 'simpleRestTemplate'
@@ -732,7 +704,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneUserPersonas(Sandbox newSandbox, Sandbox existingSandbox, User user) {
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(existingSandbox.getSandboxId());
-        for (UserPersona userPersona: userPersonas) {
+        for (UserPersona userPersona : userPersonas) {
             UserPersona newUserPersona = new UserPersona();
             newUserPersona.setPassword(userPersona.getPassword());
             newUserPersona.setSandbox(newSandbox);
@@ -752,7 +724,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneApps(Sandbox newSandbox, Sandbox existingSandbox, User user) {
         List<App> clonedSmartApps = appService.findBySandboxId(existingSandbox.getSandboxId());
-        for (App app: clonedSmartApps) {
+        for (App app : clonedSmartApps) {
             App newApp = new App();
             newApp.setBriefDescription(app.getBriefDescription());
             newApp.setClientId(app.getClientId());
@@ -780,7 +752,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneLaunchScenarios(Sandbox newSandbox, Sandbox existingSandbox, User user) {
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(existingSandbox.getSandboxId());
-        for (LaunchScenario launchScenario: launchScenarios) {
+        for (LaunchScenario launchScenario : launchScenarios) {
             LaunchScenario newLaunchScenario = new LaunchScenario();
             newLaunchScenario.setSandbox(newSandbox);
             newLaunchScenario.setPatient(launchScenario.getPatient());
@@ -795,7 +767,7 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setApp(appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getClientId(), newSandbox.getSandboxId()));
             List<ContextParams> contextParamsList = launchScenario.getContextParams();
             List<ContextParams> newContextParamsList = new ArrayList<>();
-            for (ContextParams contextParams: contextParamsList) {
+            for (ContextParams contextParams : contextParamsList) {
                 ContextParams newContextParams = new ContextParams();
                 newContextParams.setName(contextParams.getName());
                 newContextParams.setValue(contextParams.getValue());

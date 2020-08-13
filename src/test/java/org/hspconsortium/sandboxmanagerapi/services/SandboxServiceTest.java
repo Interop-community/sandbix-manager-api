@@ -1,7 +1,10 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
-import org.apache.http.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
@@ -10,7 +13,6 @@ import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -307,8 +309,8 @@ public class SandboxServiceTest {
     public void cloneTestInitialPersonaNotNull() throws IOException {
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(userPersona);
-        Sandbox returnedSandbox = sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
-        assertNull(returnedSandbox);
+        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
+        verify(repository, times(0)).save(any(Sandbox.class));
     }
 
     @Test(expected = NullPointerException.class)
@@ -316,14 +318,14 @@ public class SandboxServiceTest {
         ReflectionTestUtils.setField(sandboxService, "expirationDate", "afdfd");
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
-        Sandbox returnedSandbox = sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
+        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
     }
 
     @Test
     public void cloneTestCantClone() throws IOException {
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(false);
-        Sandbox returnedSandbox = sandboxService.clone(sandbox, sandbox.getSandboxId(), user, bearerToken);
-        assertNull(returnedSandbox);
+        sandboxService.clone(sandbox, sandbox.getSandboxId(), user, bearerToken);
+        verify(repository, times(0)).save(any(Sandbox.class));
     }
 
     @Test(expected = RuntimeException.class)

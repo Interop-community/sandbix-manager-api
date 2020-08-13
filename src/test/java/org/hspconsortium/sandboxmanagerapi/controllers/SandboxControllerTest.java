@@ -21,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -110,6 +111,7 @@ public class SandboxControllerTest {
         sandbox.setCreatedBy(user);
         sandbox.setId(1);
         sandbox.setName("sandbox");
+        sandbox.setCreationStatus(SandboxCreationStatus.CREATED);
 
         Set<SystemRole> systemRoles = new HashSet<>();
         systemRoles.add(SystemRole.ADMIN);
@@ -152,13 +154,11 @@ public class SandboxControllerTest {
         String json1 = json(sandboxHashMap);
         String json2 = json(sandbox);
         when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(null);
-        when(sandboxService.clone(any(), any(), any(), any())).thenReturn(sandbox);
-        mvc.perform(post("/sandbox/clone")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(json1))
-           .andExpect(status().isOk())
-           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-           .andExpect(content().json(json2));
+        mvc
+                .perform(post("/sandbox/clone")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json1))
+                .andExpect(status().isAccepted());
     }
 
     @Test
@@ -411,4 +411,27 @@ public class SandboxControllerTest {
         mappingJackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
+
+    @Test(expected = NestedServletException.class)
+    public void sandboxCreationStatusTestUserNotAuthorized() throws Exception {
+        doThrow(UnauthorizedException.class).when(authorizationService).checkUserAuthorization(any(HttpServletRequest.class), anyString());
+        mvc.perform(get("/sandbox/creationStatus/sandboxId"));
+    }
+
+    @Test(expected = NestedServletException.class)
+    public void sandboxCreationStatusTestSandboxIdNotFound() throws Exception {
+        when(sandboxService.findBySandboxId(anyString())).thenReturn(null);
+        mvc.perform(get("/sandbox/creationStatus/sandboxId"));
+    }
+
+    @Test
+    public void sandboxCreationStatusReturned() throws Exception {
+        doNothing().when(authorizationService).checkUserAuthorization(any(HttpServletRequest.class), anyString());
+        when(sandboxService.findBySandboxId(anyString())).thenReturn(sandbox);
+        mvc.perform(get("/sandbox/creationStatus/sandboxId"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().string("\"" + SandboxCreationStatus.CREATED.toString() + "\""));
+    }
+
 }

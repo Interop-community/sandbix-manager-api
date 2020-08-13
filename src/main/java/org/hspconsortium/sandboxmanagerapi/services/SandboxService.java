@@ -18,7 +18,7 @@ public interface SandboxService {
 
     Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException;
 
-    Sandbox clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException;
+    void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException;
 
     Sandbox update(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException;
 
