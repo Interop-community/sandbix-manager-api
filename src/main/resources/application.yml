@@ -113,6 +113,8 @@ hspc:
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
       signatureAlgorithm: HS256
+    validCdsHooks: patient-view, medication-prescribe, order-review, order-select, order-sign, appointment-book, encounter-start, encounter-discharge
+    deprecatedCdsHooks: medication-prescribe, order-review
 
 multipart:
   enabled: true
