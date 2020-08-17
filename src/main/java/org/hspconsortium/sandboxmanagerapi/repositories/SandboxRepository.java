@@ -1,6 +1,7 @@
 package org.hspconsortium.sandboxmanagerapi.repositories;
 
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
+import org.hspconsortium.sandboxmanagerapi.model.SandboxCreationStatus;
 import org.hspconsortium.sandboxmanagerapi.model.Visibility;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.CrudRepository;
@@ -27,4 +28,5 @@ public interface SandboxRepository extends CrudRepository<Sandbox, Integer> {
                                                             @Param("endDate") Timestamp endDate);
     String intervalCountForSpecificTimePeriod(@Param("beginDate") Timestamp beginDate,
                                               @Param("endDate") Timestamp endDate);
+    List<Sandbox> findByCreationStatusOrderByCreatedTimestampAsc(@Param("creationStatus") SandboxCreationStatus creationStatus);
 }

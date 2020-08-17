@@ -424,14 +424,4 @@ public class SandboxControllerTest {
         mvc.perform(get("/sandbox/creationStatus/sandboxId"));
     }
 
-    @Test
-    public void sandboxCreationStatusReturned() throws Exception {
-        doNothing().when(authorizationService).checkUserAuthorization(any(HttpServletRequest.class), anyString());
-        when(sandboxService.findBySandboxId(anyString())).thenReturn(sandbox);
-        mvc.perform(get("/sandbox/creationStatus/sandboxId"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().string("\"" + SandboxCreationStatus.CREATED.toString() + "\""));
-    }
-
 }

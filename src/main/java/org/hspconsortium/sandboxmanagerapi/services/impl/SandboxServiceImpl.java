@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Service
 public class SandboxServiceImpl implements SandboxService {
@@ -309,11 +310,14 @@ public class SandboxServiceImpl implements SandboxService {
                 addMemberRole(savedSandbox, user, Role.valueOf(roleName));
             }
             sandboxActivityLogService.sandboxCreate(newSandbox, user);
-            if (newSandbox.getDataSet().equals(DataSet.DEFAULT)) {
+            if (newSandbox.getDataSet()
+                          .equals(DataSet.DEFAULT)) {
                 cloneUserPersonas(savedSandbox, clonedSandbox, user);
             }
-            if (newSandbox.getApps().equals(DataSet.DEFAULT)) {
-                if (newSandbox.getDataSet().equals(DataSet.DEFAULT)) {
+            if (newSandbox.getApps()
+                          .equals(DataSet.DEFAULT)) {
+                if (newSandbox.getDataSet()
+                              .equals(DataSet.DEFAULT)) {
                     cloneApps(savedSandbox, clonedSandbox, user);
                     cloneLaunchScenarios(savedSandbox, clonedSandbox, user);
                 } else {
@@ -351,25 +355,38 @@ public class SandboxServiceImpl implements SandboxService {
 
             //delete launch scenarios, context params
             List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxIdAndCreatedBy(sandbox.getSandboxId(), user.getSbmUserId());
-            launchScenarios.stream().filter(launchScenario -> launchScenario.getVisibility() == Visibility.PRIVATE).forEach(launchScenarioService::delete);
+            launchScenarios.stream()
+                           .filter(launchScenario -> launchScenario.getVisibility() == Visibility.PRIVATE)
+                           .forEach(launchScenarioService::delete);
 
             //delete user launches for public launch scenarios in this sandbox
             List<UserLaunch> userLaunches = userLaunchService.findByUserId(user.getSbmUserId());
-            userLaunches.stream().filter(userLaunch -> userLaunch.getLaunchScenario().getSandbox().getSandboxId().equalsIgnoreCase(sandbox.getSandboxId())).forEach(userLaunchService::delete);
+            userLaunches.stream()
+                        .filter(userLaunch -> userLaunch.getLaunchScenario()
+                                                        .getSandbox()
+                                                        .getSandboxId()
+                                                        .equalsIgnoreCase(sandbox.getSandboxId()))
+                        .forEach(userLaunchService::delete);
 
             //delete all registered app, authClients, images
             List<App> apps = appService.findBySandboxIdAndCreatedBy(sandbox.getSandboxId(), user.getSbmUserId());
-            apps.stream().filter(app -> app.getVisibility() == Visibility.PRIVATE).forEach(appService::delete);
+            apps.stream()
+                .filter(app -> app.getVisibility() == Visibility.PRIVATE)
+                .forEach(appService::delete);
 
             List<UserPersona> userPersonas = userPersonaService.findBySandboxIdAndCreatedBy(sandbox.getSandboxId(), user.getSbmUserId());
-            userPersonas.stream().filter(userPersona -> userPersona.getVisibility() == Visibility.PRIVATE).forEach(userPersonaService::delete);
+            userPersonas.stream()
+                        .filter(userPersona -> userPersona.getVisibility() == Visibility.PRIVATE)
+                        .forEach(userPersonaService::delete);
 
             List<UserRole> allUserRoles = sandbox.getUserRoles();
             List<UserRole> currentUserRoles = new ArrayList<>();
             Iterator<UserRole> iterator = allUserRoles.iterator();
             while (iterator.hasNext()) {
                 UserRole userRole = iterator.next();
-                if (userRole.getUser().getId().equals(user.getId())) {
+                if (userRole.getUser()
+                            .getId()
+                            .equals(user.getId())) {
                     currentUserRoles.add(userRole);
                     iterator.remove();
                 }
@@ -430,8 +447,11 @@ public class SandboxServiceImpl implements SandboxService {
             Iterator<UserRole> iterator = allUserRoles.iterator();
             while (iterator.hasNext()) {
                 UserRole userRole = iterator.next();
-                if (userRole.getUser().getId().equals(user.getId()) &&
-                        userRole.getRole().equals(role)) {
+                if (userRole.getUser()
+                            .getId()
+                            .equals(user.getId()) &&
+                            userRole.getRole()
+                                    .equals(role)) {
                     removeUserRole = userRole;
                     iterator.remove();
                 }
@@ -455,7 +475,9 @@ public class SandboxServiceImpl implements SandboxService {
     public boolean hasMemberRole(final Sandbox sandbox, final User user, final Role role) {
         List<UserRole> userRoles = sandbox.getUserRoles();
         for (UserRole userRole : userRoles) {
-            if (userRole.getUser().getSbmUserId().equalsIgnoreCase(user.getSbmUserId()) && userRole.getRole() == role) {
+            if (userRole.getUser()
+                        .getSbmUserId()
+                        .equalsIgnoreCase(user.getSbmUserId()) && userRole.getRole() == role) {
                 return true;
             }
         }
@@ -478,7 +500,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public boolean isSandboxMember(final Sandbox sandbox, final User user) {
         for (UserRole userRole : sandbox.getUserRoles()) {
-            if (userRole.getUser().getSbmUserId().equalsIgnoreCase(user.getSbmUserId())) {
+            if (userRole.getUser()
+                        .getSbmUserId()
+                        .equalsIgnoreCase(user.getSbmUserId())) {
                 return true;
             }
         }
@@ -510,7 +534,9 @@ public class SandboxServiceImpl implements SandboxService {
 
         for (Sandbox sandbox : findByVisibility(Visibility.PUBLIC)) {
             List<UserRole> userRoles = sandbox.getUserRoles();
-            userRoles.removeIf((UserRole userRole) -> !userRole.getUser().getSbmUserId().equals(user.getSbmUserId()));
+            userRoles.removeIf((UserRole userRole) -> !userRole.getUser()
+                                                               .getSbmUserId()
+                                                               .equals(user.getSbmUserId()));
             if (!sandboxes.contains(sandbox)) {
                 sandboxes.add(sandbox);
             }
@@ -571,7 +597,8 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public String getSystemSandboxApiURL() {
-        return apiEndpointIndexObj.getCurrent().getApiBaseURL_dstu2() + "/system";
+        return apiEndpointIndexObj.getCurrent()
+                                  .getApiBaseURL_dstu2() + "/system";
     }
 
     @Override
@@ -582,23 +609,35 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String getApiSchemaURL(final String apiEndpointIndex) {
 
-        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getDstu2())) {
-            return apiEndpointIndexObj.getPrev().getApiBaseURL_dstu2();
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
+                                                       .getDstu2())) {
+            return apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_dstu2();
         }
-        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getStu3())) {
-            return apiEndpointIndexObj.getPrev().getApiBaseURL_stu3();
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
+                                                       .getStu3())) {
+            return apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_stu3();
         }
-        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev().getR4())) {
-            return apiEndpointIndexObj.getPrev().getApiBaseURL_r4();
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
+                                                       .getR4())) {
+            return apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_r4();
         }
-        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getDstu2())) {
-            return apiEndpointIndexObj.getCurrent().getApiBaseURL_dstu2();
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
+                                                       .getDstu2())) {
+            return apiEndpointIndexObj.getCurrent()
+                                      .getApiBaseURL_dstu2();
         }
-        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getStu3())) {
-            return apiEndpointIndexObj.getCurrent().getApiBaseURL_stu3();
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
+                                                       .getStu3())) {
+            return apiEndpointIndexObj.getCurrent()
+                                      .getApiBaseURL_stu3();
         }
-        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent().getR4())) {
-            return apiEndpointIndexObj.getCurrent().getApiBaseURL_r4();
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
+                                                       .getR4())) {
+            return apiEndpointIndexObj.getCurrent()
+                                      .getApiBaseURL_r4();
         }
         return "";
     }
@@ -617,7 +656,8 @@ public class SandboxServiceImpl implements SandboxService {
 
     private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken) throws UnsupportedEncodingException {
         String url = getSandboxApiURL(sandbox) + "/sandbox";
-        if (!sandbox.getDataSet().equals(DataSet.NA)) {
+        if (!sandbox.getDataSet()
+                    .equals(DataSet.NA)) {
             url = getSandboxApiURL(sandbox) + "/sandbox?dataSet=" + sandbox.getDataSet();
         }
 
@@ -632,14 +672,15 @@ public class SandboxServiceImpl implements SandboxService {
         putRequest.setHeader("Authorization", "BEARER " + bearerToken);
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(putRequest)) {
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
+            if (closeableHttpResponse.getStatusLine()
+                                     .getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
                 String errorMsg = String.format("There was a problem creating the sandbox.\n" +
-                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                        closeableHttpResponse.getStatusLine(),
-                        responseString,
-                        url);
+                                                        "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
+                                                closeableHttpResponse.getStatusLine(),
+                                                responseString,
+                                                url);
                 LOGGER.error(errorMsg);
                 throw new RuntimeException(errorMsg);
             }
@@ -665,14 +706,15 @@ public class SandboxServiceImpl implements SandboxService {
         deleteRequest.addHeader("Authorization", "BEARER " + bearerToken);
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(deleteRequest)) {
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
+            if (closeableHttpResponse.getStatusLine()
+                                     .getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
                 String errorMsg = String.format("There was a problem deleting the sandbox.\n" +
-                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                        closeableHttpResponse.getStatusLine(),
-                        responseString,
-                        url);
+                                                        "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
+                                                closeableHttpResponse.getStatusLine(),
+                                                responseString,
+                                                url);
                 LOGGER.error(errorMsg);
                 throw new RuntimeException(errorMsg);
             }
@@ -708,7 +750,8 @@ public class SandboxServiceImpl implements SandboxService {
             UserPersona newUserPersona = new UserPersona();
             newUserPersona.setPassword(userPersona.getPassword());
             newUserPersona.setSandbox(newSandbox);
-            String[] personaSplit = userPersona.getPersonaUserId().split("@");
+            String[] personaSplit = userPersona.getPersonaUserId()
+                                               .split("@");
             newUserPersona.setPersonaUserId(personaSplit[0] + "@" + newSandbox.getSandboxId());
             newUserPersona.setCreatedBy(user);
             newUserPersona.setCreatedTimestamp(new Timestamp(new Date().getTime()));
@@ -764,7 +807,9 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setResource(launchScenario.getResource());
             newLaunchScenario.setSmartStyleUrl(launchScenario.getSmartStyleUrl());
             newLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
-            newLaunchScenario.setApp(appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp().getLaunchUri(), launchScenario.getApp().getClientId(), newSandbox.getSandboxId()));
+            newLaunchScenario.setApp(appService.findByLaunchUriAndClientIdAndSandboxId(launchScenario.getApp()
+                                                                                                     .getLaunchUri(), launchScenario.getApp()
+                                                                                                                                    .getClientId(), newSandbox.getSandboxId()));
             List<ContextParams> contextParamsList = launchScenario.getContextParams();
             List<ContextParams> newContextParamsList = new ArrayList<>();
             for (ContextParams contextParams : contextParamsList) {
@@ -778,8 +823,12 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             newLaunchScenario.setDescription(launchScenario.getDescription());
             newLaunchScenario.setTitle(launchScenario.getTitle());
-            String personaId = launchScenario.getUserPersona().getPersonaUserId().split("@")[0] + "@" + newLaunchScenario.getSandbox().getSandboxId();
-            newLaunchScenario.setUserPersona(userPersonaService.findByPersonaUserIdAndSandboxId(personaId, newLaunchScenario.getSandbox().getSandboxId()));
+            String personaId = launchScenario.getUserPersona()
+                                             .getPersonaUserId()
+                                             .split("@")[0] + "@" + newLaunchScenario.getSandbox()
+                                                                                     .getSandboxId();
+            newLaunchScenario.setUserPersona(userPersonaService.findByPersonaUserIdAndSandboxId(personaId, newLaunchScenario.getSandbox()
+                                                                                                                            .getSandboxId()));
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
             launchScenarioService.save(newLaunchScenario);
         }
@@ -795,6 +844,26 @@ public class SandboxServiceImpl implements SandboxService {
         return repository.intervalCountForSpecificTimePeriod(beginDate, endDate);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId) {
+        var sandboxes = repository.findByCreationStatusOrderByCreatedTimestampAsc(SandboxCreationStatus.QUEUED);
+        var maybeSandbox = IntStream.range(0, sandboxes.size())
+                                    .mapToObj(i -> {
+                                        if (sandboxes.get(i)
+                                                     .getSandboxId()
+                                                     .equals(sandboxId)) {
+                                            return new SandboxCreationStatusQueueOrder(i, sandboxes.get(i)
+                                                                                                   .getCreationStatus());
+                                        }
+                                        return null;
+                                    })
+                                    .filter(Objects::nonNull)
+                                    .findAny();
+        if (maybeSandbox.isPresent()) {
+            return maybeSandbox.get();
+        }
+        var sandbox = repository.findBySandboxId(sandboxId);
+        return new SandboxCreationStatusQueueOrder(0, sandbox.getCreationStatus());
+    }
 }
-
-

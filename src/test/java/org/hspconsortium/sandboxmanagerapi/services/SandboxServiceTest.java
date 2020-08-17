@@ -17,7 +17,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -100,6 +103,7 @@ public class SandboxServiceTest {
         user.setSbmUserId("userId");
         user.setSandboxes(sandboxes);
         sandbox.setCreatedBy(user);
+        sandbox.setCreationStatus(SandboxCreationStatus.CREATED);
         List<SandboxImport> sandboxImportList = new ArrayList<>();
         sandboxImport = new SandboxImport();
         sandboxImportList.add(sandboxImport);
@@ -409,7 +413,7 @@ public class SandboxServiceTest {
     @Test
     public void addMemberTest() {
         sandboxService.addMember(sandbox, user, role);
-        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user,  role, true);
+        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user, role, true);
         verify(userService).addSandbox(sandbox, user);
         verify(sandboxActivityLogService).sandboxUserAdded(sandbox, user);
     }
@@ -417,7 +421,7 @@ public class SandboxServiceTest {
     @Test
     public void addMemberTest2() {
         sandboxService.addMember(sandbox, user);
-        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user,  Role.USER, true);
+        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user, Role.USER, true);
     }
 
     @Test
@@ -625,5 +629,40 @@ public class SandboxServiceTest {
         verify(repository).findAll();
     }
 
+    @Test
+    public void sandboxQueuedCreationStatusTest() {
+        var sandboxes = createQueuedSandboxes();
+        when(repository.findByCreationStatusOrderByCreatedTimestampAsc(any(SandboxCreationStatus.class))).thenReturn(sandboxes);
+        var queuedCreationStatus = sandboxService.getQueuedCreationStatus(sandboxes.get(1)
+                                                                                   .getSandboxId());
+        assertEquals(1, queuedCreationStatus.getQueuePosition());
+        assertEquals(SandboxCreationStatus.QUEUED, queuedCreationStatus.getSandboxCreationStatus());
+    }
+
+    @Test
+    public void sandboxCreatedCreationStatusTest() {
+        when(repository.findByCreationStatusOrderByCreatedTimestampAsc(any(SandboxCreationStatus.class))).thenReturn(Collections.emptyList());
+        when(repository.findBySandboxId(anyString())).thenReturn(sandbox);
+        var queuedCreationStatus = sandboxService.getQueuedCreationStatus(sandbox.getSandboxId());
+        assertEquals(0, queuedCreationStatus.getQueuePosition());
+        assertEquals(SandboxCreationStatus.CREATED, queuedCreationStatus.getSandboxCreationStatus());
+    }
+
+    private List<Sandbox> createQueuedSandboxes() {
+        Sandbox sandbox1 = new Sandbox();
+        sandbox1.setSandboxId("sandboxId1");
+        Instant now = Instant.now();
+        Instant yesterday = now.minus(1, ChronoUnit.DAYS);
+        sandbox1.setCreatedTimestamp(Timestamp.from(yesterday));
+        sandbox1.setCreationStatus(SandboxCreationStatus.QUEUED);
+        Sandbox sandbox2 = new Sandbox();
+        sandbox2.setSandboxId("sandboxId2");
+        sandbox2.setCreatedTimestamp(Timestamp.from(now));
+        sandbox2.setCreationStatus(SandboxCreationStatus.QUEUED);
+        List<Sandbox> sandboxes = new ArrayList<>(2);
+        sandboxes.add(sandbox1);
+        sandboxes.add(sandbox2);
+        return sandboxes;
+    }
 
 }

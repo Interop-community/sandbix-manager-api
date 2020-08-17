@@ -103,13 +103,13 @@ public class SandboxController {
 
     @GetMapping(value = "/creationStatus/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody SandboxCreationStatus getSandboxCreationStatus(HttpServletRequest request, @PathVariable (value = "id") String sandboxId) {
+    public @ResponseBody SandboxCreationStatusQueueOrder getSandboxCreationStatus(HttpServletRequest request, @PathVariable (value = "id") String sandboxId) {
         authorizationService.checkUserAuthorization(request, authorizationService.getSystemUserId(request));
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        return sandbox.getCreationStatus();
+        return sandboxService.getQueuedCreationStatus(sandbox.getSandboxId());
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)

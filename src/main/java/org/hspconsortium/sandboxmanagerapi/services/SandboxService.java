@@ -76,4 +76,6 @@ public interface SandboxService {
 
     String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
 
+    SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId);
+
 }
