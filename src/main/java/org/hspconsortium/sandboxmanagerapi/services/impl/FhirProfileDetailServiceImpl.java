@@ -103,11 +103,12 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Override
     @Transactional
-    public boolean delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
+    @Async("taskExecutor")
+    public void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
         String authToken = request.getHeader("Authorization");
         List<FhirProfile> fhirProfiles = fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
         if (fhirProfiles.isEmpty()) {
-            return false;
+            return;
         }
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authToken);
@@ -123,7 +124,6 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             }
         }
         delete(fhirProfileId);
-        return true;
     }
 
     @Override
