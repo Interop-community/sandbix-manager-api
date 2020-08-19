@@ -204,16 +204,13 @@ public class FhirProfileController {
     @DeleteMapping(params = {"fhirProfileId", "sandboxId"}, produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProfile(HttpServletRequest request, @RequestParam(value = "fhirProfileId") Integer fhirProfileId, @RequestParam(value = "sandboxId") String sandboxId, HttpServletResponse response) {
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if(!authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox).equals(user.getSbmUserId())) {
             throw new UnauthorizedUserException("User not authorized");
         }
-        if (!fhirProfileDetailService.delete(request, fhirProfileId, sandboxId)) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        } else {
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-        }
+        fhirProfileDetailService.delete(request, fhirProfileId, sandboxId);
     }
 }
