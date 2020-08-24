@@ -23,6 +23,7 @@ public class FhirProfileDetail extends AbstractSandboxItem {
     private List<FhirProfile> fhirProfiles;
     private String profileName;
     private String profileId;
+    private FhirProfileStatus status;
 
     public String getProfileName() {
         return profileName;
@@ -108,6 +109,14 @@ public class FhirProfileDetail extends AbstractSandboxItem {
         this.visibility = visibility;
     }
 
+    @Enumerated(EnumType.STRING)
+    public FhirProfileStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(FhirProfileStatus status) {
+        this.status = status;
+    }
     /**********************************************************************************/
 
 }

@@ -77,6 +77,7 @@ public class FhirProfileController {
         fhirProfileDetail.setProfileName(profileName);
         fhirProfileDetail.setProfileId(profileId);
         fhirProfileDetail.setVisibility(visibility);
+        fhirProfileDetail.setStatus(FhirProfileStatus.CREATED);
 
         if (fileName.isEmpty()) {
             statusReturned.put("status", false);
@@ -211,6 +212,7 @@ public class FhirProfileController {
         if(!authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox).equals(user.getSbmUserId())) {
             throw new UnauthorizedUserException("User not authorized");
         }
-        fhirProfileDetailService.delete(request, fhirProfileId, sandboxId);
+        fhirProfileDetailService.markAsDeleted(fhirProfileId);
+        fhirProfileDetailService.backgroundDelete(request, fhirProfileId, sandboxId);
     }
 }

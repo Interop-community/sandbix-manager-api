@@ -107,8 +107,18 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Override
     @Transactional
+    public void markAsDeleted(Integer fhirProfileId) {
+        var fhirProfileDetail = repository.findByFhirProfileId(fhirProfileId);
+        if (fhirProfileDetail != null) {
+            fhirProfileDetail.setStatus(FhirProfileStatus.DELETED);
+            repository.save(fhirProfileDetail);
+        }
+    }
+
+    @Override
+    @Transactional
     @Async("taskExecutor")
-    public void delete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
+    public void backgroundDelete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
         String authToken = request.getHeader("Authorization");
         List<FhirProfile> fhirProfiles = fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
         if (fhirProfiles.isEmpty()) {
