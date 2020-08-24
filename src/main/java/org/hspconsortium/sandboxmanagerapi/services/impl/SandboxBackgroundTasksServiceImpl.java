@@ -8,8 +8,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.sandboxmanagerapi.model.Sandbox;
 import org.hspconsortium.sandboxmanagerapi.model.SandboxCreationStatus;
+import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxBackgroundTasksService;
+import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,19 +29,21 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
 
     private final CloseableHttpClient httpClient;
     private final SandboxRepository repository;
+    private final UserAccessHistoryService userAccessHistoryService;
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxBackgroundTasksServiceImpl.class.getName());
 
     @Autowired
-    public SandboxBackgroundTasksServiceImpl(CloseableHttpClient httpClient, SandboxRepository repository) {
+    public SandboxBackgroundTasksServiceImpl(CloseableHttpClient httpClient, SandboxRepository repository, UserAccessHistoryService userAccessHistoryService) {
         this.httpClient = httpClient;
         this.repository = repository;
+        this.userAccessHistoryService = userAccessHistoryService;
     }
 
     @Override
     @Transactional
     @Async("sandboxCloneTaskExecutor")
-    public void cloneSandboxSchema(final Sandbox newSandbox, final Sandbox clonedSandbox, final String bearerToken, final String sandboxApiURL) throws UnsupportedEncodingException {
+    public void cloneSandboxSchema(final Sandbox newSandbox, final Sandbox clonedSandbox, final User user, final String bearerToken, final String sandboxApiURL) throws UnsupportedEncodingException {
         TransactionSynchronizationManager.setActualTransactionActive(true);
         String url = sandboxApiURL + "/sandbox/clone";
 
@@ -74,6 +78,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                 updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.ERRORED);
                 throw new RuntimeException(errorMsg);
             }
+            this.userAccessHistoryService.saveUserAccessInstance(newSandbox, user);
             updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.CREATED);
         } catch (IOException e) {
             updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.ERRORED);
