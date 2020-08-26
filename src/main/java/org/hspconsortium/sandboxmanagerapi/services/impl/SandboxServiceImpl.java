@@ -10,6 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.UserSandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,7 @@ public class SandboxServiceImpl implements SandboxService {
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
     private SandboxBackgroundTasksService sandboxBackgroundTasksService;
+    private UserSandboxRepository userSandboxRepository;
 
     private static final int SANDBOXES_TO_RETURN = 2;
     private static final String CLONED_SANDBOX = "cloned";
@@ -162,6 +164,11 @@ public class SandboxServiceImpl implements SandboxService {
         this.sandboxBackgroundTasksService = sandboxBackgroundTasksService;
     }
 
+    @Inject
+    public void setUserSandboxRepository(@Lazy UserSandboxRepository userSandboxRepository) {
+        this.userSandboxRepository = userSandboxRepository;
+    }
+
     @Override
     @Transactional
     public void deleteQueuedSandboxes() {
@@ -213,6 +220,9 @@ public class SandboxServiceImpl implements SandboxService {
         } else {
             sandboxActivityLogService.sandboxDelete(sandbox, sandbox.getCreatedBy());
         }
+
+        this.userSandboxRepository.deleteAllBySandboxId(sandbox.getId());
+
         delete(sandbox.getId());
 
     }

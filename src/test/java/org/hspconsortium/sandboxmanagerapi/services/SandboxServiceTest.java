@@ -10,6 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.UserSandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,7 @@ public class SandboxServiceTest {
     private CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
     private CloseableHttpResponse response = spy(CloseableHttpResponse.class);
     private SandboxBackgroundTasksService sandboxBackgroundTasksService = mock(SandboxBackgroundTasksService.class);
+    private UserSandboxRepository userSandboxRepository = mock(UserSandboxRepository.class);
 
     private SandboxServiceImpl sandboxService = new SandboxServiceImpl(repository);
 
@@ -89,6 +91,7 @@ public class SandboxServiceTest {
         sandboxService.setCdsServiceEndpointService(cdsServiceEndpointService);
         sandboxService.setFhirProfileDetailService(fhirProfileDetailService);
         sandboxService.setSandboxBackgroundTasksService(sandboxBackgroundTasksService);
+        sandboxService.setUserSandboxRepository(userSandboxRepository);
 
         sandbox.setId(1);
         sandbox.setSandboxId("sandboxId");
