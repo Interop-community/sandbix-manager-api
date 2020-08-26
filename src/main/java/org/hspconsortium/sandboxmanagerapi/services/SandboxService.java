@@ -10,6 +10,8 @@ public interface SandboxService {
 
     Sandbox save(final Sandbox sandbox);
 
+    void deleteQueuedSandboxes();
+
     void delete(final int id);
 
     void delete(final Sandbox sandbox, final String bearerToken);

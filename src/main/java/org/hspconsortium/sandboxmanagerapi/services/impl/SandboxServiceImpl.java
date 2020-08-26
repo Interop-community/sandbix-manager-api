@@ -163,6 +163,17 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
+    @Transactional
+    public void deleteQueuedSandboxes() {
+        var queuedSandboxes = repository.findByCreationStatus(SandboxCreationStatus.QUEUED);
+        queuedSandboxes.forEach(this::delete);
+    }
+
+    private void delete(final Sandbox sandbox) {
+        deleteSandboxFromSandman(sandbox, null);
+    }
+
+    @Override
     public void delete(final int id) {
         repository.deleteById(id);
     }
@@ -179,7 +190,13 @@ public class SandboxServiceImpl implements SandboxService {
             }
         }
 
-        deleteAllSandboxItems(sandbox, bearerToken);
+        deleteSandboxFromSandman(sandbox, admin);
+
+    }
+
+    private void deleteSandboxFromSandman(final Sandbox sandbox, final User admin) {
+
+        deleteAllSandboxItems(sandbox);
 
         List<SandboxImport> imports = sandbox.getImports();
         for (SandboxImport sandboxImport : imports) {
@@ -197,6 +214,7 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxActivityLogService.sandboxDelete(sandbox, sandbox.getCreatedBy());
         }
         delete(sandbox.getId());
+
     }
 
     @Override
@@ -205,9 +223,9 @@ public class SandboxServiceImpl implements SandboxService {
         delete(sandbox, bearerToken, null, false);
     }
 
-    private void deleteAllSandboxItems(final Sandbox sandbox, final String bearerToken) {
+    private void deleteAllSandboxItems(final Sandbox sandbox) {
 
-        deleteSandboxItemsExceptApps(sandbox, bearerToken);
+        deleteSandboxItemsExceptApps(sandbox);
 
         //delete all registered app, authClients, images
         List<App> apps = appService.findBySandboxIdIncludingCustomApps(sandbox.getSandboxId());
@@ -216,7 +234,7 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private void deleteSandboxItemsExceptApps(final Sandbox sandbox, final String bearerToken) {
+    private void deleteSandboxItemsExceptApps(final Sandbox sandbox) {
 
         //delete launch scenarios, context params
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(sandbox.getSandboxId());
@@ -494,7 +512,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public void reset(final Sandbox sandbox, final String bearerToken) {
-        deleteSandboxItemsExceptApps(sandbox, bearerToken);
+        deleteSandboxItemsExceptApps(sandbox);
     }
 
     @Override

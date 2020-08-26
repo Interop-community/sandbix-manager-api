@@ -29,4 +29,5 @@ public interface SandboxRepository extends CrudRepository<Sandbox, Integer> {
     String intervalCountForSpecificTimePeriod(@Param("beginDate") Timestamp beginDate,
                                               @Param("endDate") Timestamp endDate);
     List<Sandbox> findByCreationStatusOrderByCreatedTimestampAsc(@Param("creationStatus") SandboxCreationStatus creationStatus);
+    List<Sandbox> findByCreationStatus(@Param("creationStatus") SandboxCreationStatus creationStatus);
 }
