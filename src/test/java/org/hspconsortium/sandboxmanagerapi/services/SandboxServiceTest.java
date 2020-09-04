@@ -1,26 +1,31 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
-import org.apache.http.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
+import org.hspconsortium.sandboxmanagerapi.repositories.UserSandboxRepository;
 import org.hspconsortium.sandboxmanagerapi.services.impl.SandboxServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 public class SandboxServiceTest {
@@ -41,6 +46,8 @@ public class SandboxServiceTest {
     private FhirProfileDetailService fhirProfileDetailService = mock(FhirProfileDetailService.class);
     private CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
     private CloseableHttpResponse response = spy(CloseableHttpResponse.class);
+    private SandboxBackgroundTasksService sandboxBackgroundTasksService = mock(SandboxBackgroundTasksService.class);
+    private UserSandboxRepository userSandboxRepository = mock(UserSandboxRepository.class);
 
     private SandboxServiceImpl sandboxService = new SandboxServiceImpl(repository);
 
@@ -83,6 +90,8 @@ public class SandboxServiceTest {
         sandboxService.setHttpClient(httpClient);
         sandboxService.setCdsServiceEndpointService(cdsServiceEndpointService);
         sandboxService.setFhirProfileDetailService(fhirProfileDetailService);
+        sandboxService.setSandboxBackgroundTasksService(sandboxBackgroundTasksService);
+        sandboxService.setUserSandboxRepository(userSandboxRepository);
 
         sandbox.setId(1);
         sandbox.setSandboxId("sandboxId");
@@ -97,6 +106,7 @@ public class SandboxServiceTest {
         user.setSbmUserId("userId");
         user.setSandboxes(sandboxes);
         sandbox.setCreatedBy(user);
+        sandbox.setCreationStatus(SandboxCreationStatus.CREATED);
         List<SandboxImport> sandboxImportList = new ArrayList<>();
         sandboxImport = new SandboxImport();
         sandboxImportList.add(sandboxImport);
@@ -307,42 +317,15 @@ public class SandboxServiceTest {
     public void cloneTestInitialPersonaNotNull() throws IOException {
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
         when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(userPersona);
-        Sandbox returnedSandbox = sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
-        assertNull(returnedSandbox);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void cloneTestInitialPersonaNull() throws IOException {
-        ReflectionTestUtils.setField(sandboxService, "expirationDate", "afdfd");
-        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
-        when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
-        Sandbox returnedSandbox = sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
+        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
+        verify(repository, times(0)).save(any(Sandbox.class));
     }
 
     @Test
     public void cloneTestCantClone() throws IOException {
         when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(false);
-        Sandbox returnedSandbox = sandboxService.clone(sandbox, sandbox.getSandboxId(), user, bearerToken);
-        assertNull(returnedSandbox);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void cloneTestErrorInCallToReferenceApi() throws IOException {
-        statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_UNAUTHORIZED, "NOT FINE!");
-        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
-        when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
-        when(httpClient.execute(any())).thenReturn(response);
-        when(response.getStatusLine()).thenReturn(statusLine);
-        when(response.getEntity()).thenReturn(mock(HttpEntity.class));
-        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void cloneTestThrowsExceptionInApiCall() throws IOException {
-        when(ruleService.checkIfUserCanCreateSandbox(user, token)).thenReturn(true);
-        when(userPersonaService.findByPersonaUserId(user.getSbmUserId())).thenReturn(null);
-        when(httpClient.execute(any())).thenThrow(IOException.class);
-        sandboxService.clone(newSandbox, sandbox.getSandboxId(), user, bearerToken);
+        sandboxService.clone(sandbox, sandbox.getSandboxId(), user, bearerToken);
+        verify(repository, times(0)).save(any(Sandbox.class));
     }
 
     @Test
@@ -433,7 +416,7 @@ public class SandboxServiceTest {
     @Test
     public void addMemberTest() {
         sandboxService.addMember(sandbox, user, role);
-        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user,  role, true);
+        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user, role, true);
         verify(userService).addSandbox(sandbox, user);
         verify(sandboxActivityLogService).sandboxUserAdded(sandbox, user);
     }
@@ -441,7 +424,7 @@ public class SandboxServiceTest {
     @Test
     public void addMemberTest2() {
         sandboxService.addMember(sandbox, user);
-        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user,  Role.USER, true);
+        verify(sandboxActivityLogService).sandboxUserRoleChange(sandbox, user, Role.USER, true);
     }
 
     @Test
@@ -649,5 +632,40 @@ public class SandboxServiceTest {
         verify(repository).findAll();
     }
 
+    @Test
+    public void sandboxQueuedCreationStatusTest() {
+        var sandboxes = createQueuedSandboxes();
+        when(repository.findByCreationStatusOrderByCreatedTimestampAsc(any(SandboxCreationStatus.class))).thenReturn(sandboxes);
+        var queuedCreationStatus = sandboxService.getQueuedCreationStatus(sandboxes.get(1)
+                                                                                   .getSandboxId());
+        assertEquals(1, queuedCreationStatus.getQueuePosition());
+        assertEquals(SandboxCreationStatus.QUEUED, queuedCreationStatus.getSandboxCreationStatus());
+    }
+
+    @Test
+    public void sandboxCreatedCreationStatusTest() {
+        when(repository.findByCreationStatusOrderByCreatedTimestampAsc(any(SandboxCreationStatus.class))).thenReturn(Collections.emptyList());
+        when(repository.findBySandboxId(anyString())).thenReturn(sandbox);
+        var queuedCreationStatus = sandboxService.getQueuedCreationStatus(sandbox.getSandboxId());
+        assertEquals(0, queuedCreationStatus.getQueuePosition());
+        assertEquals(SandboxCreationStatus.CREATED, queuedCreationStatus.getSandboxCreationStatus());
+    }
+
+    private List<Sandbox> createQueuedSandboxes() {
+        Sandbox sandbox1 = new Sandbox();
+        sandbox1.setSandboxId("sandboxId1");
+        Instant now = Instant.now();
+        Instant yesterday = now.minus(1, ChronoUnit.DAYS);
+        sandbox1.setCreatedTimestamp(Timestamp.from(yesterday));
+        sandbox1.setCreationStatus(SandboxCreationStatus.QUEUED);
+        Sandbox sandbox2 = new Sandbox();
+        sandbox2.setSandboxId("sandboxId2");
+        sandbox2.setCreatedTimestamp(Timestamp.from(now));
+        sandbox2.setCreationStatus(SandboxCreationStatus.QUEUED);
+        List<Sandbox> sandboxes = new ArrayList<>(2);
+        sandboxes.add(sandbox1);
+        sandboxes.add(sandbox2);
+        return sandboxes;
+    }
 
 }

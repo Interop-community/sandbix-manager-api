@@ -24,21 +24,14 @@ import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.apache.http.HttpStatus;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.services.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.util.List;
 
-import static org.springframework.http.MediaType.*;
-import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping({"/cds-services"})
@@ -67,7 +60,7 @@ public class CdsServiceEndpointController {
     @PostMapping(produces = APPLICATION_JSON_VALUE)
     @Transactional
     @ResponseBody
-    public CdsServiceEndpoint createCdsServiceEndpoint(final HttpServletRequest request,
+    public List<CdsServiceEndpoint> createCdsServiceEndpoint(final HttpServletRequest request,
                                         @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
 
         checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);

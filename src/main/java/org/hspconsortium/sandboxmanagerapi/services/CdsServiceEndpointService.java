@@ -12,7 +12,7 @@ public interface CdsServiceEndpointService {
 
     void delete(final CdsServiceEndpoint cdsServiceEndpoint);
 
-    CdsServiceEndpoint create(final CdsServiceEndpoint cdsServiceEndpoint, final Sandbox sandbox);
+    List<CdsServiceEndpoint> create(final CdsServiceEndpoint cdsServiceEndpoint, final Sandbox sandbox);
 
     CdsServiceEndpoint update(final CdsServiceEndpoint cdsServiceEndpoint);
 
