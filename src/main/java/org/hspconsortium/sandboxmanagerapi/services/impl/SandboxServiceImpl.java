@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.hspconsortium.sandboxmanagerapi.model.*;
 import org.hspconsortium.sandboxmanagerapi.repositories.SandboxRepository;
@@ -733,7 +734,7 @@ public class SandboxServiceImpl implements SandboxService {
         HttpDelete deleteRequest = new HttpDelete(url);
         deleteRequest.addHeader("Authorization", "BEARER " + bearerToken);
 
-        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(deleteRequest)) {
+        try (CloseableHttpResponse closeableHttpResponse = HttpClientBuilder.create().build().execute(deleteRequest)) {
             if (closeableHttpResponse.getStatusLine()
                                      .getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
