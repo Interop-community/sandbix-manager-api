@@ -15,6 +15,7 @@ import org.hspconsortium.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -75,6 +76,8 @@ public class SandboxServiceImpl implements SandboxService {
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxInviteService sandboxInviteService;
     private CloseableHttpClient httpClient;
+    @Qualifier("sandboxDeleteHttpClient")
+    private CloseableHttpClient sandboxDeleteHttpClient;
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
     private SandboxBackgroundTasksService sandboxBackgroundTasksService;
@@ -147,6 +150,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setHttpClient(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    @Inject
+    public void setSandboxDeleteHttpClient(CloseableHttpClient sandboxDeleteHttpClient) {
+        this.sandboxDeleteHttpClient = sandboxDeleteHttpClient;
     }
 
     @Inject
@@ -733,7 +741,7 @@ public class SandboxServiceImpl implements SandboxService {
         HttpDelete deleteRequest = new HttpDelete(url);
         deleteRequest.addHeader("Authorization", "BEARER " + bearerToken);
 
-        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(deleteRequest)) {
+        try (CloseableHttpResponse closeableHttpResponse = sandboxDeleteHttpClient.execute(deleteRequest)) {
             if (closeableHttpResponse.getStatusLine()
                                      .getStatusCode() != 200) {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();

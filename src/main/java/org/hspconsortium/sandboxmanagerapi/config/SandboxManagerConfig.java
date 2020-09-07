@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
@@ -85,5 +86,11 @@ public class SandboxManagerConfig {
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.initialize();
         return executor;
+    }
+
+    @Bean(name="sandboxDeleteHttpClient")
+    @Scope("prototype")
+    public CloseableHttpClient sandboxDeleteHttpClient() {
+        return HttpClientBuilder.create().build();
     }
 }
