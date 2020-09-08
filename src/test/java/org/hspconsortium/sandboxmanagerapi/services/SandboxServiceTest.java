@@ -45,6 +45,7 @@ public class SandboxServiceTest {
     private CdsServiceEndpointService cdsServiceEndpointService = mock(CdsServiceEndpointService.class);
     private FhirProfileDetailService fhirProfileDetailService = mock(FhirProfileDetailService.class);
     private CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+    private CloseableHttpClient sandboxDeleteHttpClient = mock(CloseableHttpClient.class);
     private CloseableHttpResponse response = spy(CloseableHttpResponse.class);
     private SandboxBackgroundTasksService sandboxBackgroundTasksService = mock(SandboxBackgroundTasksService.class);
     private UserSandboxRepository userSandboxRepository = mock(UserSandboxRepository.class);
@@ -88,6 +89,7 @@ public class SandboxServiceTest {
         sandboxService.setSandboxActivityLogService(sandboxActivityLogService);
         sandboxService.setRuleService(ruleService);
         sandboxService.setHttpClient(httpClient);
+        sandboxService.setSandboxDeleteHttpClient(sandboxDeleteHttpClient);
         sandboxService.setCdsServiceEndpointService(cdsServiceEndpointService);
         sandboxService.setFhirProfileDetailService(fhirProfileDetailService);
         sandboxService.setSandboxBackgroundTasksService(sandboxBackgroundTasksService);
@@ -189,7 +191,7 @@ public class SandboxServiceTest {
 
     @Test
     public void deleteTestAll() throws IOException {
-        when(httpClient.execute(any())).thenReturn(response);
+        when(sandboxDeleteHttpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         sandboxService.delete(sandbox, bearerToken, user, false);
         verify(sandboxImportService).delete(sandboxImport);
@@ -199,7 +201,7 @@ public class SandboxServiceTest {
 
     @Test
     public void deleteTestAllAdminIsNull() throws IOException {
-        when(httpClient.execute(any())).thenReturn(response);
+        when(sandboxDeleteHttpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         sandboxService.delete(sandbox, bearerToken, null, false);
         verify(sandboxActivityLogService).sandboxDelete(sandbox, sandbox.getCreatedBy());
@@ -207,7 +209,7 @@ public class SandboxServiceTest {
 
     @Test
     public void deleteTestAllVerifyItemsDeleted() throws IOException {
-        when(httpClient.execute(any())).thenReturn(response);
+        when(sandboxDeleteHttpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         when(launchScenarioService.findBySandboxId(sandbox.getSandboxId())).thenReturn(launchScenarios);
         when(userPersonaService.findBySandboxId(sandbox.getSandboxId())).thenReturn(userPersonas);
