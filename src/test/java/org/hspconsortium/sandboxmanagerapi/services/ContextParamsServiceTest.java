@@ -1,8 +1,6 @@
 package org.hspconsortium.sandboxmanagerapi.services;
 
-import org.hspconsortium.sandboxmanagerapi.repositories.ConfigRepository;
 import org.hspconsortium.sandboxmanagerapi.repositories.ContextParamsRepository;
-import org.hspconsortium.sandboxmanagerapi.services.impl.ConfigServiceImpl;
 import org.hspconsortium.sandboxmanagerapi.model.ContextParams;
 import org.hspconsortium.sandboxmanagerapi.services.impl.ContextParamsServiceImpl;
 import org.junit.Before;
