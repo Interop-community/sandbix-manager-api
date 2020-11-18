@@ -10,7 +10,7 @@ spring:
   profiles:
     active:
   datasource:
-    base_url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}
+    base_url: jdbc:mysql://${DB_HOST:sandbox-mysql}:${DB_PORT:3306}
     my_schema: ${DB_NAME:sandman}
     url: ${spring.datasource.base_url}/${spring.datasource.my_schema}
     username: ${DB_USER:root}
@@ -21,6 +21,8 @@ spring:
     tomcat:
       initialSize: 1
       maxActive: 5
+    platform: mysql
+
   jpa:
     show-sql: false
     hibernate:
