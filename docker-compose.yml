@@ -54,11 +54,46 @@ services:
       - DB_NAME=sandman
       - DB_USER=root
       - DB_PASSWORD=password
+      - AUTH_HOST=reference-auth
+      - AUTH_PORT=8060
     depends_on:
       - sandbox-mysql
 
   reference-auth:
+    image: auth
+    ports:
+      - "8060:8060"
+    volumes:
+      - logica-sandbox-volume:/var/lib/mysql
+    environment:
+    - AUTH_HOST=reference-auth
+    - AUTH_PORT=8060
+    - DB_NAME=oic
+    - DB_HOST=sandbox-mysql
+    - DB_USER=root
+    - DB_PASSWORD=password
+    - SHOW_SQL=true
+    - API_DSTU2_HOST=localhost
+    - API_DSTU2_PORT=8075
+    - API_STU3_HOST=localhost
+    - API_STU3_PORT=8076
+    - API_R4_HOST=localhost
+    - API_R4_PORT=8077
+    - PATIENT_PICKER_HOST=localhost
+    - PATIENT_PICKER_PORT=8094
+    - SANDMAN_API_HOST=sandbox-manager-api
+    - SANDMAN_API_PORT=12000
+    depends_on:
+      - sandbox-mysql
 
+  sandbox-manager-prototype:
+    image: sandbox-manager-prototype
+    ports:
+      - "3001:3000"
+#
+#  command-line:
+#    image: alpine
+#    command: tail -F anything
 
 networks:
   default:
