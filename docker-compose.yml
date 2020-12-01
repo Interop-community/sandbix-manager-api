@@ -8,19 +8,14 @@ services:
   keycloak:
     image: jboss/keycloak
     volumes:
-      - /Users/gopalmenon/volumes/localrealm.json:/Users/gopalmenon/volumes/localrealm.json
+      - /Users/gopalmenon/volumes/realm_properties.json:/Users/gopalmenon/volumes/realm_properties.json
     ports:
       - "8080:8080"
     environment:
-      - DB_PORT=3306
-      - DB_USER=root
-      - DB_PASSWORD=password
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
-      - KEYCLOAK_IMPORT=/Users/gopalmenon/volumes/localrealm.json
+      - KEYCLOAK_IMPORT=/Users/gopalmenon/volumes/realm_properties.json
     command: ["-Djboss.http.port=8080", "-Dkeycloak.profile.feature.upload_scripts=enabled"]
-    depends_on:
-      - sandbox-mysql
 
   sandbox-mysql:
     image: mysql:5.7
@@ -103,10 +98,6 @@ services:
       - AUTH_HOST=reference-auth
       - AUTH_PORT=8060
       - MANIFEST_OVERRIDE=false
-    deploy:
-      resources:
-        reservations:
-          memory: 5G
     depends_on:
       - sandbox-mysql
       - reference-auth
@@ -130,10 +121,6 @@ services:
       - AUTH_HOST=reference-auth
       - AUTH_PORT=8060
       - MANIFEST_OVERRIDE=false
-    deploy:
-      resources:
-        reservations:
-          memory: 5G
     depends_on:
       - sandbox-mysql
       - reference-auth
@@ -157,10 +144,6 @@ services:
       - AUTH_HOST=reference-auth
       - AUTH_PORT=8060
       - MANIFEST_OVERRIDE=false
-    deploy:
-      resources:
-        reservations:
-          memory: 6G
     depends_on:
       - sandbox-mysql
       - reference-auth
