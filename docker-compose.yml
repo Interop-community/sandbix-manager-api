@@ -50,8 +50,6 @@ services:
     image: auth
     ports:
       - "8060:8060"
-    volumes:
-      - logica-sandbox-volume:/var/lib/mysql
     environment:
     - AUTH_HOST=reference-auth
     - AUTH_PORT=8060
@@ -83,8 +81,6 @@ services:
     image: hspconsortium/api:2.9.0
     ports:
       - "8078:8078"
-    volumes:
-      - logica-sandbox-volume:/var/lib/mysql
     environment:
       - SPRING_PROFILES_ACTIVE=dstu2,multitenant
       - API_PORT=8078
@@ -106,8 +102,6 @@ services:
     image: hspconsortium/api:2.9.0
     ports:
       - "8079:8079"
-    volumes:
-      - logica-sandbox-volume:/var/lib/mysql
     environment:
       - SPRING_PROFILES_ACTIVE=stu3,multitenant
       - API_PORT=8079
@@ -129,8 +123,6 @@ services:
     image: hspconsortium/api:2.9.0
     ports:
       - "8070:8070"
-    volumes:
-      - logica-sandbox-volume:/var/lib/mysql
     environment:
       - SPRING_PROFILES_ACTIVE=r4,multitenant
       - API_PORT=8070
