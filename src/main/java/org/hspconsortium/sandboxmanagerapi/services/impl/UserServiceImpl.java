@@ -9,6 +9,9 @@ import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseAcceptanceService;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
 import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -24,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private TermsOfUseService termsOfUseService;
     private TermsOfUseAcceptanceService termsOfUseAcceptanceService;
     private UserAccessHistoryService userAccessHistoryService;
+
+    private static Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class.getName());
 
     @Inject
     public UserServiceImpl(final UserRepository repository) {
@@ -165,6 +170,11 @@ public class UserServiceImpl implements UserService {
             user.setHasAcceptedLatestTermsOfUse(true);
         }
     }
+
+    @Scheduled(cron = "0 18 16 1-31 * ?")
+    public void deleteSandboxUsersWhoDidNotAcceptInvitationWithinOneMonth() {
+        LOGGER.info("Deleting rows from  user table where sandbox invitation was not accepted within a month.");
+        repository.deleteSandboxUsersWhoDidNotAcceptInvitationWithinOneMonth();
+    }
+
 }
-
-
