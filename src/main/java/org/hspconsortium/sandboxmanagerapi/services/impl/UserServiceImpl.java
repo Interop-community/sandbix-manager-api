@@ -171,7 +171,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Scheduled(cron = "0 18 16 1-31 * ?")
+    @Scheduled(cron = "0 0 0 1 * ?")
     public void deleteSandboxUsersWhoDidNotAcceptInvitationWithinOneMonth() {
         LOGGER.info("Deleting rows from  user table where sandbox invitation was not accepted within a month.");
         repository.deleteSandboxUsersWhoDidNotAcceptInvitationWithinOneMonth();
