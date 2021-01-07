@@ -1,7 +1,8 @@
 package org.hspconsortium.sandboxmanagerapi.repositories;
 
-import org.hspconsortium.sandboxmanagerapi.model.SandboxInvite;
 import org.hspconsortium.sandboxmanagerapi.model.InviteStatus;
+import org.hspconsortium.sandboxmanagerapi.model.SandboxInvite;
+import org.hspconsortium.sandboxmanagerapi.model.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,5 @@ public interface SandboxInviteRepository extends CrudRepository<SandboxInvite, I
     List<SandboxInvite> findInvitesByInviteeEmail(@Param("inviteeEmail") String inviteeEmail);
     List<SandboxInvite> findInvitesByInviteeIdAndStatus(@Param("inviteeId") String inviteeId, @Param("status") InviteStatus status);
     List<SandboxInvite> findInvitesBySandboxIdAndStatus(@Param("sandboxId") String sandboxId, @Param("status") InviteStatus status);
+    void deleteAllByInviteeIn(List<User> staleInvitees);
 }
