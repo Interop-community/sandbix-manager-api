@@ -24,7 +24,6 @@ services:
     volumes:
       - logica-sandbox-volume:/var/lib/mysql
     environment:
-      - MYSQL_USER=root
       - MYSQL_PASSWORD=password
       - MYSQL_ROOT_PASSWORD=password
     container_name: communityedition_sandbox-mysql
