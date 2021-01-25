@@ -8,13 +8,13 @@ services:
   keycloak:
     image: jboss/keycloak
     volumes:
-      - /Users/Shared/community-edition/realm_properties.json:/Users/Shared/community-edition/realm_properties.json
+      - "./realm_properties.json:/etc/security/realm_properties.json"
     ports:
       - "8080:8080"
     environment:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
-      - KEYCLOAK_IMPORT=/Users/Shared/community-edition/realm_properties.json
+      - KEYCLOAK_IMPORT=/etc/security/realm_properties.json
     command: ["-Djboss.http.port=8080", "-Dkeycloak.profile.feature.upload_scripts=enabled"]
 
   sandbox-mysql:
