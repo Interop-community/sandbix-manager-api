@@ -13,6 +13,8 @@ public interface SandboxInviteService {
 
     void delete(final int id);
 
+    void delete(List<User> invitees);
+
     void delete(SandboxInvite sandboxInvite);
 
     SandboxInvite create(SandboxInvite sandboxInvite) throws IOException;

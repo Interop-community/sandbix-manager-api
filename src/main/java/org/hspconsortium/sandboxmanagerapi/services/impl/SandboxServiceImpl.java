@@ -675,6 +675,11 @@ public class SandboxServiceImpl implements SandboxService {
             return apiEndpointIndexObj.getCurrent()
                                       .getApiBaseURL_r4();
         }
+        if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
+                                                       .getR5())) {
+            return apiEndpointIndexObj.getCurrent()
+                                      .getApiBaseURL_r5();
+        }
         return "";
     }
 

@@ -87,7 +87,7 @@ hspc:
     # When a user creates a brand new sandbox, this is the default visibility of the new sandbox
     #    defaultSandboxVisibility: PUBLIC
     defaultSandboxVisibility: PRIVATE
-    templateSandboxIds: MasterDstu2Empty, MasterDstu2Smart, MasterStu3Empty, MasterStu3Smart, MasterR4Empty, MasterR4Smart, MasterStu3Synthea
+    templateSandboxIds: MasterDstu2Empty, MasterDstu2Smart, MasterStu3Empty, MasterStu3Smart, MasterR4Empty, MasterR4Smart, MasterStu3Synthea, MasterR5Empty
     dontDeleteInSync: dstu2, stu3, hspc, hspc3, hspc4, hspc5, hspc6, hspc7
     sandboxesAllUsersCanAccess: hspc5, hspc6, hspc8, hspc9, DaVinciDemoPayer, DaVinciCOLPayer, DaVinciCOLProvider, DaVinciMRPPayer, DaVinciMRPProvider, DaVinciPDexPayer, DaVinciPDexProvider, DaVinciMRPProviderR4, DaVinciMRPPayerR4, DaVinciCDexPayer, DaVinciCDexProvider
     # How many sandbox creation tasks can run in parallel
@@ -178,13 +178,17 @@ api_endpoint_index:
     dstu2: 5
     stu3: 6
     r4: 7
+    r5:
     apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
     apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
     apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
+    apiBaseURL_r5:
   current:
     dstu2: 8
     stu3: 9
     r4: 10
+    r5: 11
     apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8078}
     apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079}
     apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}
+    apiBaseURL_r5: http://${API_R5_HOST:localhost}:${API_R5_PORT:8071}
