@@ -10,6 +10,7 @@ import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
 import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
 import org.hspconsortium.sandboxmanagerapi.services.SandboxInviteService;
+import org.hspconsortium.sandboxmanagerapi.services.NotificationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private TermsOfUseAcceptanceService termsOfUseAcceptanceService;
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxInviteService sandboxInviteService;
+    private NotificationService notificationService;
 
     private static Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class.getName());
 
@@ -57,6 +59,11 @@ public class UserServiceImpl implements UserService {
     @Inject
     public void setSandboxInviteService(SandboxInviteService sandboxInviteService) {
         this.sandboxInviteService = sandboxInviteService;
+    }
+
+    @Inject
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -186,6 +193,7 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("Deleting rows from  user table and corresponding sandbox invites where sandbox invitation was not accepted within a month.");
         var staleUsers = repository.findAllBySbmUserIdIsNullAndCreatedTimestampLessThan(oneMonthAgo());
         sandboxInviteService.delete(staleUsers);
+        notificationService.delete(staleUsers);
         repository.deleteAll(staleUsers);
     }
 
