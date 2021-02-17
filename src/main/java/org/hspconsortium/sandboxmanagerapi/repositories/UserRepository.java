@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Repository
 public interface UserRepository extends CrudRepository<User, Integer> {
@@ -16,4 +17,5 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     String intervalCount(@Param("intervalTime") Timestamp intervalTime);
     String intervalCountForSpecificTimePeriod(@Param("beginDate") Timestamp beginDate,
                                               @Param("endDate") Timestamp endDate);
+    List<User> findAllBySbmUserIdIsNullAndCreatedTimestampLessThan(Timestamp staleInviteDate);
 }

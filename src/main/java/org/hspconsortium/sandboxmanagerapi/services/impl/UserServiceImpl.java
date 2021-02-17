@@ -9,11 +9,17 @@ import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseAcceptanceService;
 import org.hspconsortium.sandboxmanagerapi.services.TermsOfUseService;
 import org.hspconsortium.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.hspconsortium.sandboxmanagerapi.services.UserService;
+import org.hspconsortium.sandboxmanagerapi.services.SandboxInviteService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +30,9 @@ public class UserServiceImpl implements UserService {
     private TermsOfUseService termsOfUseService;
     private TermsOfUseAcceptanceService termsOfUseAcceptanceService;
     private UserAccessHistoryService userAccessHistoryService;
+    private SandboxInviteService sandboxInviteService;
+
+    private static Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class.getName());
 
     @Inject
     public UserServiceImpl(final UserRepository repository) {
@@ -43,6 +52,11 @@ public class UserServiceImpl implements UserService {
     @Inject
     public void setUserAccessHistoryService(UserAccessHistoryService userAccessHistoryService) {
         this.userAccessHistoryService = userAccessHistoryService;
+    }
+
+    @Inject
+    public void setSandboxInviteService(SandboxInviteService sandboxInviteService) {
+        this.sandboxInviteService = sandboxInviteService;
     }
 
     @Override
@@ -165,6 +179,22 @@ public class UserServiceImpl implements UserService {
             user.setHasAcceptedLatestTermsOfUse(true);
         }
     }
+
+    @Scheduled(cron = "0 0 0 1 * ?")
+    @Transactional
+    public void deleteSandboxUsersWhoDidNotAcceptInvitationWithinOneMonth() {
+        LOGGER.info("Deleting rows from  user table and corresponding sandbox invites where sandbox invitation was not accepted within a month.");
+        var staleUsers = repository.findAllBySbmUserIdIsNullAndCreatedTimestampLessThan(oneMonthAgo());
+        sandboxInviteService.delete(staleUsers);
+        repository.deleteAll(staleUsers);
+    }
+
+    private Timestamp oneMonthAgo() {
+        var timestamp = new Timestamp(System.currentTimeMillis());
+        var calendar = Calendar.getInstance();
+        calendar.setTime(timestamp);
+        calendar.add(Calendar.MONTH, -1);
+        return new Timestamp(calendar.getTime().getTime());
+    }
+
 }
-
-

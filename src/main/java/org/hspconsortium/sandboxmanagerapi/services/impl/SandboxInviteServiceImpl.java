@@ -73,6 +73,12 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
 
     @Override
     @Transactional
+    public void delete(List<User> invitees) {
+        repository.deleteAllByInviteeIn(invitees);
+    }
+
+    @Override
+    @Transactional
     public void delete(final SandboxInvite sandboxInvite) {
         delete(sandboxInvite.getId());
     }
