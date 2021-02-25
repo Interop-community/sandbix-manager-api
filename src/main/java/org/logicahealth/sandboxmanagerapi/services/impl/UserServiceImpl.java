@@ -5,12 +5,7 @@ import org.logicahealth.sandboxmanagerapi.model.TermsOfUse;
 import org.logicahealth.sandboxmanagerapi.model.TermsOfUseAcceptance;
 import org.logicahealth.sandboxmanagerapi.model.User;
 import org.logicahealth.sandboxmanagerapi.repositories.UserRepository;
-import org.logicahealth.sandboxmanagerapi.services.TermsOfUseAcceptanceService;
-import org.logicahealth.sandboxmanagerapi.services.TermsOfUseService;
-import org.logicahealth.sandboxmanagerapi.services.UserAccessHistoryService;
-import org.logicahealth.sandboxmanagerapi.services.UserService;
-import org.logicahealth.sandboxmanagerapi.services.SandboxInviteService;
-
+import org.logicahealth.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private TermsOfUseAcceptanceService termsOfUseAcceptanceService;
     private UserAccessHistoryService userAccessHistoryService;
     private SandboxInviteService sandboxInviteService;
+    private NotificationService notificationService;
 
     private static Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class.getName());
 
@@ -57,6 +53,11 @@ public class UserServiceImpl implements UserService {
     @Inject
     public void setSandboxInviteService(SandboxInviteService sandboxInviteService) {
         this.sandboxInviteService = sandboxInviteService;
+    }
+
+    @Inject
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -186,6 +187,7 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("Deleting rows from  user table and corresponding sandbox invites where sandbox invitation was not accepted within a month.");
         var staleUsers = repository.findAllBySbmUserIdIsNullAndCreatedTimestampLessThan(oneMonthAgo());
         sandboxInviteService.delete(staleUsers);
+        notificationService.delete(staleUsers);
         repository.deleteAll(staleUsers);
     }
 

@@ -11,6 +11,7 @@ import org.logicahealth.sandboxmanagerapi.services.UserService;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -149,5 +150,11 @@ public class NotificationServiceImpl implements NotificationService {
         newsItemStorage.setActive(1);
         newsItemService.save(newsItemStorage);
         createNotificationsForAGivenUser(newsItemStorage, user);
+    }
+
+    @Override
+    @Transactional
+    public void delete(List<User> invitees) {
+        notificationRepository.deleteAllByUserIn(invitees);
     }
 }

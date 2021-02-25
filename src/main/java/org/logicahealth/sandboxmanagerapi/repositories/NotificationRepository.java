@@ -1,6 +1,7 @@
 package org.logicahealth.sandboxmanagerapi.repositories;
 
 import org.logicahealth.sandboxmanagerapi.model.Notification;
+import org.logicahealth.sandboxmanagerapi.model.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,4 +13,6 @@ public interface NotificationRepository extends CrudRepository<Notification, Int
     List<Notification> findByUserId(@Param("userId") Integer userId);
 
     List<Notification> findByNewsItemId(@Param("newsItemId") Integer newsItemId);
+
+    void deleteAllByUserIn(List<User> staleInvitees);
 }

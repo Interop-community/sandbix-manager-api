@@ -27,4 +27,6 @@ public interface NotificationService {
     void createNotificationForMoreThanThresholdMemory(User user);
 
     void deleteNotificationForAllUsers(Integer newsItemId);
+
+    void delete(List<User> invitees);
 }
