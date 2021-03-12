@@ -4,6 +4,7 @@ import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -20,9 +21,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -30,6 +34,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class SandboxServiceImpl implements SandboxService {
@@ -486,8 +492,8 @@ public class SandboxServiceImpl implements SandboxService {
                 if (userRole.getUser()
                             .getId()
                             .equals(user.getId()) &&
-                            userRole.getRole()
-                                    .equals(role)) {
+                        userRole.getRole()
+                                .equals(role)) {
                     removeUserRole = userRole;
                     iterator.remove();
                 }
@@ -718,10 +724,10 @@ public class SandboxServiceImpl implements SandboxService {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
                 String errorMsg = String.format("There was a problem creating the sandbox.\n" +
-                                                        "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                                                closeableHttpResponse.getStatusLine(),
-                                                responseString,
-                                                url);
+                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
+                        closeableHttpResponse.getStatusLine(),
+                        responseString,
+                        url);
                 LOGGER.error(errorMsg);
                 throw new RuntimeException(errorMsg);
             }
@@ -752,10 +758,10 @@ public class SandboxServiceImpl implements SandboxService {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
                 String errorMsg = String.format("There was a problem deleting the sandbox.\n" +
-                                                        "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                                                closeableHttpResponse.getStatusLine(),
-                                                responseString,
-                                                url);
+                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
+                        closeableHttpResponse.getStatusLine(),
+                        responseString,
+                        url);
                 LOGGER.error(errorMsg);
                 throw new RuntimeException(errorMsg);
             }
@@ -906,5 +912,64 @@ public class SandboxServiceImpl implements SandboxService {
         }
         var sandbox = repository.findBySandboxId(sandboxId);
         return new SandboxCreationStatusQueueOrder(0, sandbox.getCreationStatus());
+    }
+
+    @Override
+    public StreamingResponseBody getZippedSandboxStream(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
+        return out -> {
+            addAppManifestsToZipFile(sandboxId, sbmUserId, zipOutputStream);
+            addSandboxSchemaToZipFile(sandboxId, sbmUserId, zipOutputStream, bearerToken);
+            zipOutputStream.close();
+        };
+    }
+
+    private void addAppManifestsToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        for (App app : apps) {
+            try {
+                var inputStream = new ByteArrayInputStream(app.getClientJSON().getBytes());
+                addZipFileEntry(inputStream, new ZipEntry(app.getClientName() + ".json"), zipOutputStream);
+                inputStream.close();
+            } catch (IOException e) {
+                LOGGER.error("Exception while reading and streaming data for sandbox download", e);
+            }
+        }
+    }
+
+    private void addSandboxSchemaToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
+        String url = getSandboxApiURL(findBySandboxId(sandboxId)) + "/sandbox/download";
+        var downloadRequest = new HttpGet(url);
+        downloadRequest.setHeader("Authorization", "BEARER " + bearerToken);
+
+        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(downloadRequest)) {
+            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
+                String errorMsg = String.format("There was a problem downloading the sandbox.\n" +
+                                "Response Status : %s .\nUrl: :%s",
+                        closeableHttpResponse.getStatusLine(),
+                        url);
+                LOGGER.error(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
+            var inputStream = closeableHttpResponse.getEntity().getContent();
+            addZipFileEntry(inputStream, new ZipEntry("schema.zip"), zipOutputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception while reading and streaming data for sandbox download", e);
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void addZipFileEntry(InputStream inputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
+        try {
+            zipOutputStream.putNextEntry(zipEntry);
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = inputStream.read(bytes)) >= 0) {
+                zipOutputStream.write(bytes, 0, length);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Exception while reading and streaming data for sandbox download", e);
+        }
     }
 }

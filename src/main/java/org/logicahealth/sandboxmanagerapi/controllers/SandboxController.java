@@ -27,18 +27,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.ZipOutputStream;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -106,13 +111,29 @@ public class SandboxController {
 
     @GetMapping(value = "/creationStatus/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody SandboxCreationStatusQueueOrder getSandboxCreationStatus(HttpServletRequest request, @PathVariable (value = "id") String sandboxId) {
+    public @ResponseBody
+    SandboxCreationStatusQueueOrder getSandboxCreationStatus(HttpServletRequest request, @PathVariable(value = "id") String sandboxId) {
         authorizationService.checkUserAuthorization(request, authorizationService.getSystemUserId(request));
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         return sandboxService.getQueuedCreationStatus(sandbox.getSandboxId());
+    }
+
+    @GetMapping(value = "/download/{id}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<StreamingResponseBody> downloadSandboxAndApps(HttpServletRequest request, @PathVariable(value = "id") String sandboxId, HttpServletResponse response) throws IOException {
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition","attachment;filename=sandbox.zip");
+        var sbmUserId = authorizationService.getSystemUserId(request);
+        authorizationService.checkUserAuthorization(request, sbmUserId);
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
+        var zipOutputStream = new ZipOutputStream(response.getOutputStream());
+        var zippedResponseBody = sandboxService.getZippedSandboxStream(sandboxId, sbmUserId, zipOutputStream, authorizationService.getBearerToken(request));
+        return new ResponseEntity<StreamingResponseBody>(zippedResponseBody, HttpStatus.OK);
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
@@ -294,10 +315,10 @@ public class SandboxController {
      */
     private boolean canRemoveUser(Sandbox sandbox, User removedUser) {
         Optional<UserRole> first = sandbox.getUserRoles()
-                .stream()
-                .filter(u -> u.getUser().getId().equals(removedUser.getId())
-                        && isAdminUser(u))
-                .findFirst();
+                                          .stream()
+                                          .filter(u -> u.getUser().getId().equals(removedUser.getId())
+                                                  && isAdminUser(u))
+                                          .findFirst();
 
         return !first.isPresent() || sandbox.getUserRoles().stream().filter(this::isAdminUser).count() > 1;
     }

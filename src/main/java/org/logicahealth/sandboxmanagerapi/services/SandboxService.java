@@ -1,10 +1,12 @@
 package org.logicahealth.sandboxmanagerapi.services;
 
 import org.logicahealth.sandboxmanagerapi.model.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 public interface SandboxService {
 
@@ -79,5 +81,7 @@ public interface SandboxService {
     String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
 
     SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId);
+
+    StreamingResponseBody getZippedSandboxStream(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken);
 
 }
