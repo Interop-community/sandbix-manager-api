@@ -918,7 +918,7 @@ public class SandboxServiceImpl implements SandboxService {
     public StreamingResponseBody getZippedSandboxStream(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
         return out -> {
             addAppManifestsToZipFile(sandboxId, sbmUserId, zipOutputStream);
-            addSandboxSchemaToZipFile(sandboxId, sbmUserId, zipOutputStream, bearerToken);
+            addSandboxSchemaToZipFile(sandboxId, zipOutputStream, bearerToken);
             zipOutputStream.close();
         };
     }
@@ -931,12 +931,12 @@ public class SandboxServiceImpl implements SandboxService {
                 addZipFileEntry(inputStream, new ZipEntry(app.getClientName() + ".json"), zipOutputStream);
                 inputStream.close();
             } catch (IOException e) {
-                LOGGER.error("Exception while reading and streaming data for sandbox download", e);
+                LOGGER.error("Exception while adding manifests for sandbox download", e);
             }
         }
     }
 
-    private void addSandboxSchemaToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
+    private void addSandboxSchemaToZipFile(String sandboxId, ZipOutputStream zipOutputStream, String bearerToken) {
         String url = getSandboxApiURL(findBySandboxId(sandboxId)) + "/sandbox/download";
         var downloadRequest = new HttpGet(url);
         downloadRequest.setHeader("Authorization", "BEARER " + bearerToken);
@@ -954,7 +954,7 @@ public class SandboxServiceImpl implements SandboxService {
             addZipFileEntry(inputStream, new ZipEntry("schema.zip"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
-            LOGGER.error("Exception while reading and streaming data for sandbox download", e);
+            LOGGER.error("Exception while adding sandbox schema for sandbox download", e);
             throw new RuntimeException(e);
         }
 
@@ -969,7 +969,7 @@ public class SandboxServiceImpl implements SandboxService {
                 zipOutputStream.write(bytes, 0, length);
             }
         } catch (IOException e) {
-            LOGGER.error("Exception while reading and streaming data for sandbox download", e);
+            LOGGER.error("Exception while adding zip file entry for sandbox download", e);
         }
     }
 }
