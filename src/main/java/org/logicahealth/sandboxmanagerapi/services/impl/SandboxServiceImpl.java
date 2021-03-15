@@ -951,7 +951,7 @@ public class SandboxServiceImpl implements SandboxService {
                 throw new RuntimeException(errorMsg);
             }
             var inputStream = closeableHttpResponse.getEntity().getContent();
-            addZipFileEntry(inputStream, new ZipEntry("schema.zip"), zipOutputStream);
+            addZipFileEntry(inputStream, new ZipEntry("fhir_server.zip"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
             LOGGER.error("Exception while adding sandbox schema for sandbox download", e);
