@@ -1,6 +1,8 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
+import com.google.gson.Gson;
+import lombok.Getter;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -33,6 +35,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -917,10 +920,75 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public StreamingResponseBody getZippedSandboxStream(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
         return out -> {
+            addSandboxDetailsToZipFile(sandboxId, zipOutputStream);
             addAppManifestsToZipFile(sandboxId, sbmUserId, zipOutputStream);
             addSandboxSchemaToZipFile(sandboxId, zipOutputStream, bearerToken);
             zipOutputStream.close();
         };
+    }
+
+    private void addSandboxDetailsToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
+        var sandbox = findBySandboxId(sandboxId);
+        var sandboxApiURL = getSandboxApiURL(findBySandboxId(sandboxId));
+        var sandboxUserRoles = sandbox.getUserRoles()
+                                      .stream()
+                                      .map(userRole -> new SandboxUser(userRole.getUser(), userRole.getRole().name()))
+                                      .collect(Collectors.groupingBy(SandboxUser::getRole));
+        var sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandboxId);
+        var sandboxInvitees = sandboxInvites.stream()
+                                            .map(SandboxInvitee::new)
+                                            .collect(Collectors.groupingBy(SandboxInvitee::getInviteStatus));
+
+        var sandboxDetails = new HashMap<String, Object>();
+        sandboxDetails.put("sandbox ID", sandbox.getSandboxId());
+        sandboxDetails.put("sandbox name", sandbox.getName());
+        sandboxDetails.put("sandbox description", sandbox.getDescription());
+        sandboxDetails.put("sandbox base url", sandboxApiURL);
+        sandboxDetails.put("sandbox user roles", sandboxUserRoles);
+        sandboxDetails.put("sandbox invitees", sandboxInvitees);
+        var sandboxInputStream = new ByteArrayInputStream(new Gson().toJson(sandboxDetails).getBytes());
+        addZipFileEntry(sandboxInputStream, new ZipEntry("sandbox.json"), zipOutputStream);
+
+        var pendingInviteeEmails = sandboxInvites.stream()
+                                                 .filter(sandboxInvite -> sandboxInvite.getStatus() == InviteStatus.PENDING)
+                                                 .map(sandboxInvite -> sandboxInvite.getInvitee().getEmail())
+                                                 .collect(Collectors.joining(", "));
+        var pendingInviteesInputStream = new ByteArrayInputStream(pendingInviteeEmails.getBytes());
+        addZipFileEntry(pendingInviteesInputStream, new ZipEntry("pending invitees.csv"), zipOutputStream);
+
+        try {
+            sandboxInputStream.close();
+            pendingInviteesInputStream.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception while adding sandbox and invitees details for sandbox download", e);
+        }
+    }
+
+    @Getter
+    private static class SandboxUser {
+        private final String name;
+        private final String email;
+        private final transient String role;
+
+        public SandboxUser(User user, String role) {
+            this.name = user.getName();
+            this.email = user.getEmail();
+            this.role = role;
+        }
+    }
+
+    @Getter
+    private static class SandboxInvitee {
+
+        private final String name;
+        private final String email;
+        private final transient String inviteStatus;
+
+        public SandboxInvitee(SandboxInvite sandboxInvite) {
+            this.name = sandboxInvite.getInvitee().getName();
+            this.email = sandboxInvite.getInvitee().getEmail();
+            this.inviteStatus = sandboxInvite.getStatus().name();
+        }
     }
 
     private void addAppManifestsToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
