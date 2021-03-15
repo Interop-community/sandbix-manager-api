@@ -925,10 +925,12 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void addAppManifestsToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        int appCounter = 0;
         for (App app : apps) {
             try {
+                appCounter += 1;
                 var inputStream = new ByteArrayInputStream(app.getClientJSON().getBytes());
-                addZipFileEntry(inputStream, new ZipEntry(app.getClientName() + ".json"), zipOutputStream);
+                addZipFileEntry(inputStream, new ZipEntry("/Apps/App " + appCounter + ".json"), zipOutputStream);
                 inputStream.close();
             } catch (IOException e) {
                 LOGGER.error("Exception while adding manifests for sandbox download", e);
