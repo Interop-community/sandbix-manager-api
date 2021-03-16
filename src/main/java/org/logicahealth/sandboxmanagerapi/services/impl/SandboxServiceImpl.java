@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 @Service
@@ -1021,8 +1022,11 @@ public class SandboxServiceImpl implements SandboxService {
                 throw new RuntimeException(errorMsg);
             }
             var inputStream = closeableHttpResponse.getEntity().getContent();
-            addZipFileEntry(inputStream, new ZipEntry("fhir_server.zip"), zipOutputStream);
+            var zipInputStream = new ZipInputStream(inputStream);
+            addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
+            addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
             inputStream.close();
+            zipInputStream.close();
         } catch (IOException e) {
             LOGGER.error("Exception while adding sandbox schema for sandbox download", e);
             throw new RuntimeException(e);
