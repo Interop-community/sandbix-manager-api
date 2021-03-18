@@ -924,6 +924,7 @@ public class SandboxServiceImpl implements SandboxService {
         return out -> {
             addSandboxFhirServerDetailsToZipFile(sandboxId, zipOutputStream, bearerToken);
             addAppsManifestToZipFile(sandboxId, sbmUserId, zipOutputStream);
+            addUserPersonasToZipFile(sandboxId, sbmUserId, zipOutputStream);
             zipOutputStream.close();
         };
     }
@@ -1073,13 +1074,45 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        var allApps = "[" + apps.stream().map(App::getClientJSON).collect(Collectors.joining(",")) + "]";
+        var allApps = "[" +
+                apps.stream()
+                    .map(App::getClientJSON)
+                    .collect(Collectors.joining(",")) +
+                "]";
         try {
             var inputStream = new ByteArrayInputStream(allApps.getBytes());
             addZipFileEntry(inputStream, new ZipEntry("apps.json"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
             LOGGER.error("Exception while adding apps manifest for sandbox download", e);
+        }
+    }
+
+    private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        var userPersonas = userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        var sandboxUserPersona = userPersonas.stream()
+                                             .map(SandboxUserPersona::new)
+                                             .collect(Collectors.toList());
+        try {
+            var inputStream = new ByteArrayInputStream(new Gson().toJson(sandboxUserPersona)
+                                                                 .getBytes());
+            addZipFileEntry(inputStream, new ZipEntry("personas.json"), zipOutputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception while adding personas for sandbox download", e);
+        }
+    }
+
+    @Getter
+    private static class SandboxUserPersona {
+        private final String personaUserId;
+        private final String password;
+        private final String resourceUrl;
+
+        public SandboxUserPersona(UserPersona userPersona) {
+            this.personaUserId = userPersona.getPersonaUserId();
+            this.password = userPersona.getPassword();
+            this.resourceUrl = userPersona.getResourceUrl();
         }
     }
 
