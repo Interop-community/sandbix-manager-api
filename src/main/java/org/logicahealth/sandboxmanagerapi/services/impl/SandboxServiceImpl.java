@@ -3,6 +3,8 @@ package org.logicahealth.sandboxmanagerapi.services.impl;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -933,6 +935,7 @@ public class SandboxServiceImpl implements SandboxService {
             addAppsManifestToZipFile(sandboxId, sbmUserId, zipOutputStream);
             addUserPersonasToZipFile(sandboxId, sbmUserId, zipOutputStream);
             addCdsHooksToZipFile(sandboxId, sbmUserId, zipOutputStream);
+            addLaunchScenariosToZipFile(sandboxId, sbmUserId, zipOutputStream);
             zipOutputStream.close();
         };
     }
@@ -1125,7 +1128,7 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     private void addCdsHooksToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
-        List<CdsServiceEndpoint> cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        var cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         for (CdsServiceEndpoint cdsServiceEndpoint : cdsServiceEndpoints) {
             List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
             cdsServiceEndpoint.setCdsHooks(cdsHooks);
@@ -1139,7 +1142,7 @@ public class SandboxServiceImpl implements SandboxService {
             addZipFileEntry(inputStream, new ZipEntry("cds-hooks.json"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
-            LOGGER.error("Exception while adding personas for sandbox download", e);
+            LOGGER.error("Exception while adding cds hooks for sandbox download", e);
         }
     }
 
@@ -1184,5 +1187,66 @@ public class SandboxServiceImpl implements SandboxService {
             this.scope = cdsHook.getScope();
             this.context = cdsHook.getContext();
         }
+    }
+
+    private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        var launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        var sandboxLaunchScenarios = launchScenarios.stream()
+                                                    .map(SandboxLaunchScenario::new)
+                                                    .collect(Collectors.toList());
+        try {
+            var inputStream = new ByteArrayInputStream(new Gson().toJson(sandboxLaunchScenarios)
+                                                                 .getBytes());
+            addZipFileEntry(inputStream, new ZipEntry("launch-scenarios.json"), zipOutputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception while adding launch scenarios for sandbox download", e);
+        }
+    }
+
+    @Getter
+    private static class SandboxLaunchScenario {
+        private final String description;
+        private final String personaUserId;
+        private final String appId;
+        private final List<ContextParams> contextParams;
+        private final String patient;
+        private final String encounter;
+        private final String location;
+        private final String resource;
+        private final String intent;
+        private final String smartStyleUrl;
+        private final String title;
+        private final String needPatientBanner;
+        private final String cdsHookUrl;
+        private final JsonNode context;
+
+        public SandboxLaunchScenario(LaunchScenario launchScenario) {
+            this.description = launchScenario.getDescription();
+            this.personaUserId = launchScenario.getUserPersona() == null ? null : launchScenario.getUserPersona().getPersonaUserId();
+            this.appId = launchScenario.getApp() == null ? null : extractAppId(launchScenario.getApp().getClientJSON());
+            this.contextParams = launchScenario.getContextParams();
+            this.patient = launchScenario.getPatient();
+            this.encounter = launchScenario.getEncounter();
+            this.location = launchScenario.getLocation();
+            this.resource = launchScenario.getResource();
+            this.intent = launchScenario.getIntent();
+            this.smartStyleUrl = launchScenario.getSmartStyleUrl();
+            this.title = launchScenario.getTitle();
+            this.needPatientBanner = launchScenario.getNeedPatientBanner();
+            this.cdsHookUrl = launchScenario.getCdsHook() == null ? null : launchScenario.getCdsHook().getHookUrl();
+            this.context = launchScenario.getContext();
+        }
+
+        public String extractAppId(String clientJson) {
+            var appId = new Gson().fromJson(clientJson, AppId.class);
+            return appId.getId();
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    private static class AppId {
+        private String id;
     }
 }
