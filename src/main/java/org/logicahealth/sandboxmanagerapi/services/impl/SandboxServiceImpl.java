@@ -923,7 +923,7 @@ public class SandboxServiceImpl implements SandboxService {
     public StreamingResponseBody getZippedSandboxStream(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
         return out -> {
             addSandboxFhirServerDetailsToZipFile(sandboxId, zipOutputStream, bearerToken);
-            addAppManifestsToZipFile(sandboxId, sbmUserId, zipOutputStream);
+            addAppsManifestToZipFile(sandboxId, sbmUserId, zipOutputStream);
             zipOutputStream.close();
         };
     }
@@ -1071,18 +1071,15 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private void addAppManifestsToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+    private void addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        int appCounter = 0;
-        for (App app : apps) {
-            try {
-                appCounter += 1;
-                var inputStream = new ByteArrayInputStream(app.getClientJSON().getBytes());
-                addZipFileEntry(inputStream, new ZipEntry("/Apps/App " + appCounter + ".json"), zipOutputStream);
-                inputStream.close();
-            } catch (IOException e) {
-                LOGGER.error("Exception while adding manifests for sandbox download", e);
-            }
+        var allApps = "[" + apps.stream().map(App::getClientJSON).collect(Collectors.joining(",")) + "]";
+        try {
+            var inputStream = new ByteArrayInputStream(allApps.getBytes());
+            addZipFileEntry(inputStream, new ZipEntry("apps.json"), zipOutputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception while adding apps manifest for sandbox download", e);
         }
     }
 
