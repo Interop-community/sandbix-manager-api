@@ -978,14 +978,14 @@ public class SandboxServiceImpl implements SandboxService {
             while ((length = inputStream.read(bytes)) >= 0) {
                 outputStream.write(bytes, 0, length);
             }
-            return convertJsonStringToMap(outputStream.toString());
+            return convertFhirVersionsJsonStringToMap(outputStream.toString());
         } catch (IOException e) {
             LOGGER.error("Exception while extracting fhir server versions json", e);
         }
         return null;
     }
 
-    private Map<String, String> convertJsonStringToMap(String fhirServerVersions) {
+    private Map<String, String> convertFhirVersionsJsonStringToMap(String fhirServerVersions) {
         var fhirServerVersionsMap = new HashMap<String, String>();
         var jsonObject = new JSONObject(fhirServerVersions);
         fhirServerVersionsMap.put(FHIR_SERVER_VERSION, jsonObject.getString(FHIR_SERVER_VERSION));
@@ -1016,14 +1016,15 @@ public class SandboxServiceImpl implements SandboxService {
         var sandbox = findBySandboxId(sandboxId);
         var sandboxUsers = sandbox.getUserRoles()
                                   .stream()
-                                  .map(userRole -> new SandboxUser(userRole.getUser(), userRole.getRole().name()))
-                                  .collect(Collectors.toList());
+                                  .map(userRole -> new SandboxUser(userRole.getUser(), userRole.getRole().getSandboxDownloadRole()))
+                                  .collect(Collectors.toSet());
         var sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandboxId);
         var pendingInviteeEmails = sandboxInvites.stream()
                                                  .filter(sandboxInvite -> sandboxInvite.getStatus() == InviteStatus.PENDING)
                                                  .map(sandboxInvite -> sandboxInvite.getInvitee().getEmail())
                                                  .collect(Collectors.toList());
         var sandboxUserRolesAndInvitees = new HashMap<String, Object>();
+        sandboxUsers.add(new SandboxServiceImpl.SandboxUser(sandbox.getCreatedBy(), "owner"));
         sandboxUserRolesAndInvitees.put("users", sandboxUsers);
         sandboxUserRolesAndInvitees.put("invitees", pendingInviteeEmails);
         try (var sandboxInputStream = new ByteArrayInputStream(new Gson().toJson(sandboxUserRolesAndInvitees).getBytes())) {
@@ -1034,9 +1035,9 @@ public class SandboxServiceImpl implements SandboxService {
         addSandboxUsersToZipFile(sandboxUsers, zipOutputStream);
     }
 
-    private void addSandboxUsersToZipFile(List<SandboxServiceImpl.SandboxUser> sandboxUsers, ZipOutputStream zipOutputStream) {
+    private void addSandboxUsersToZipFile(Set<SandboxServiceImpl.SandboxUser> sandboxUsers, ZipOutputStream zipOutputStream) {
         var users = sandboxUsers.stream()
-                                .map(sandboxUser -> sandboxUser.getEmail())
+                                .map(SandboxUser::getEmail)
                                 .distinct()
                                 .collect(Collectors.joining(","));
         try (var usersInputStream = new ByteArrayInputStream(users.getBytes())) {
@@ -1056,6 +1057,17 @@ public class SandboxServiceImpl implements SandboxService {
             this.name = user.getName();
             this.email = user.getEmail();
             this.role = role;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            var otherSandboxUser = (SandboxUser) other;
+            return (this.name.equals(otherSandboxUser.name) && this.email.equals(otherSandboxUser.email) && this.role.equals(otherSandboxUser.role));
+        }
+
+        @Override
+        public int hashCode() {
+            return this.email.hashCode() + this.email.hashCode() + this.role.hashCode();
         }
     }
 
