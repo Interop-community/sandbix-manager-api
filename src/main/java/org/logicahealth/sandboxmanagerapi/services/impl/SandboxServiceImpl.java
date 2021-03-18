@@ -1,6 +1,7 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import lombok.Getter;
 import org.apache.http.HttpEntity;
@@ -90,6 +91,7 @@ public class SandboxServiceImpl implements SandboxService {
     private FhirProfileDetailService fhirProfileDetailService;
     private SandboxBackgroundTasksService sandboxBackgroundTasksService;
     private UserSandboxRepository userSandboxRepository;
+    private CdsHookService cdsHookService;
 
     private static final int SANDBOXES_TO_RETURN = 2;
     private static final String CLONED_SANDBOX = "cloned";
@@ -186,6 +188,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setUserSandboxRepository(@Lazy UserSandboxRepository userSandboxRepository) {
         this.userSandboxRepository = userSandboxRepository;
+    }
+
+    @Inject
+    public void setCdsHookService(CdsHookService cdsHookService) {
+        this.cdsHookService = cdsHookService;
     }
 
     @Override
@@ -925,6 +932,7 @@ public class SandboxServiceImpl implements SandboxService {
             addSandboxFhirServerDetailsToZipFile(sandboxId, zipOutputStream, bearerToken);
             addAppsManifestToZipFile(sandboxId, sbmUserId, zipOutputStream);
             addUserPersonasToZipFile(sandboxId, sbmUserId, zipOutputStream);
+            addCdsHooksToZipFile(sandboxId, sbmUserId, zipOutputStream);
             zipOutputStream.close();
         };
     }
@@ -1116,4 +1124,65 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
+    private void addCdsHooksToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        List<CdsServiceEndpoint> cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        for (CdsServiceEndpoint cdsServiceEndpoint : cdsServiceEndpoints) {
+            List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
+            cdsServiceEndpoint.setCdsHooks(cdsHooks);
+        }
+        var sandboxCdsServiceEndpoints = cdsServiceEndpoints.stream()
+                                                            .map(SandboxCdsServiceEndpoint::new)
+                                                            .collect(Collectors.toList());
+        try {
+            var inputStream = new ByteArrayInputStream(new Gson().toJson(sandboxCdsServiceEndpoints)
+                                                                 .getBytes());
+            addZipFileEntry(inputStream, new ZipEntry("cds-hooks.json"), zipOutputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception while adding personas for sandbox download", e);
+        }
+    }
+
+    @Getter
+    private static class SandboxCdsServiceEndpoint {
+        private final String url;
+        private final String title;
+        private final String description;
+        private final List<SandboxCdsHook> cdsHooks;
+
+        public SandboxCdsServiceEndpoint(CdsServiceEndpoint cdsServiceEndpoint) {
+            this.url = cdsServiceEndpoint.getUrl();
+            this.title = cdsServiceEndpoint.getTitle();
+            this.description = cdsServiceEndpoint.getDescription();
+            this.cdsHooks = cdsServiceEndpoint.getCdsHooks()
+                                              .stream()
+                                              .map(SandboxCdsHook::new)
+                                              .collect(Collectors.toList());
+        }
+    }
+
+    @Getter
+    private static class SandboxCdsHook {
+        private final String logoUri;
+        private final String hook;
+        private final String title;
+        private final String description;
+        private final String hookId;
+        private final JsonNode prefetch;
+        private final String hookUrl;
+        private final String scope;
+        private final JsonNode context;
+
+        public SandboxCdsHook(CdsHook cdsHook) {
+            this.logoUri = cdsHook.getLogoUri();
+            this.hook = cdsHook.getHook();
+            this.title = cdsHook.getTitle();
+            this.description = cdsHook.getDescription();
+            this.hookId = cdsHook.getHookId();
+            this.prefetch = cdsHook.getPrefetch();
+            this.hookUrl = cdsHook.getHookUrl();
+            this.scope = cdsHook.getScope();
+            this.context = cdsHook.getContext();
+        }
+    }
 }
