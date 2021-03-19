@@ -2,6 +2,7 @@ package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.GsonBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -1158,10 +1159,8 @@ public class SandboxServiceImpl implements SandboxService {
         var sandboxCdsServiceEndpoints = cdsServiceEndpoints.stream()
                                                             .map(SandboxCdsServiceEndpoint::new)
                                                             .collect(Collectors.toList());
-        try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
-                                                                         .create()
-                                                                         .toJson(sandboxCdsServiceEndpoints)
-                                                                         .getBytes())) {
+        try (var inputStream = new ByteArrayInputStream(new ObjectMapper().writerWithDefaultPrettyPrinter()
+                                                                          .writeValueAsBytes(sandboxCdsServiceEndpoints))) {
             addZipFileEntry(inputStream, new ZipEntry("cds-hooks.json"), zipOutputStream);
         } catch (IOException e) {
             LOGGER.error("Exception while adding cds hooks for sandbox download", e);
@@ -1307,10 +1306,9 @@ public class SandboxServiceImpl implements SandboxService {
         }
 
         public void setSandboxFhirProfiles(List<FhirProfile> fhirProfiles) {
-            this.fhirProfiles = fhirProfiles
-                    .stream()
-                    .map(SandboxFhirProfile::new)
-                    .collect(Collectors.toList());
+            this.fhirProfiles = fhirProfiles.stream()
+                                            .map(SandboxFhirProfile::new)
+                                            .collect(Collectors.toList());
         }
     }
 
