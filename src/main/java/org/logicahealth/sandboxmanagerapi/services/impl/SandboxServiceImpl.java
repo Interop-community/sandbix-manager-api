@@ -91,6 +91,7 @@ public class SandboxServiceImpl implements SandboxService {
     private CloseableHttpClient sandboxDeleteHttpClient;
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
+    private FhirProfileService fhirProfileService;
     private SandboxBackgroundTasksService sandboxBackgroundTasksService;
     private UserSandboxRepository userSandboxRepository;
     private CdsHookService cdsHookService;
@@ -180,6 +181,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Inject
     public void setFhirProfileDetailService(@Lazy FhirProfileDetailService fhirProfileDetailService) {
         this.fhirProfileDetailService = fhirProfileDetailService;
+    }
+
+    @Inject
+    public void setFhirProfileService(@Lazy FhirProfileService fhirProfileService) {
+        this.fhirProfileService = fhirProfileService;
     }
 
     @Inject
@@ -936,6 +942,7 @@ public class SandboxServiceImpl implements SandboxService {
             addUserPersonasToZipFile(sandboxId, sbmUserId, zipOutputStream);
             addCdsHooksToZipFile(sandboxId, sbmUserId, zipOutputStream);
             addLaunchScenariosToZipFile(sandboxId, sbmUserId, zipOutputStream);
+            addProfilesToZipFile(sandboxId, sbmUserId, zipOutputStream);
             zipOutputStream.close();
         };
     }
@@ -1248,5 +1255,58 @@ public class SandboxServiceImpl implements SandboxService {
     @AllArgsConstructor
     private static class AppId {
         private String id;
+    }
+
+    public void addProfilesToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        var profileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
+        var profiles = profileDetails.stream()
+                                     .map(SandboxFhirProfileDetail::new)
+                                     .peek(sandboxFhirProfileDetail -> {
+                                         var sandboxFhirProfiles = fhirProfileService.getAllResourcesForGivenProfileId(sandboxFhirProfileDetail.getId());
+                                         sandboxFhirProfileDetail.setSandboxFhirProfiles(sandboxFhirProfiles);
+                                     })
+                                     .collect(Collectors.toList());
+        try {
+            var inputStream = new ByteArrayInputStream(new Gson().toJson(profiles)
+                                                                 .getBytes());
+            addZipFileEntry(inputStream, new ZipEntry("profiles.json"), zipOutputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception while adding profiles for sandbox download", e);
+        }
+    }
+
+    @Getter
+    private static class SandboxFhirProfileDetail {
+        private final transient Integer id;
+        private final String profileName;
+        private final String profileId;
+        private List<SandboxFhirProfile> fhirProfiles;
+
+        public SandboxFhirProfileDetail(FhirProfileDetail fhirProfileDetail) {
+            this.id = fhirProfileDetail.getId();
+            this.profileName = fhirProfileDetail.getProfileName();
+            this.profileId = fhirProfileDetail.getProfileId();
+        }
+
+        public void setSandboxFhirProfiles(List<FhirProfile> fhirProfiles) {
+            this.fhirProfiles = fhirProfiles
+                    .stream()
+                    .map(SandboxFhirProfile::new)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Getter
+    private static class SandboxFhirProfile {
+        private final String fullUrl;
+        private final String relativeUrl;
+        private final String profileType;
+
+        public SandboxFhirProfile(FhirProfile fhirProfile) {
+            this.fullUrl = fhirProfile.getFullUrl();
+            this.relativeUrl = fhirProfile.getRelativeUrl();
+            this.profileType = fhirProfile.getProfileType();
+        }
     }
 }
