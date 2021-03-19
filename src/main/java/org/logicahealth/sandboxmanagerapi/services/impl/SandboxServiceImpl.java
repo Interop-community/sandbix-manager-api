@@ -1030,7 +1030,7 @@ public class SandboxServiceImpl implements SandboxService {
         sandboxDetails.put("id", sandbox.getSandboxId());
         sandboxDetails.put("name", sandbox.getName());
         sandboxDetails.put("description", sandbox.getDescription());
-        sandboxDetails.put("base", sandboxApiURL.substring(0, sandboxApiURL.length() - sandboxId.length()));
+        sandboxDetails.put("base", sandboxApiURL.substring(0, sandboxApiURL.length() - sandboxId.length() - 1));
         sandboxDetails.put(FHIR_SERVER_VERSION, fhirServerVersions.get(FHIR_SERVER_VERSION));
         sandboxDetails.put(HAPI_VERSION, fhirServerVersions.get(HAPI_VERSION));
         sandboxDetails.put(FHIR_VERSION, fhirServerVersions.get(FHIR_VERSION));
@@ -1230,7 +1230,7 @@ public class SandboxServiceImpl implements SandboxService {
         private final String description;
         private final String personaUserId;
         private final String appId;
-        private final List<ContextParams> contextParams;
+        private final List<SandboxContextParams> contextParams;
         private final String patient;
         private final String encounter;
         private final String location;
@@ -1238,7 +1238,7 @@ public class SandboxServiceImpl implements SandboxService {
         private final String intent;
         private final String smartStyleUrl;
         private final String title;
-        private final String needPatientBanner;
+        private final boolean needPatientBanner;
         private final String cdsHookUrl;
         private final JsonNode context;
 
@@ -1246,7 +1246,10 @@ public class SandboxServiceImpl implements SandboxService {
             this.description = launchScenario.getDescription();
             this.personaUserId = launchScenario.getUserPersona() == null ? null : launchScenario.getUserPersona().getPersonaUserId();
             this.appId = launchScenario.getApp() == null ? null : extractAppId(launchScenario.getApp().getClientJSON());
-            this.contextParams = launchScenario.getContextParams();
+            this.contextParams = launchScenario.getContextParams()
+                                               .stream()
+                                               .map(SandboxContextParams::new)
+                                               .collect(Collectors.toList());
             this.patient = launchScenario.getPatient();
             this.encounter = launchScenario.getEncounter();
             this.location = launchScenario.getLocation();
@@ -1254,7 +1257,7 @@ public class SandboxServiceImpl implements SandboxService {
             this.intent = launchScenario.getIntent();
             this.smartStyleUrl = launchScenario.getSmartStyleUrl();
             this.title = launchScenario.getTitle();
-            this.needPatientBanner = launchScenario.getNeedPatientBanner();
+            this.needPatientBanner = "1".equals(launchScenario.getNeedPatientBanner());
             this.cdsHookUrl = launchScenario.getCdsHook() == null ? null : launchScenario.getCdsHook().getHookUrl();
             this.context = launchScenario.getContext();
         }
@@ -1264,6 +1267,17 @@ public class SandboxServiceImpl implements SandboxService {
                                          .create()
                                          .fromJson(clientJson, AppId.class);
             return appId.getId();
+        }
+    }
+
+    @Getter
+    private static class SandboxContextParams {
+        private final String name;
+        private final String value;
+
+        public SandboxContextParams(ContextParams contextParams) {
+            this.name = contextParams.getName();
+            this.value = contextParams.getValue();
         }
     }
 
