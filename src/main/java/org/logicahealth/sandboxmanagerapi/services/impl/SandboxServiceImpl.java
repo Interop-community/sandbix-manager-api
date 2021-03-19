@@ -1,6 +1,7 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.GsonBuilder;
@@ -939,10 +940,10 @@ public class SandboxServiceImpl implements SandboxService {
     public StreamingResponseBody getZippedSandboxStream(Sandbox sandbox, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
         return out -> {
             addSandboxFhirServerDetailsToZipFile(sandbox, zipOutputStream, bearerToken);
-            addAppsManifestToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
+            var appsJsonNode = addAppsManifestToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
             addUserPersonasToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
             addCdsHooksToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
-            addLaunchScenariosToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
+            addLaunchScenariosToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream, appsJsonNode);
             addProfilesToZipFile(sandbox.getSandboxId(), zipOutputStream);
             zipOutputStream.close();
         };
@@ -1108,7 +1109,7 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private void addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+    private JsonNode addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var allApps = "[" +
                 apps.stream()
@@ -1120,6 +1121,12 @@ public class SandboxServiceImpl implements SandboxService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding apps manifest for sandbox download", e);
         }
+        try {
+            return new ObjectMapper().readTree(allApps);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Exception while parsing apps manifest for sandbox download", e);
+        }
+        return null;
     }
 
     private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
@@ -1210,10 +1217,12 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+    private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, JsonNode appsJsonNode) {
         var launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
+        var appIdToClientIdMapper = appIdToClientIdMapper(appsJsonNode);
         var sandboxLaunchScenarios = launchScenarios.stream()
                                                     .map(SandboxLaunchScenario::new)
+                                                    .peek(sandboxLaunchScenario -> sandboxLaunchScenario.setClientId(appIdToClientIdMapper != null ? appIdToClientIdMapper.get(sandboxLaunchScenario.getAppId()) : null))
                                                     .collect(Collectors.toList());
         try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
                                                                          .create()
@@ -1225,11 +1234,12 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    @Getter
+    @Data
     private static class SandboxLaunchScenario {
         private final String description;
         private final String personaUserId;
-        private final String appId;
+        private final transient String appId;
+        private String clientId;
         private final List<SandboxContextParams> contextParams;
         private final String patient;
         private final String encounter;
@@ -1268,6 +1278,7 @@ public class SandboxServiceImpl implements SandboxService {
                                          .fromJson(clientJson, AppId.class);
             return appId.getId();
         }
+
     }
 
     @Getter
@@ -1285,6 +1296,22 @@ public class SandboxServiceImpl implements SandboxService {
     @AllArgsConstructor
     private static class AppId {
         private String id;
+    }
+
+    private Map<String, String> appIdToClientIdMapper(JsonNode appsJsonNode) {
+        if (!appsJsonNode.isArray()) {
+            return null;
+        }
+        var mapper = new HashMap<String, String>();
+        for (var it = appsJsonNode.elements(); it.hasNext(); ) {
+            var node = it.next();
+            var id = node.get("id");
+            if (id == null) {
+                continue;
+            }
+            mapper.put(id.toString(), node.get("clientId").textValue());
+        }
+        return mapper;
     }
 
     public void addProfilesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
