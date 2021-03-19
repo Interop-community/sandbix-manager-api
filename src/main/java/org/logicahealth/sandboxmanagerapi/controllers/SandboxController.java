@@ -132,7 +132,7 @@ public class SandboxController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         var zipOutputStream = new ZipOutputStream(response.getOutputStream());
-        var zippedResponseBody = sandboxService.getZippedSandboxStream(sandboxId, sbmUserId, zipOutputStream, authorizationService.getBearerToken(request));
+        var zippedResponseBody = sandboxService.getZippedSandboxStream(sandbox, sbmUserId, zipOutputStream, authorizationService.getBearerToken(request));
         return new ResponseEntity<StreamingResponseBody>(zippedResponseBody, HttpStatus.OK);
     }
 
