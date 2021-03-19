@@ -82,6 +82,6 @@ public interface SandboxService {
 
     SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId);
 
-    StreamingResponseBody getZippedSandboxStream(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken);
+    StreamingResponseBody getZippedSandboxStream(Sandbox sandbox, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken);
 
 }

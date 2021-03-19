@@ -935,20 +935,20 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
-    public StreamingResponseBody getZippedSandboxStream(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
+    public StreamingResponseBody getZippedSandboxStream(Sandbox sandbox, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
         return out -> {
-            addSandboxFhirServerDetailsToZipFile(sandboxId, zipOutputStream, bearerToken);
-            addAppsManifestToZipFile(sandboxId, sbmUserId, zipOutputStream);
-            addUserPersonasToZipFile(sandboxId, sbmUserId, zipOutputStream);
-            addCdsHooksToZipFile(sandboxId, sbmUserId, zipOutputStream);
-            addLaunchScenariosToZipFile(sandboxId, sbmUserId, zipOutputStream);
-            addProfilesToZipFile(sandboxId, sbmUserId, zipOutputStream);
+            addSandboxFhirServerDetailsToZipFile(sandbox, zipOutputStream, bearerToken);
+            addAppsManifestToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
+            addUserPersonasToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
+            addCdsHooksToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
+            addLaunchScenariosToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
+            addProfilesToZipFile(sandbox.getSandboxId(), zipOutputStream);
             zipOutputStream.close();
         };
     }
 
-    private void addSandboxFhirServerDetailsToZipFile(String sandboxId, ZipOutputStream zipOutputStream, String bearerToken) {
-        String url = getSandboxApiURL(findBySandboxId(sandboxId)) + "/sandbox/download";
+    private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken) {
+        String url = getSandboxApiURL(sandbox) + "/sandbox/download";
         var downloadRequest = new HttpGet(url);
         downloadRequest.setHeader("Authorization", "BEARER " + bearerToken);
 
@@ -965,8 +965,8 @@ public class SandboxServiceImpl implements SandboxService {
             var zipInputStream = new ZipInputStream(inputStream);
             addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
             zipInputStream.getNextEntry();
-            addSandboxDetailsToZipFile(sandboxId, zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)));
-            addSandboxUserRolesAndInviteesToZipFile(sandboxId, zipOutputStream);
+            addSandboxDetailsToZipFile(sandbox.getSandboxId(), zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)));
+            addSandboxUserRolesAndInviteesToZipFile(sandbox.getSandboxId(), zipOutputStream);
             zipInputStream.close();
             inputStream.close();
         } catch (IOException e) {
@@ -1257,7 +1257,7 @@ public class SandboxServiceImpl implements SandboxService {
         private String id;
     }
 
-    public void addProfilesToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+    public void addProfilesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
         var profileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
         var profiles = profileDetails.stream()
                                      .map(SandboxFhirProfileDetail::new)
