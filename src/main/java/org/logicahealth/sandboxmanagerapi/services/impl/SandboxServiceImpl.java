@@ -2,7 +2,7 @@ package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -1024,7 +1024,10 @@ public class SandboxServiceImpl implements SandboxService {
         sandboxDetails.put(FHIR_SERVER_VERSION, fhirServerVersions.get(FHIR_SERVER_VERSION));
         sandboxDetails.put(HAPI_VERSION, fhirServerVersions.get(HAPI_VERSION));
         sandboxDetails.put(FHIR_VERSION, fhirServerVersions.get(FHIR_VERSION));
-        try (var sandboxInputStream = new ByteArrayInputStream(new Gson().toJson(sandboxDetails).getBytes())) {
+        try (var sandboxInputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
+                                                                                .create()
+                                                                                .toJson(sandboxDetails)
+                                                                                .getBytes())) {
             addZipFileEntry(sandboxInputStream, new ZipEntry("sandbox.json"), zipOutputStream);
         } catch (IOException e) {
             LOGGER.error("Exception while adding sandbox details for sandbox download", e);
@@ -1046,7 +1049,9 @@ public class SandboxServiceImpl implements SandboxService {
         sandboxUsers.add(new SandboxServiceImpl.SandboxUser(sandbox.getCreatedBy(), "owner"));
         sandboxUserRolesAndInvitees.put("users", sandboxUsers);
         sandboxUserRolesAndInvitees.put("invitees", pendingInviteeEmails);
-        try (var sandboxInputStream = new ByteArrayInputStream(new Gson().toJson(sandboxUserRolesAndInvitees).getBytes())) {
+        try (var sandboxInputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
+                                                                                .create()
+                                                                                .toJson(sandboxUserRolesAndInvitees).getBytes())) {
             addZipFileEntry(sandboxInputStream, new ZipEntry("users.json"), zipOutputStream);
         } catch (IOException e) {
             LOGGER.error("Exception while adding sandbox user roles and invites for sandbox download", e);
@@ -1112,8 +1117,10 @@ public class SandboxServiceImpl implements SandboxService {
                                              .map(SandboxUserPersona::new)
                                              .collect(Collectors.toList());
         try {
-            var inputStream = new ByteArrayInputStream(new Gson().toJson(sandboxUserPersona)
-                                                                 .getBytes());
+            var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
+                                                                        .create()
+                                                                        .toJson(sandboxUserPersona)
+                                                                        .getBytes());
             addZipFileEntry(inputStream, new ZipEntry("personas.json"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
@@ -1144,8 +1151,10 @@ public class SandboxServiceImpl implements SandboxService {
                                                             .map(SandboxCdsServiceEndpoint::new)
                                                             .collect(Collectors.toList());
         try {
-            var inputStream = new ByteArrayInputStream(new Gson().toJson(sandboxCdsServiceEndpoints)
-                                                                 .getBytes());
+            var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
+                                                                        .create()
+                                                                        .toJson(sandboxCdsServiceEndpoints)
+                                                                        .getBytes());
             addZipFileEntry(inputStream, new ZipEntry("cds-hooks.json"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
@@ -1202,8 +1211,10 @@ public class SandboxServiceImpl implements SandboxService {
                                                     .map(SandboxLaunchScenario::new)
                                                     .collect(Collectors.toList());
         try {
-            var inputStream = new ByteArrayInputStream(new Gson().toJson(sandboxLaunchScenarios)
-                                                                 .getBytes());
+            var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
+                                                                        .create()
+                                                                        .toJson(sandboxLaunchScenarios)
+                                                                        .getBytes());
             addZipFileEntry(inputStream, new ZipEntry("launch-scenarios.json"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
@@ -1246,7 +1257,9 @@ public class SandboxServiceImpl implements SandboxService {
         }
 
         public String extractAppId(String clientJson) {
-            var appId = new Gson().fromJson(clientJson, AppId.class);
+            var appId = new GsonBuilder().setPrettyPrinting()
+                                         .create()
+                                         .fromJson(clientJson, AppId.class);
             return appId.getId();
         }
     }
@@ -1267,8 +1280,10 @@ public class SandboxServiceImpl implements SandboxService {
                                      })
                                      .collect(Collectors.toList());
         try {
-            var inputStream = new ByteArrayInputStream(new Gson().toJson(profiles)
-                                                                 .getBytes());
+            var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
+                                                                        .create()
+                                                                        .toJson(profiles)
+                                                                        .getBytes());
             addZipFileEntry(inputStream, new ZipEntry("profiles.json"), zipOutputStream);
             inputStream.close();
         } catch (IOException e) {
