@@ -1,6 +1,7 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1220,7 +1221,8 @@ public class SandboxServiceImpl implements SandboxService {
         var sandboxCdsServiceEndpoints = cdsServiceEndpoints.stream()
                                                             .map(SandboxCdsServiceEndpoint::new)
                                                             .collect(Collectors.toList());
-        try (var inputStream = new ByteArrayInputStream(new ObjectMapper().writerWithDefaultPrettyPrinter()
+        try (var inputStream = new ByteArrayInputStream(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                                                                          .writerWithDefaultPrettyPrinter()
                                                                           .writeValueAsBytes(sandboxCdsServiceEndpoints))) {
             addZipFileEntry(inputStream, new ZipEntry("cds-hooks.json"), zipOutputStream);
         } catch (IOException e) {
