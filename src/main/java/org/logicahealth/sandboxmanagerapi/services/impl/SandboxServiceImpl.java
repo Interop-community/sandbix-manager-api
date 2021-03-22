@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -940,10 +941,10 @@ public class SandboxServiceImpl implements SandboxService {
     public StreamingResponseBody getZippedSandboxStream(Sandbox sandbox, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
         return out -> {
             addSandboxFhirServerDetailsToZipFile(sandbox, zipOutputStream, bearerToken);
-            var appsJsonNode = addAppsManifestToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
+            var appsManifests = addAppsManifestToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
             addUserPersonasToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
             addCdsHooksToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
-            addLaunchScenariosToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream, appsJsonNode);
+            addLaunchScenariosToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream, appsManifests);
             addProfilesToZipFile(sandbox.getSandboxId(), zipOutputStream);
             zipOutputStream.close();
         };
@@ -1109,24 +1110,77 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private JsonNode addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+    private List<AppManifestTemplate> addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        var allApps = "[" +
-                apps.stream()
-                    .map(App::getClientJSON)
-                    .collect(Collectors.joining(",")) +
-                "]";
-        try (var inputStream = new ByteArrayInputStream(allApps.getBytes())) {
+        var appsList = parseAppsListJson(apps);
+        try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
+                                                                         .create()
+                                                                         .toJson(parseAppsListJson(apps))
+                                                                         .getBytes())) {
             addZipFileEntry(inputStream, new ZipEntry("apps.json"), zipOutputStream);
+            return appsList;
         } catch (IOException e) {
             LOGGER.error("Exception while adding apps manifest for sandbox download", e);
         }
-        try {
-            return new ObjectMapper().readTree(allApps);
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Exception while parsing apps manifest for sandbox download", e);
-        }
         return null;
+    }
+
+    private List<AppManifestTemplate> parseAppsListJson(List<App> apps) {
+        var appManifests = new ArrayList<AppManifestTemplate>();
+        for (App app : apps) {
+            var appManifestTemplate = new AppManifestTemplate(app.getSoftwareId(), app.getClientName(), app.getClientUri(), app.getLogoUri(), app.getLaunchUri(), app.getFhirVersions(), app.getBriefDescription(), app.getSamplePatients());
+            try {
+                var clientJsonNode = new ObjectMapper().readTree(app.getClientJSON());
+                appManifestTemplate.setAppId(clientJsonNode.get("id").asText());
+                appManifestTemplate.setClient_id(clientJsonNode.get("clientId").asText());
+                var redirectUrisIterator = clientJsonNode.get("redirectUris").elements();
+                var redirectUris = new ArrayList<String>();
+                while (redirectUrisIterator.hasNext()) {
+                    redirectUris.add(redirectUrisIterator.next().asText());
+                }
+                appManifestTemplate.setRedirect_uris(redirectUris);
+                var scopeIterator = clientJsonNode.get("scope").elements();
+                StringBuilder appScope = new StringBuilder();
+                while (scopeIterator.hasNext()) {
+                    appScope.append(scopeIterator.next().asText()).append(" ");
+                }
+                appManifestTemplate.setScope(appScope.toString().trim());
+                appManifestTemplate.setToken_endpoint_auth_method(clientJsonNode.get("tokenEndpointAuthMethod").asText());
+                appManifests.add(appManifestTemplate);
+            } catch (JsonProcessingException e) {
+                LOGGER.error("Exception while parsing application client json for sandbox download", e);
+            }
+        }
+        return appManifests;
+    }
+
+    @NoArgsConstructor
+    @Data
+    private static class AppManifestTemplate {
+        private transient String appId;
+        private String software_id;
+        private String client_id;
+        private String client_name;
+        private String client_uri;
+        private String logo_uri;
+        private String launch_url;
+        private List<String> redirect_uris;
+        private String scope;
+        private String token_endpoint_auth_method;
+        private String fhirVersions;
+        private String briefDescription;
+        private String samplePatients;
+
+        public AppManifestTemplate(String software_id, String client_name, String client_uri, String logo_uri, String launch_url, String fhirVersions, String briefDescription, String samplePatients) {
+            this.software_id = software_id;
+            this.client_name = client_name;
+            this.client_uri = client_uri;
+            this.logo_uri = logo_uri;
+            this.launch_url = launch_url;
+            this.fhirVersions = fhirVersions;
+            this.briefDescription = briefDescription;
+            this.samplePatients = samplePatients;
+        }
     }
 
     private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
@@ -1217,12 +1271,13 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, JsonNode appsJsonNode) {
+    private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, List<AppManifestTemplate> appsManifests) {
         var launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        var appIdToClientIdMapper = appIdToClientIdMapper(appsJsonNode);
+        var appIdToClientIdMapper = appsManifests.stream()
+                                                 .collect(Collectors.toMap(AppManifestTemplate::getAppId, AppManifestTemplate::getClient_id));
         var sandboxLaunchScenarios = launchScenarios.stream()
                                                     .map(SandboxLaunchScenario::new)
-                                                    .peek(sandboxLaunchScenario -> sandboxLaunchScenario.setClientId(appIdToClientIdMapper != null ? appIdToClientIdMapper.get(sandboxLaunchScenario.getAppId()) : null))
+                                                    .peek(sandboxLaunchScenario -> sandboxLaunchScenario.setClientId(appIdToClientIdMapper.get(sandboxLaunchScenario.getAppId())))
                                                     .collect(Collectors.toList());
         try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
                                                                          .create()
@@ -1298,22 +1353,6 @@ public class SandboxServiceImpl implements SandboxService {
         private String id;
     }
 
-    private Map<String, String> appIdToClientIdMapper(JsonNode appsJsonNode) {
-        if (!appsJsonNode.isArray()) {
-            return null;
-        }
-        var mapper = new HashMap<String, String>();
-        for (var it = appsJsonNode.elements(); it.hasNext(); ) {
-            var node = it.next();
-            var id = node.get("id");
-            if (id == null) {
-                continue;
-            }
-            mapper.put(id.toString(), node.get("clientId").textValue());
-        }
-        return mapper;
-    }
-
     public void addProfilesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
         var profileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
         var profiles = profileDetails.stream()
@@ -1365,4 +1404,5 @@ public class SandboxServiceImpl implements SandboxService {
             this.profileType = fhirProfile.getProfileType();
         }
     }
+
 }
