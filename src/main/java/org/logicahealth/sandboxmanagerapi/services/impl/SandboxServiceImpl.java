@@ -104,9 +104,9 @@ public class SandboxServiceImpl implements SandboxService {
     private static final int SANDBOXES_TO_RETURN = 2;
     private static final String CLONED_SANDBOX = "cloned";
     private static final String SAVED_SANDBOX = "saved";
-    private static final String FHIR_SERVER_VERSION = "platform-version";
-    private static final String HAPI_VERSION = "hapi-version";
-    private static final String FHIR_VERSION = "fhir-version";
+    private static final String FHIR_SERVER_VERSION = "platformVersion";
+    private static final String HAPI_VERSION = "hapiVersion";
+    private static final String FHIR_VERSION = "fhirVersion";
     private static final String IMAGE_FOLDER = "img/";
     private static final String PATIENT_FHIR_QUERY = "Patient?_id=";
 
