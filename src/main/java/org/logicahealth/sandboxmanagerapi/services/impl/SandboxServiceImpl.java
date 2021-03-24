@@ -1136,20 +1136,20 @@ public class SandboxServiceImpl implements SandboxService {
             try {
                 var clientJsonNode = new ObjectMapper().readTree(app.getClientJSON());
                 appManifestTemplate.setAppId(clientJsonNode.get("id").asText());
-                appManifestTemplate.setClient_id(clientJsonNode.get("clientId").asText());
+                appManifestTemplate.setClientId(clientJsonNode.get("clientId").asText());
                 var redirectUrisIterator = clientJsonNode.get("redirectUris").elements();
                 var redirectUris = new ArrayList<String>();
                 while (redirectUrisIterator.hasNext()) {
                     redirectUris.add(redirectUrisIterator.next().asText());
                 }
-                appManifestTemplate.setRedirect_uris(redirectUris);
+                appManifestTemplate.setRedirectURIs(redirectUris);
                 var scopeIterator = clientJsonNode.get("scope").elements();
                 StringBuilder appScope = new StringBuilder();
                 while (scopeIterator.hasNext()) {
                     appScope.append(scopeIterator.next().asText()).append(" ");
                 }
                 appManifestTemplate.setScope(appScope.toString().trim());
-                appManifestTemplate.setToken_endpoint_auth_method(clientJsonNode.get("tokenEndpointAuthMethod").asText());
+                appManifestTemplate.setTokenEndpointAuthMethod(clientJsonNode.get("tokenEndpointAuthMethod").asText());
                 appManifests.add(appManifestTemplate);
             } catch (JsonProcessingException e) {
                 LOGGER.error("Exception while parsing application client json for sandbox download", e);
@@ -1162,37 +1162,37 @@ public class SandboxServiceImpl implements SandboxService {
     @Data
     private static class AppManifestTemplate {
         private transient String appId;
-        private String software_id;
-        private String client_id;
-        private String client_name;
-        private String client_uri;
-        private String logo_uri;
-        private String launch_url;
-        private List<String> redirect_uris;
+        private String softwareId;
+        private String clientId;
+        private String name;
+        private String clientUri;
+        private String logo;
+        private String launchURI;
+        private List<String> redirectURIs;
         private String scope;
-        private String token_endpoint_auth_method;
+        private transient String tokenEndpointAuthMethod;
         private String fhirVersions;
-        private String briefDescription;
+        private String description;
         private String samplePatients;
 
-        public AppManifestTemplate(String software_id, String client_name, String client_uri, String logo_uri, String launch_url, String fhirVersions, String briefDescription, String samplePatients) {
-            this.software_id = software_id;
-            this.client_name = client_name;
-            this.client_uri = client_uri;
-            this.logo_uri = logo_uri;
-            this.launch_url = launch_url;
+        public AppManifestTemplate(String softwareId, String name, String clientUri, String logo, String launchURI, String fhirVersions, String description, String samplePatients) {
+            this.softwareId = softwareId;
+            this.name = name;
+            this.clientUri = clientUri;
+            this.logo = logo;
+            this.launchURI = launchURI;
             this.fhirVersions = fhirVersions;
-            this.briefDescription = briefDescription;
+            this.description = description;
             this.samplePatients = samplePatients;
         }
 
         public String getLogoFileName() {
-            return this.logo_uri.substring(this.logo_uri.lastIndexOf("/") + 1, this.logo_uri.length());
+            return this.logo.substring(this.logo.lastIndexOf("/") + 1);
         }
 
         public InputStream getLogoInputStream() {
             try {
-                return new URL(this.logo_uri).openStream();
+                return new URL(this.logo).openStream();
             } catch (IOException e) {
                 LOGGER.error("Exception while accessing app logo image for sandbox download", e);
             }
@@ -1204,7 +1204,7 @@ public class SandboxServiceImpl implements SandboxService {
         var fileToInputStreamMapping = appsList.stream()
                                                .collect(Collectors.toMap(AppManifestTemplate::getLogoFileName, AppManifestTemplate::getLogoInputStream));
         fileToInputStreamMapping.forEach((fileName, inputStream) -> addZipFileEntry(inputStream, new ZipEntry(IMAGE_FOLDER + fileName), zipOutputStream));
-        appsList.forEach(app -> app.setLogo_uri(IMAGE_FOLDER + app.getLogoFileName()));
+        appsList.forEach(app -> app.setLogo(IMAGE_FOLDER + app.getLogoFileName()));
     }
 
     private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
@@ -1299,7 +1299,7 @@ public class SandboxServiceImpl implements SandboxService {
     private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, List<AppManifestTemplate> appsManifests) {
         var launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var appIdToClientIdMapper = appsManifests.stream()
-                                                 .collect(Collectors.toMap(AppManifestTemplate::getAppId, AppManifestTemplate::getClient_id));
+                                                 .collect(Collectors.toMap(AppManifestTemplate::getAppId, AppManifestTemplate::getClientId));
         var sandboxLaunchScenarios = launchScenarios.stream()
                                                     .map(SandboxLaunchScenario::new)
                                                     .peek(sandboxLaunchScenario -> sandboxLaunchScenario.setClientId(appIdToClientIdMapper.get(sandboxLaunchScenario.getAppId())))
