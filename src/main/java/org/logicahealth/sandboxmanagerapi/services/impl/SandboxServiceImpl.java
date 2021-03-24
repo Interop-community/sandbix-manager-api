@@ -1330,7 +1330,7 @@ public class SandboxServiceImpl implements SandboxService {
         private final String personaUserId;
         private final transient String appId;
         private String clientId;
-        private final List<SandboxContextParams> contextParams;
+        private final Map<String, String> contextParams;
         private final String patient;
         private final String encounter;
         private final String location;
@@ -1348,8 +1348,7 @@ public class SandboxServiceImpl implements SandboxService {
             this.appId = launchScenario.getApp() == null ? null : extractAppId(launchScenario.getApp().getClientJSON());
             this.contextParams = launchScenario.getContextParams()
                                                .stream()
-                                               .map(SandboxContextParams::new)
-                                               .collect(Collectors.toList());
+                                               .collect(Collectors.toMap(ContextParams::getName, ContextParams::getValue));
             this.patient = launchScenario.getPatient();
             this.encounter = launchScenario.getEncounter();
             this.location = launchScenario.getLocation();
@@ -1369,17 +1368,6 @@ public class SandboxServiceImpl implements SandboxService {
             return appId.getId();
         }
 
-    }
-
-    @Getter
-    private static class SandboxContextParams {
-        private final String name;
-        private final String value;
-
-        public SandboxContextParams(ContextParams contextParams) {
-            this.name = contextParams.getName();
-            this.value = contextParams.getValue();
-        }
     }
 
     @Data
