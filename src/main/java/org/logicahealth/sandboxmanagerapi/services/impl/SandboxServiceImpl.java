@@ -108,6 +108,7 @@ public class SandboxServiceImpl implements SandboxService {
     private static final String HAPI_VERSION = "hapi-version";
     private static final String FHIR_VERSION = "fhir-version";
     private static final String IMAGE_FOLDER = "img/";
+    private static final String PATIENT_FHIR_QUERY = "Patient?_id=";
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -1172,7 +1173,7 @@ public class SandboxServiceImpl implements SandboxService {
         private transient String tokenEndpointAuthMethod;
         private String fhirVersions;
         private String description;
-        private String samplePatients;
+        private List<String> samplePatients;
 
         public AppManifestTemplate(String softwareId, String name, String clientUri, String logo, String launchURI, String fhirVersions, String description, String samplePatients) {
             this.softwareId = softwareId;
@@ -1182,7 +1183,17 @@ public class SandboxServiceImpl implements SandboxService {
             this.launchURI = launchURI;
             this.fhirVersions = fhirVersions;
             this.description = description;
-            this.samplePatients = samplePatients;
+            if (samplePatients != null) {
+                var samplePatientsArray = samplePatients.split(",");
+                this.samplePatients = new ArrayList<>(samplePatientsArray.length);
+                for (String patient : samplePatientsArray) {
+                    this.samplePatients.add(stripFhirQuery(patient));
+                }
+            }
+        }
+
+        private String stripFhirQuery(String patient) {
+            return patient.substring(patient.contains(PATIENT_FHIR_QUERY) ? patient.indexOf(PATIENT_FHIR_QUERY) + PATIENT_FHIR_QUERY.length() : 0);
         }
 
         public String getLogoFileName() {
