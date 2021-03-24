@@ -1144,11 +1144,10 @@ public class SandboxServiceImpl implements SandboxService {
                 }
                 appManifestTemplate.setRedirectURIs(redirectUris);
                 var scopeIterator = clientJsonNode.get("scope").elements();
-                StringBuilder appScope = new StringBuilder();
+                appManifestTemplate.setScope(new ArrayList<>());
                 while (scopeIterator.hasNext()) {
-                    appScope.append(scopeIterator.next().asText()).append(" ");
+                    appManifestTemplate.getScope().add(scopeIterator.next().asText());
                 }
-                appManifestTemplate.setScope(appScope.toString().trim());
                 appManifestTemplate.setTokenEndpointAuthMethod(clientJsonNode.get("tokenEndpointAuthMethod").asText());
                 appManifests.add(appManifestTemplate);
             } catch (JsonProcessingException e) {
@@ -1169,7 +1168,7 @@ public class SandboxServiceImpl implements SandboxService {
         private String logo;
         private String launchURI;
         private List<String> redirectURIs;
-        private String scope;
+        private List<String> scope;
         private transient String tokenEndpointAuthMethod;
         private String fhirVersions;
         private String description;
