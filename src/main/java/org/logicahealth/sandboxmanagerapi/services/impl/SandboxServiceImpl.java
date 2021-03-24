@@ -35,6 +35,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import javax.inject.Inject;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -106,6 +107,7 @@ public class SandboxServiceImpl implements SandboxService {
     private static final String FHIR_SERVER_VERSION = "platform-version";
     private static final String HAPI_VERSION = "hapi-version";
     private static final String FHIR_VERSION = "fhir-version";
+    private static final String IMAGE_FOLDER = "img/";
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -1114,9 +1116,10 @@ public class SandboxServiceImpl implements SandboxService {
     private List<AppManifestTemplate> addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var appsList = parseAppsListJson(apps);
+        addAppImagesToZipFile(appsList, zipOutputStream);
         try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
                                                                          .create()
-                                                                         .toJson(parseAppsListJson(apps))
+                                                                         .toJson(appsList)
                                                                          .getBytes())) {
             addZipFileEntry(inputStream, new ZipEntry("apps.json"), zipOutputStream);
             return appsList;
@@ -1182,6 +1185,26 @@ public class SandboxServiceImpl implements SandboxService {
             this.briefDescription = briefDescription;
             this.samplePatients = samplePatients;
         }
+
+        public String getLogoFileName() {
+            return this.logo_uri.substring(this.logo_uri.lastIndexOf("/") + 1, this.logo_uri.length());
+        }
+
+        public InputStream getLogoInputStream() {
+            try {
+                return new URL(this.logo_uri).openStream();
+            } catch (IOException e) {
+                LOGGER.error("Exception while accessing app logo image for sandbox download", e);
+            }
+            return null;
+        }
+    }
+
+    private void addAppImagesToZipFile(List<AppManifestTemplate> appsList, ZipOutputStream zipOutputStream) {
+        var fileToInputStreamMapping = appsList.stream()
+                                               .collect(Collectors.toMap(AppManifestTemplate::getLogoFileName, AppManifestTemplate::getLogoInputStream));
+        fileToInputStreamMapping.forEach((fileName, inputStream) -> addZipFileEntry(inputStream, new ZipEntry(IMAGE_FOLDER + fileName), zipOutputStream));
+        appsList.forEach(app -> app.setLogo_uri(IMAGE_FOLDER + app.getLogoFileName()));
     }
 
     private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
