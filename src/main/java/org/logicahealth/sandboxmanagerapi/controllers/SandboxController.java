@@ -126,8 +126,8 @@ public class SandboxController {
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition","attachment;filename=sandbox.zip");
         var sbmUserId = authorizationService.getSystemUserId(request);
-        authorizationService.checkUserAuthorization(request, sbmUserId);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
