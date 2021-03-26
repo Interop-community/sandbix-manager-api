@@ -10,10 +10,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -29,9 +29,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.BodyExtractors;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import reactor.core.publisher.Flux;
 
 import javax.inject.Inject;
 import java.io.*;
@@ -956,36 +963,47 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken) {
         String url = getSandboxApiURL(sandbox) + "/sandbox/download";
-        var downloadRequest = new HttpGet(url);
-        downloadRequest.setHeader("Authorization", "BEARER " + bearerToken);
+        var webClient = WebClient.builder()
+                                 .baseUrl(getSandboxApiURL(sandbox))
+                                 .defaultHeader("Authorization", "BEARER " + bearerToken)
+                                 .build();
+        var response = webClient.get()
+                                .uri("/sandbox/download")
+                                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                                .exchange()
+                                .block();
+        if (response == null) {
+            LOGGER.error("No response from fhir server for sandbox " + sandbox.getSandboxId());
+            return;
+        }
+        var statusCode = response.statusCode();
+        if (statusCode != HttpStatus.OK) {
+            String errorMsg = String.format("There was a problem downloading the sandbox.\n" +
+                            "Response Status : %s .\nUrl: :%s",
+                    statusCode.toString(),
+                    url);
+            LOGGER.error(errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
 
-        InputStream inputStream = null;
         ZipInputStream zipInputStream = null;
-        try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(downloadRequest)) {
-            if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                String errorMsg = String.format("There was a problem downloading the sandbox.\n" +
-                                "Response Status : %s .\nUrl: :%s",
-                        closeableHttpResponse.getStatusLine(),
-                        url);
-                LOGGER.error(errorMsg);
-                throw new RuntimeException(errorMsg);
-            }
-            inputStream = closeableHttpResponse.getEntity().getContent();
-            zipInputStream = new ZipInputStream(inputStream);
+        try (var osPipe = new PipedOutputStream();
+             var isPipe = new PipedInputStream(osPipe)) {
+            Flux<DataBuffer> body = response.body(BodyExtractors.toDataBuffers());
+            DataBufferUtils.write(body, osPipe)
+                           .subscribe(DataBufferUtils.releaseConsumer());
+            zipInputStream = new ZipInputStream(isPipe);
             addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
             zipInputStream.getNextEntry();
             addSandboxDetailsToZipFile(sandbox.getSandboxId(), zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)));
             addSandboxUserRolesAndInviteesToZipFile(sandbox.getSandboxId(), zipOutputStream);
         } catch (IOException e) {
-            LOGGER.error("Exception while adding fhir server details for sandbox download", e);
+            LOGGER.error("Exception while creating piped input stream for sandbox download", e);
             throw new RuntimeException(e);
         } finally {
             try {
                 if (zipInputStream != null) {
                     zipInputStream.close();
-                }
-                if (inputStream != null) {
-                    inputStream.close();
                 }
             } catch (IOException ignored) {
             }
@@ -1008,11 +1026,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private Map<String, String> getZipEntryContents(ZipInputStream inputStream) {
         try (var outputStream = new ByteArrayOutputStream()) {
-            byte[] bytes = new byte[1024];
-            int length;
-            while ((length = inputStream.read(bytes)) >= 0) {
-                outputStream.write(bytes, 0, length);
-            }
+            IOUtils.copyLarge(inputStream, outputStream);
             return convertFhirVersionsJsonStringToMap(outputStream.toString());
         } catch (IOException e) {
             LOGGER.error("Exception while extracting fhir server versions json", e);
