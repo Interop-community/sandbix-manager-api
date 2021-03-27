@@ -993,10 +993,11 @@ public class SandboxServiceImpl implements SandboxService {
             DataBufferUtils.write(body, osPipe)
                            .subscribe(DataBufferUtils.releaseConsumer());
             zipInputStream = new ZipInputStream(isPipe);
-            addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
             zipInputStream.getNextEntry();
             addSandboxDetailsToZipFile(sandbox.getSandboxId(), zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)));
+            addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
             addSandboxUserRolesAndInviteesToZipFile(sandbox.getSandboxId(), zipOutputStream);
+            zipInputStream.closeEntry();
         } catch (IOException e) {
             LOGGER.error("Exception while creating piped input stream for sandbox download", e);
             throw new RuntimeException(e);
@@ -1014,11 +1015,7 @@ public class SandboxServiceImpl implements SandboxService {
     private void addZipFileEntry(InputStream inputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
         try {
             zipOutputStream.putNextEntry(zipEntry);
-            byte[] bytes = new byte[1024];
-            int length;
-            while ((length = inputStream.read(bytes)) >= 0) {
-                zipOutputStream.write(bytes, 0, length);
-            }
+            IOUtils.copyLarge(inputStream, zipOutputStream);
         } catch (IOException e) {
             LOGGER.error("Exception while adding zip file entry for sandbox download", e);
         }
@@ -1026,7 +1023,11 @@ public class SandboxServiceImpl implements SandboxService {
 
     private Map<String, String> getZipEntryContents(ZipInputStream inputStream) {
         try (var outputStream = new ByteArrayOutputStream()) {
-            IOUtils.copyLarge(inputStream, outputStream);
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = inputStream.read(bytes)) >= 0) {
+                outputStream.write(bytes, 0, length);
+            }
             return convertFhirVersionsJsonStringToMap(outputStream.toString());
         } catch (IOException e) {
             LOGGER.error("Exception while extracting fhir server versions json", e);
