@@ -1,26 +1,26 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://sandboxdb.logicahealth.org:3306
-    username: system
-    password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
+    base_url: jdbc:mysql://${DB_HOST:sandboxdb.interop.community}:${DB_PORT:3306}
+    username: ${DB_USER:system}
+    password: ${DB_PASSWORD:password}
   mail:
-    password: ENC(tYnPIPVwvikZfJQsn6jDsC/MXXXHTkrK2Q4uOXZe09GUBAYuBL7VlXzs71q6QsLCfirbaTpbs48=)
+    password: ${MAIL_PASSWORD:ThisIsNotTheRightPW}
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
 hspc:
   platform:
     authorization:
-      url: https://auth.logicahealth.org
+      url: https://${AUTH_HOST:auth.interop.community}:${AUTH_PORT:8060}
       adminAccess:
-        clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
+        clientSecret: ${CLIENT_SECRET:secret}
     messaging:
       sendEmail: true
-      url: https://messaging.logicahealth.org
+      url: https://messaging.interop.community
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: ENC(32oeS4V7gZfqPfndJXegT0cEHIU805Xbn/2qt5p8/5WriF926qEn58gJJdy+6+6ayCAJYN09y43R/9tcIktIXA3Yg6scHRMLzfx+9a4eybo=)
-    frontend: https://sandbox.logicahealth.org
+    frontend: ${FRONT_END:https://sandbox.interop.community}
 
 endpoints:
   health:
@@ -55,11 +55,11 @@ tier-rules:
 
 api_endpoint_index:
   prev:
-    apiBaseURL_dstu2: https://api-v5-dstu2.logicahealth.org
-    apiBaseURL_stu3: https://api-v5-stu3.logicahealth.org
-    apiBaseURL_r4: https://api-v5-r4.logicahealth.org
+    apiBaseURL_dstu2: https://api-v5-dstu2.interop.community
+    apiBaseURL_stu3: https://api-v5-stu3.interop.community
+    apiBaseURL_r4: https://api-v5-r4.interop.community
   current:
-    apiBaseURL_dstu2: https://api-v8-dstu2.logicahealth.org
-    apiBaseURL_stu3: https://api-v8-stu3.logicahealth.org
-    apiBaseURL_r4: https://api-v8-r4.logicahealth.org
-    apiBaseURL_r5: https://api-v8-r5.logicahealth.org
+    apiBaseURL_dstu2: https://api-v8-dstu2.interop.community
+    apiBaseURL_stu3: https://api-v8-stu3.interop.community
+    apiBaseURL_r4: https://api-v8-r4.interop.community
+    apiBaseURL_r5: https://api-v8-r5.interop.community

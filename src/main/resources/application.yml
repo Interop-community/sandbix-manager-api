@@ -6,7 +6,7 @@ server:
 
 spring:
   application:
-    name: HSPC Sandbox Manager
+    name: Interop Community Sandbox Manager
   profiles:
     active:
   datasource:
@@ -32,7 +32,7 @@ spring:
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
   mail:
     sender:
-      address: noreply@logicahealth.org
+      address: noreply@interop.community.org
     host: email-smtp.us-east-1.amazonaws.com
     port: 587
     protocol: smtp
@@ -45,8 +45,8 @@ spring:
           ssl:
             enable: false
           quitwait: false
-    username: AKIAZSHAHGWDPACREPTA
-    password: ThisIsNotTheRightPW
+    username: ${MAIL_USER:mail_user}
+    password: ${MAIL_PASSWORD:ThisIsNotTheRightPW}
   thymeleaf:
       cache: false
       check-template: true
@@ -136,7 +136,7 @@ cloud:
     cloudwatch:
       namespace: sandbox-manager-api
     region:
-      static: us-west-2
+      static: us-east-1
     stack:
       auto: false
 
