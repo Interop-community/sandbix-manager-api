@@ -6,7 +6,7 @@ server:
 
 spring:
   application:
-    name: Interop Community Sandbox Manager
+    name: HSPC Sandbox Manager
   profiles:
     active:
   datasource:
@@ -32,7 +32,7 @@ spring:
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
   mail:
     sender:
-      address: noreply@interop.community.org
+      address: noreply@logicahealth.org
     host: email-smtp.us-east-1.amazonaws.com
     port: 587
     protocol: smtp
@@ -45,17 +45,17 @@ spring:
           ssl:
             enable: false
           quitwait: false
-    username: ${MAIL_USER:mail_user}
-    password: ${MAIL_PASSWORD:ThisIsNotTheRightPW}
+    username: AKIAZSHAHGWDPACREPTA
+    password: ThisIsNotTheRightPW
   thymeleaf:
-      cache: false
-      check-template: true
-      check-template-location: true
-      content-type: text/html
-      enabled: true
-      encoding: UTF-8
-      prefix: classpath:/templates/
-      suffix: .html
+    cache: false
+    check-template: true
+    check-template-location: true
+    content-type: text/html
+    enabled: true
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
   flyway:
     table: schema_version
   servlet:
@@ -93,7 +93,7 @@ hspc:
     # How many sandbox creation tasks can run in parallel
     simultaneousSandboxCreationTasksLimit: 1
     authorization:
-      url: http://${AUTH_HOST:localhost}:${AUTH_PORT:8060}
+      url: {AUTH_HOST}
       tokenEndpoint: ${hspc.platform.authorization.url}/token
       authorizeEndpoint: ${hspc.platform.authorization.url}/authorize
       adminAccess:
@@ -108,8 +108,8 @@ hspc:
       sendEmail: false
 
     syntheticData:
-#      fhirServerUrl: https://syntheticmass.mitre.org/fhir
-#       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
+    #      fhirServerUrl: https://syntheticmass.mitre.org/fhir
+    #       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
       signatureAlgorithm: HS256
@@ -136,7 +136,7 @@ cloud:
     cloudwatch:
       namespace: sandbox-manager-api
     region:
-      static: us-east-1
+      static: us-west-2
     stack:
       auto: false
 
@@ -179,16 +179,16 @@ api_endpoint_index:
     stu3: 6
     r4: 7
     r5:
-    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8075}
-    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8076}
-    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8077}
-    apiBaseURL_r5:
+    apiBaseURL_dstu2: localhost
+    apiBaseURL_stu3: localhost
+    apiBaseURL_r4: localhost
+    apiBaseURL_r5: localhost
   current:
     dstu2: 8
     stu3: 9
     r4: 10
     r5: 11
-    apiBaseURL_dstu2: http://${API_DSTU2_HOST:localhost}:${API_DSTU2_PORT:8078}
-    apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079}
-    apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}
-    apiBaseURL_r5: http://${API_R5_HOST:localhost}:${API_R5_PORT:8071}
+    apiBaseURL_dstu2: ${API_DSTU2_HOST}
+    apiBaseURL_stu3: ${API_STU3_HOST}
+    apiBaseURL_r4: ${API_R4_HOST}
+    apiBaseURL_r5: ${API_R5_HOST}
