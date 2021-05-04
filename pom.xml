@@ -15,7 +15,7 @@
 
     <name>Sandbox Manager API</name>
     <description>Sandbox Manager API</description>
-    <url>https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platform+Consortium</url>
+    <url>https://interop.community</url>
 
     <scm>
         <connection>scm:git:ssh://git@bitbucket.org/hspconsortium/sandbox-manager-api.git</connection>

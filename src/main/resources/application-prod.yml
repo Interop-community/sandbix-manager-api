@@ -1,6 +1,6 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://sandboxdb.logicahealth.org:3306
+    base_url: jdbc:mysql://sandboxdb.interop.community:3306
     username: system
     password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
   mail:
@@ -11,16 +11,16 @@ spring:
 hspc:
   platform:
     authorization:
-      url: https://auth.logicahealth.org
+      url: https://auth.interop.community
       adminAccess:
         clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
     messaging:
       sendEmail: true
-      url: https://messaging.logicahealth.org
+      url: https://messaging.interop.community
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: ENC(32oeS4V7gZfqPfndJXegT0cEHIU805Xbn/2qt5p8/5WriF926qEn58gJJdy+6+6ayCAJYN09y43R/9tcIktIXA3Yg6scHRMLzfx+9a4eybo=)
-    frontend: https://sandbox.logicahealth.org
+    frontend: https://sandbox.interop.community
 
 endpoints:
   health:
@@ -55,11 +55,11 @@ tier-rules:
 
 api_endpoint_index:
   prev:
-    apiBaseURL_dstu2: https://api-v5-dstu2.logicahealth.org
-    apiBaseURL_stu3: https://api-v5-stu3.logicahealth.org
-    apiBaseURL_r4: https://api-v5-r4.logicahealth.org
+    apiBaseURL_dstu2: https://api-v5-dstu2.interop.community
+    apiBaseURL_stu3: https://api-v5-stu3.interop.community
+    apiBaseURL_r4: https://api-v5-r4.interop.community
   current:
-    apiBaseURL_dstu2: https://api-v8-dstu2.logicahealth.org
-    apiBaseURL_stu3: https://api-v8-stu3.logicahealth.org
-    apiBaseURL_r4: https://api-v8-r4.logicahealth.org
-    apiBaseURL_r5: https://api-v8-r5.logicahealth.org
+    apiBaseURL_dstu2: https://api-v8-dstu2.interop.community
+    apiBaseURL_stu3: https://api-v8-stu3.interop.community
+    apiBaseURL_r4: https://api-v8-r4.interop.community
+    apiBaseURL_r5: https://api-v8-r5.interop.community
