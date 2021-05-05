@@ -1,5 +1,6 @@
 package org.logicahealth.sandboxmanagerapi.config;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -31,6 +32,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
+@EnableEncryptableProperties
 public class SandboxManagerConfig {
 
     @Value("${hspc.platform.simultaneousSandboxCreationTasksLimit}")

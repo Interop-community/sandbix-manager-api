@@ -2,7 +2,7 @@ spring:
   datasource:
     base_url: jdbc:mysql://sandboxdb.interop.community:3306
     username: system
-    password: ENC(lA/Ifn1Cm6pYGGydIXNQIa6n7ryn5A1+)
+    password: ENC(eu7PppbSk0mHHUZjmjzZxPeU8X9aCckJ)
   mail:
     password: ENC(tYnPIPVwvikZfJQsn6jDsC/MXXXHTkrK2Q4uOXZe09GUBAYuBL7VlXzs71q6QsLCfirbaTpbs48=)
 #jasypt:
@@ -13,7 +13,7 @@ hspc:
     authorization:
       url: https://auth.interop.community
       adminAccess:
-        clientSecret: ENC(PKNLyDyXbOFXKGnnK7bJlr1Isn/t3xJ6gGnEC+4f4yhDsK7A2eM/jL72WLuRQFuYy4cZt8JKpcxLmIV/exV2/eVaWvh8whJresSigPwsNhKhSdiZl6hS9Er+dLy1pARN)
+        clientSecret: ENC(gmMlVNIASfOKitTrkB/XrlVhV6e+zICBrsiEZ7Jiyv5fwO37wfLNKA6U4x7IJjtG)
     messaging:
       sendEmail: true
       url: https://messaging.interop.community
