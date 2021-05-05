@@ -19,7 +19,7 @@ hspc:
       url: https://messaging.interop.community
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
-      key: ENC(32oeS4V7gZfqPfndJXegT0cEHIU805Xbn/2qt5p8/5WriF926qEn58gJJdy+6+6ayCAJYN09y43R/9tcIktIXA3Yg6scHRMLzfx+9a4eybo=)
+      key: ENC(1j493gQNho0hZQ2g7t5a9ZZB3S+Tm5whhnjhr6NtPxAjTafqAE/iOQ==)
     frontend: https://sandbox.interop.community
 
 endpoints:
