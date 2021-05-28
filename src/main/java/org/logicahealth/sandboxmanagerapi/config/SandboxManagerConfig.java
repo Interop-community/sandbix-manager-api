@@ -1,5 +1,8 @@
 package org.logicahealth.sandboxmanagerapi.config;
 
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -66,10 +69,12 @@ public class SandboxManagerConfig {
     }
 
     @Bean
-    public ModelMapper modelMapper() { return new ModelMapper(); }
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
 
-    @Bean(name = "sandboxCloneTaskExecutor")
-    public Executor sandboxCloneTaskExecutor() {
+    @Bean(name = "sandboxSingleThreadedTaskExecutor")
+    public Executor sandboxSingleThreadedTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(sandboxCloneTaskActiveThreadCount);
@@ -78,9 +83,17 @@ public class SandboxManagerConfig {
         return executor;
     }
 
-    @Bean(name="sandboxDeleteHttpClient")
+    @Bean(name = "sandboxDeleteHttpClient")
     @Scope("prototype")
     public CloseableHttpClient sandboxDeleteHttpClient() {
         return HttpClientBuilder.create().build();
     }
+
+    @Bean
+    public static AmazonS3 amazonS3Client() {
+        return AmazonS3ClientBuilder.standard()
+                                    .withCredentials(new EnvironmentVariableCredentialsProvider())
+                                    .build();
+    }
+
 }

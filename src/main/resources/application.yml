@@ -108,8 +108,8 @@ hspc:
       sendEmail: false
 
     syntheticData:
-#      fhirServerUrl: https://syntheticmass.mitre.org/fhir
-#       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
+    #      fhirServerUrl: https://syntheticmass.mitre.org/fhir
+    #       fhirServerUrl: ${hspc.platform.api.version3.baseUrl}/synthea2/open
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
       signatureAlgorithm: HS256
@@ -192,3 +192,5 @@ api_endpoint_index:
     apiBaseURL_stu3: http://${API_STU3_HOST:localhost}:${API_STU3_PORT:8079}
     apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}
     apiBaseURL_r5: http://${API_R5_HOST:localhost}:${API_R5_PORT:8071}
+aws:
+  s3BucketName: sandbox-export-location

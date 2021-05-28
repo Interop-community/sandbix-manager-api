@@ -33,7 +33,7 @@ import java.util.List;
                 query="SELECT COUNT(*) FROM Sandbox c WHERE c.createdTimestamp >= :intervalTime"),
         @NamedQuery(name="Sandbox.newSandboxesInIntervalCount",
                 query="SELECT COUNT(*) FROM Sandbox c WHERE c.createdTimestamp >= :intervalTime" +
-                            " AND c.apiEndpointIndex = :apiEndpointIndex"),
+                        " AND c.apiEndpointIndex = :apiEndpointIndex"),
         @NamedQuery(name="Sandbox.newSandboxesInIntervalCountForSpecificTimePeriod",
                 query="SELECT COUNT(*) FROM Sandbox c WHERE c.apiEndpointIndex = :apiEndpointIndex AND (c.createdTimestamp BETWEEN :beginDate AND :endDate)"),
         @NamedQuery(name="Sandbox.intervalCountForSpecificTimePeriod",
@@ -124,7 +124,7 @@ public class Sandbox extends AbstractItem {
         this.allowOpenAccess = allowOpenAccess;
     }
 
-    @OneToMany(cascade={CascadeType.ALL})
+    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(name = "sandbox_user_roles", joinColumns = {
             @JoinColumn(name = "sandbox", nullable = false, updatable = false) },
             inverseJoinColumns = { @JoinColumn(name = "user_roles",

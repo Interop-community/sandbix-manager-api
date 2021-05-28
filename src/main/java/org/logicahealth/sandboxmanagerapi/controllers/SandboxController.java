@@ -27,10 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +42,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.zip.ZipOutputStream;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -122,18 +120,33 @@ public class SandboxController {
     }
 
     @GetMapping(value = "/download/{id}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<StreamingResponseBody> downloadSandboxAndApps(HttpServletRequest request, @PathVariable(value = "id") String sandboxId, HttpServletResponse response) throws IOException {
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void downloadSandboxAndApps(HttpServletRequest request, @PathVariable(value = "id") String sandboxId, HttpServletResponse response) throws IOException {
         response.setContentType("application/zip");
-        response.setHeader("Content-Disposition","attachment;filename=sandbox.zip");
+        response.setHeader("Content-Disposition", "attachment;filename=sandbox.zip");
         var sbmUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        var zipOutputStream = new ZipOutputStream(response.getOutputStream());
-        var zippedResponseBody = sandboxService.getZippedSandboxStream(sandbox, sbmUserId, zipOutputStream, authorizationService.getBearerToken(request));
-        return new ResponseEntity<StreamingResponseBody>(zippedResponseBody, HttpStatus.OK);
+        sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request));
+    }
+
+    @PostMapping(value = "/import")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile) {
+        var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
+        sandboxService.importSandbox(zipFile, requestingUser);
+    }
+
+    @PostMapping(value = "/import/{id}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile, @PathVariable(value = "id") String sandboxId) {
+        var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
+        sandboxService.importSandboxWithDifferentId(zipFile, sandboxId, requestingUser);
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)

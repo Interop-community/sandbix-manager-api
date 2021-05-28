@@ -1,16 +1,8 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.GsonBuilder;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.apache.commons.io.IOUtils;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -18,7 +10,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 import org.logicahealth.sandboxmanagerapi.model.*;
 import org.logicahealth.sandboxmanagerapi.repositories.SandboxRepository;
 import org.logicahealth.sandboxmanagerapi.repositories.UserSandboxRepository;
@@ -29,30 +20,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.BodyExtractors;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import reactor.core.publisher.Flux;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.inject.Inject;
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 @Service
 public class SandboxServiceImpl implements SandboxService {
@@ -103,19 +87,18 @@ public class SandboxServiceImpl implements SandboxService {
     private CloseableHttpClient sandboxDeleteHttpClient;
     private CdsServiceEndpointService cdsServiceEndpointService;
     private FhirProfileDetailService fhirProfileDetailService;
-    private FhirProfileService fhirProfileService;
     private SandboxBackgroundTasksService sandboxBackgroundTasksService;
     private UserSandboxRepository userSandboxRepository;
-    private CdsHookService cdsHookService;
 
     private static final int SANDBOXES_TO_RETURN = 2;
     private static final String CLONED_SANDBOX = "cloned";
     private static final String SAVED_SANDBOX = "saved";
-    private static final String FHIR_SERVER_VERSION = "platformVersion";
-    private static final String HAPI_VERSION = "hapiVersion";
-    private static final String FHIR_VERSION = "fhirVersion";
-    private static final String IMAGE_FOLDER = "img/";
-    private static final String PATIENT_FHIR_QUERY = "Patient?_id=";
+    private static final String KEY_PAIR_ALGORITHM = "RSA";
+    private static final int KEY_LENGTH = 1024;
+    private static final String KEY_STORAGE_PATH = "KeyPair";
+    private static final String PRIVATE_KEY_FILE = "privateKey";
+    private static final String PUBLIC_KEY_FILE = "publicKey";
+    private static final String SANDBOX_ID_FILE = "sandbox.json";
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -198,11 +181,6 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Inject
-    public void setFhirProfileService(@Lazy FhirProfileService fhirProfileService) {
-        this.fhirProfileService = fhirProfileService;
-    }
-
-    @Inject
     public void setSandboxBackgroundTasksService(@Lazy SandboxBackgroundTasksService sandboxBackgroundTasksService) {
         this.sandboxBackgroundTasksService = sandboxBackgroundTasksService;
     }
@@ -212,16 +190,12 @@ public class SandboxServiceImpl implements SandboxService {
         this.userSandboxRepository = userSandboxRepository;
     }
 
-    @Inject
-    public void setCdsHookService(CdsHookService cdsHookService) {
-        this.cdsHookService = cdsHookService;
-    }
-
     @Override
     @Transactional
     public void deleteQueuedSandboxes() {
         var queuedSandboxes = repository.findByCreationStatus(SandboxCreationStatus.QUEUED);
         queuedSandboxes.forEach(this::delete);
+        LOGGER.info("Queued sandbox creation entries removed.");
     }
 
     private void delete(final Sandbox sandbox) {
@@ -375,12 +349,7 @@ public class SandboxServiceImpl implements SandboxService {
             throw new ResourceNotFoundException("Cloned sandbox does not exist.");
         }
         if (initialUserPersona == null) {// && callCloneSandboxApi(newSandbox, existingSandbox, bearerToken)) {
-            newSandbox.setCreatedBy(user);
-            newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-            newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-            newSandbox.setPayerUserId(user.getId());
-            newSandbox.setCreationStatus(SandboxCreationStatus.QUEUED);
-            Sandbox savedSandbox = save(newSandbox);
+            var savedSandbox = saveNewSandbox(newSandbox, user);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {
                 addMemberRole(savedSandbox, user, Role.valueOf(roleName));
@@ -407,6 +376,15 @@ public class SandboxServiceImpl implements SandboxService {
             return savedAndClonedSandboxes;
         }
         return null;
+    }
+
+    private Sandbox saveNewSandbox(Sandbox newSandbox, User user) {
+        newSandbox.setCreatedBy(user);
+        newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+        newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
+        newSandbox.setPayerUserId(user.getId());
+        newSandbox.setCreationStatus(SandboxCreationStatus.QUEUED);
+        return save(newSandbox);
     }
 
     @Override
@@ -949,497 +927,128 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     @Override
-    public StreamingResponseBody getZippedSandboxStream(Sandbox sandbox, String sbmUserId, ZipOutputStream zipOutputStream, String bearerToken) {
-        return out -> {
-            addSandboxFhirServerDetailsToZipFile(sandbox, zipOutputStream, bearerToken);
-            var appsManifests = addAppsManifestToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
-            addUserPersonasToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
-            addCdsHooksToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
-            addLaunchScenariosToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream, appsManifests);
-            addProfilesToZipFile(sandbox.getSandboxId(), zipOutputStream);
-            zipOutputStream.close();
-        };
+    public void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken) {
+        sandboxBackgroundTasksService.exportSandbox(sandbox, sbmUserId, bearerToken, getSandboxApiURL(sandbox));
     }
 
-    private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken) {
-        String url = getSandboxApiURL(sandbox) + "/sandbox/download";
-        var webClient = WebClient.builder()
-                                 .baseUrl(getSandboxApiURL(sandbox))
-                                 .defaultHeader("Authorization", "BEARER " + bearerToken)
-                                 .build();
-        var response = webClient.get()
-                                .uri("/sandbox/download")
-                                .accept(MediaType.APPLICATION_OCTET_STREAM)
-                                .exchange()
-                                .block();
-        if (response == null) {
-            LOGGER.error("No response from fhir server for sandbox " + sandbox.getSandboxId());
+    @Override
+    public void generateKeyPair() {
+        if (keysExist()) {
             return;
         }
-        var statusCode = response.statusCode();
-        if (statusCode != HttpStatus.OK) {
-            String errorMsg = String.format("There was a problem downloading the sandbox.\n" +
-                            "Response Status : %s .\nUrl: :%s",
-                    statusCode.toString(),
-                    url);
-            LOGGER.error(errorMsg);
-            throw new RuntimeException(errorMsg);
-        }
-
-        ZipInputStream zipInputStream = null;
-        try (var osPipe = new PipedOutputStream();
-             var isPipe = new PipedInputStream(osPipe)) {
-            Flux<DataBuffer> body = response.body(BodyExtractors.toDataBuffers());
-            DataBufferUtils.write(body, osPipe)
-                           .subscribe(DataBufferUtils.releaseConsumer());
-            zipInputStream = new ZipInputStream(isPipe);
-            zipInputStream.getNextEntry();
-            addSandboxDetailsToZipFile(sandbox.getSandboxId(), zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)));
-            addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
-            addSandboxUserRolesAndInviteesToZipFile(sandbox.getSandboxId(), zipOutputStream);
-            zipInputStream.closeEntry();
-        } catch (IOException e) {
-            LOGGER.error("Exception while creating piped input stream for sandbox download", e);
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (zipInputStream != null) {
-                    zipInputStream.close();
-                }
-            } catch (IOException ignored) {
-            }
-        }
-
-    }
-
-    private void addZipFileEntry(InputStream inputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
+        LOGGER.error("Generating key pair");
         try {
-            zipOutputStream.putNextEntry(zipEntry);
-            IOUtils.copyLarge(inputStream, zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding zip file entry for sandbox download", e);
+            var keyPairGenerator = KeyPairGenerator.getInstance(KEY_PAIR_ALGORITHM);
+            keyPairGenerator.initialize(KEY_LENGTH);
+            var keyPair = keyPairGenerator.generateKeyPair();
+            storeKey(KEY_STORAGE_PATH + "/" + PRIVATE_KEY_FILE, keyPair.getPrivate().getEncoded());
+            storeKey(KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE, keyPair.getPublic().getEncoded());
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error("Exception while generating key pair", e);
         }
     }
 
-    private Map<String, String> getZipEntryContents(ZipInputStream inputStream) {
-        try (var outputStream = new ByteArrayOutputStream()) {
-            byte[] bytes = new byte[1024];
-            int length;
-            while ((length = inputStream.read(bytes)) >= 0) {
-                outputStream.write(bytes, 0, length);
+    private boolean keysExist() {
+        var keysDirectory = new File(KEY_STORAGE_PATH);
+        if (keysDirectory.isDirectory() && keysDirectory.exists()) {
+            var privateKeyFile = new File(KEY_STORAGE_PATH + "/" + PRIVATE_KEY_FILE);
+            var publicKeyFile = new File(KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE);
+            return privateKeyFile.isFile() && privateKeyFile.exists() && publicKeyFile.isFile() && publicKeyFile.exists();
+        }
+        return false;
+    }
+
+    private void storeKey(String keyFile, byte[] key) {
+        new File(KEY_STORAGE_PATH).mkdir();
+        try (var fileOutputStream = new FileOutputStream(new File(keyFile))) {
+            fileOutputStream.write(key);
+            fileOutputStream.flush();
+        } catch (IOException e) {
+            LOGGER.error("Exception while storing key pair", e);
+        }
+    }
+
+
+    @Override
+    @Transactional
+    public void importSandbox(MultipartFile zipFile, User requestingUser) {
+        checkForEmptyFile(zipFile);
+        startSandboxImport(zipFile, false, null, requestingUser);
+    }
+
+    @Override
+    @Transactional
+    public void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser) {
+        checkForEmptyFile(zipFile);
+        startSandboxImport(zipFile, true, sandboxId, requestingUser);
+    }
+
+    private void checkForEmptyFile(MultipartFile zipFile) {
+        if (zipFile.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Failed to import empty file.");
+        }
+    }
+
+    private void startSandboxImport(MultipartFile zipFile, boolean createWithDifferentSandboxId, String sandboxId, User requestingUser) {
+        ZipInputStream zipInputStream;
+        try {
+            zipInputStream = new ZipInputStream(zipFile.getInputStream());
+            var zipEntry = zipInputStream.getNextEntry();
+            if (!SANDBOX_ID_FILE.equals(zipEntry.getName())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expecting sandbox.json as first zip file entry.");
             }
-            return convertFhirVersionsJsonStringToMap(outputStream.toString());
+            Map sandboxVersions = new Gson().fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map.class);
+            var newSandbox = createSandboxTableEntry(sandboxVersions, createWithDifferentSandboxId, sandboxId, requestingUser);
+            sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
+            sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser);
         } catch (IOException e) {
-            LOGGER.error("Exception while extracting fhir server versions json", e);
-        }
-        return null;
-    }
-
-    private Map<String, String> convertFhirVersionsJsonStringToMap(String fhirServerVersions) {
-        var fhirServerVersionsMap = new HashMap<String, String>();
-        var jsonObject = new JSONObject(fhirServerVersions);
-        fhirServerVersionsMap.put(FHIR_SERVER_VERSION, jsonObject.getString(FHIR_SERVER_VERSION));
-        fhirServerVersionsMap.put(HAPI_VERSION, jsonObject.getString(HAPI_VERSION));
-        fhirServerVersionsMap.put(FHIR_VERSION, jsonObject.getString(FHIR_VERSION));
-        return fhirServerVersionsMap;
-    }
-
-    private void addSandboxDetailsToZipFile(String sandboxId, ZipOutputStream zipOutputStream, Map<String, String> fhirServerVersions) {
-        var sandbox = findBySandboxId(sandboxId);
-        var sandboxApiURL = getSandboxApiURL(findBySandboxId(sandboxId));
-        var sandboxDetails = new HashMap<String, Object>();
-        sandboxDetails.put("id", sandbox.getSandboxId());
-        sandboxDetails.put("name", sandbox.getName());
-        sandboxDetails.put("description", sandbox.getDescription());
-        sandboxDetails.put("base", sandboxApiURL.substring(0, sandboxApiURL.length() - sandboxId.length() - 1));
-        sandboxDetails.put(FHIR_SERVER_VERSION, fhirServerVersions.get(FHIR_SERVER_VERSION));
-        sandboxDetails.put(HAPI_VERSION, fhirServerVersions.get(HAPI_VERSION));
-        sandboxDetails.put(FHIR_VERSION, fhirServerVersions.get(FHIR_VERSION));
-        try (var sandboxInputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
-                                                                                .create()
-                                                                                .toJson(sandboxDetails)
-                                                                                .getBytes())) {
-            addZipFileEntry(sandboxInputStream, new ZipEntry("sandbox.json"), zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding sandbox details for sandbox download", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException while reading zip file.");
         }
     }
 
-    private void addSandboxUserRolesAndInviteesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
-        var sandbox = findBySandboxId(sandboxId);
-        var sandboxUsers = sandbox.getUserRoles()
-                                  .stream()
-                                  .map(userRole -> new SandboxUser(userRole.getUser(), userRole.getRole().getSandboxDownloadRole()))
-                                  .collect(Collectors.toSet());
-        var sandboxInvites = sandboxInviteService.findInvitesBySandboxId(sandboxId);
-        var pendingInviteeEmails = sandboxInvites.stream()
-                                                 .filter(sandboxInvite -> sandboxInvite.getStatus() == InviteStatus.PENDING)
-                                                 .map(sandboxInvite -> sandboxInvite.getInvitee().getEmail())
-                                                 .collect(Collectors.toList());
-        var sandboxUserRolesAndInvitees = new HashMap<String, Object>();
-        sandboxUsers.add(new SandboxServiceImpl.SandboxUser(sandbox.getCreatedBy(), "owner"));
-        sandboxUserRolesAndInvitees.put("users", sandboxUsers);
-        sandboxUserRolesAndInvitees.put("invitees", pendingInviteeEmails);
-        try (var sandboxInputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
-                                                                                .create()
-                                                                                .toJson(sandboxUserRolesAndInvitees).getBytes())) {
-            addZipFileEntry(sandboxInputStream, new ZipEntry("users.json"), zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding sandbox user roles and invites for sandbox download", e);
+    private Sandbox createSandboxTableEntry(Map sandboxVersions, boolean createWithNewSandboxId, String sandboxId, User requestingUser) {
+        var newSandbox = new Sandbox();
+        if (createWithNewSandboxId) {
+            newSandbox.setSandboxId(sandboxId);
+        } else {
+            newSandbox.setSandboxId((String) sandboxVersions.get("id"));
         }
-        addSandboxUsersToZipFile(sandboxUsers, zipOutputStream);
+        newSandbox.setApiEndpointIndex(FhirVersion.getFhirVersion((String) sandboxVersions.get("fhirVersion")).getEndpointIndex());
+        if (repository.findBySandboxId(newSandbox.getSandboxId()) != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sandbox already exists with id " + newSandbox.getSandboxId());
+        }
+        newSandbox.setName((String) sandboxVersions.get("name"));
+        newSandbox.setDescription((String) sandboxVersions.get("description"));
+        return saveNewSandbox(newSandbox, requestingUser);
     }
 
-    private void addSandboxUsersToZipFile(Set<SandboxServiceImpl.SandboxUser> sandboxUsers, ZipOutputStream zipOutputStream) {
-        var users = sandboxUsers.stream()
-                                .map(SandboxUser::getEmail)
-                                .distinct()
-                                .collect(Collectors.joining(","));
-        try (var usersInputStream = new ByteArrayInputStream(users.getBytes())) {
-            addZipFileEntry(usersInputStream, new ZipEntry("users.csv"), zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding users for sandbox download", e);
-        }
-    }
+    private enum FhirVersion {
+        DSTU2(8),
+        DSTU3(9),
+        R4(10),
+        R5(11);
 
-    @Getter
-    private static class SandboxUser {
-        private final String name;
-        private final String email;
-        private final String role;
+        private int endpointIndex;
 
-        public SandboxUser(User user, String role) {
-            this.name = user.getName();
-            this.email = user.getEmail();
-            this.role = role;
+        FhirVersion(int endpointIndex) {
+            this.endpointIndex = endpointIndex;
         }
 
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof SandboxUser)) {
-                return false;
+        public String getEndpointIndex() {
+            return Integer.valueOf(endpointIndex).toString();
+        }
+
+        public static FhirVersion getFhirVersion(String fhirVersion) {
+            switch (fhirVersion) {
+                case "DSTU2":
+                    return DSTU2;
+                case "DSTU3":
+                    return DSTU3;
+                case "R4":
+                    return R4;
+                default:
+                    return R5;
             }
-            var otherSandboxUser = (SandboxUser) other;
-            return (this.name.equals(otherSandboxUser.name) && this.email.equals(otherSandboxUser.email) && this.role.equals(otherSandboxUser.role));
-        }
-
-        @Override
-        public int hashCode() {
-            return this.email.hashCode() + this.email.hashCode() + this.role.hashCode();
-        }
-    }
-
-    private List<AppManifestTemplate> addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
-        var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        var appsList = parseAppsListJson(apps);
-        addAppImagesToZipFile(appsList, zipOutputStream);
-        try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
-                                                                         .create()
-                                                                         .toJson(appsList)
-                                                                         .getBytes())) {
-            addZipFileEntry(inputStream, new ZipEntry("apps.json"), zipOutputStream);
-            return appsList;
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding apps manifest for sandbox download", e);
-        }
-        return null;
-    }
-
-    private List<AppManifestTemplate> parseAppsListJson(List<App> apps) {
-        var appManifests = new ArrayList<AppManifestTemplate>();
-        for (App app : apps) {
-            var appManifestTemplate = new AppManifestTemplate(app.getSoftwareId(), app.getClientName(), app.getClientUri(), app.getLogoUri(), app.getLaunchUri(), app.getFhirVersions(), app.getBriefDescription(), app.getSamplePatients());
-            try {
-                var clientJsonNode = new ObjectMapper().readTree(app.getClientJSON());
-                appManifestTemplate.setAppId(clientJsonNode.get("id").asText());
-                appManifestTemplate.setClientId(clientJsonNode.get("clientId").asText());
-                var redirectUrisIterator = clientJsonNode.get("redirectUris").elements();
-                var redirectUris = new ArrayList<String>();
-                while (redirectUrisIterator.hasNext()) {
-                    redirectUris.add(redirectUrisIterator.next().asText());
-                }
-                appManifestTemplate.setRedirectURIs(redirectUris);
-                var scopeIterator = clientJsonNode.get("scope").elements();
-                appManifestTemplate.setScope(new ArrayList<>());
-                while (scopeIterator.hasNext()) {
-                    appManifestTemplate.getScope().add(scopeIterator.next().asText());
-                }
-                appManifestTemplate.setTokenEndpointAuthMethod(clientJsonNode.get("tokenEndpointAuthMethod").asText());
-                appManifests.add(appManifestTemplate);
-            } catch (JsonProcessingException e) {
-                LOGGER.error("Exception while parsing application client json for sandbox download", e);
-            }
-        }
-        return appManifests;
-    }
-
-    @NoArgsConstructor
-    @Data
-    private static class AppManifestTemplate {
-        private transient String appId;
-        private String softwareId;
-        private String clientId;
-        private String name;
-        private String clientUri;
-        private String logo;
-        private String launchURI;
-        private List<String> redirectURIs;
-        private List<String> scope;
-        private transient String tokenEndpointAuthMethod;
-        private String fhirVersions;
-        private String description;
-        private List<String> samplePatients;
-
-        public AppManifestTemplate(String softwareId, String name, String clientUri, String logo, String launchURI, String fhirVersions, String description, String samplePatients) {
-            this.softwareId = softwareId;
-            this.name = name;
-            this.clientUri = clientUri;
-            this.logo = logo;
-            this.launchURI = launchURI;
-            this.fhirVersions = fhirVersions;
-            this.description = description;
-            if (samplePatients != null) {
-                var samplePatientsArray = samplePatients.split(",");
-                this.samplePatients = new ArrayList<>(samplePatientsArray.length);
-                for (String patient : samplePatientsArray) {
-                    this.samplePatients.add(stripFhirQuery(patient));
-                }
-            }
-        }
-
-        private String stripFhirQuery(String patient) {
-            return patient.substring(patient.contains(PATIENT_FHIR_QUERY) ? patient.indexOf(PATIENT_FHIR_QUERY) + PATIENT_FHIR_QUERY.length() : 0);
-        }
-
-        public String getLogoFileName() {
-            return this.logo.substring(this.logo.lastIndexOf("/") + 1);
-        }
-
-        public InputStream getLogoInputStream() {
-            try {
-                return new URL(this.logo).openStream();
-            } catch (IOException e) {
-                LOGGER.error("Exception while accessing app logo image for sandbox download", e);
-            }
-            return null;
-        }
-    }
-
-    private void addAppImagesToZipFile(List<AppManifestTemplate> appsList, ZipOutputStream zipOutputStream) {
-        var fileToInputStreamMapping = appsList.stream()
-                                               .collect(Collectors.toMap(AppManifestTemplate::getLogoFileName, AppManifestTemplate::getLogoInputStream));
-        fileToInputStreamMapping.forEach((fileName, inputStream) -> addZipFileEntry(inputStream, new ZipEntry(IMAGE_FOLDER + fileName), zipOutputStream));
-        appsList.forEach(app -> app.setLogo(IMAGE_FOLDER + app.getLogoFileName()));
-    }
-
-    private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
-        var userPersonas = userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        var sandboxUserPersona = userPersonas.stream()
-                                             .map(SandboxUserPersona::new)
-                                             .collect(Collectors.toList());
-        try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
-                                                                         .create()
-                                                                         .toJson(sandboxUserPersona)
-                                                                         .getBytes())) {
-            addZipFileEntry(inputStream, new ZipEntry("personas.json"), zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding personas for sandbox download", e);
-        }
-    }
-
-    @Getter
-    private static class SandboxUserPersona {
-        private final String personaUserId;
-        private final String password;
-        private final String resourceUrl;
-
-        public SandboxUserPersona(UserPersona userPersona) {
-            this.personaUserId = userPersona.getPersonaUserId();
-            this.password = userPersona.getPassword();
-            this.resourceUrl = userPersona.getResourceUrl();
-        }
-    }
-
-    private void addCdsHooksToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
-        var cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        for (CdsServiceEndpoint cdsServiceEndpoint : cdsServiceEndpoints) {
-            List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
-            cdsServiceEndpoint.setCdsHooks(cdsHooks);
-        }
-        var sandboxCdsServiceEndpoints = cdsServiceEndpoints.stream()
-                                                            .map(SandboxCdsServiceEndpoint::new)
-                                                            .collect(Collectors.toList());
-        try (var inputStream = new ByteArrayInputStream(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                                                                          .writerWithDefaultPrettyPrinter()
-                                                                          .writeValueAsBytes(sandboxCdsServiceEndpoints))) {
-            addZipFileEntry(inputStream, new ZipEntry("cds-hooks.json"), zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding cds hooks for sandbox download", e);
-        }
-    }
-
-    @Getter
-    private static class SandboxCdsServiceEndpoint {
-        private final String url;
-        private final String title;
-        private final String description;
-        private final List<SandboxCdsHook> cdsHooks;
-
-        public SandboxCdsServiceEndpoint(CdsServiceEndpoint cdsServiceEndpoint) {
-            this.url = cdsServiceEndpoint.getUrl();
-            this.title = cdsServiceEndpoint.getTitle();
-            this.description = cdsServiceEndpoint.getDescription();
-            this.cdsHooks = cdsServiceEndpoint.getCdsHooks()
-                                              .stream()
-                                              .map(SandboxCdsHook::new)
-                                              .collect(Collectors.toList());
-        }
-    }
-
-    @Getter
-    private static class SandboxCdsHook {
-        private final String logoUri;
-        private final String hook;
-        private final String title;
-        private final String description;
-        private final String hookId;
-        private final JsonNode prefetch;
-        private final String hookUrl;
-        private final String scope;
-        private final JsonNode context;
-
-        public SandboxCdsHook(CdsHook cdsHook) {
-            this.logoUri = cdsHook.getLogoUri();
-            this.hook = cdsHook.getHook();
-            this.title = cdsHook.getTitle();
-            this.description = cdsHook.getDescription();
-            this.hookId = cdsHook.getHookId();
-            this.prefetch = cdsHook.getPrefetch();
-            this.hookUrl = cdsHook.getHookUrl();
-            this.scope = cdsHook.getScope();
-            this.context = cdsHook.getContext();
-        }
-    }
-
-    private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, List<AppManifestTemplate> appsManifests) {
-        var launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
-        var appIdToClientIdMapper = appsManifests.stream()
-                                                 .collect(Collectors.toMap(AppManifestTemplate::getAppId, AppManifestTemplate::getClientId));
-        var sandboxLaunchScenarios = launchScenarios.stream()
-                                                    .map(SandboxLaunchScenario::new)
-                                                    .peek(sandboxLaunchScenario -> sandboxLaunchScenario.setClientId(appIdToClientIdMapper.get(sandboxLaunchScenario.getAppId())))
-                                                    .collect(Collectors.toList());
-        try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
-                                                                         .create()
-                                                                         .toJson(sandboxLaunchScenarios)
-                                                                         .getBytes())) {
-            addZipFileEntry(inputStream, new ZipEntry("launch-scenarios.json"), zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding launch scenarios for sandbox download", e);
-        }
-    }
-
-    @Data
-    private static class SandboxLaunchScenario {
-        private final String description;
-        private final String personaUserId;
-        private final transient String appId;
-        private String clientId;
-        private final Map<String, String> contextParams;
-        private final String patient;
-        private final String encounter;
-        private final String location;
-        private final String resource;
-        private final String intent;
-        private final String smartStyleUrl;
-        private final String title;
-        private final boolean needPatientBanner;
-        private final String cdsHookUrl;
-        private final JsonNode context;
-
-        public SandboxLaunchScenario(LaunchScenario launchScenario) {
-            this.description = launchScenario.getDescription();
-            this.personaUserId = launchScenario.getUserPersona() == null ? null : launchScenario.getUserPersona().getPersonaUserId();
-            this.appId = launchScenario.getApp() == null ? null : extractAppId(launchScenario.getApp().getClientJSON());
-            this.contextParams = launchScenario.getContextParams()
-                                               .stream()
-                                               .collect(Collectors.toMap(ContextParams::getName, ContextParams::getValue));
-            this.patient = launchScenario.getPatient();
-            this.encounter = launchScenario.getEncounter();
-            this.location = launchScenario.getLocation();
-            this.resource = launchScenario.getResource();
-            this.intent = launchScenario.getIntent();
-            this.smartStyleUrl = launchScenario.getSmartStyleUrl();
-            this.title = launchScenario.getTitle();
-            this.needPatientBanner = "1".equals(launchScenario.getNeedPatientBanner());
-            this.cdsHookUrl = launchScenario.getCdsHook() == null ? null : launchScenario.getCdsHook().getHookUrl();
-            this.context = launchScenario.getContext();
-        }
-
-        public String extractAppId(String clientJson) {
-            var appId = new GsonBuilder().setPrettyPrinting()
-                                         .create()
-                                         .fromJson(clientJson, AppId.class);
-            return appId.getId();
-        }
-
-    }
-
-    @Data
-    @AllArgsConstructor
-    private static class AppId {
-        private String id;
-    }
-
-    public void addProfilesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
-        var profileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
-        var profiles = profileDetails.stream()
-                                     .map(SandboxFhirProfileDetail::new)
-                                     .peek(sandboxFhirProfileDetail -> {
-                                         var sandboxFhirProfiles = fhirProfileService.getAllResourcesForGivenProfileId(sandboxFhirProfileDetail.getId());
-                                         sandboxFhirProfileDetail.setSandboxFhirProfiles(sandboxFhirProfiles);
-                                     })
-                                     .collect(Collectors.toList());
-        try (var inputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
-                                                                         .create()
-                                                                         .toJson(profiles)
-                                                                         .getBytes())) {
-            addZipFileEntry(inputStream, new ZipEntry("profiles.json"), zipOutputStream);
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding profiles for sandbox download", e);
-        }
-    }
-
-    @Getter
-    private static class SandboxFhirProfileDetail {
-        private final transient Integer id;
-        private final String profileName;
-        private final String profileId;
-        private List<SandboxFhirProfile> fhirProfiles;
-
-        public SandboxFhirProfileDetail(FhirProfileDetail fhirProfileDetail) {
-            this.id = fhirProfileDetail.getId();
-            this.profileName = fhirProfileDetail.getProfileName();
-            this.profileId = fhirProfileDetail.getProfileId();
-        }
-
-        public void setSandboxFhirProfiles(List<FhirProfile> fhirProfiles) {
-            this.fhirProfiles = fhirProfiles.stream()
-                                            .map(SandboxFhirProfile::new)
-                                            .collect(Collectors.toList());
-        }
-    }
-
-    @Getter
-    private static class SandboxFhirProfile {
-        private final String fullUrl;
-        private final String relativeUrl;
-        private final String profileType;
-
-        public SandboxFhirProfile(FhirProfile fhirProfile) {
-            this.fullUrl = fhirProfile.getFullUrl();
-            this.relativeUrl = fhirProfile.getRelativeUrl();
-            this.profileType = fhirProfile.getProfileType();
         }
     }
 

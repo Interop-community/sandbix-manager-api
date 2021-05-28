@@ -19,7 +19,7 @@ public class ApplicationStartupHooks {
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
         sandboxService.deleteQueuedSandboxes();
-        LOGGER.info("Queued sandbox creation entries removed.");
+        sandboxService.generateKeyPair();
     }
 
 }
