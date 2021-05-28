@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
@@ -17,11 +16,15 @@ import org.logicahealth.sandboxmanagerapi.repositories.SandboxRepository;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
@@ -79,7 +82,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
 
         try (CloseableHttpResponse closeableHttpResponse = httpClient.execute(cloneRequest)) {
             if (closeableHttpResponse.getStatusLine().getStatusCode() != 200) {
-                HttpEntity rEntity = closeableHttpResponse.getEntity();
+                org.apache.http.HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
                 String errorMsg = String.format("There was a problem cloning the sandbox.\n" +
                                 "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
@@ -120,7 +123,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     @Override
     @Async("sandboxSingleThreadedTaskExecutor")
     @Transactional
-    public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser) {
+    public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiURL, String bearerToken) {
         newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
         requestingUser = userService.findBySbmUserId(requestingUser.getSbmUserId());
         try {
@@ -136,7 +139,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                 var appImages = new HashMap<String, Image>();
                 switch (zipEntryName) {
                     case "sandbox.sql":
-                        importSandboxDatabaseSchema(zipInputStream);
+                        importSandboxDatabaseSchema(zipInputStream, newSandbox, sandboxApiURL, bearerToken);
                         break;
                     case "users.json":
                     case "signature":
@@ -172,7 +175,26 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         }
     }
 
-    private void importSandboxDatabaseSchema(ZipInputStream zipInputStream) {
+    private void importSandboxDatabaseSchema(ZipInputStream zipInputStream, Sandbox newSandbox, String sandboxApiURL, String bearerToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.set(HttpHeaders.AUTHORIZATION, "BEARER " + bearerToken);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        var fileName = newSandbox.getSandboxId() + UUID.randomUUID() + ".sql";
+        try {
+            var file = new File(fileName);
+            var fileOutputStream = new FileOutputStream(file);
+            IOUtils.copyLarge(zipInputStream, fileOutputStream);
+            body.add("schema", new FileSystemResource(file));
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.postForEntity(sandboxApiURL + "/sandbox/import/" + newSandbox.getSandboxId(), requestEntity, String.class);
+            if (response.getStatusCode() != HttpStatus.CREATED) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create schema for sandbox " + newSandbox.getSandboxId());
+            }
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create schema for sandbox " + newSandbox.getSandboxId(), e);
+        }
     }
 
     private void importSandboxUsers(ZipInputStream zipInputStream, Gson gson, User requestingUser, Sandbox newSandbox) {
@@ -345,6 +367,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         }
 
     }
+
     private void updateSandboxCreationStatus(Sandbox newSandbox, SandboxCreationStatus status) {
         newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
         newSandbox.setCreationStatus(status);

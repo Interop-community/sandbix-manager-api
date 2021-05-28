@@ -85,8 +85,8 @@ public interface SandboxService {
 
     void generateKeyPair();
 
-    void importSandbox(MultipartFile zipFile, User requestingUser);
+    void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken);
 
-    void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser);
+    void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser, String bearerToken);
 
 }

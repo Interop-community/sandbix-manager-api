@@ -134,19 +134,19 @@ public class SandboxController {
     }
 
     @PostMapping(value = "/import")
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.CREATED)
     public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile) {
         var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
-        sandboxService.importSandbox(zipFile, requestingUser);
+        sandboxService.importSandbox(zipFile, requestingUser, authorizationService.getBearerToken(request));
     }
 
     @PostMapping(value = "/import/{id}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.CREATED)
     public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile, @PathVariable(value = "id") String sandboxId) {
         var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
-        sandboxService.importSandboxWithDifferentId(zipFile, sandboxId, requestingUser);
+        sandboxService.importSandboxWithDifferentId(zipFile, sandboxId, requestingUser, authorizationService.getBearerToken(request));
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
