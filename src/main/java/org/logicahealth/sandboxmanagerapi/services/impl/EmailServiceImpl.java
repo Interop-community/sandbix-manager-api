@@ -105,7 +105,28 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendExportNotificationEmail(User user, URL sandboxExportFile) {
+    public void sendExportNotificationEmail(User user, URL sandboxExportFile, String sandboxName) {
+        if (sendEmail) {
+
+            Message message = new Message(true, Message.ENCODING);
+
+            message.setSubject("Sandbox Backup Completed");
+            message.setAcceptHtmlMessage(true);
+
+            message.setSenderEmail(HSPC_EMAIL);
+            message.addRecipient(user.getName(), user.getEmail().trim());
+
+            message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("sandboxName", sandboxName);
+            message.addVariable("s3resource", sandboxExportFile.toString());
+
+            try {
+                sendEmailByJavaMail(message);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e + " Email was not sent");
+            }
+        }
     }
 
     public void sendEmailByJavaMail(Message emailMessage)

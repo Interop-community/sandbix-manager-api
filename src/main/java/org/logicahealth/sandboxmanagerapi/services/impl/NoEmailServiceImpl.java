@@ -23,7 +23,7 @@ public class NoEmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendExportNotificationEmail(User user, URL sandboxExportFile) {
+    public void sendExportNotificationEmail(User user, URL sandboxExportFile, String sandboxName) {
         LOGGER.info("Mail is not enabled, would have sent export notification to " + user.getName());
     }
 }

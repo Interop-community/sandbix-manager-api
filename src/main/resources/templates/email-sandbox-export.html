@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title data-th-remove="all">Sandbox Invitation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+
+        .accept a {
+            display: inline-block;
+            margin-bottom: 0;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            cursor: pointer;
+            background-image: none;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            border-radius: 2px;
+            color: #fff;
+            background-color: rgb(14, 86, 118);
+            font-weight: 300;
+            font-size: 16px;
+            margin-top: 15px;
+            padding: 8px;
+        }
+
+    </style>
+</head>
+<body>
+<div style="padding: 10px;">
+    <div style="text-align: center; min-width: 200px; margin: 0 auto 0 auto">
+        <div style="background-color: #ffffff; padding: 4px 4px 2px 4px;">
+            <img style="height: auto; width: 300px; margin: 0 auto 0 auto" src="https://sandbox.interop.community/img/hspc-sndbx-logo.png" />
+        </div>
+        <div style="padding: 15px 15px 30px 15px; font-family: Trebuchet, Arial, sans-serif; font-size:16px; background-color: #fff; color:rgba(0, 0, 0, 0.87);">
+            <p>
+                Backup has been completed for sandbox <strong th:text="${sandboxName}">Backed Up Sandbox</strong>.
+            </p>
+            <br />
+            <p>
+                You can download the backup from <a th:href="@{${s3resource}}">here</a>.
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

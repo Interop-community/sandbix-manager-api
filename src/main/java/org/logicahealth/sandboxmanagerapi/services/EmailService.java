@@ -9,6 +9,6 @@ import java.net.URL;
 public interface EmailService {
 
     void sendEmail(final User inviter, final User invitee, Sandbox sandbox, int invitationId) throws IOException;
-    void sendExportNotificationEmail(User user, URL sandboxExportFile);
+    void sendExportNotificationEmail(User user, URL sandboxExportFile, String sandboxName);
 
 }
