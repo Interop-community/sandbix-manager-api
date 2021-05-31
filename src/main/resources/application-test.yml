@@ -1,6 +1,6 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://sandboxdb-test.logicahealth.org:3306
+    base_url: jdbc:mysql://sandboxdb-test.interop.community:3306
     username: system
     password: ENC(eTe28H24x7ir3WTFLKeYurHJHMn3NeRb)
 #    username: sandman_api
@@ -11,16 +11,16 @@ spring:
 hspc:
   platform:
     authorization:
-      url: https://auth-test.logicahealth.org
+      url: https://auth-test.interop.community
       adminAccess:
         clientSecret: ENC(38zd6mj1buFAIQMh+3wMKi51Uwglzr2MYjmuQsTruQ7P/DoyTs6UmPXtlwjpbOC2kSEgIYPwAo376GqXvY8HETj4aKe4gWQDoyTcz1aK/zuUgC10mCuMnKNE1BHtC7Nt)   #secret
     messaging:
       sendEmail: true
-      url: https://messaging-test.logicahealth.org
+      url: https://messaging-test.interop.community
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: devKeyDoNotUseInProductionShouldBeOverwrittenInProdConfiguration
-    frontend: https://sandbox-test.logicahealth.org
+    frontend: https://sandbox-test.interop.community
 tier-rules:
   tierRuleList:
     FREE:
@@ -50,11 +50,11 @@ tier-rules:
 
 api_endpoint_index:
   prev:
-    apiBaseURL_dstu2: https://api-v5-dstu2-test.logicahealth.org
-    apiBaseURL_stu3: https://api-v5-stu3-test.logicahealth.org
-    apiBaseURL_r4: https://api-v5-r4-test.logicahealth.org
+    apiBaseURL_dstu2: https://api-v5-dstu2-test.interop.community
+    apiBaseURL_stu3: https://api-v5-stu3-test.interop.community
+    apiBaseURL_r4: https://api-v5-r4-test.interop.community
   current:
-    apiBaseURL_dstu2: https://api-v8-dstu2-test.logicahealth.org
-    apiBaseURL_stu3: https://api-v8-stu3-test.logicahealth.org
-    apiBaseURL_r4: https://api-v8-r4-test.logicahealth.org
-    apiBaseURL_r5: https://api-v8-r5-test.logicahealth.org
+    apiBaseURL_dstu2: https://api-v8-dstu2-test.interop.community
+    apiBaseURL_stu3: https://api-v8-stu3-test.interop.community
+    apiBaseURL_r4: https://api-v8-r4-test.interop.community
+    apiBaseURL_r5: https://api-v8-r5-test.interop.community

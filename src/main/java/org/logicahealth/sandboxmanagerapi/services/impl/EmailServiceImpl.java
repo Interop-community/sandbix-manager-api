@@ -37,9 +37,9 @@ import java.util.UUID;
 public class EmailServiceImpl implements EmailService {
     private static Logger LOGGER = LoggerFactory.getLogger(EmailService.class.getName());
 
-    private static final String HSPC_EMAIL = "noreply@logicahealth.org"; // "no-reply@logicahealth.org";
+    private static final String HSPC_EMAIL = "noreply@interop.community";
     private static final String PNG_MIME = "image/png";
-    private static final String EMAIL_SUBJECT = "Logica Sandbox Invitation";
+    private static final String EMAIL_SUBJECT = "Interop Community Sandbox Invitation";
     private static final String HSPC_LOGO_IMAGE = "templates\\hspc-sndbx-logo.png";
 
     @Value("${hspc.platform.messaging.sendEmail}")
