@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.UUID;
 
 @Service
@@ -101,6 +102,10 @@ public class EmailServiceImpl implements EmailService {
                 throw new RuntimeException(e + " Email was not sent");
             }
         }
+    }
+
+    @Override
+    public void sendExportNotificationEmail(User user, URL sandboxExportFile) {
     }
 
     public void sendEmailByJavaMail(Message emailMessage)
