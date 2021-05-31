@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URL;
 
 @Service
 @Profile("!email")
@@ -19,5 +20,10 @@ public class NoEmailServiceImpl implements EmailService {
     public void sendEmail(User inviter, User invitee, Sandbox sandbox, int invitationId) throws IOException {
         LOGGER.info("Mail is not enabled, would have sent from: " + inviter.getName() + " to: " + invitee.getName()
                 + " for sandbox: " + sandbox.getName() + " for invitation ID: " + invitationId);
+    }
+
+    @Override
+    public void sendExportNotificationEmail(User user, URL sandboxExportFile) {
+        LOGGER.info("Mail is not enabled, would have sent export notification to " + user.getName());
     }
 }

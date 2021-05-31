@@ -936,7 +936,6 @@ public class SandboxServiceImpl implements SandboxService {
         if (keysExist()) {
             return;
         }
-        LOGGER.error("Generating key pair");
         try {
             var keyPairGenerator = KeyPairGenerator.getInstance(KEY_PAIR_ALGORITHM);
             keyPairGenerator.initialize(KEY_LENGTH);

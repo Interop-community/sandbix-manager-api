@@ -7,5 +7,5 @@ import java.io.PipedOutputStream;
 
 public interface SandboxExportService {
     Runnable createZippedSandboxExport(Sandbox sandbox, String sbmUserId, String bearerToken, String apiUrl, PipedOutputStream pipedOutputStream);
-    Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName);
+    Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName, String sbmUserId);
 }

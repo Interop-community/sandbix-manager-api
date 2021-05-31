@@ -66,6 +66,8 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private final CdsServiceEndpointService cdsServiceEndpointService;
     private final LaunchScenarioService launchScenarioService;
     private final FhirProfileDetailService fhirProfileDetailService;
+    private final UserService userService;
+    private final EmailService emailService;
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxExportServiceImpl.class.getName());
 
@@ -79,8 +81,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private static final String IMAGE_NAME_PREFIX = "img";
     private static final String KEY_PAIR_ALGORITHM = "RSA";
     private static final String PRIVATE_KEY_FILE_PATH = "KeyPair/privateKey";
+    private static final int DOWNLOAD_LINK_VALID_DAYS = 2;
 
-    public SandboxExportServiceImpl(@Value("${aws.s3BucketName}") String s3BucketName, AmazonS3 amazonS3, SandboxRepository repository, FhirProfileService fhirProfileService, CdsHookService cdsHookService, SandboxInviteService sandboxInviteService, AppService appService, UserPersonaService userPersonaService, CdsServiceEndpointService cdsServiceEndpointService, LaunchScenarioService launchScenarioService, FhirProfileDetailService fhirProfileDetailService) {
+    public SandboxExportServiceImpl(@Value("${aws.s3BucketName}") String s3BucketName, AmazonS3 amazonS3, SandboxRepository repository, FhirProfileService fhirProfileService, CdsHookService cdsHookService, SandboxInviteService sandboxInviteService, AppService appService, UserPersonaService userPersonaService, CdsServiceEndpointService cdsServiceEndpointService, LaunchScenarioService launchScenarioService, FhirProfileDetailService fhirProfileDetailService, UserService userService, EmailService emailService) {
         this.s3BucketName = s3BucketName;
         this.amazonS3 = amazonS3;
         this.repository = repository;
@@ -92,6 +95,8 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         this.cdsServiceEndpointService = cdsServiceEndpointService;
         this.launchScenarioService = launchScenarioService;
         this.fhirProfileDetailService = fhirProfileDetailService;
+        this.userService = userService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -116,15 +121,22 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     @Override
-    public Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName) {
+    public Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName, String sbmUserId) {
         return () -> {
             var transferManager = TransferManagerBuilder.standard()
                                                         .withS3Client(this.amazonS3)
                                                         .build();
             transferManager.upload(this.s3BucketName, sandboxExportFileName, pipedInputStream, new ObjectMetadata());
+            emailService.sendExportNotificationEmail(userService.findBySbmUserId(sbmUserId), this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()));
         };
     }
 
+    private Date getDownloadLinkValidUntilDate() {
+        var downloadLinkValidUntil = Calendar.getInstance();
+        downloadLinkValidUntil.setTime(new Date());
+        downloadLinkValidUntil.add(Calendar.DATE, DOWNLOAD_LINK_VALID_DAYS);
+        return downloadLinkValidUntil.getTime();
+    }
 
     private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken, String apiUrl) {
         var response = getClientResponse(sandbox, bearerToken, SANDBOX_DOWNLOAD_URI, MediaType.APPLICATION_OCTET_STREAM, apiUrl);

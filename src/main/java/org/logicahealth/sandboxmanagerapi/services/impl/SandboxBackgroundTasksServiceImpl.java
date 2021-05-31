@@ -109,7 +109,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
              final var pipedInputStream = new PipedInputStream(pipedOutputStream)) {
             var sandboxExportFileName = UUID.randomUUID() + ".zip";
             final var zipFileCreationRunner = new Thread(sandboxExportService.createZippedSandboxExport(sandbox, sbmUserId, bearerToken, apiUrl, pipedOutputStream));
-            final var s3BucketOutfileRunner = new Thread(sandboxExportService.sendToS3Bucket(pipedInputStream, sandboxExportFileName));
+            final var s3BucketOutfileRunner = new Thread(sandboxExportService.sendToS3Bucket(pipedInputStream, sandboxExportFileName, sbmUserId));
             zipFileCreationRunner.start();
             s3BucketOutfileRunner.start();
             zipFileCreationRunner.join();
