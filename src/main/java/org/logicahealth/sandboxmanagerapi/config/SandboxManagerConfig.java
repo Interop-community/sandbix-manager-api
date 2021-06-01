@@ -1,5 +1,6 @@
 package org.logicahealth.sandboxmanagerapi.config;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -34,6 +35,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
+@EnableEncryptableProperties
 public class SandboxManagerConfig {
 
     @Value("${hspc.platform.simultaneousSandboxCreationTasksLimit}")
@@ -69,9 +71,7 @@ public class SandboxManagerConfig {
     }
 
     @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
+    public ModelMapper modelMapper() { return new ModelMapper(); }
 
     @Bean(name = "sandboxSingleThreadedTaskExecutor")
     public Executor sandboxSingleThreadedTaskExecutor() {

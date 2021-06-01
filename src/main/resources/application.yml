@@ -136,7 +136,7 @@ cloud:
     cloudwatch:
       namespace: sandbox-manager-api
     region:
-      static: us-west-2
+      static: us-east-1
     stack:
       auto: false
 
@@ -193,4 +193,4 @@ api_endpoint_index:
     apiBaseURL_r4: http://${API_R4_HOST:localhost}:${API_R4_PORT:8070}
     apiBaseURL_r5: http://${API_R5_HOST:localhost}:${API_R5_PORT:8071}
 aws:
-  s3BucketName: sandbox-export-location
+  s3BucketName: interop-community-export

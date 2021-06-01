@@ -1,5 +1,6 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
@@ -126,7 +127,12 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             var transferManager = TransferManagerBuilder.standard()
                                                         .withS3Client(this.amazonS3)
                                                         .build();
-            transferManager.upload(this.s3BucketName, sandboxExportFileName, pipedInputStream, new ObjectMetadata());
+            try {
+                transferManager.upload(this.s3BucketName, sandboxExportFileName, pipedInputStream, new ObjectMetadata());
+                LOGGER.info("Exported sandbox url: " + this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()));
+            } catch(AmazonClientException e) {
+                LOGGER.error("Exception while uploading sandbox to s3 bucket", e);
+            }
             emailService.sendExportNotificationEmail(userService.findBySbmUserId(sbmUserId), this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()), sandboxName);
         };
     }
