@@ -104,12 +104,12 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
 
     @Async("sandboxSingleThreadedTaskExecutor")
     @Override
-    public void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken, String apiUrl) {
+    public void exportSandbox(Sandbox sandbox, User user, String bearerToken, String apiUrl) {
         try (final var pipedOutputStream = new PipedOutputStream();
              final var pipedInputStream = new PipedInputStream(pipedOutputStream)) {
             var sandboxExportFileName = UUID.randomUUID() + ".zip";
-            final var zipFileCreationRunner = new Thread(sandboxExportService.createZippedSandboxExport(sandbox, sbmUserId, bearerToken, apiUrl, pipedOutputStream));
-            final var s3BucketOutfileRunner = new Thread(sandboxExportService.sendToS3Bucket(pipedInputStream, sandboxExportFileName, sbmUserId, sandbox.getName()));
+            final var zipFileCreationRunner = new Thread(sandboxExportService.createZippedSandboxExport(sandbox, user.getSbmUserId(), bearerToken, apiUrl, pipedOutputStream));
+            final var s3BucketOutfileRunner = new Thread(sandboxExportService.sendToS3Bucket(pipedInputStream, sandboxExportFileName, user, sandbox.getName()));
             zipFileCreationRunner.start();
             s3BucketOutfileRunner.start();
             zipFileCreationRunner.join();

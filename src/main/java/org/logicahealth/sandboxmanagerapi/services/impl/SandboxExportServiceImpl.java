@@ -122,18 +122,18 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     @Override
-    public Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName, String sbmUserId, String sandboxName) {
+    public Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName, User user, String sandboxName) {
         return () -> {
             var transferManager = TransferManagerBuilder.standard()
                                                         .withS3Client(this.amazonS3)
                                                         .build();
             try {
                 transferManager.upload(this.s3BucketName, sandboxExportFileName, pipedInputStream, new ObjectMetadata());
-                LOGGER.info("Exported sandbox url: " + this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()));
+                LOGGER.debug("Exported sandbox url: " + this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()));
             } catch(AmazonClientException e) {
                 LOGGER.error("Exception while uploading sandbox to s3 bucket", e);
             }
-            emailService.sendExportNotificationEmail(userService.findBySbmUserId(sbmUserId), this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()), sandboxName);
+            emailService.sendExportNotificationEmail(user, this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()), sandboxName);
         };
     }
 

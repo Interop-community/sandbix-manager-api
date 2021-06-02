@@ -928,7 +928,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     public void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken) {
-        sandboxBackgroundTasksService.exportSandbox(sandbox, sbmUserId, bearerToken, getSandboxApiURL(sandbox));
+        sandboxBackgroundTasksService.exportSandbox(sandbox, userService.findBySbmUserId(sbmUserId), bearerToken, getSandboxApiURL(sandbox));
     }
 
     @Override

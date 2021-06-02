@@ -96,7 +96,7 @@ public class EmailServiceImpl implements EmailService {
             message.addResource("hspc-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
 //            sendEmailToMessaging(message);
             try {
-                sendEmailByJavaMail(message);
+                sendEmailByJavaMail(message, "email-sandbox-invite");
             } catch (MessagingException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e + " Email was not sent");
@@ -121,7 +121,7 @@ public class EmailServiceImpl implements EmailService {
             message.addVariable("s3resource", sandboxExportFile.toString());
 
             try {
-                sendEmailByJavaMail(message);
+                sendEmailByJavaMail(message, "email-sandbox-export");
             } catch (MessagingException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e + " Email was not sent");
@@ -129,7 +129,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    public void sendEmailByJavaMail(Message emailMessage)
+    public void sendEmailByJavaMail(Message emailMessage, String templateName)
             throws MessagingException {
 
         for (Message.Recipient recipient : emailMessage.getRecipients()) {
@@ -166,7 +166,7 @@ public class EmailServiceImpl implements EmailService {
             }
 
             // Create the HTML body using Thymeleaf
-            final String htmlContent = this.templateEngine.process("email-sandbox-invite", ctx);
+            final String htmlContent = this.templateEngine.process(templateName, ctx);
             messageHelper.setText(htmlContent, true /* isHtml */);
 
             // Send email
