@@ -1,5 +1,6 @@
 package org.logicahealth.sandboxmanagerapi.config;
 
+import com.amazonaws.regions.Regions;
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
@@ -93,6 +94,7 @@ public class SandboxManagerConfig {
     public static AmazonS3 amazonS3Client() {
         return AmazonS3ClientBuilder.standard()
                                     .withCredentials(new EnvironmentVariableCredentialsProvider())
+                                    .withRegion(Regions.US_EAST_1)
                                     .build();
     }
 
