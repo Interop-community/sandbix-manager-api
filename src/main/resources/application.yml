@@ -93,7 +93,7 @@ hspc:
     # How many sandbox creation tasks can run in parallel
     simultaneousSandboxCreationTasksLimit: 1
     authorization:
-      url: {AUTH_HOST}
+      url: ${AUTH_HOST}
       tokenEndpoint: ${hspc.platform.authorization.url}/token
       authorizeEndpoint: ${hspc.platform.authorization.url}/authorize
       adminAccess:
