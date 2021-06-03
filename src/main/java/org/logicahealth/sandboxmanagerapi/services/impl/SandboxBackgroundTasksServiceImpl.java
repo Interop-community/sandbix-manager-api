@@ -139,7 +139,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                 var appImages = new HashMap<String, Image>();
                 switch (zipEntryName) {
                     case "sandbox.sql":
-                        importSandboxDatabaseSchema(zipInputStream, newSandbox, sandboxApiURL, bearerToken);
+                        importSandboxDatabaseSchema(zipInputStream, newSandbox, sandboxApiURL, bearerToken, (String) sandboxVersions.get("hapiVersion"));
                         break;
                     case "users.json":
                     case "signature":
@@ -175,7 +175,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         }
     }
 
-    private void importSandboxDatabaseSchema(ZipInputStream zipInputStream, Sandbox newSandbox, String sandboxApiURL, String bearerToken) {
+    private void importSandboxDatabaseSchema(ZipInputStream zipInputStream, Sandbox newSandbox, String sandboxApiURL, String bearerToken, String hapiVersion) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set(HttpHeaders.AUTHORIZATION, "BEARER " + bearerToken);
@@ -188,7 +188,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             body.add("schema", new FileSystemResource(file));
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.postForEntity(sandboxApiURL + "/sandbox/import/" + newSandbox.getSandboxId(), requestEntity, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(sandboxApiURL + "/sandbox/import/" + newSandbox.getSandboxId() + "/" + hapiVersion, requestEntity, String.class);
             if (response.getStatusCode() != HttpStatus.CREATED) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create schema for sandbox " + newSandbox.getSandboxId());
             }
