@@ -11,7 +11,7 @@ spring:
 hspc:
   platform:
     authorization:
-      url: {AUTH_HOST}
+      url: ${AUTH_HOST}
       adminAccess:
         clientSecret: ${CLIENT_SECRET:secret}
     messaging:
