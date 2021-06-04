@@ -160,7 +160,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                         importLaunchScenarios(zipInputStream, gson, newSandbox, requestingUser, clientIdToApp, personaIdToPersona, cdsHookUrlToCdsHook);
                         break;
                     case "profiles.json":
-                        importProfiles(zipInputStream, gson);
+                        importProfiles(zipInputStream, gson, newSandbox, requestingUser);
                         break;
                     default:
                         if (zipEntryName.startsWith(SANDBOX_IMPORT_IMAGE_PREFIX)) {
@@ -344,7 +344,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         }
     }
 
-    private void importProfiles(ZipInputStream zipInputStream, Gson gson) {
+    private void importProfiles(ZipInputStream zipInputStream, Gson gson, Sandbox newSandbox, User requestingUser) {
         SandboxExportServiceImpl.SandboxFhirProfileDetail[] sandboxProfiles = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), SandboxExportServiceImpl.SandboxFhirProfileDetail[].class);
         for (SandboxExportServiceImpl.SandboxFhirProfileDetail sandboxFhirProfileDetail : sandboxProfiles) {
             var fhirProfiles = new ArrayList<FhirProfile>(sandboxFhirProfileDetail.getFhirProfiles().size());
@@ -352,8 +352,12 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             fhirProfileDetail.setFhirProfiles(fhirProfiles);
             fhirProfileDetail.setProfileName(sandboxFhirProfileDetail.getProfileName());
             fhirProfileDetail.setProfileId(sandboxFhirProfileDetail.getProfileId());
-            fhirProfileDetail.setStatus(FhirProfileStatus.CREATED);
+            fhirProfileDetail.setSandbox(newSandbox);
+            fhirProfileDetail.setCreatedBy(requestingUser);
+            fhirProfileDetail.setCreatedTimestamp(new Timestamp(new Date().getTime()));
             fhirProfileDetail.setLastUpdated(new Timestamp(new Date().getTime()));
+            fhirProfileDetail.setVisibility(Visibility.PUBLIC);
+            fhirProfileDetail.setStatus(FhirProfileStatus.CREATED);
             for (SandboxExportServiceImpl.SandboxFhirProfile sandboxFhirProfile : sandboxFhirProfileDetail.getFhirProfiles()) {
                 var fhirProfile = new FhirProfile();
                 fhirProfile.setFullUrl(sandboxFhirProfile.getFullUrl());
