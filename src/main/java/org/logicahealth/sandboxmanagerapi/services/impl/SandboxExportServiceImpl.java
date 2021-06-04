@@ -73,6 +73,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxExportServiceImpl.class.getName());
 
     private static final String FHIR_SERVER_VERSION = "platformVersion";
+    private static final String SANDBOX_SERVER_URL = "server";
     private static final String HAPI_VERSION = "hapiVersion";
     private static final String FHIR_VERSION = "fhirVersion";
     private static final String IMAGE_FOLDER = "img/";
@@ -101,10 +102,10 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     @Override
-    public Runnable createZippedSandboxExport(Sandbox sandbox, String sbmUserId, String bearerToken, String apiUrl, PipedOutputStream pipedOutputStream) {
+    public Runnable createZippedSandboxExport(Sandbox sandbox, String sbmUserId, String bearerToken, String apiUrl, PipedOutputStream pipedOutputStream, String server) {
         return () -> {
             var zipOutputStream = new ZipOutputStream(pipedOutputStream);
-            addSandboxFhirServerDetailsToZipFile(sandbox, zipOutputStream, bearerToken, apiUrl);
+            addSandboxFhirServerDetailsToZipFile(sandbox, zipOutputStream, bearerToken, apiUrl, server);
             addSandboxUserRolesAndInviteesToZipFile(sandbox.getSandboxId(), zipOutputStream);
             var appsManifests = addAppsManifestToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
             addUserPersonasToZipFile(sandbox.getSandboxId(), sbmUserId, zipOutputStream);
@@ -144,7 +145,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         return downloadLinkValidUntil.getTime();
     }
 
-    private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken, String apiUrl) {
+    private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken, String apiUrl, String server) {
         var response = getClientResponse(sandbox, bearerToken, SANDBOX_DOWNLOAD_URI, MediaType.APPLICATION_OCTET_STREAM, apiUrl);
         ZipInputStream zipInputStream = null;
         try (var osPipe = new PipedOutputStream();
@@ -154,8 +155,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
                            .subscribe(DataBufferUtils.releaseConsumer());
             zipInputStream = new ZipInputStream(isPipe);
             zipInputStream.getNextEntry();
-            addSandboxDetailsToZipFile(sandbox.getSandboxId(), zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)), apiUrl);
+            addSandboxDetailsToZipFile(sandbox.getSandboxId(), zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)), apiUrl, server);
             addSchemaHashToZipFile(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
+            addServerSignatureToZipFile(server, zipOutputStream);
             addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
         } catch (IOException e) {
             LOGGER.error("Exception while adding fhir server details for sandbox export", e);
@@ -173,12 +175,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private void addSchemaHashToZipFile(ZipInputStream zipInputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
         var signature = signSchemaHash(zipInputStream);
         try {
-            zipOutputStream.putNextEntry(new ZipEntry("signature"));
+            zipOutputStream.putNextEntry(new ZipEntry("schemaSignature"));
             zipOutputStream.write(signature.getBytes());
         } catch (IOException e) {
             LOGGER.error("Exception while adding zip file entry for schema signature", e);
         }
-
     }
 
     private String signSchemaHash(ZipInputStream schemaHashZipStream) {
@@ -189,6 +190,27 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             return Base64.encodeBase64String(cipher.doFinal(new String(schemaHashZipStream.readAllBytes(), StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException | IllegalBlockSizeException | BadPaddingException e) {
             LOGGER.error("Exception while signing schema hash for sandbox download", e);
+        }
+        return null;
+    }
+    private void addServerSignatureToZipFile(String server, ZipOutputStream zipOutputStream) {
+        var signature = signServer(server);
+        try {
+            zipOutputStream.putNextEntry(new ZipEntry("serverSignature"));
+            zipOutputStream.write(signature.getBytes());
+        } catch (IOException e) {
+            LOGGER.error("Exception while adding zip file entry for server signature", e);
+        }
+    }
+
+    private String signServer(String server) {
+        try {
+            var privateKey = retrievePrivateKey();
+            var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
+            return Base64.encodeBase64String(cipher.doFinal(server.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+            LOGGER.error("Exception while signing server for sandbox download", e);
         }
         return null;
     }
@@ -290,7 +312,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         return fhirServerVersionsMap;
     }
 
-    private void addSandboxDetailsToZipFile(String sandboxId, ZipOutputStream zipOutputStream, Map<String, String> fhirServerVersions, String sandboxApiURL) {
+    private void addSandboxDetailsToZipFile(String sandboxId, ZipOutputStream zipOutputStream, Map<String, String> fhirServerVersions, String sandboxApiURL, String server) {
         var sandbox = this.repository.findBySandboxId(sandboxId);
         var sandboxDetails = new HashMap<String, Object>();
         sandboxDetails.put("id", sandbox.getSandboxId());
@@ -300,6 +322,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         sandboxDetails.put(FHIR_SERVER_VERSION, fhirServerVersions.get(FHIR_SERVER_VERSION));
         sandboxDetails.put(HAPI_VERSION, fhirServerVersions.get(HAPI_VERSION));
         sandboxDetails.put(FHIR_VERSION, fhirServerVersions.get(FHIR_VERSION));
+        sandboxDetails.put(SANDBOX_SERVER_URL, server);
         try (var sandboxInputStream = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting()
                                                                                 .create()
                                                                                 .toJson(sandboxDetails)

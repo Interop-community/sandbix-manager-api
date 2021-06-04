@@ -134,7 +134,7 @@ public class SandboxController {
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
-        sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request));
+        sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request), getServer(request));
     }
 
     @PostMapping(value = "/import")

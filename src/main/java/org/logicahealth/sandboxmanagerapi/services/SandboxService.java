@@ -81,7 +81,7 @@ public interface SandboxService {
 
     SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId);
 
-    void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken);
+    void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken, String server);
 
     void generateKeyPair();
 
