@@ -60,6 +60,10 @@ public class SandboxController {
     private final SandboxActivityLogService sandboxActivityLogService;
     private final AuthorizationService authorizationService;
 
+    public static final int UNSECURE_PROTOCOL_PORT = 443;
+    public static final String SECURE_PROTOCOL = "https";
+    public static final int SECURE_PROTOCOL_PORT = 80;
+
     @Inject
     public SandboxController(final SandboxService sandboxService, final UserService userService,
                              final SandboxInviteService sandboxInviteService,
@@ -138,7 +142,7 @@ public class SandboxController {
     public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile) {
         var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
-        sandboxService.importSandbox(zipFile, requestingUser, authorizationService.getBearerToken(request));
+        sandboxService.importSandbox(zipFile, requestingUser, authorizationService.getBearerToken(request), getServer(request));
     }
 
     @PostMapping(value = "/import/{id}")
@@ -146,7 +150,16 @@ public class SandboxController {
     public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile, @PathVariable(value = "id") String sandboxId) {
         var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
-        sandboxService.importSandboxWithDifferentId(zipFile, sandboxId, requestingUser, authorizationService.getBearerToken(request));
+        sandboxService.importSandboxWithDifferentId(zipFile, sandboxId, requestingUser, authorizationService.getBearerToken(request), getServer(request));
+    }
+
+    private String getServer(HttpServletRequest request) {
+        var server = request.getScheme() + "://" + request.getServerName();
+        var serverPort = request.getServerPort();
+        if (server.startsWith(SECURE_PROTOCOL) && serverPort == SECURE_PROTOCOL_PORT || !server.startsWith(SECURE_PROTOCOL) && serverPort == UNSECURE_PROTOCOL_PORT) {
+            return server;
+        }
+        return server + ":" + serverPort;
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)

@@ -970,16 +970,16 @@ public class SandboxServiceImpl implements SandboxService {
 
     @Override
     @Transactional
-    public void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken) {
+    public void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
         checkForEmptyFile(zipFile);
-        startSandboxImport(zipFile, false, null, requestingUser, bearerToken);
+        startSandboxImport(zipFile, false, null, requestingUser, bearerToken, server);
     }
 
     @Override
     @Transactional
-    public void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser, String bearerToken) {
+    public void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser, String bearerToken, String server) {
         checkForEmptyFile(zipFile);
-        startSandboxImport(zipFile, true, sandboxId, requestingUser, bearerToken);
+        startSandboxImport(zipFile, true, sandboxId, requestingUser, bearerToken, server);
     }
 
     private void checkForEmptyFile(MultipartFile zipFile) {
@@ -988,7 +988,7 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private void startSandboxImport(MultipartFile zipFile, boolean createWithDifferentSandboxId, String sandboxId, User requestingUser, String bearerToken) {
+    private void startSandboxImport(MultipartFile zipFile, boolean createWithDifferentSandboxId, String sandboxId, User requestingUser, String bearerToken, String server) {
         ZipInputStream zipInputStream;
         try {
             zipInputStream = new ZipInputStream(zipFile.getInputStream());
@@ -999,7 +999,7 @@ public class SandboxServiceImpl implements SandboxService {
             Map sandboxVersions = new Gson().fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map.class);
             var newSandbox = createSandboxTableEntry(sandboxVersions, createWithDifferentSandboxId, sandboxId, requestingUser);
             sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
-            sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken);
+            sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken, server);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException while reading zip file.");
         }

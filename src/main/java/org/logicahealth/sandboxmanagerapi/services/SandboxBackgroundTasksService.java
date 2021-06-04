@@ -10,5 +10,5 @@ import java.util.zip.ZipInputStream;
 public interface SandboxBackgroundTasksService {
     void cloneSandboxSchema(final Sandbox newSandbox, final Sandbox clonedSandbox, final User user, final String bearerToken, final String sandboxApiURL) throws UnsupportedEncodingException;
     void exportSandbox(Sandbox sandbox, User user, String bearerToken, String apiUrl);
-    void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiUrl, String bearerToken);
+    void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiUrl, String bearerToken, String server);
 }

@@ -123,7 +123,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     @Override
     @Async("sandboxSingleThreadedTaskExecutor")
     @Transactional
-    public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiURL, String bearerToken) {
+    public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiURL, String bearerToken, String server) {
         newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
         requestingUser = userService.findBySbmUserId(requestingUser.getSbmUserId());
         try {
@@ -133,10 +133,10 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             Map<String, App> clientIdToApp = null;
             Map<String, UserPersona> personaIdToPersona = null;
             Map<String, CdsHook> cdsHookUrlToCdsHook = null;
+            var appImages = new HashMap<String, Image>();
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 zipEntryName = zipEntry.getName();
                 System.out.println("Zip Entry: " + zipEntryName);
-                var appImages = new HashMap<String, Image>();
                 switch (zipEntryName) {
                     case "sandbox.sql":
                         importSandboxDatabaseSchema(zipInputStream, newSandbox, sandboxApiURL, bearerToken, (String) sandboxVersions.get("hapiVersion"));
@@ -148,7 +148,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                         importSandboxUsers(zipInputStream, gson, requestingUser, newSandbox);
                         break;
                     case "apps.json":
-                        clientIdToApp = importSandboxApps(zipInputStream, gson, appImages, newSandbox, requestingUser);
+                        clientIdToApp = importSandboxApps(zipInputStream, gson, appImages, newSandbox, requestingUser, server);
                         break;
                     case "personas.json":
                         personaIdToPersona = importUserPersonas(zipInputStream, gson, newSandbox, requestingUser);
@@ -220,7 +220,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         }
     }
 
-    private Map<String, App> importSandboxApps(ZipInputStream zipInputStream, Gson gson, Map<String, Image> appImages, Sandbox newSandbox, User requestingUser) {
+    private Map<String, App> importSandboxApps(ZipInputStream zipInputStream, Gson gson, Map<String, Image> appImages, Sandbox newSandbox, User requestingUser, String server) {
         SandboxExportServiceImpl.AppManifestTemplate[] sandboxApps = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), SandboxExportServiceImpl.AppManifestTemplate[].class);
         Map<String, App> clientIdToApp = new HashMap<>(sandboxApps.length);
         Arrays.stream(sandboxApps).forEach(app -> {
@@ -244,6 +244,13 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             importedApp.setCopyType(CopyType.REPLICA);
             importedApp.setCustomApp(false);
             importedApp = appService.create(importedApp, newSandbox);
+            var logoUri = server + "/app/" + importedApp.getId() + "/image";
+            importedApp.setLogoUri(logoUri);
+            importedApp = appService.save(importedApp);
+            var image = new Image();
+            image.setBytes(appImages.get(app.getLogo()).getBytes());
+            image.setContentType(appImages.get(app.getLogo()).getContentType());
+            appService.updateAppImage(importedApp, image);
             clientIdToApp.put(savedClientId, importedApp);
         });
         return clientIdToApp;
