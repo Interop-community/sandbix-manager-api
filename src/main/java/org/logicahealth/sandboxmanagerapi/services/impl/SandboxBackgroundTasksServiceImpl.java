@@ -154,7 +154,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                         personaIdToPersona = importUserPersonas(zipInputStream, gson, newSandbox, requestingUser);
                         break;
                     case "cds-hooks.json":
-                        cdsHookUrlToCdsHook = importCdsHooks(zipInputStream, gson, newSandbox);
+                        cdsHookUrlToCdsHook = importCdsHooks(zipInputStream, gson, newSandbox, requestingUser);
                         break;
                     case "launch-scenarios.json":
                         importLaunchScenarios(zipInputStream, gson, newSandbox, requestingUser, clientIdToApp, personaIdToPersona, cdsHookUrlToCdsHook);
@@ -281,7 +281,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         return personaIdToPersona;
     }
 
-    private Map<String, CdsHook> importCdsHooks(ZipInputStream zipInputStream, Gson gson, Sandbox newSandbox) {
+    private Map<String, CdsHook> importCdsHooks(ZipInputStream zipInputStream, Gson gson, Sandbox newSandbox, User requestingUser) {
         Map[] sandboxCdsHooks = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map[].class);
         Map<String, CdsHook> cdsHookUrlToCdsHook = new HashMap<>();
         for (Map sandboxCdsHook : sandboxCdsHooks) {
@@ -303,6 +303,8 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                 cdsHooks.add(cdsHook);
                 cdsHookUrlToCdsHook.put(cdsHook.getHookUrl(), cdsHook);
             }
+            cdsHookServiceEndpoint.setCreatedBy(requestingUser);
+            cdsHookServiceEndpoint.setVisibility(Visibility.PUBLIC);
             cdsHookServiceEndpoint.setUrl((String) sandboxCdsHook.get("url"));
             cdsHookServiceEndpoint.setTitle((String) sandboxCdsHook.get("title"));
             cdsHookServiceEndpoint.setDescription((String) sandboxCdsHook.get("description"));
