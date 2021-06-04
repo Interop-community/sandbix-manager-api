@@ -244,13 +244,17 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             importedApp.setCopyType(CopyType.REPLICA);
             importedApp.setCustomApp(false);
             importedApp = appService.create(importedApp, newSandbox);
-            var logoUri = server + "/app/" + importedApp.getId() + "/image";
-            importedApp.setLogoUri(logoUri);
+            if (app.getLogo() != null && appImages.get(app.getLogo()) != null) {
+                var logoUri = server + "/app/" + importedApp.getId() + "/image";
+                importedApp.setLogoUri(logoUri);
+            }
             importedApp = appService.save(importedApp);
-            var image = new Image();
-            image.setBytes(appImages.get(app.getLogo()).getBytes());
-            image.setContentType(appImages.get(app.getLogo()).getContentType());
-            appService.updateAppImage(importedApp, image);
+            if (app.getLogo() != null && appImages.get(app.getLogo()) != null) {
+                var image = new Image();
+                image.setBytes(appImages.get(app.getLogo()).getBytes());
+                image.setContentType(appImages.get(app.getLogo()).getContentType());
+                appService.updateAppImage(importedApp, image);
+            }
             clientIdToApp.put(savedClientId, importedApp);
         });
         return clientIdToApp;
