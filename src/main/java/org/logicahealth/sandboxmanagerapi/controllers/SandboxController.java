@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -126,15 +127,25 @@ public class SandboxController {
     @GetMapping(value = "/download/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void downloadSandboxAndApps(HttpServletRequest request, @PathVariable(value = "id") String sandboxId, HttpServletResponse response) throws IOException {
-        response.setContentType("application/zip");
-        response.setHeader("Content-Disposition", "attachment;filename=sandbox.zip");
         var sbmUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
-        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
+        checkExportAllowedOnlyForAdminUsers(sandbox, userService.findBySbmUserId(authorizationService.getSystemUserId(request)));
         sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request), getServer(request));
+    }
+
+    private void checkExportAllowedOnlyForAdminUsers(Sandbox sandbox, User user) {
+        var adminUser = sandbox.getUserRoles()
+                               .stream()
+                               .filter(userRole -> userRole.getUser().getSbmUserId().equals(user.getSbmUserId()))
+                               .filter(userRole -> userRole.getRole() == Role.ADMIN)
+                               .findFirst();
+        if (adminUser.isEmpty()) {
+            throw new UnauthorizedUserException("User is not a sandbox administrator");
+        }
     }
 
     @PostMapping(value = "/import")

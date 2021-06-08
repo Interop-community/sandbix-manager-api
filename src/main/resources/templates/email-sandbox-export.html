@@ -34,11 +34,11 @@
         </div>
         <div style="padding: 15px 15px 30px 15px; font-family: Trebuchet, Arial, sans-serif; font-size:16px; background-color: #fff; color:rgba(0, 0, 0, 0.87);">
             <p>
-                Backup has been completed for sandbox <strong th:text="${sandboxName}">Backed Up Sandbox</strong>.
+                Your <strong th:text="${sandboxName}">Exported Sandbox</strong> Sandbox export has been completed.
             </p>
             <br />
             <p>
-                You can download the backup from <a th:href="@{${s3resource}}">here</a>.
+                Please download your exported sandbox as a zip file from <a th:href="@{${s3resource}}">here</a>. Link will expire in 48 hours.
             </p>
         </div>
     </div>
