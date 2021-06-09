@@ -110,7 +110,7 @@ public class EmailServiceImpl implements EmailService {
 
             Message message = new Message(true, Message.ENCODING);
 
-            message.setSubject(sandboxName + " Sandbox export is available for download");
+            message.setSubject(sandboxName + " Sandbox export is now available for download!");
             message.setAcceptHtmlMessage(true);
 
             message.setSenderEmail(HSPC_EMAIL);

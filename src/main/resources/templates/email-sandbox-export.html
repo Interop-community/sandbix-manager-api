@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title data-th-remove="all">Sandbox Invitation</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <style>
 
         .accept a {
@@ -24,21 +24,31 @@
             padding: 8px;
         }
 
+        p {
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
 <div style="padding: 10px;">
     <div style="text-align: center; min-width: 200px; margin: 0 auto 0 auto">
         <div style="background-color: #ffffff; padding: 4px 4px 2px 4px;">
-            <img style="height: auto; width: 300px; margin: 0 auto 0 auto" src="https://sandbox.interop.community/img/hspc-sndbx-logo.png" />
+            <img style="height: auto; width: 300px; margin: 0 auto 0 auto"
+                 src="https://sandbox.interop.community/img/hspc-sndbx-logo.png"/>
         </div>
         <div style="padding: 15px 15px 30px 15px; font-family: Trebuchet, Arial, sans-serif; font-size:16px; background-color: #fff; color:rgba(0, 0, 0, 0.87);">
             <p>
-                Your <strong th:text="${sandboxName}">Exported Sandbox</strong> Sandbox export has been completed.
+                The <strong th:text="${sandboxName}">Exported Sandbox</strong> Sandbox export is now complete.
             </p>
-            <br />
             <p>
-                Please download your exported sandbox as a zip file from <a th:href="@{${s3resource}}">here</a>. Link will expire in 48 hours.
+                You will be able to download your exported sandbox as a .zip file from <a th:href="@{${s3resource}}">here</a>.
+            </p>
+            <p>
+                Please note that this link will expire in <strong><u>48 hours</u></strong>.
+            </p>
+            <p>
+                Thank you for using the Meld Open-Source Sandbox!
             </p>
         </div>
     </div>
