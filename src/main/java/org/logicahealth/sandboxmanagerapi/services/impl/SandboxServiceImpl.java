@@ -38,7 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -991,7 +991,7 @@ public class SandboxServiceImpl implements SandboxService {
     private PublicKey retrievePublicKey() {
         try {
             var keyBytes = Files.readAllBytes(new File(PUBLIC_KEY_FILE_PATH).toPath());
-            var spec = new PKCS8EncodedKeySpec(keyBytes);
+            var spec = new X509EncodedKeySpec(keyBytes);
             return KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
                              .generatePublic(spec);
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {

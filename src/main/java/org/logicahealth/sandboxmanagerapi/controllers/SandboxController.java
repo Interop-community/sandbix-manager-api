@@ -173,9 +173,9 @@ public class SandboxController {
         return server + ":" + serverPort;
     }
 
-    @GetMapping(value = "/decryptSignature/{signature}")
+    @PostMapping(value = "/decryptSignature")
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody String decryptSignature(HttpServletRequest request, @PathVariable(value = "signature") String signature) {
+    public @ResponseBody String decryptSignature(@RequestBody String signature) {
         return sandboxService.decryptSignature(signature);
     }
 
