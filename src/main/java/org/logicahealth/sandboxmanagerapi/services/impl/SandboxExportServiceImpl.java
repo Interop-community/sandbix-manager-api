@@ -157,7 +157,6 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             zipInputStream.getNextEntry();
             addSandboxDetailsToZipFile(sandbox.getSandboxId(), zipOutputStream, Objects.requireNonNull(getZipEntryContents(zipInputStream)), apiUrl, server);
             addSchemaHashToZipFile(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
-            addServerSignatureToZipFile(server, zipOutputStream);
             addZipFileEntry(zipInputStream, zipInputStream.getNextEntry(), zipOutputStream);
         } catch (IOException e) {
             LOGGER.error("Exception while adding fhir server details for sandbox export", e);
@@ -193,27 +192,6 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         }
         return null;
     }
-    private void addServerSignatureToZipFile(String server, ZipOutputStream zipOutputStream) {
-        var signature = signServer(server);
-        try {
-            zipOutputStream.putNextEntry(new ZipEntry("serverSignature"));
-            zipOutputStream.write(signature.getBytes());
-        } catch (IOException e) {
-            LOGGER.error("Exception while adding zip file entry for server signature", e);
-        }
-    }
-
-    private String signServer(String server) {
-        try {
-            var privateKey = retrievePrivateKey();
-            var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            return Base64.encodeBase64String(cipher.doFinal(server.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-            LOGGER.error("Exception while signing server for sandbox download", e);
-        }
-        return null;
-    }
 
     private PrivateKey retrievePrivateKey() {
         try {
@@ -222,7 +200,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             return KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
                              .generatePrivate(spec);
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            LOGGER.error("Exception while retrieving private key sandbox download", e);
+            LOGGER.error("Exception while retrieving private key for sandbox export", e);
         }
         return null;
     }

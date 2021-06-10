@@ -3,6 +3,7 @@ package org.logicahealth.sandboxmanagerapi.services.impl;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -23,14 +24,21 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.inject.Inject;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
+import java.nio.file.Files;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -99,6 +107,7 @@ public class SandboxServiceImpl implements SandboxService {
     private static final String PRIVATE_KEY_FILE = "privateKey";
     private static final String PUBLIC_KEY_FILE = "publicKey";
     private static final String SANDBOX_ID_FILE = "sandbox.json";
+    private static final String PUBLIC_KEY_FILE_PATH = "KeyPair/publicKey";
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -967,6 +976,29 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
+    @Override
+    public String decryptSignature(String signature) {
+        try {
+            var publicKey = retrievePublicKey();
+            var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, publicKey);
+            return new String(cipher.doFinal(Base64.decodeBase64(signature)), StandardCharsets.UTF_8);
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private PublicKey retrievePublicKey() {
+        try {
+            var keyBytes = Files.readAllBytes(new File(PUBLIC_KEY_FILE_PATH).toPath());
+            var spec = new PKCS8EncodedKeySpec(keyBytes);
+            return KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
+                             .generatePublic(spec);
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            LOGGER.error("Exception while retrieving public key for decryption", e);
+        }
+        return null;
+    }
 
     @Override
     @Transactional

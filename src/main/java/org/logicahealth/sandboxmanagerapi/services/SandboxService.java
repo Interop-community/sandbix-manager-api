@@ -89,4 +89,5 @@ public interface SandboxService {
 
     void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser, String bearerToken, String server);
 
+    String decryptSignature(String signature);
 }
