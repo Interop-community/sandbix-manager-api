@@ -173,6 +173,12 @@ public class SandboxController {
         return server + ":" + serverPort;
     }
 
+    @GetMapping(value = "/decryptSignature/{signature}")
+    @ResponseStatus(HttpStatus.OK)
+    public @ResponseBody String decryptSignature(HttpServletRequest request, @PathVariable(value = "signature") String signature) {
+        return sandboxService.decryptSignature(signature);
+    }
+
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
     String checkForSandboxById(@RequestParam(value = "lookUpId") String id) {
