@@ -13,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.logicahealth.sandboxmanagerapi.model.*;
@@ -32,21 +31,10 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -69,6 +57,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private final FhirProfileDetailService fhirProfileDetailService;
     private final UserService userService;
     private final EmailService emailService;
+    private final SandboxEncryptionService sandboxEncryptionService;
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxExportServiceImpl.class.getName());
 
@@ -81,11 +70,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private static final String SANDBOX_DOWNLOAD_URI = "/sandbox/download";
     private static final String IMAGE_MIME_TYPE = "image/";
     private static final String IMAGE_NAME_PREFIX = "img";
-    private static final String KEY_PAIR_ALGORITHM = "RSA";
-    private static final String PRIVATE_KEY_FILE_PATH = "KeyPair/privateKey";
     private static final int DOWNLOAD_LINK_VALID_DAYS = 2;
 
-    public SandboxExportServiceImpl(@Value("${aws.s3BucketName}") String s3BucketName, AmazonS3 amazonS3, SandboxRepository repository, FhirProfileService fhirProfileService, CdsHookService cdsHookService, SandboxInviteService sandboxInviteService, AppService appService, UserPersonaService userPersonaService, CdsServiceEndpointService cdsServiceEndpointService, LaunchScenarioService launchScenarioService, FhirProfileDetailService fhirProfileDetailService, UserService userService, EmailService emailService) {
+    public SandboxExportServiceImpl(@Value("${aws.s3BucketName}") String s3BucketName, AmazonS3 amazonS3, SandboxRepository repository, FhirProfileService fhirProfileService, CdsHookService cdsHookService, SandboxInviteService sandboxInviteService, AppService appService, UserPersonaService userPersonaService, CdsServiceEndpointService cdsServiceEndpointService, LaunchScenarioService launchScenarioService, FhirProfileDetailService fhirProfileDetailService, UserService userService, EmailService emailService, SandboxEncryptionService sandboxEncryptionService) {
         this.s3BucketName = s3BucketName;
         this.amazonS3 = amazonS3;
         this.repository = repository;
@@ -99,6 +86,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         this.fhirProfileDetailService = fhirProfileDetailService;
         this.userService = userService;
         this.emailService = emailService;
+        this.sandboxEncryptionService = sandboxEncryptionService;
     }
 
     @Override
@@ -172,37 +160,14 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     private void addSchemaHashToZipFile(ZipInputStream zipInputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
-        var signature = signSchemaHash(zipInputStream);
         try {
+            var schemaHash = new String(zipInputStream.readAllBytes(), StandardCharsets.UTF_8);
+            var signature = sandboxEncryptionService.sign(schemaHash);
             zipOutputStream.putNextEntry(new ZipEntry("schemaSignature"));
             zipOutputStream.write(signature.getBytes());
         } catch (IOException e) {
             LOGGER.error("Exception while adding zip file entry for schema signature", e);
         }
-    }
-
-    private String signSchemaHash(ZipInputStream schemaHashZipStream) {
-        try {
-            var privateKey = retrievePrivateKey();
-            var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            return Base64.encodeBase64String(cipher.doFinal(new String(schemaHashZipStream.readAllBytes(), StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException | IllegalBlockSizeException | BadPaddingException e) {
-            LOGGER.error("Exception while signing schema hash for sandbox download", e);
-        }
-        return null;
-    }
-
-    private PrivateKey retrievePrivateKey() {
-        try {
-            var keyBytes = Files.readAllBytes(new File(PRIVATE_KEY_FILE_PATH).toPath());
-            var spec = new PKCS8EncodedKeySpec(keyBytes);
-            return KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
-                             .generatePrivate(spec);
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            LOGGER.error("Exception while retrieving private key for sandbox export", e);
-        }
-        return null;
     }
 
     private void addSandboxUserRolesAndInviteesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {

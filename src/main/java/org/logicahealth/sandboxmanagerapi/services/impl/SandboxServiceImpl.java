@@ -3,7 +3,6 @@ package org.logicahealth.sandboxmanagerapi.services.impl;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -24,25 +23,20 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.inject.Inject;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipInputStream;
 
@@ -79,6 +73,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${default-public-apps}")
     private String[] defaultPublicApps;
 
+    @Value("${hspc.platform.trustedDomainsApiUrl}")
+    private String trustedDomainsApiUrl;
+
     private UserService userService;
     private UserRoleService userRoleService;
     private UserPersonaService userPersonaService;
@@ -101,13 +98,7 @@ public class SandboxServiceImpl implements SandboxService {
     private static final int SANDBOXES_TO_RETURN = 2;
     private static final String CLONED_SANDBOX = "cloned";
     private static final String SAVED_SANDBOX = "saved";
-    private static final String KEY_PAIR_ALGORITHM = "RSA";
-    private static final int KEY_LENGTH = 1024;
-    private static final String KEY_STORAGE_PATH = "KeyPair";
-    private static final String PRIVATE_KEY_FILE = "privateKey";
-    private static final String PUBLIC_KEY_FILE = "publicKey";
     private static final String SANDBOX_ID_FILE = "sandbox.json";
-    private static final String PUBLIC_KEY_FILE_PATH = "KeyPair/publicKey";
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -940,65 +931,6 @@ public class SandboxServiceImpl implements SandboxService {
         sandboxBackgroundTasksService.exportSandbox(sandbox, userService.findBySbmUserId(sbmUserId), bearerToken, getSandboxApiURL(sandbox), server);
     }
 
-    @Override
-    public void generateKeyPair() {
-        if (keysExist()) {
-            return;
-        }
-        try {
-            var keyPairGenerator = KeyPairGenerator.getInstance(KEY_PAIR_ALGORITHM);
-            keyPairGenerator.initialize(KEY_LENGTH);
-            var keyPair = keyPairGenerator.generateKeyPair();
-            storeKey(KEY_STORAGE_PATH + "/" + PRIVATE_KEY_FILE, keyPair.getPrivate().getEncoded());
-            storeKey(KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE, keyPair.getPublic().getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("Exception while generating key pair", e);
-        }
-    }
-
-    private boolean keysExist() {
-        var keysDirectory = new File(KEY_STORAGE_PATH);
-        if (keysDirectory.isDirectory() && keysDirectory.exists()) {
-            var privateKeyFile = new File(KEY_STORAGE_PATH + "/" + PRIVATE_KEY_FILE);
-            var publicKeyFile = new File(KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE);
-            return privateKeyFile.isFile() && privateKeyFile.exists() && publicKeyFile.isFile() && publicKeyFile.exists();
-        }
-        return false;
-    }
-
-    private void storeKey(String keyFile, byte[] key) {
-        new File(KEY_STORAGE_PATH).mkdir();
-        try (var fileOutputStream = new FileOutputStream(new File(keyFile))) {
-            fileOutputStream.write(key);
-            fileOutputStream.flush();
-        } catch (IOException e) {
-            LOGGER.error("Exception while storing key pair", e);
-        }
-    }
-
-    @Override
-    public String decryptSignature(String signature) {
-        try {
-            var publicKey = retrievePublicKey();
-            var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, publicKey);
-            return new String(cipher.doFinal(Base64.decodeBase64(signature)), StandardCharsets.UTF_8);
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
-            throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private PublicKey retrievePublicKey() {
-        try {
-            var keyBytes = Files.readAllBytes(new File(PUBLIC_KEY_FILE_PATH).toPath());
-            var spec = new X509EncodedKeySpec(keyBytes);
-            return KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
-                             .generatePublic(spec);
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            LOGGER.error("Exception while retrieving public key for decryption", e);
-        }
-        return null;
-    }
 
     @Override
     @Transactional
@@ -1031,6 +963,7 @@ public class SandboxServiceImpl implements SandboxService {
             Map sandboxVersions = new Gson().fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map.class);
             var newSandbox = createSandboxTableEntry(sandboxVersions, createWithDifferentSandboxId, sandboxId, requestingUser);
             sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
+            checkIfExportedFromTrustedServer(sandboxVersions);
             sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken, server);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException while reading zip file.");
@@ -1083,4 +1016,25 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
+    private void checkIfExportedFromTrustedServer(Map sandboxVersions) {
+        var originServer = (String) sandboxVersions.get("server");
+        try {
+            var originServerUrl = new URL(originServer);
+            var originHost = originServerUrl.getHost();
+            var matchingDomains = getValidDomainsToImportFrom().stream()
+                                                               .filter(domain -> originHost.endsWith(domain))
+                                                               .collect(Collectors.toList());
+            if (matchingDomains.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Zip file cannot be imported from " + originServer + " as it is not trusted");
+            }
+        } catch (MalformedURLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while parsing " + originServer);
+        }
+    }
+
+    private List<String> getValidDomainsToImportFrom() {
+        var restTemplate = new RestTemplate();
+        var trustedDomains = restTemplate.getForObject(this.trustedDomainsApiUrl, List.class);
+        return (List<String>) trustedDomains;
+    }
 }

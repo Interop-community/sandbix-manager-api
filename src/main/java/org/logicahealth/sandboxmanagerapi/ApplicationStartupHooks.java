@@ -2,6 +2,7 @@ package org.logicahealth.sandboxmanagerapi;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.logicahealth.sandboxmanagerapi.services.SandboxEncryptionService;
 import org.logicahealth.sandboxmanagerapi.services.SandboxService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +15,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApplicationStartupHooks {
     private final SandboxService sandboxService;
+    private final SandboxEncryptionService sandboxEncryptionService;
     private static Logger LOGGER = LoggerFactory.getLogger(ApplicationStartupHooks.class.getName());
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
         sandboxService.deleteQueuedSandboxes();
-        sandboxService.generateKeyPair();
+        sandboxEncryptionService.generateKeyPair();
     }
 
 }

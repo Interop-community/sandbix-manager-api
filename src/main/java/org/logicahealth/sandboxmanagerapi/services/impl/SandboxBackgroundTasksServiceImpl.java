@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import lombok.AllArgsConstructor;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
@@ -28,7 +29,12 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,9 +54,10 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     private final UserService userService;
     private final UserPersonaService userPersonaService;
     private final CdsServiceEndpointService cdsServiceEndpointService;
-    private final CdsHookService cdsHookService;
     private final LaunchScenarioService launchScenarioService;
     private final FhirProfileDetailService fhirProfileDetailService;
+    private final SandboxEncryptionService sandboxEncryptionService;
+
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxBackgroundTasksServiceImpl.class.getName());
 
     private static final String SANDBOX_IMPORT_IMAGE_PREFIX = "img/";
@@ -123,7 +130,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     @Override
     @Async("sandboxSingleThreadedTaskExecutor")
     @Transactional
-    public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiURL, String bearerToken, String server) {
+    public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiURL, String bearerToken, String thisServer) {
         newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
         requestingUser = userService.findBySbmUserId(requestingUser.getSbmUserId());
         try {
@@ -134,21 +141,23 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             Map<String, UserPersona> personaIdToPersona = null;
             Map<String, CdsHook> cdsHookUrlToCdsHook = null;
             var appImages = new HashMap<String, Image>();
+            String decryptedSchemaSignature = null;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 zipEntryName = zipEntry.getName();
                 System.out.println("Zip Entry: " + zipEntryName);
                 switch (zipEntryName) {
                     case "sandbox.sql":
-                        importSandboxDatabaseSchema(zipInputStream, newSandbox, sandboxApiURL, bearerToken, (String) sandboxVersions.get("hapiVersion"));
+                        importSandboxDatabaseSchema(zipInputStream, newSandbox, sandboxApiURL, bearerToken, sandboxVersions, decryptedSchemaSignature);
                         break;
                     case "users.json":
-                    case "signature":
+                    case "schemaSignature":
+                        decryptedSchemaSignature = decryptSchemaSignature( zipInputStream,  (String) sandboxVersions.get("server"),  thisServer);
                         break;
                     case "users.csv":
                         importSandboxUsers(zipInputStream, gson, requestingUser, newSandbox);
                         break;
                     case "apps.json":
-                        clientIdToApp = importSandboxApps(zipInputStream, gson, appImages, newSandbox, requestingUser, server);
+                        clientIdToApp = importSandboxApps(zipInputStream, gson, appImages, newSandbox, requestingUser, thisServer);
                         break;
                     case "personas.json":
                         personaIdToPersona = importUserPersonas(zipInputStream, gson, newSandbox, requestingUser);
@@ -175,7 +184,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         }
     }
 
-    private void importSandboxDatabaseSchema(ZipInputStream zipInputStream, Sandbox newSandbox, String sandboxApiURL, String bearerToken, String hapiVersion) {
+    private void importSandboxDatabaseSchema(ZipInputStream zipInputStream, Sandbox newSandbox, String sandboxApiURL, String bearerToken, Map sandboxVersions, String decryptedSchemaSignature) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set(HttpHeaders.AUTHORIZATION, "BEARER " + bearerToken);
@@ -185,15 +194,90 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             var file = new File(fileName);
             var fileOutputStream = new FileOutputStream(file);
             IOUtils.copyLarge(zipInputStream, fileOutputStream);
+            checkForValidSchema(file, decryptedSchemaSignature);
             body.add("schema", new FileSystemResource(file));
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.postForEntity(sandboxApiURL + "/sandbox/import/" + newSandbox.getSandboxId() + "/" + hapiVersion, requestEntity, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(sandboxApiURL + "/sandbox/import/" + newSandbox.getSandboxId() + "/" + sandboxVersions.get("hapiVersion"), requestEntity, String.class);
             if (response.getStatusCode() != HttpStatus.CREATED) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create schema for sandbox " + newSandbox.getSandboxId());
             }
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create schema for sandbox " + newSandbox.getSandboxId(), e);
+        }
+    }
+
+    private void checkForValidSchema(File schemaFile, String decryptedSchemaSignature) {
+        var schemaHash = getSHA256Hash(schemaFile);
+        if (!schemaHash.equals(decryptedSchemaSignature)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Schema hash does not match");
+        }
+    }
+
+    private String getSHA256Hash(File schemaFile) {
+        MessageDigest messageDigest;
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error("Exception while hashing schema file", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while hashing schema file", e);
+        }
+        try (
+                var bufferedInputStream = new BufferedInputStream(new FileInputStream(schemaFile));
+                var digestInputStream = new DigestInputStream(bufferedInputStream, messageDigest)
+        ) {
+            while (digestInputStream.read() != -1) ;
+            return Hex.encodeHexString(messageDigest.digest());
+        } catch (IOException e) {
+            LOGGER.error("Exception while hashing schema file", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while hashing schema file", e);
+        }
+    }
+
+    private String decryptSchemaSignature(ZipInputStream zipInputStream, String originServerUrl, String thisServer) {
+        var schemaSignature = readFromZipInputStream(zipInputStream);
+        if (sandboxExportedFromThisServer(thisServer, originServerUrl)) {
+            return sandboxEncryptionService.decryptSignature(schemaSignature);
+        } else {
+            return decryptSchemaSignatureByCallingOriginServer(schemaSignature, originServerUrl);
+        }
+    }
+    
+    private String readFromZipInputStream(ZipInputStream zipInputStream) {
+        byte[] zipEntryContents = new byte[0];
+        try {
+            zipEntryContents = zipInputStream.readAllBytes();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read schema signature. ", e);
+        }
+        return new String(zipEntryContents);
+    }
+
+    private String decryptSchemaSignatureByCallingOriginServer(String schemaSignature, String originServerUrl) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("schema", schemaSignature);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.postForEntity(originServerUrl + "/sandbox/decryptSignature", requestEntity, String.class);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to decrypt schema signature by calling origin server");
+        }
+        return response.getBody();
+    }
+
+    private boolean sandboxExportedFromThisServer(String thisServer, String sandboxOriginServer) {
+        var thisServerHost = getHost(thisServer);
+        var sandboxOriginServerHost = getHost(sandboxOriginServer);
+        return thisServerHost.equals(sandboxOriginServerHost);
+    }
+
+    private String getHost(String serverUrl) {
+        try {
+            return new URL(serverUrl).getHost();
+        } catch (MalformedURLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to while trying to get host from url " + serverUrl);
         }
     }
 

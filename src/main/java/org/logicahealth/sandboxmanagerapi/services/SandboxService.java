@@ -83,11 +83,8 @@ public interface SandboxService {
 
     void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken, String server);
 
-    void generateKeyPair();
-
     void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server);
 
     void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser, String bearerToken, String server);
 
-    String decryptSignature(String signature);
 }

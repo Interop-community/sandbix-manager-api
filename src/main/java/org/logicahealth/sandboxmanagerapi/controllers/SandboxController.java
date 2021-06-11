@@ -60,22 +60,24 @@ public class SandboxController {
     private final UserAccessHistoryService userAccessHistoryService;
     private final SandboxActivityLogService sandboxActivityLogService;
     private final AuthorizationService authorizationService;
+    private final SandboxEncryptionService sandboxEncryptionService;
 
-    public static final int UNSECURE_PROTOCOL_PORT = 443;
+    public static final int UNSECURE_PROTOCOL_PORT = 80;
     public static final String SECURE_PROTOCOL = "https";
-    public static final int SECURE_PROTOCOL_PORT = 80;
+    public static final int SECURE_PROTOCOL_PORT = 443;
 
     @Inject
     public SandboxController(final SandboxService sandboxService, final UserService userService,
                              final SandboxInviteService sandboxInviteService,
                              final UserAccessHistoryService userAccessHistoryService, final SandboxActivityLogService sandboxActivityLogService,
-                             final AuthorizationService authorizationService) {
+                             final AuthorizationService authorizationService, SandboxEncryptionService sandboxEncryptionService) {
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
         this.userAccessHistoryService = userAccessHistoryService;
         this.sandboxActivityLogService = sandboxActivityLogService;
         this.authorizationService = authorizationService;
+        this.sandboxEncryptionService = sandboxEncryptionService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -176,7 +178,7 @@ public class SandboxController {
     @PostMapping(value = "/decryptSignature")
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody String decryptSignature(@RequestBody String signature) {
-        return sandboxService.decryptSignature(signature);
+        return sandboxEncryptionService.decryptSignature(signature);
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
