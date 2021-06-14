@@ -66,6 +66,9 @@ public class SandboxControllerTest {
     @MockBean
     private AuthorizationService authorizationService;
 
+    @MockBean
+    private SandboxEncryptionService sandboxEncryptionService;
+
     @Inject
     private SandboxController sandboxController;
 
