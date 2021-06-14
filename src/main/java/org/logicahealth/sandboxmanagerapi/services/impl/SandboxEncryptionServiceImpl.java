@@ -37,6 +37,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     @Override
     public void generateKeyPair() {
         if (keysExist()) {
+            LOGGER.info("Key pair already exists");
             return;
         }
         try {
@@ -59,7 +60,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
             return Base64.encodeBase64String(cipher.doFinal(key.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
             LOGGER.error("Exception while signing key", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while signing key");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while signing key", e);
         }
     }
 
@@ -71,7 +72,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
                              .generatePrivate(spec);
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             LOGGER.error("Exception while retrieving private key for signing key", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while retrieving private key for signing key");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while retrieving private key for signing key", e);
         }
     }
     @Override
@@ -82,7 +83,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
             cipher.init(Cipher.DECRYPT_MODE, publicKey);
             return new String(cipher.doFinal(Base64.decodeBase64(signature)), StandardCharsets.UTF_8);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while decrypting signature");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while decrypting signature", e);
         }
     }
 
@@ -94,7 +95,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
                              .generatePublic(spec);
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             LOGGER.error("Exception while retrieving public key for decryption", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while retrieving public key for decryption");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while retrieving public key for decryption", e);
         }
     }
 

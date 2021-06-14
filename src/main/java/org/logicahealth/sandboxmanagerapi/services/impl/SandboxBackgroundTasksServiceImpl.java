@@ -144,12 +144,13 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             String decryptedSchemaSignature = null;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 zipEntryName = zipEntry.getName();
-                System.out.println("Zip Entry: " + zipEntryName);
+                LOGGER.debug("Importing " + zipEntryName + " for sandbox " + newSandbox.getName());
                 switch (zipEntryName) {
                     case "sandbox.sql":
                         importSandboxDatabaseSchema(zipInputStream, newSandbox, sandboxApiURL, bearerToken, sandboxVersions, decryptedSchemaSignature);
                         break;
                     case "users.json":
+                        break;
                     case "schemaSignature":
                         decryptedSchemaSignature = decryptSchemaSignature( zipInputStream,  (String) sandboxVersions.get("server"),  thisServer);
                         break;
@@ -199,6 +200,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<String> response = restTemplate.postForEntity(sandboxApiURL + "/sandbox/import/" + newSandbox.getSandboxId() + "/" + sandboxVersions.get("hapiVersion"), requestEntity, String.class);
+            file.delete();
             if (response.getStatusCode() != HttpStatus.CREATED) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create schema for sandbox " + newSandbox.getSandboxId());
             }
