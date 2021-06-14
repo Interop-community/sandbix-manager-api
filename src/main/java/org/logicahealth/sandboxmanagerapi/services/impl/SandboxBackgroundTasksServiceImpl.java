@@ -256,17 +256,11 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     }
 
     private String decryptSchemaSignatureByCallingOriginServer(String schemaSignature, String originServerUrl) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("schema", schemaSignature);
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.postForEntity(originServerUrl + "/sandbox/decryptSignature", requestEntity, String.class);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to decrypt schema signature by calling origin server");
-        }
-        return response.getBody();
+        var restTemplate = new RestTemplate();
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var request = new HttpEntity<>(schemaSignature, headers);
+        return restTemplate.postForObject(originServerUrl + "/sandbox/decryptSignature", request, String.class);
     }
 
     private boolean sandboxExportedFromThisServer(String thisServer, String sandboxOriginServer) {
