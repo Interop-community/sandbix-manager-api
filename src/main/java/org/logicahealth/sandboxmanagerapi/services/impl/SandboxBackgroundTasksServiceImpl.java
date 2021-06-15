@@ -131,6 +131,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     @Async("sandboxSingleThreadedTaskExecutor")
     @Transactional
     public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiURL, String bearerToken, String thisServer) {
+        waitForDatabase();
         newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
         requestingUser = userService.findBySbmUserId(requestingUser.getSbmUserId());
         try {
@@ -182,6 +183,13 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             zipInputStream.close();
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to import zip file", e);
+        }
+    }
+
+    private void waitForDatabase() {
+        try {
+            Thread.sleep(3_000);
+        } catch (InterruptedException ignored) {
         }
     }
 
