@@ -962,6 +962,7 @@ public class SandboxServiceImpl implements SandboxService {
             }
             Map sandboxVersions = new Gson().fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map.class);
             var newSandbox = createSandboxTableEntry(sandboxVersions, createWithDifferentSandboxId, sandboxId, requestingUser);
+            addMember(newSandbox, requestingUser, Role.ADMIN);
             sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
             checkIfExportedFromTrustedServer(sandboxVersions);
             sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken, server);
