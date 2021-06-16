@@ -28,11 +28,11 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SandboxEncryptionServiceImpl.class.getName());
     private static final String KEY_PAIR_ALGORITHM = "RSA";
     private static final int KEY_LENGTH = 1024;
-    private static final String KEY_STORAGE_PATH = "KeyPair";
+    private static final String KEY_STORAGE_PATH = "/etc";
     private static final String PRIVATE_KEY_FILE = "privateKey";
     private static final String PUBLIC_KEY_FILE = "publicKey";
-    private static final String PUBLIC_KEY_FILE_PATH = "KeyPair/publicKey";
-    private static final String PRIVATE_KEY_FILE_PATH = "KeyPair/privateKey";
+    private static final String PUBLIC_KEY_FILE_PATH = KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE;
+    private static final String PRIVATE_KEY_FILE_PATH = KEY_STORAGE_PATH + "/" + PRIVATE_KEY_FILE;
 
     @Override
     public void generateKeyPair() {
@@ -44,15 +44,16 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
             var keyPairGenerator = KeyPairGenerator.getInstance(KEY_PAIR_ALGORITHM);
             keyPairGenerator.initialize(KEY_LENGTH);
             var keyPair = keyPairGenerator.generateKeyPair();
-            storeKey(KEY_STORAGE_PATH + "/" + PRIVATE_KEY_FILE, keyPair.getPrivate().getEncoded());
-            storeKey(KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE, keyPair.getPublic().getEncoded());
+            storeKey(PRIVATE_KEY_FILE_PATH, keyPair.getPrivate().getEncoded());
+            storeKey(PUBLIC_KEY_FILE_PATH, keyPair.getPublic().getEncoded());
+            LOGGER.info("Key pair created");
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("Exception while generating key pair", e);
         }
     }
 
     @Override
-    public String sign(String key) {
+    public String encrypt(String key) {
         try {
             var privateKey = retrievePrivateKey();
             var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
@@ -102,8 +103,8 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     private boolean keysExist() {
         var keysDirectory = new File(KEY_STORAGE_PATH);
         if (keysDirectory.isDirectory() && keysDirectory.exists()) {
-            var privateKeyFile = new File(KEY_STORAGE_PATH + "/" + PRIVATE_KEY_FILE);
-            var publicKeyFile = new File(KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE);
+            var privateKeyFile = new File(PRIVATE_KEY_FILE_PATH);
+            var publicKeyFile = new File(PUBLIC_KEY_FILE_PATH);
             return privateKeyFile.isFile() && privateKeyFile.exists() && publicKeyFile.isFile() && publicKeyFile.exists();
         }
         return false;

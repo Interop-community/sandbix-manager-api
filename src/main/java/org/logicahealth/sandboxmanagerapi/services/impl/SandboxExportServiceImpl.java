@@ -162,7 +162,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private void addSchemaHashToZipFile(ZipInputStream zipInputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
         try {
             var schemaHash = new String(zipInputStream.readAllBytes(), StandardCharsets.UTF_8);
-            var signature = sandboxEncryptionService.sign(schemaHash);
+            var signature = sandboxEncryptionService.encrypt(schemaHash);
             zipOutputStream.putNextEntry(new ZipEntry("schemaSignature"));
             zipOutputStream.write(signature.getBytes());
         } catch (IOException e) {
