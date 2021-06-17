@@ -28,7 +28,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SandboxEncryptionServiceImpl.class.getName());
     private static final String KEY_PAIR_ALGORITHM = "RSA";
     private static final int KEY_LENGTH = 1024;
-    private static final String KEY_STORAGE_PATH = "/etc";
+    private static final String KEY_STORAGE_PATH = "/KeyPair";
     private static final String PRIVATE_KEY_FILE = "privateKey";
     private static final String PUBLIC_KEY_FILE = "publicKey";
     private static final String PUBLIC_KEY_FILE_PATH = KEY_STORAGE_PATH + "/" + PUBLIC_KEY_FILE;
