@@ -156,7 +156,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                         decryptedSchemaSignature = decryptSchemaSignature( zipInputStream,  (String) sandboxVersions.get("server"),  thisServer);
                         break;
                     case "users.csv":
-                        importSandboxUsers(zipInputStream, gson, requestingUser, newSandbox);
+                        importSandboxUsers(zipInputStream, requestingUser, newSandbox);
                         break;
                     case "apps.json":
                         clientIdToApp = importSandboxApps(zipInputStream, gson, appImages, newSandbox, requestingUser, thisServer);
@@ -285,7 +285,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         }
     }
 
-    private void importSandboxUsers(ZipInputStream zipInputStream, Gson gson, User requestingUser, Sandbox newSandbox) {
+    private void importSandboxUsers(ZipInputStream zipInputStream, User requestingUser, Sandbox newSandbox) {
         var bufferedReader = new BufferedReader(new InputStreamReader(zipInputStream));
         var inviteeEmails = bufferedReader.lines()
                                           .map(string -> string.split(","))
