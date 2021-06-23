@@ -1023,7 +1023,7 @@ public class SandboxServiceImpl implements SandboxService {
             var originServerUrl = new URL(originServer);
             var originHost = originServerUrl.getHost();
             var matchingDomains = getValidDomainsToImportFrom().stream()
-                                                               .filter(domain -> originHost.endsWith(domain))
+                                                               .filter(originHost::endsWith)
                                                                .collect(Collectors.toList());
             if (matchingDomains.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Zip file cannot be imported from " + originServer + " as it is not trusted");
