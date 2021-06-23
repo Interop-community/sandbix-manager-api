@@ -45,7 +45,7 @@ spring:
           ssl:
             enable: false
           quitwait: false
-    username: AKIAZSHAHGWDPACREPTA
+    username: ${MAIL_USERNAME}
     password: ThisIsNotTheRightPW
   thymeleaf:
     cache: false
