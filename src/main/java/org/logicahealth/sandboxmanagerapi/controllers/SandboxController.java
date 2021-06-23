@@ -135,7 +135,7 @@ public class SandboxController {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
-        checkExportAllowedOnlyForAdminUsers(sandbox, userService.findBySbmUserId(authorizationService.getSystemUserId(request)));
+        checkExportAllowedOnlyForAdminUsers(sandbox, userService.findBySbmUserId(sbmUserId));
         sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request), getServer(request));
     }
 

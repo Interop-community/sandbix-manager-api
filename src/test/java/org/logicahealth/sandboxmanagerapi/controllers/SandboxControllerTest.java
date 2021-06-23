@@ -427,4 +427,39 @@ public class SandboxControllerTest {
         mvc.perform(get("/sandbox/creationStatus/sandboxId"));
     }
 
+    @Test(expected = NestedServletException.class)
+    public void onlyAdminUserCanExportSandbox() throws Exception {
+        var sandboxWithNoAdminUser = getSandboxWithNoAdminUser();
+        when(sandboxService.findBySandboxId(sandbox.getSandboxId())).thenReturn(sandboxWithNoAdminUser);
+        when(userService.findBySbmUserId(anyString())).thenReturn(user);
+        when(authorizationService.getSystemUserId(any())).thenReturn(user.getSbmUserId());
+        mvc.perform(get("/sandbox/download/sandboxId"));
+    }
+
+    private Sandbox getSandboxWithNoAdminUser() {
+        user = new User();
+        sandbox = new Sandbox();
+        user.setSbmUserId("me");
+        user.setId(1);
+        user2 = new User();
+        user2.setSbmUserId("removedUser");
+        user2.setId(2);
+        UserRole userRole = new UserRole();
+        UserRole userRole2 = new UserRole();
+        userRole.setUser(user);
+        userRole2.setUser(user2);
+        userRole.setRole(Role.USER);
+        userRole2.setRole(Role.USER);
+        List<UserRole> userRoles = new ArrayList<>();
+        userRoles.add(userRole);
+        userRoles.add(userRole2);
+        sandbox.setUserRoles(userRoles);
+        sandbox.setVisibility(Visibility.PRIVATE);
+        sandbox.setSandboxId("sandboxId");
+        sandbox.setCreatedBy(user);
+        sandbox.setId(1);
+        sandbox.setName("sandbox");
+        sandbox.setCreationStatus(SandboxCreationStatus.CREATED);
+        return sandbox;
+    }
 }
