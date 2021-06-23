@@ -55,7 +55,6 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private final CdsServiceEndpointService cdsServiceEndpointService;
     private final LaunchScenarioService launchScenarioService;
     private final FhirProfileDetailService fhirProfileDetailService;
-    private final UserService userService;
     private final EmailService emailService;
     private final SandboxEncryptionService sandboxEncryptionService;
 
@@ -84,7 +83,6 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         this.cdsServiceEndpointService = cdsServiceEndpointService;
         this.launchScenarioService = launchScenarioService;
         this.fhirProfileDetailService = fhirProfileDetailService;
-        this.userService = userService;
         this.emailService = emailService;
         this.sandboxEncryptionService = sandboxEncryptionService;
     }
