@@ -23,10 +23,7 @@ package org.logicahealth.sandboxmanagerapi.controllers;
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.logicahealth.sandboxmanagerapi.model.Sandbox;
-import org.logicahealth.sandboxmanagerapi.model.SystemRole;
-import org.logicahealth.sandboxmanagerapi.model.User;
-import org.logicahealth.sandboxmanagerapi.model.UserPersona;
+import org.logicahealth.sandboxmanagerapi.model.*;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +88,7 @@ public class UserController {
             user = createUserIfNotExists(sbmUserId, oauthUsername, oauthUserEmail);
         } catch (InterruptedException e) {
             LOGGER.error("User create thread interrupted.", e);
-        } catch(Exception e) {
+        } catch (Exception e) {
             LOGGER.error("Exception handling the creation of a user.", e);
         } finally {
             // thread will be released in the event of an exception or successful user return
@@ -170,6 +167,13 @@ public class UserController {
             sandbox = sandboxService.findBySandboxId(sandboxId);
             if (sandbox == null) {
                 throw new ResourceNotFoundException("Sandbox " + sandboxId + " not found.");
+            }
+            var sandboxUser = sandbox.getUserRoles()
+                                     .stream()
+                                     .filter(userRole -> userRole.getUser().getSbmUserId().equals(user.getSbmUserId()))
+                                     .findFirst();
+            if (sandboxUser.isEmpty() || sandboxUser.get().getRole() != Role.ADMIN) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body("User is not authorized.");
             }
         } catch (JSONException e) {
             LOGGER.error("JSON Error reading entity: " + sandboxJSONString, e);
