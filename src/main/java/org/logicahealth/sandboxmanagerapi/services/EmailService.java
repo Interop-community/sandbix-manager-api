@@ -10,5 +10,5 @@ public interface EmailService {
 
     void sendEmail(final User inviter, final User invitee, Sandbox sandbox, int invitationId) throws IOException;
     void sendExportNotificationEmail(User user, URL sandboxExportFile, String sandboxName);
-
+    void sendImportErrorNotificationEmail(User user, String sandboxName);
 }

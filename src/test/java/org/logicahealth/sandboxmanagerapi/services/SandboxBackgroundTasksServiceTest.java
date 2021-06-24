@@ -35,7 +35,8 @@ public class SandboxBackgroundTasksServiceTest {
     private LaunchScenarioService launchScenarioService = mock(LaunchScenarioService.class);
     private FhirProfileDetailService fhirProfileDetailService = mock(FhirProfileDetailService.class);
     private SandboxEncryptionService sandboxEncryptionService = mock(SandboxEncryptionService.class);
-    private final SandboxBackgroundTasksService sandboxBackgroundTasksService = new SandboxBackgroundTasksServiceImpl(httpClient, repository, userAccessHistoryService, sandboxExportService, sandboxInviteService, appService, userService, userPersonaService, cdsServiceEndpointService, launchScenarioService, fhirProfileDetailService, sandboxEncryptionService);
+    private EmailService emailService = mock(EmailService.class);
+    private final SandboxBackgroundTasksService sandboxBackgroundTasksService = new SandboxBackgroundTasksServiceImpl(httpClient, repository, userAccessHistoryService, sandboxExportService, sandboxInviteService, appService, userService, userPersonaService, cdsServiceEndpointService, launchScenarioService, fhirProfileDetailService, sandboxEncryptionService, emailService);
 
     private final Sandbox sandbox = spy(Sandbox.class);
     private final Sandbox newSandbox = spy(Sandbox.class);

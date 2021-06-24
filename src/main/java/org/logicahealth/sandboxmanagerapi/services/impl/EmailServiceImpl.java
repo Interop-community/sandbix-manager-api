@@ -129,6 +129,30 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Override
+    public void sendImportErrorNotificationEmail(User user, String sandboxName) {
+        if (sendEmail) {
+
+            Message message = new Message(true, Message.ENCODING);
+
+            message.setSubject(sandboxName + " Sandbox import failed!");
+            message.setAcceptHtmlMessage(true);
+
+            message.setSenderEmail(HSPC_EMAIL);
+            message.addRecipient(user.getName(), user.getEmail().trim());
+
+            message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("sandboxName", sandboxName);
+
+            try {
+                sendEmailByJavaMail(message, "email-sandbox-import-error");
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e + " Email was not sent");
+            }
+        }
+    }
+
     public void sendEmailByJavaMail(Message emailMessage, String templateName)
             throws MessagingException {
 

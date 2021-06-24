@@ -57,6 +57,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     private final LaunchScenarioService launchScenarioService;
     private final FhirProfileDetailService fhirProfileDetailService;
     private final SandboxEncryptionService sandboxEncryptionService;
+    private final EmailService emailService;
 
     private static Logger LOGGER = LoggerFactory.getLogger(SandboxBackgroundTasksServiceImpl.class.getName());
 
@@ -181,8 +182,9 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                 updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.CREATED);
             }
             zipInputStream.close();
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to import zip file", e);
+        } catch (Exception e) {
+            emailService.sendImportErrorNotificationEmail(requestingUser, newSandbox.getName());
+            LOGGER.error("Failed to import zip file", e);
         }
     }
 
