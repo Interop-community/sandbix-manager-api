@@ -154,6 +154,30 @@ public class UserController {
         return ResponseEntity.status(org.springframework.http.HttpStatus.OK).body("User is authorized.");
     }
 
+    @PostMapping(value = "/authorizeExportImport")
+    @Transactional
+    public ResponseEntity authorizeUserForExportImport(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
+        String userId = authorizationService.getSystemUserId(request);
+        User user = userService.findBySbmUserId(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found.");
+        }
+        Sandbox sandbox;
+
+        try {
+            JSONObject sandboxJSON = new JSONObject(sandboxJSONString);
+            String sandboxId = sandboxJSON.getString("sandbox");
+            sandbox = sandboxService.findBySandboxId(sandboxId);
+            if (sandbox == null) {
+                throw new ResourceNotFoundException("Sandbox " + sandboxId + " not found.");
+            }
+        } catch (JSONException e) {
+            LOGGER.error("JSON Error reading entity: " + sandboxJSONString, e);
+            throw new RuntimeException(e);
+        }
+        return ResponseEntity.status(org.springframework.http.HttpStatus.OK).body("User is authorized.");
+    }
+
     private User createUserIfNotExists(String sbmUserId, String oauthUsername, String oauthUserEmail) {
         User user = userService.findBySbmUserId(sbmUserId);
         if (user == null) {

@@ -132,7 +132,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken, String apiUrl, String server) {
-        var response = getClientResponse(sandbox, bearerToken, SANDBOX_DOWNLOAD_URI, MediaType.APPLICATION_OCTET_STREAM, apiUrl);
+        var response = getClientResponse(sandbox, bearerToken, apiUrl);
         ZipInputStream zipInputStream = null;
         try (var osPipe = new PipedOutputStream();
              var isPipe = new PipedInputStream(osPipe)) {
@@ -193,15 +193,15 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         addSandboxUsersToZipFile(sandboxUsers, zipOutputStream);
     }
 
-    private ClientResponse getClientResponse(Sandbox sandbox, String bearerToken, String apiUri, MediaType mediaType, String apiUrl) {
-        String url = apiUrl + apiUri;
+    private ClientResponse getClientResponse(Sandbox sandbox, String bearerToken, String apiUrl) {
+        String url = apiUrl + SandboxExportServiceImpl.SANDBOX_DOWNLOAD_URI + "/" + sandbox.getSandboxId();
         var webClient = WebClient.builder()
                                  .baseUrl(apiUrl)
                                  .defaultHeader("Authorization", "BEARER " + bearerToken)
                                  .build();
         var response = webClient.get()
-                                .uri(apiUri)
-                                .accept(mediaType)
+                                .uri(SandboxExportServiceImpl.SANDBOX_DOWNLOAD_URI + "/" + sandbox.getSandboxId())
+                                .accept(MediaType.APPLICATION_OCTET_STREAM)
                                 .exchange()
                                 .block();
         if (response == null) {
