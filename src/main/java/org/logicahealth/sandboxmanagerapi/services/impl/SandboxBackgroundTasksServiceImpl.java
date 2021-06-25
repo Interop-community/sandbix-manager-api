@@ -179,6 +179,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                         }
                 }
                 updateSandboxCreationStatus(newSandbox, SandboxCreationStatus.CREATED);
+                this.userAccessHistoryService.saveUserAccessInstance(newSandbox, requestingUser);
             }
             zipInputStream.close();
         } catch (IOException e) {
@@ -290,6 +291,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         var inviteeEmails = bufferedReader.lines()
                                           .map(string -> string.split(","))
                                           .flatMap(Arrays::stream)
+                                          .filter(sandboxUserEmail -> !sandboxUserEmail.equals(requestingUser.getEmail()))
                                           .collect(Collectors.toList());
         inviteeEmails.forEach(inviteeEmail -> inviteUser(inviteeEmail, requestingUser, newSandbox));
     }
