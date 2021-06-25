@@ -67,11 +67,11 @@ BEGIN
             1,
             null,
             "https://healthservices.atlassian.net/wiki/spaces/HSPC/pages/64159752/For+Developers",
-            "Perform a SMART launch at http://localhost:9090/fhir-app/launch.html using the client: my_web_app.",
+            "Perform a SMART launch at http://localhost:8000/fhir-app/launch.html using the client: my_web_app.",
             "HSPC",'
             '\"', copy_type, '\",
             (SELECT id FROM sandman.sandbox WHERE sandbox_id=\"', current_sandbox_id, '\"),
-            "http://localhost:9090/fhir-app/launch.html",
+            "http://localhost:8000/fhir-app/launch.html",
             "https://content.hspconsortium.org/images/my-web-app/logo/my.png",
             "My Web App"
           ),
