@@ -318,7 +318,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         Arrays.stream(sandboxApps).forEach(app -> {
             var importedApp = new App();
             importedApp.setSandbox(newSandbox);
-            importedApp.setVisibility(Visibility.PRIVATE);
+            importedApp.setVisibility(Visibility.PUBLIC);
             importedApp.setCreatedBy(requestingUser);
             importedApp.setClientId(app.getClientId());
             var savedClientId = app.getClientId();
