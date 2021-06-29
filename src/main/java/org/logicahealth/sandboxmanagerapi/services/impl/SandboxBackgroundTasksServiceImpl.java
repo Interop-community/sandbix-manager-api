@@ -154,7 +154,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                     case "users.json":
                         break;
                     case "schemaSignature":
-                        decryptedSchemaSignature = decryptSchemaSignature( zipInputStream,  (String) sandboxVersions.get("server"),  thisServer);
+                        decryptedSchemaSignature = decryptSchemaSignature(zipInputStream, (String) sandboxVersions.get("server"), thisServer);
                         break;
                     case "users.csv":
                         importSandboxUsers(zipInputStream, requestingUser, newSandbox);
@@ -255,7 +255,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             return decryptSchemaSignatureByCallingOriginServer(schemaSignature, originServerUrl);
         }
     }
-    
+
     private String readFromZipInputStream(ZipInputStream zipInputStream) {
         byte[] zipEntryContents = new byte[0];
         try {
@@ -429,7 +429,20 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             launchScenario.setCdsHook(cdsHookUrlToCdsHook.get(sandboxLaunchScenario.getCdsHookUrl()));
             var contextParams = sandboxLaunchScenario.getContextParams();
             if (contextParams != null) {
-                launchScenario.setContext(new ObjectMapper().convertValue(contextParams, JsonNode.class));
+                var launchScenarioContext = new ArrayList<ContextParams>();
+                if (contextParams.get("userId") != null) {
+                    var contextParam = new ContextParams();
+                    contextParam.setName("userId");
+                    contextParam.setValue(contextParams.get("userId"));
+                    launchScenarioContext.add(contextParam);
+                }
+                if (contextParams.get("patientId") != null) {
+                    var contextParam = new ContextParams();
+                    contextParam.setName("patientId");
+                    contextParam.setValue(contextParams.get("patientId"));
+                    launchScenarioContext.add(contextParam);
+                }
+                launchScenario.setContextParams(launchScenarioContext);
             }
             launchScenario.setApp(clientIdToApp.get(sandboxLaunchScenario.getClientId()));
             launchScenarioService.create(launchScenario);
