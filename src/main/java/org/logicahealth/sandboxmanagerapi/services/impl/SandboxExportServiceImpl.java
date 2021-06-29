@@ -465,11 +465,13 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     @Getter
     public static class SandboxUserPersona {
+        private final String fhirName;
         private final String personaUserId;
         private final String password;
         private final String resourceUrl;
 
         public SandboxUserPersona(UserPersona userPersona) {
+            this.fhirName = userPersona.getFhirName();
             this.personaUserId = userPersona.getPersonaUserId();
             this.password = userPersona.getPassword();
             this.resourceUrl = userPersona.getResourceUrl();

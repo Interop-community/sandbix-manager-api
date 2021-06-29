@@ -158,14 +158,6 @@ public class SandboxController {
         sandboxService.importSandbox(zipFile, requestingUser, authorizationService.getBearerToken(request), getServer(request));
     }
 
-    @PostMapping(value = "/import/{id}")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile, @PathVariable(value = "id") String sandboxId) {
-        var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
-        authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
-        sandboxService.importSandboxWithDifferentId(zipFile, sandboxId, requestingUser, authorizationService.getBearerToken(request), getServer(request));
-    }
-
     private String getServer(HttpServletRequest request) {
         var server = request.getScheme() + "://" + request.getServerName();
         var serverPort = request.getServerPort();

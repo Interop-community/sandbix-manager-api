@@ -85,6 +85,4 @@ public interface SandboxService {
 
     void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server);
 
-    void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser, String bearerToken, String server);
-
 }

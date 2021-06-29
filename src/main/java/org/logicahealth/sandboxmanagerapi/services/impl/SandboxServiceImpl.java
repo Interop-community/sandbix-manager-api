@@ -931,28 +931,19 @@ public class SandboxServiceImpl implements SandboxService {
         sandboxBackgroundTasksService.exportSandbox(sandbox, userService.findBySbmUserId(sbmUserId), bearerToken, getSandboxApiURL(sandbox), server);
     }
 
-
     @Override
     @Transactional
     public void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
         checkForEmptyFile(zipFile);
-        startSandboxImport(zipFile, false, null, requestingUser, bearerToken, server);
+        startSandboxImport(zipFile, requestingUser, bearerToken, server);
     }
-
-    @Override
-    @Transactional
-    public void importSandboxWithDifferentId(MultipartFile zipFile, String sandboxId, User requestingUser, String bearerToken, String server) {
-        checkForEmptyFile(zipFile);
-        startSandboxImport(zipFile, true, sandboxId, requestingUser, bearerToken, server);
-    }
-
     private void checkForEmptyFile(MultipartFile zipFile) {
         if (zipFile.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Failed to import empty file.");
         }
     }
 
-    private void startSandboxImport(MultipartFile zipFile, boolean createWithDifferentSandboxId, String sandboxId, User requestingUser, String bearerToken, String server) {
+    private void startSandboxImport(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
         ZipInputStream zipInputStream;
         try {
             zipInputStream = new ZipInputStream(zipFile.getInputStream());
@@ -961,7 +952,7 @@ public class SandboxServiceImpl implements SandboxService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expecting sandbox.json as first zip file entry.");
             }
             Map sandboxVersions = new Gson().fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map.class);
-            var newSandbox = createSandboxTableEntry(sandboxVersions, createWithDifferentSandboxId, sandboxId, requestingUser);
+            var newSandbox = createSandboxTableEntry(sandboxVersions, requestingUser);
             addMember(newSandbox, requestingUser, Role.ADMIN);
             sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
             checkIfExportedFromTrustedServer(sandboxVersions);
@@ -971,13 +962,9 @@ public class SandboxServiceImpl implements SandboxService {
         }
     }
 
-    private Sandbox createSandboxTableEntry(Map sandboxVersions, boolean createWithNewSandboxId, String sandboxId, User requestingUser) {
+    private Sandbox createSandboxTableEntry(Map sandboxVersions, User requestingUser) {
         var newSandbox = new Sandbox();
-        if (createWithNewSandboxId) {
-            newSandbox.setSandboxId(sandboxId);
-        } else {
-            newSandbox.setSandboxId((String) sandboxVersions.get("id"));
-        }
+        newSandbox.setSandboxId((String) sandboxVersions.get("id"));
         newSandbox.setApiEndpointIndex(FhirVersion.getFhirVersion((String) sandboxVersions.get("fhirVersion")).getEndpointIndex());
         if (repository.findBySandboxId(newSandbox.getSandboxId()) != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sandbox already exists with id " + newSandbox.getSandboxId());

@@ -362,7 +362,7 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             newUserPersona.setFhirId(resourceUrlComponents.length > 1 ? resourceUrlComponents[1] : "");
             String[] personaSplit = userPersona.getPersonaUserId()
                                                .split("@");
-            newUserPersona.setFhirName(personaSplit[0]);
+            newUserPersona.setFhirName(userPersona.getFhirName());
             newUserPersona.setPassword(userPersona.getPassword());
             newUserPersona.setPersonaName(personaSplit[0]);
             newUserPersona.setPersonaUserId(personaSplit[0] + "@" + newSandbox.getSandboxId());
