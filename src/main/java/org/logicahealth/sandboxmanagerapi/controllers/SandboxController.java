@@ -27,12 +27,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -56,18 +60,24 @@ public class SandboxController {
     private final UserAccessHistoryService userAccessHistoryService;
     private final SandboxActivityLogService sandboxActivityLogService;
     private final AuthorizationService authorizationService;
+    private final SandboxEncryptionService sandboxEncryptionService;
+
+    public static final int UNSECURE_PROTOCOL_PORT = 80;
+    public static final String SECURE_PROTOCOL = "https";
+    public static final int SECURE_PROTOCOL_PORT = 443;
 
     @Inject
     public SandboxController(final SandboxService sandboxService, final UserService userService,
                              final SandboxInviteService sandboxInviteService,
                              final UserAccessHistoryService userAccessHistoryService, final SandboxActivityLogService sandboxActivityLogService,
-                             final AuthorizationService authorizationService) {
+                             final AuthorizationService authorizationService, SandboxEncryptionService sandboxEncryptionService) {
         this.sandboxService = sandboxService;
         this.userService = userService;
         this.sandboxInviteService = sandboxInviteService;
         this.userAccessHistoryService = userAccessHistoryService;
         this.sandboxActivityLogService = sandboxActivityLogService;
         this.authorizationService = authorizationService;
+        this.sandboxEncryptionService = sandboxEncryptionService;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -106,13 +116,61 @@ public class SandboxController {
 
     @GetMapping(value = "/creationStatus/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody SandboxCreationStatusQueueOrder getSandboxCreationStatus(HttpServletRequest request, @PathVariable (value = "id") String sandboxId) {
+    public @ResponseBody
+    SandboxCreationStatusQueueOrder getSandboxCreationStatus(HttpServletRequest request, @PathVariable(value = "id") String sandboxId) {
         authorizationService.checkUserAuthorization(request, authorizationService.getSystemUserId(request));
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
         }
         return sandboxService.getQueuedCreationStatus(sandbox.getSandboxId());
+    }
+
+    @GetMapping(value = "/download/{id}", produces = APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void downloadSandboxAndApps(HttpServletRequest request, @PathVariable(value = "id") String sandboxId, HttpServletResponse response) throws IOException {
+        var sbmUserId = authorizationService.getSystemUserId(request);
+        Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
+        if (sandbox == null) {
+            throw new ResourceNotFoundException("Sandbox not found.");
+        }
+        authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
+        checkExportAllowedOnlyForAdminUsers(sandbox, userService.findBySbmUserId(sbmUserId));
+        sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request), getServer(request));
+    }
+
+    private void checkExportAllowedOnlyForAdminUsers(Sandbox sandbox, User user) {
+        var adminUser = sandbox.getUserRoles()
+                               .stream()
+                               .filter(userRole -> userRole.getUser().getSbmUserId().equals(user.getSbmUserId()))
+                               .filter(userRole -> userRole.getRole() == Role.ADMIN)
+                               .findFirst();
+        if (adminUser.isEmpty()) {
+            throw new UnauthorizedUserException("User is not a sandbox administrator");
+        }
+    }
+
+    @PostMapping(value = "/import")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile) {
+        var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
+        authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
+        sandboxService.importSandbox(zipFile, requestingUser, authorizationService.getBearerToken(request), getServer(request));
+    }
+
+    private String getServer(HttpServletRequest request) {
+        var server = request.getScheme() + "://" + request.getServerName();
+        var serverPort = request.getServerPort();
+        if (server.startsWith(SECURE_PROTOCOL) && serverPort == SECURE_PROTOCOL_PORT || !server.startsWith(SECURE_PROTOCOL) && serverPort == UNSECURE_PROTOCOL_PORT) {
+            return server;
+        }
+        return server + ":" + serverPort;
+    }
+
+    @PostMapping(value = "/decryptSignature")
+    @ResponseStatus(HttpStatus.OK)
+    public @ResponseBody String decryptSignature(@RequestBody String signature) {
+        return sandboxEncryptionService.decryptSignature(signature);
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
@@ -294,10 +352,10 @@ public class SandboxController {
      */
     private boolean canRemoveUser(Sandbox sandbox, User removedUser) {
         Optional<UserRole> first = sandbox.getUserRoles()
-                .stream()
-                .filter(u -> u.getUser().getId().equals(removedUser.getId())
-                        && isAdminUser(u))
-                .findFirst();
+                                          .stream()
+                                          .filter(u -> u.getUser().getId().equals(removedUser.getId())
+                                                  && isAdminUser(u))
+                                          .findFirst();
 
         return !first.isPresent() || sandbox.getUserRoles().stream().filter(this::isAdminUser).count() > 1;
     }

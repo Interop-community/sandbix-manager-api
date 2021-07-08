@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.UUID;
 
 @Service
@@ -36,9 +37,9 @@ import java.util.UUID;
 public class EmailServiceImpl implements EmailService {
     private static Logger LOGGER = LoggerFactory.getLogger(EmailService.class.getName());
 
-    private static final String HSPC_EMAIL = "noreply@interop.community"; // "no-reply@interop.community";
+    private static final String HSPC_EMAIL = "noreply@interop.community";
     private static final String PNG_MIME = "image/png";
-    private static final String EMAIL_SUBJECT = "Logica Sandbox Invitation";
+    private static final String EMAIL_SUBJECT = "Interop Community Sandbox Invitation";
     private static final String HSPC_LOGO_IMAGE = "templates\\hspc-sndbx-logo.png";
 
     @Value("${hspc.platform.messaging.sendEmail}")
@@ -95,7 +96,7 @@ public class EmailServiceImpl implements EmailService {
             message.addResource("hspc-logo", PNG_MIME, getImageFile(HSPC_LOGO_IMAGE, "png"));
 //            sendEmailToMessaging(message);
             try {
-                sendEmailByJavaMail(message);
+                sendEmailByJavaMail(message, "email-sandbox-invite");
             } catch (MessagingException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e + " Email was not sent");
@@ -103,7 +104,56 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    public void sendEmailByJavaMail(Message emailMessage)
+    @Override
+    public void sendExportNotificationEmail(User user, URL sandboxExportFile, String sandboxName) {
+        if (sendEmail) {
+
+            Message message = new Message(true, Message.ENCODING);
+
+            message.setSubject(sandboxName + " Sandbox export is now available for download!");
+            message.setAcceptHtmlMessage(true);
+
+            message.setSenderEmail(HSPC_EMAIL);
+            message.addRecipient(user.getName(), user.getEmail().trim());
+
+            message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("sandboxName", sandboxName);
+            message.addVariable("s3resource", sandboxExportFile.toString());
+
+            try {
+                sendEmailByJavaMail(message, "email-sandbox-export");
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e + " Email was not sent");
+            }
+        }
+    }
+
+    @Override
+    public void sendImportErrorNotificationEmail(User user, String sandboxName) {
+        if (sendEmail) {
+
+            Message message = new Message(true, Message.ENCODING);
+
+            message.setSubject(sandboxName + " Sandbox import failed!");
+            message.setAcceptHtmlMessage(true);
+
+            message.setSenderEmail(HSPC_EMAIL);
+            message.addRecipient(user.getName(), user.getEmail().trim());
+
+            message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("sandboxName", sandboxName);
+
+            try {
+                sendEmailByJavaMail(message, "email-sandbox-import-error");
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e + " Email was not sent");
+            }
+        }
+    }
+
+    public void sendEmailByJavaMail(Message emailMessage, String templateName)
             throws MessagingException {
 
         for (Message.Recipient recipient : emailMessage.getRecipients()) {
@@ -140,7 +190,7 @@ public class EmailServiceImpl implements EmailService {
             }
 
             // Create the HTML body using Thymeleaf
-            final String htmlContent = this.templateEngine.process("email-sandbox-invite", ctx);
+            final String htmlContent = this.templateEngine.process(templateName, ctx);
             messageHelper.setText(htmlContent, true /* isHtml */);
 
             // Send email

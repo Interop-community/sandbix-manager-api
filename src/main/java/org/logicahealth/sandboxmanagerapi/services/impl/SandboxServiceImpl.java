@@ -1,6 +1,8 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
 import com.amazonaws.services.cloudwatch.model.ResourceNotFoundException;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -18,18 +20,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.inject.Inject;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.zip.ZipInputStream;
 
 @Service
 public class SandboxServiceImpl implements SandboxService {
@@ -64,6 +73,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${default-public-apps}")
     private String[] defaultPublicApps;
 
+    @Value("${hspc.platform.trustedDomainsApiUrl}")
+    private String trustedDomainsApiUrl;
+
     private UserService userService;
     private UserRoleService userRoleService;
     private UserPersonaService userPersonaService;
@@ -86,6 +98,7 @@ public class SandboxServiceImpl implements SandboxService {
     private static final int SANDBOXES_TO_RETURN = 2;
     private static final String CLONED_SANDBOX = "cloned";
     private static final String SAVED_SANDBOX = "saved";
+    private static final String SANDBOX_ID_FILE = "sandbox.json";
 
     @Inject
     public SandboxServiceImpl(final SandboxRepository repository) {
@@ -182,6 +195,7 @@ public class SandboxServiceImpl implements SandboxService {
     public void deleteQueuedSandboxes() {
         var queuedSandboxes = repository.findByCreationStatus(SandboxCreationStatus.QUEUED);
         queuedSandboxes.forEach(this::delete);
+        LOGGER.info("Queued sandbox creation entries removed.");
     }
 
     private void delete(final Sandbox sandbox) {
@@ -335,12 +349,7 @@ public class SandboxServiceImpl implements SandboxService {
             throw new ResourceNotFoundException("Cloned sandbox does not exist.");
         }
         if (initialUserPersona == null) {// && callCloneSandboxApi(newSandbox, existingSandbox, bearerToken)) {
-            newSandbox.setCreatedBy(user);
-            newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
-            newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
-            newSandbox.setPayerUserId(user.getId());
-            newSandbox.setCreationStatus(SandboxCreationStatus.QUEUED);
-            Sandbox savedSandbox = save(newSandbox);
+            var savedSandbox = saveNewSandbox(newSandbox, user);
             addMember(savedSandbox, user, Role.ADMIN);
             for (String roleName : defaultSandboxCreatorRoles) {
                 addMemberRole(savedSandbox, user, Role.valueOf(roleName));
@@ -367,6 +376,15 @@ public class SandboxServiceImpl implements SandboxService {
             return savedAndClonedSandboxes;
         }
         return null;
+    }
+
+    private Sandbox saveNewSandbox(Sandbox newSandbox, User user) {
+        newSandbox.setCreatedBy(user);
+        newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
+        newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
+        newSandbox.setPayerUserId(user.getId());
+        newSandbox.setCreationStatus(SandboxCreationStatus.QUEUED);
+        return save(newSandbox);
     }
 
     @Override
@@ -486,8 +504,8 @@ public class SandboxServiceImpl implements SandboxService {
                 if (userRole.getUser()
                             .getId()
                             .equals(user.getId()) &&
-                            userRole.getRole()
-                                    .equals(role)) {
+                        userRole.getRole()
+                                .equals(role)) {
                     removeUserRole = userRole;
                     iterator.remove();
                 }
@@ -718,10 +736,10 @@ public class SandboxServiceImpl implements SandboxService {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
                 String errorMsg = String.format("There was a problem creating the sandbox.\n" +
-                                                        "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                                                closeableHttpResponse.getStatusLine(),
-                                                responseString,
-                                                url);
+                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
+                        closeableHttpResponse.getStatusLine(),
+                        responseString,
+                        url);
                 LOGGER.error(errorMsg);
                 throw new RuntimeException(errorMsg);
             }
@@ -752,10 +770,10 @@ public class SandboxServiceImpl implements SandboxService {
                 HttpEntity rEntity = closeableHttpResponse.getEntity();
                 String responseString = EntityUtils.toString(rEntity, StandardCharsets.UTF_8);
                 String errorMsg = String.format("There was a problem deleting the sandbox.\n" +
-                                                        "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
-                                                closeableHttpResponse.getStatusLine(),
-                                                responseString,
-                                                url);
+                                "Response Status : %s .\nResponse Detail :%s. \nUrl: :%s",
+                        closeableHttpResponse.getStatusLine(),
+                        responseString,
+                        url);
                 LOGGER.error(errorMsg);
                 throw new RuntimeException(errorMsg);
             }
@@ -906,5 +924,105 @@ public class SandboxServiceImpl implements SandboxService {
         }
         var sandbox = repository.findBySandboxId(sandboxId);
         return new SandboxCreationStatusQueueOrder(0, sandbox.getCreationStatus());
+    }
+
+    @Override
+    public void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken, String server) {
+        sandboxBackgroundTasksService.exportSandbox(sandbox, userService.findBySbmUserId(sbmUserId), bearerToken, getSandboxApiURL(sandbox), server);
+    }
+
+    @Override
+    @Transactional
+    public void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
+        checkForEmptyFile(zipFile);
+        startSandboxImport(zipFile, requestingUser, bearerToken, server);
+    }
+    private void checkForEmptyFile(MultipartFile zipFile) {
+        if (zipFile.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Failed to import empty file.");
+        }
+    }
+
+    private void startSandboxImport(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
+        ZipInputStream zipInputStream;
+        try {
+            zipInputStream = new ZipInputStream(zipFile.getInputStream());
+            var zipEntry = zipInputStream.getNextEntry();
+            if (!SANDBOX_ID_FILE.equals(zipEntry.getName())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expecting sandbox.json as first zip file entry.");
+            }
+            Map sandboxVersions = new Gson().fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map.class);
+            var newSandbox = createSandboxTableEntry(sandboxVersions, requestingUser);
+            addMember(newSandbox, requestingUser, Role.ADMIN);
+            sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
+            checkIfExportedFromTrustedServer(sandboxVersions);
+            sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken, server);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException while reading zip file.");
+        }
+    }
+
+    private Sandbox createSandboxTableEntry(Map sandboxVersions, User requestingUser) {
+        var newSandbox = new Sandbox();
+        newSandbox.setSandboxId((String) sandboxVersions.get("id"));
+        newSandbox.setApiEndpointIndex(FhirVersion.getFhirVersion((String) sandboxVersions.get("fhirVersion")).getEndpointIndex());
+        if (repository.findBySandboxId(newSandbox.getSandboxId()) != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sandbox already exists with id " + newSandbox.getSandboxId());
+        }
+        newSandbox.setName((String) sandboxVersions.get("name"));
+        newSandbox.setDescription((String) sandboxVersions.get("description"));
+        return saveNewSandbox(newSandbox, requestingUser);
+    }
+
+    private enum FhirVersion {
+        DSTU2(8),
+        DSTU3(9),
+        R4(10),
+        R5(11);
+
+        private int endpointIndex;
+
+        FhirVersion(int endpointIndex) {
+            this.endpointIndex = endpointIndex;
+        }
+
+        public String getEndpointIndex() {
+            return Integer.valueOf(endpointIndex).toString();
+        }
+
+        public static FhirVersion getFhirVersion(String fhirVersion) {
+            switch (fhirVersion) {
+                case "DSTU2":
+                    return DSTU2;
+                case "DSTU3":
+                    return DSTU3;
+                case "R4":
+                    return R4;
+                default:
+                    return R5;
+            }
+        }
+    }
+
+    private void checkIfExportedFromTrustedServer(Map sandboxVersions) {
+        var originServer = (String) sandboxVersions.get("server");
+        try {
+            var originServerUrl = new URL(originServer);
+            var originHost = originServerUrl.getHost();
+            var matchingDomains = getValidDomainsToImportFrom().stream()
+                                                               .filter(originHost::endsWith)
+                                                               .collect(Collectors.toList());
+            if (matchingDomains.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Zip file cannot be imported from " + originServer + " as it is not trusted");
+            }
+        } catch (MalformedURLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while parsing " + originServer);
+        }
+    }
+
+    private List<String> getValidDomainsToImportFrom() {
+        var restTemplate = new RestTemplate();
+        var trustedDomains = restTemplate.getForObject(this.trustedDomainsApiUrl, List.class);
+        return (List<String>) trustedDomains;
     }
 }

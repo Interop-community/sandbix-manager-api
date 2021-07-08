@@ -12,4 +12,14 @@ public enum Role {
     public int getNumVal() {
         return numVal;
     }
+
+    public String getSandboxDownloadRole() {
+        switch (this) {
+            case ADMIN:
+            case MANAGE_USERS:
+                return "admin";
+            default:
+                return "user";
+        }
+    }
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vladmihalcea.hibernate.type.json.JsonNodeStringType;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -25,11 +27,11 @@ import java.util.List;
         // Used to retrieve all launch scenarios visible to a user of this a sandbox
         @NamedQuery(name="LaunchScenario.findBySandboxIdAndCreatedByOrVisibility",
                 query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId and " +
-                "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility)"),
+                        "(c.createdBy.sbmUserId = :createdBy or c.visibility = :visibility)"),
         // Used to delete a user's PRIVATE launch scenarios when they are removed from a sandbox
         @NamedQuery(name="LaunchScenario.findBySandboxIdAndCreatedBy",
-        query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId and " +
-                "c.createdBy.sbmUserId = :createdBy"),
+                query="SELECT c FROM LaunchScenario c WHERE c.sandbox.sandboxId = :sandboxId and " +
+                        "c.createdBy.sbmUserId = :createdBy"),
         // Used to determine if a registered cds-hook is being used in a launch scenarios and cannot be deleted
         @NamedQuery(name="LaunchScenario.findByCdsHookIdAndSandboxId",
                 query="SELECT c FROM LaunchScenario c WHERE c.cdsHook.id = :cdsHookId AND c.sandbox.sandboxId = :sandboxId")
@@ -75,7 +77,7 @@ public class LaunchScenario extends AbstractSandboxItem {
         this.userPersona = userPersona;
     }
 
-    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @JoinColumn(name="app_id")
     public App getApp() {
         return app;
@@ -85,6 +87,7 @@ public class LaunchScenario extends AbstractSandboxItem {
         this.app = app;
     }
 
+    @LazyCollection(LazyCollectionOption.FALSE)
     @OneToMany(cascade={CascadeType.ALL})
     public List<ContextParams> getContextParams() {
         return contextParams;

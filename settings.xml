@@ -1,8 +1,8 @@
 <settings>
   <mirrors>
     <mirror>
-      <id>hspc-nexus</id>
-      <name>HSPC Nexus</name>
+      <id>interop-nexus</id>
+      <name>Interop Nexus</name>
       <mirrorOf>*</mirrorOf>
       <url>https://nexus.interop.community/repository/maven-all/</url>
     </mirror>
@@ -16,15 +16,15 @@
       </properties>
     </profile>
     <profile>
-      <id>hspc-nexus</id>
+      <id>interop-nexus</id>
       <properties>
         <gpg.keyname>${env.GPG_KEY}</gpg.keyname>
         <gpg.passphrase>${env.GPG_PWD}</gpg.passphrase>
       </properties>
       <repositories>
         <repository>
-          <name>HSPC Releases</name>
-          <id>hspc-releases</id>
+          <name>Interop Releases</name>
+          <id>interop-releases</id>
           <url>https://nexus.interop.community/repository/maven-releases/</url>
           <releases>
             <enabled>true</enabled>
@@ -34,8 +34,8 @@
           </snapshots>
         </repository>
         <repository>
-          <name>HSPC Snapshots</name>
-          <id>hspc-snapshots</id>
+          <name>Interop Snapshots</name>
+          <id>interop-snapshots</id>
           <url>https://nexus.interop.community/repository/maven-snapshots/</url>
           <releases>
             <enabled>false</enabled>
@@ -49,7 +49,7 @@
   </profiles>
   <activeProfiles>
     <!--make the profile active all the time -->
-    <activeProfile>hspc-nexus</activeProfile>
+    <activeProfile>interop-nexus</activeProfile>
   </activeProfiles>
   <servers>
     <server>
@@ -58,17 +58,17 @@
       <password>${env.OSSRH_PWD_TOKEN}</password>
     </server>
     <server>
-      <id>hspc-nexus</id>
+      <id>interop-nexus</id>
       <username>${env.NEXUS_USR}</username>
       <password>${env.NEXUS_PWD}</password>
     </server>
     <server>
-      <id>hspc-releases</id>
+      <id>interop-releases</id>
       <username>${env.NEXUS_USR}</username>
       <password>${env.NEXUS_PWD}</password>
     </server>
     <server>
-      <id>hspc-snapshots</id>
+      <id>interop-snapshots</id>
       <username>${env.NEXUS_USR}</username>
       <password>${env.NEXUS_PWD}</password>
     </server>

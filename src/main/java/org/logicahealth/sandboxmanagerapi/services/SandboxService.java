@@ -1,6 +1,7 @@
 package org.logicahealth.sandboxmanagerapi.services;
 
 import org.logicahealth.sandboxmanagerapi.model.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
@@ -79,5 +80,9 @@ public interface SandboxService {
     String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate);
 
     SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId);
+
+    void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken, String server);
+
+    void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server);
 
 }

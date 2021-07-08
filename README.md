@@ -4,7 +4,7 @@ Welcome to the Logica Sandbox Manager API!
 
 # Logica Sandbox
 
-*Note:* If you are wanting to build and test SMART on FHIR Apps, it is recommended that you use the free cloud-hosted version of the HSPC Sandbox.
+*Note:* If you are wanting to build and test SMART on FHIR Apps, it is recommended that you use the free cloud-hosted version of the Interop Community Sandbox.
 
 [Logica Sandbox](https://sandbox.interop.community)
 
@@ -45,7 +45,7 @@ Various property files configure the sandbox manager api:
  * src/main/resources/application-*.yml
  
 ### Where to go from here ###
-https://healthservices.atlassian.net/wiki/display/HSPC/Healthcare+Services+Platform+Consortium
+https://interop.community
 
 ## Additional Info
 

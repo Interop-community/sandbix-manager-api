@@ -6,7 +6,7 @@ server:
 
 spring:
   application:
-    name: HSPC Sandbox Manager
+    name: Interop Community Sandbox Manager
   profiles:
     active:
   datasource:
@@ -115,6 +115,8 @@ hspc:
       signatureAlgorithm: HS256
     validCdsHooks: patient-view, medication-prescribe, order-review, order-select, order-sign, appointment-book, encounter-start, encounter-discharge
     deprecatedCdsHooks: medication-prescribe, order-review
+    trustedDomainsApiUrl: https://trusted-domains.interop.community/list
+    asymmetricKeysFolder: KeyPair
 
 multipart:
   enabled: true
@@ -136,7 +138,7 @@ cloud:
     cloudwatch:
       namespace: sandbox-manager-api
     region:
-      static: us-west-2
+      static: us-east-1
     stack:
       auto: false
 

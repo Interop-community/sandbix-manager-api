@@ -1,5 +1,9 @@
 package org.logicahealth.sandboxmanagerapi.config;
 
+import com.amazonaws.regions.Regions;
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -31,6 +35,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
+@EnableEncryptableProperties
 public class SandboxManagerConfig {
 
     @Value("${hspc.platform.simultaneousSandboxCreationTasksLimit}")
@@ -68,18 +73,8 @@ public class SandboxManagerConfig {
     @Bean
     public ModelMapper modelMapper() { return new ModelMapper(); }
 
-    @Bean(name = "taskExecutor")
-    public Executor threadPoolTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(25);
-        executor.initialize();
-        return executor;
-    }
-
-    @Bean(name = "sandboxCloneTaskExecutor")
-    public Executor sandboxCloneTaskExecutor() {
+    @Bean(name = "sandboxSingleThreadedTaskExecutor")
+    public Executor sandboxSingleThreadedTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(sandboxCloneTaskActiveThreadCount);
@@ -88,9 +83,17 @@ public class SandboxManagerConfig {
         return executor;
     }
 
-    @Bean(name="sandboxDeleteHttpClient")
+    @Bean(name = "sandboxDeleteHttpClient")
     @Scope("prototype")
     public CloseableHttpClient sandboxDeleteHttpClient() {
         return HttpClientBuilder.create().build();
     }
+
+    @Bean
+    public static AmazonS3 amazonS3Client() {
+        return AmazonS3ClientBuilder.standard()
+                                    .withRegion(Regions.US_EAST_1)
+                                    .build();
+    }
+
 }
