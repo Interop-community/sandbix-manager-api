@@ -75,4 +75,4 @@ api_endpoint_index:
     apiBaseURL_r5: ${API_R5_HOST}
 
 aws:
-  s3BucketName: ${S3_BACKET:interop-community-export}
+  s3BucketName: ${S3_BUCKET:interop-community-export}
