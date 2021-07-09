@@ -73,3 +73,6 @@ api_endpoint_index:
     apiBaseURL_stu3: ${API_STU3_HOST}
     apiBaseURL_r4: ${API_R4_HOST}
     apiBaseURL_r5: ${API_R5_HOST}
+
+aws:
+  s3BucketName: interop-community-export
