@@ -269,7 +269,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     private String checkSandboxMember(final Sandbox sandbox, final String sbmUserId) {
-        if (!checkUserHasSystemRole(userService.findBySbmUserId(sbmUserId), SystemRole.ADMIN)) {
+        var user = userService.findBySbmUserId(sbmUserId);
+        if (user != null && !checkUserHasSystemRole(user, SystemRole.ADMIN)) {
             for (UserRole userRole : sandbox.getUserRoles()) {
                 if (userRole.getUser().getSbmUserId().equalsIgnoreCase(sbmUserId)) {
                     return sbmUserId;
