@@ -22,6 +22,8 @@ hspc:
       key: ENC(1j493gQNho0hZQ2g7t5a9ZZB3S+Tm5whhnjhr6NtPxAjTafqAE/iOQ==)
     frontend: ${FRONT_END:https://sandbox.interop.community}
     asymmetricKeysFolder: /KeyPair
+    content-server:
+      logoUrl: ${LOGO_URL}
 
 endpoints:
   health:
