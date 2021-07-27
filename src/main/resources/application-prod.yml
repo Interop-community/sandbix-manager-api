@@ -23,7 +23,7 @@ hspc:
     frontend: https://sandbox.interop.community
     asymmetricKeysFolder: /KeyPair
     content-server:
-      logoUrl: ${LOGO_URL:https://content.interop.community/MeldLogo.png}
+      logoUrl: ${LOGO_URL}
 
 endpoints:
   health:
