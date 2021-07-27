@@ -121,6 +121,7 @@ public class EmailServiceImpl implements EmailService {
             message.addRecipient(user.getName(), user.getEmail().trim());
 
             message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("logoUrl", logoUrl);
             message.addVariable("sandboxName", sandboxName);
             message.addVariable("s3resource", sandboxExportFile.toString());
 
@@ -146,6 +147,7 @@ public class EmailServiceImpl implements EmailService {
             message.addRecipient(user.getName(), user.getEmail().trim());
 
             message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("logoUrl", logoUrl);
             message.addVariable("sandboxName", sandboxName);
 
             try {
