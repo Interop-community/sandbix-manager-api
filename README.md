@@ -6,7 +6,7 @@ Welcome to the Logica Sandbox Manager API!
 
 *Note:* If you are wanting to build and test SMART on FHIR Apps, it is recommended that you use the free cloud-hosted version of the Interop Community Sandbox.
 
-[Logica Sandbox](https://sandbox.logicahealth.org)
+[Logica Sandbox](https://sandbox.interop.community)
 
 ### How do I get set up?
 This project uses Java 11 and MySQL version 5.7.24. Please make sure that your Project SDK is set to use Java 11.
@@ -60,7 +60,7 @@ https://interop.community
 ### Add an user to a sandbox
 
 Do a PUT call through Postman
-https://sandbox-api.logicahealth.org/sandbox/REPLACE_THIS_WITH_SANDBOXID?editUserRole=REPLACE_THIS_SBM_USERID&role=USER&add=true
+https://sandbox-api.interop.community/sandbox/REPLACE_THIS_WITH_SANDBOXID?editUserRole=REPLACE_THIS_SBM_USERID&role=USER&add=true
 
 The authorization token and Content-Type = application/json is required to make this call.
 Role could also be changed to be either ADMIN, USER, READONLY, MANAGE_USERS or MANAGE_DATA.
