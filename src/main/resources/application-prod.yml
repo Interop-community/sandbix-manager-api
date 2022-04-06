@@ -1,27 +1,29 @@
 spring:
   datasource:
-    base_url: jdbc:mysql://sandboxdb.interop.community:3306
-    username: system
-    password: ENC(eu7PppbSk0mHHUZjmjzZxPeU8X9aCckJ)
+    base_url: jdbc:mysql://${DB_HOST:sandboxdb.interop.community}:${DB_PORT:3306}
+    username: ${DB_USER:system}
+    password: ${DB_PASSWORD:password}
   mail:
-    password: ENC(CO+ItH9klkYBTA3O9d3ltV/djiaWqFsBCA7jh86G9KzsxxIFpHjKKNr5PWecJv35OWz84ZTjs38=)
+    password: ${MAIL_PASSWORD:ThisIsNotTheRightPW}
 #jasypt:
 #  encryptor:
 #    password: ${JASYPT_ENCRYPTOR_PASSWORD}
 hspc:
   platform:
     authorization:
-      url: https://auth.interop.community
+      url: ${AUTH_HOST}
       adminAccess:
-        clientSecret: ENC(gmMlVNIASfOKitTrkB/XrlVhV6e+zICBrsiEZ7Jiyv5fwO37wfLNKA6U4x7IJjtG)
+        clientSecret: ${CLIENT_SECRET:secret}
     messaging:
       sendEmail: true
       url: https://messaging.interop.community
       emailSenderEndpointURL: ${hspc.platform.messaging.url}/mailsender
     jwt:
       key: ENC(1j493gQNho0hZQ2g7t5a9ZZB3S+Tm5whhnjhr6NtPxAjTafqAE/iOQ==)
-    frontend: https://sandbox.interop.community
+    frontend: ${FRONT_END:https://sandbox.interop.community}
     asymmetricKeysFolder: /KeyPair
+    content-server:
+      logoUrl: ${LOGO_URL}
 
 endpoints:
   health:
@@ -56,11 +58,23 @@ tier-rules:
 
 api_endpoint_index:
   prev:
-    apiBaseURL_dstu2: https://api-v5-dstu2.interop.community
-    apiBaseURL_stu3: https://api-v5-stu3.interop.community
-    apiBaseURL_r4: https://api-v5-r4.interop.community
+    dstu2: 5
+    stu3: 6
+    r4: 7
+    r5:
+    apiBaseURL_dstu2: localhost
+    apiBaseURL_stu3: localhost
+    apiBaseURL_r4: localhost
+    apiBaseURL_r5: localhost
   current:
-    apiBaseURL_dstu2: https://api-v8-dstu2.interop.community
-    apiBaseURL_stu3: https://api-v8-stu3.interop.community
-    apiBaseURL_r4: https://api-v8-r4.interop.community
-    apiBaseURL_r5: https://api-v8-r5.interop.community
+    dstu2: 8
+    stu3: 9
+    r4: 10
+    r5: 11
+    apiBaseURL_dstu2: ${API_DSTU2_HOST}
+    apiBaseURL_stu3: ${API_STU3_HOST}
+    apiBaseURL_r4: ${API_R4_HOST}
+    apiBaseURL_r5: ${API_R5_HOST}
+
+aws:
+  s3BucketName: ${S3_BUCKET:interop-community-export}

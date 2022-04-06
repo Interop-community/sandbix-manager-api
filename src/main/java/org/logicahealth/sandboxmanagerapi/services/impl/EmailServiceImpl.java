@@ -48,6 +48,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${hspc.platform.frontend}")
     private String baseURL;
 
+    @Value("${hspc.platform.content-server.logoUrl}")
+    private String logoUrl;
+
     private JavaMailSender mailSender;
     private SpringTemplateEngine templateEngine;
 
@@ -87,6 +90,7 @@ public class EmailServiceImpl implements EmailService {
             } else {
                 message.addVariable("invitee", invitee.getEmail().trim());
             }
+            message.addVariable("logoUrl", logoUrl);
             message.addVariable("sandboxName", sandbox.getName());
             message.addVariable("inviteeEmail", invitee.getEmail().trim());
             message.addVariable("invitationId", invitationId);
@@ -117,6 +121,7 @@ public class EmailServiceImpl implements EmailService {
             message.addRecipient(user.getName(), user.getEmail().trim());
 
             message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("logoUrl", logoUrl);
             message.addVariable("sandboxName", sandboxName);
             message.addVariable("s3resource", sandboxExportFile.toString());
 
@@ -142,6 +147,7 @@ public class EmailServiceImpl implements EmailService {
             message.addRecipient(user.getName(), user.getEmail().trim());
 
             message.setTemplateFormat(Message.TemplateFormat.HTML);
+            message.addVariable("logoUrl", logoUrl);
             message.addVariable("sandboxName", sandboxName);
 
             try {
