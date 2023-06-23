@@ -34,9 +34,11 @@ In the terminal, run the following command:
     ./build.sh
     docker-compose up
     
-The set up process is complete and your project is running now. The service is available at: 
-    http://localhost:12000/health
+The set up process is complete and your project is running now. The service status is available at: 
+    http://localhost:12000/alive
 
+
+\* Note **/alive** is exempted from authorizer for healthcheck.
 #### Configuration ####
 
 Various property files configure the sandbox manager api:
