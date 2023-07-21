@@ -153,9 +153,15 @@ public class SandboxController {
     @PostMapping(value = "/import")
     @ResponseStatus(HttpStatus.CREATED)
     public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile) {
+        try{
         var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
         sandboxService.importSandbox(zipFile, requestingUser, authorizationService.getBearerToken(request), getServer(request));
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace(System.out);
+        }
     }
 
     private String getServer(HttpServletRequest request) {
