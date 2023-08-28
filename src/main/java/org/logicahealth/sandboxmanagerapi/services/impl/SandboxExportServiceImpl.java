@@ -1,9 +1,22 @@
 package org.logicahealth.sandboxmanagerapi.services.impl;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import static software.amazon.awssdk.transfer.s3.SizeConstant.MB;     
+import software.amazon.awssdk.transfer.s3.model.UploadRequest;
+import software.amazon.awssdk.transfer.s3.progress.LoggingTransferListener;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.regions.Region;
+
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,6 +44,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
+import java.time.Duration;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
@@ -45,7 +59,6 @@ import java.util.zip.ZipOutputStream;
 public class SandboxExportServiceImpl implements SandboxExportService {
 
     private final String s3BucketName;
-    private final AmazonS3 amazonS3;
     private final SandboxRepository repository;
     private final FhirProfileService fhirProfileService;
     private final CdsHookService cdsHookService;
@@ -71,9 +84,8 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     private static final String IMAGE_NAME_PREFIX = "img";
     private static final int DOWNLOAD_LINK_VALID_DAYS = 2;
 
-    public SandboxExportServiceImpl(@Value("${aws.s3BucketName}") String s3BucketName, AmazonS3 amazonS3, SandboxRepository repository, FhirProfileService fhirProfileService, CdsHookService cdsHookService, SandboxInviteService sandboxInviteService, AppService appService, UserPersonaService userPersonaService, CdsServiceEndpointService cdsServiceEndpointService, LaunchScenarioService launchScenarioService, FhirProfileDetailService fhirProfileDetailService, UserService userService, EmailService emailService, SandboxEncryptionService sandboxEncryptionService) {
+    public SandboxExportServiceImpl(@Value("${aws.s3BucketName}") String s3BucketName, SandboxRepository repository, FhirProfileService fhirProfileService, CdsHookService cdsHookService, SandboxInviteService sandboxInviteService, AppService appService, UserPersonaService userPersonaService, CdsServiceEndpointService cdsServiceEndpointService, LaunchScenarioService launchScenarioService, FhirProfileDetailService fhirProfileDetailService, UserService userService, EmailService emailService, SandboxEncryptionService sandboxEncryptionService) {
         this.s3BucketName = s3BucketName;
-        this.amazonS3 = amazonS3;
         this.repository = repository;
         this.fhirProfileService = fhirProfileService;
         this.cdsHookService = cdsHookService;
@@ -111,24 +123,48 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     @Override
     public Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName, User user, String sandboxName) {
         return () -> {
-            var transferManager = TransferManagerBuilder.standard()
-                                                        .withS3Client(this.amazonS3)
-                                                        .build();
-            try {
-                transferManager.upload(this.s3BucketName, sandboxExportFileName, pipedInputStream, new ObjectMetadata());
-                LOGGER.debug("Exported sandbox url: " + this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()));
-            } catch(AmazonClientException e) {
-                LOGGER.error("Exception while uploading sandbox to s3 bucket", e);
-            }
-            emailService.sendExportNotificationEmail(user, this.amazonS3.generatePresignedUrl(this.s3BucketName, sandboxExportFileName, getDownloadLinkValidUntilDate()), sandboxName);
-        };
-    }
 
-    private Date getDownloadLinkValidUntilDate() {
-        var downloadLinkValidUntil = Calendar.getInstance();
-        downloadLinkValidUntil.setTime(new Date());
-        downloadLinkValidUntil.add(Calendar.DATE, DOWNLOAD_LINK_VALID_DAYS);
-        return downloadLinkValidUntil.getTime();
+            S3AsyncClient  s3AsyncClient = S3AsyncClient.crtBuilder()
+                            .credentialsProvider(DefaultCredentialsProvider.create())
+                            .region(Region.US_EAST_1)
+                            .targetThroughputInGbps(20.0).minimumPartSizeInBytes(8 * MB).build();
+            var transferManager = S3TransferManager.builder()
+                                .s3Client(s3AsyncClient)
+                                .build();
+            PutObjectRequest po = PutObjectRequest.builder().bucket(this.s3BucketName).key(sandboxExportFileName).build();
+            BlockingInputStreamAsyncRequestBody body =
+                AsyncRequestBody.forBlockingInputStream(null);
+
+            try {
+
+                transferManager.upload(UploadRequest.builder()
+                                   .putObjectRequest(po)
+                                   .requestBody(body)
+                                   .addTransferListener(LoggingTransferListener.create())
+                                   .build());
+                
+                body.writeInputStream((InputStream) pipedInputStream);
+
+            } catch(Exception e) {
+                LOGGER.error("Exception while uploading sandbox to s3 bucket", e.getMessage());
+            }
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                   .bucket(this.s3BucketName)
+                   .key(sandboxExportFileName)
+                   .build();
+            
+            
+             GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+                   .signatureDuration(Duration.ofDays(DOWNLOAD_LINK_VALID_DAYS))
+                   .getObjectRequest(getObjectRequest)
+                   .build();  
+
+             PresignedGetObjectRequest presignedGetObjectRequest = S3Presigner.builder().region(Region.US_EAST_1).build().presignGetObject(getObjectPresignRequest);
+    
+
+
+            emailService.sendExportNotificationEmail(user, presignedGetObjectRequest.url(), sandboxName);
+        };
     }
 
     private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken, String apiUrl, String server) {

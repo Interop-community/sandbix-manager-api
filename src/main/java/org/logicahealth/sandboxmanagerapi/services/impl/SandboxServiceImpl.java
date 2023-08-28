@@ -955,9 +955,10 @@ public class SandboxServiceImpl implements SandboxService {
             var newSandbox = createSandboxTableEntry(sandboxVersions, requestingUser);
             addMember(newSandbox, requestingUser, Role.ADMIN);
             sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
-            checkIfExportedFromTrustedServer(sandboxVersions);
+            // checkIfExportedFromTrustedServer(sandboxVersions);
             sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken, server);
         } catch (IOException e) {
+            LOGGER.error(e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException while reading zip file.");
         }
     }
