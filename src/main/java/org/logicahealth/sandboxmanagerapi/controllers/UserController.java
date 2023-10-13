@@ -79,6 +79,9 @@ public class UserController {
     @Transactional
     public @ResponseBody
     User getUser(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
+        
+        LOGGER.info("Inside UserController - getUser");
+        
         authorizationService.checkUserAuthorization(request, sbmUserId);
         String oauthUsername = authorizationService.getUserName(request);
         String oauthUserEmail = authorizationService.getEmail(request);
@@ -101,6 +104,9 @@ public class UserController {
     @Transactional
     public @ResponseBody
     Iterable<User> getAllUsers(final HttpServletRequest request) {
+        
+        LOGGER.info("Inside UserController - getAllUsers");
+        
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -114,6 +120,8 @@ public class UserController {
     public void acceptTermsOfUse(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId,
                                  @RequestParam(value = "termsId") String termsId) {
 
+        LOGGER.info("Inside UserController - acceptTermsOfUse");
+        
         authorizationService.checkUserAuthorization(request, sbmUserId);
         User user = userService.findBySbmUserId(sbmUserId);
         userService.acceptTermsOfUse(user, termsId);
@@ -122,6 +130,9 @@ public class UserController {
     @PostMapping(value = "/authorize")
     @Transactional
     public ResponseEntity authorizeUserForReferenceApi(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
+        
+        LOGGER.info("Inside UserController - authorizeUserForReferenceApi");
+        
         String userId = authorizationService.getSystemUserId(request);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
@@ -154,6 +165,9 @@ public class UserController {
     @PostMapping(value = "/authorizeExportImport")
     @Transactional
     public ResponseEntity authorizeUserForExportImport(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
+        
+        LOGGER.info("Inside UserController - authorizeUserForExportImport");
+        
         String userId = authorizationService.getSystemUserId(request);
         User user = userService.findBySbmUserId(userId);
         if (user == null) {
@@ -183,6 +197,9 @@ public class UserController {
     }
 
     private User createUserIfNotExists(String sbmUserId, String oauthUsername, String oauthUserEmail) {
+        
+        LOGGER.info("Inside UserController - createUserIfNotExists");
+        
         User user = userService.findBySbmUserId(sbmUserId);
         if (user == null) {
             user = userService.findByUserEmail(oauthUserEmail);

@@ -9,6 +9,8 @@ import org.logicahealth.sandboxmanagerapi.services.SandboxService;
 import org.logicahealth.sandboxmanagerapi.services.UserAccessHistoryService;
 import org.logicahealth.sandboxmanagerapi.services.UserService;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -19,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping({"/sandbox-access"})
 public class UserAccessHistoryController {
+    private static Logger LOGGER = LoggerFactory.getLogger(UserAccessHistoryController.class.getName());
 
     private SandboxService sandboxService;
     private UserAccessHistoryService userAccessHistoryService;
@@ -36,6 +39,9 @@ public class UserAccessHistoryController {
     @GetMapping(params = {"sandboxId"})
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSandboxId(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside UserAccessHistoryController - getLastSandboxAccessWithSandboxId");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -47,6 +53,9 @@ public class UserAccessHistoryController {
     @GetMapping(params = {"sbmUserId"})
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSbmUserId(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside UserAccessHistoryController - getLastSandboxAccessWithSbmUserId");
+        
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
@@ -60,6 +69,9 @@ public class UserAccessHistoryController {
     public @ResponseBody
     Timestamp getLastSandboxAccess(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded,
                                    @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside UserAccessHistoryController - getLastSandboxAccess");
+        
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);

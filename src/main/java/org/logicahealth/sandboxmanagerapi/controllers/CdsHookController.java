@@ -42,6 +42,9 @@ public class CdsHookController {
     @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
     @ResponseBody
     public void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
+        
+        LOGGER.info("Inside CdsHookController - getFullImage");
+
         CdsHook cdsHook = cdsHookService.getById(id);
         if (cdsHook == null) {
             throw new ResourceNotFoundException("CDS-Hook not found.");
@@ -57,6 +60,9 @@ public class CdsHookController {
     @PostMapping(value = "/{id}/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE} )
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+        
+        LOGGER.info("Inside CdsHookController - putFullImage");
+
         CdsHook cdsHook = cdsHookService.getById(id);
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
         if (cdsHook == null) {
@@ -80,6 +86,9 @@ public class CdsHookController {
     @DeleteMapping(value = "/{id}/image")
     @Transactional
     public CdsHook deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("Inside CdsHookController - deleteFullImage");
+
         CdsHook cdsHook = cdsHookService.getById(id);
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
         if (cdsHook == null) {

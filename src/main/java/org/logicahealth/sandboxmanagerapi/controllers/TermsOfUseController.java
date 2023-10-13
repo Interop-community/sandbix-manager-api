@@ -59,6 +59,9 @@ public class TermsOfUseController  {
 
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<TermsOfUse> getLatestTermsOfUse() {
+        
+        LOGGER.info("Inside TermsOfUseController - getLatestTermsOfUse");
+        
         TermsOfUse mostRecent = termsOfUseService.mostRecent();
         if (mostRecent != null) {
             return new ResponseEntity<>(mostRecent, HttpStatus.OK);
@@ -69,6 +72,9 @@ public class TermsOfUseController  {
 
     @PostMapping(produces = APPLICATION_JSON_VALUE)
     public TermsOfUse createTermsOfUse(HttpServletRequest request, @RequestBody final TermsOfUse termsOfUse) {
+        
+        LOGGER.info("Inside TermsOfUseController - createTermsOfUse");
+        
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found");

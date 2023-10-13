@@ -5,6 +5,8 @@ import org.logicahealth.sandboxmanagerapi.model.*;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +22,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping({"/analytics"})
 public class AnalyticsController {
+    private static Logger LOGGER = LoggerFactory.getLogger(AnalyticsController.class.getName());
 
     private AnalyticsService analyticsService;
     private UserService userService;
@@ -54,6 +57,9 @@ public class AnalyticsController {
     @GetMapping(value = "/sandboxes", params = {"userId"})
     public @ResponseBody
     Integer countSandboxesByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside AnalyticsController - countSandboxesByUser");
+
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
 
@@ -67,6 +73,9 @@ public class AnalyticsController {
 
     @GetMapping(value = "/users", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countUsersBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside AnalyticsController - countUsersBySandbox");
+
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
@@ -78,6 +87,9 @@ public class AnalyticsController {
 
     @GetMapping(value = "/apps", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countAppsBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside AnalyticsController - countAppsBySandbox");
+
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
@@ -89,6 +101,9 @@ public class AnalyticsController {
 
     @GetMapping(value = "/memory", params = {"userId"})
     public @ResponseBody Double memoryUsedByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside AnalyticsController - memoryUsedByUser");
+
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         Double memoryUseInMB = 0.0;
@@ -103,6 +118,9 @@ public class AnalyticsController {
     @Transactional
     public @ResponseBody
     FhirTransaction handleFhirTransaction(final HttpServletRequest request, @RequestBody final HashMap transactionInfo) {
+        
+        LOGGER.info("Inside AnalyticsController - handleFhirTransaction");
+
         Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
         String userId = transactionInfo.get("userId").toString();
         User user;
@@ -133,6 +151,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/getStats", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody void getStats(HttpServletRequest request) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside AnalyticsController - getStats");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -144,6 +165,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/overallStats", produces = APPLICATION_JSON_VALUE, params = {"numberOfMonths"})
     public @ResponseBody List<Statistics> displayStats(HttpServletRequest request, @RequestParam(value = "numberOfMonths") String numberOfMonths) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside AnalyticsController - displayStats");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -154,6 +178,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/overallStats", produces = APPLICATION_JSON_VALUE, params = {"numberOfDays"})
     public @ResponseBody Statistics getStatsOverNumberOfDays(HttpServletRequest request, @RequestParam(value = "numberOfDays") String numberOfDays) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside AnalyticsController - getStatsOverNumberOfDays");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -164,6 +191,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/overallStats/transactions", params = {"interval"})
     public HashMap<String, Object> transactionStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
+        
+        LOGGER.info("Inside AnalyticsController - transactionStats");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -174,6 +204,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/overallStats/sandboxMemory", params = {"interval"})
     public HashMap<String, Object> sandboxMemoryStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
+        
+        LOGGER.info("Inside AnalyticsController - sandboxMemoryStats");
+        
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -184,6 +217,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/overallStats/usersPerSandbox", params = {"interval"})
     public HashMap<String, Object> usersPerSandboxStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
+        
+        LOGGER.info("Inside AnalyticsController - usersPerSandboxStats");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -194,6 +230,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/overallStats/sandboxesPerUser", params = {"interval"})
     public HashMap<String, Object> sandboxesPerUserStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
+        
+        LOGGER.info("Inside AnalyticsController - sandboxesPerUserStats");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -204,6 +243,9 @@ public class AnalyticsController {
 
     @GetMapping(value = "/userStatistics")
     public UserStatistics currentStatisticsByUser(HttpServletRequest request) {
+        
+        LOGGER.info("Inside AnalyticsController - currentStatisticsByUser");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -214,6 +256,9 @@ public class AnalyticsController {
 
     @GetMapping(value="/overallStatsForSpecificTimePeriod", params = {"begin", "end"},  produces = APPLICATION_JSON_VALUE)
     public Statistics getStatsForSpecificTimePeriod(HttpServletRequest request, @RequestParam(value = "begin") String begin, @RequestParam(value = "end") String end) {
+        
+        LOGGER.info("Inside AnalyticsController - getStatsForSpecificTimePeriod");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");

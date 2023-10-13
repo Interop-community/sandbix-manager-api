@@ -32,6 +32,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +45,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping("/userPersona")
 public class UserPersonaController {
+    private static Logger LOGGER = LoggerFactory.getLogger(UserPersonaController.class.getName());
+    
     private final SandboxService sandboxService;
     private final UserService userService;
     private final UserPersonaService userPersonaService;
@@ -64,6 +68,8 @@ public class UserPersonaController {
     @Transactional
     public @ResponseBody UserPersona createUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
+        LOGGER.info("Inside UserPersonaController - createUserPersona");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -80,6 +86,8 @@ public class UserPersonaController {
     @Transactional
     public @ResponseBody UserPersona updateUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
+        LOGGER.info("Inside UserPersonaController - updateUserPersona");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -93,6 +101,8 @@ public class UserPersonaController {
     public @ResponseBody Iterable<UserPersona> getSandboxUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
 
+        LOGGER.info("Inside UserPersonaController - getSandboxUserPersona");
+        
         String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -107,6 +117,8 @@ public class UserPersonaController {
     public @ResponseBody UserPersona getSandboxDefaultUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
 
+        LOGGER.info("Inside UserPersonaController - getSandboxDefaultUserPersona");
+        
         String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -118,6 +130,9 @@ public class UserPersonaController {
 
     @GetMapping(params = {"lookUpId"})
     public @ResponseBody String checkForUserPersonaById(@RequestParam(value = "lookUpId")  String id) {
+        
+        LOGGER.info("Inside UserPersonaController - checkForUserPersonaById");
+        
         UserPersona userPersona = userPersonaService.findByPersonaUserId(id);
         return (userPersona == null) ? null : userPersona.getPersonaUserId();
     }
@@ -125,6 +140,9 @@ public class UserPersonaController {
     @DeleteMapping(value = "/{id}")
     @Transactional
     public ResponseEntity deleteSandboxUserPersona(HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("Inside UserPersonaController - deleteSandboxUserPersona");
+        
         UserPersona userPersona = userPersonaService.getById(id);
         if (userPersona == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("UserPersona not found.");
@@ -140,6 +158,9 @@ public class UserPersonaController {
 
     @GetMapping(value = "/{personaUserId}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody UserPersonaDto readUserPersona(HttpServletResponse response, @PathVariable String personaUserId) {
+        
+        LOGGER.info("Inside UserPersonaController - readUserPersona");
+        
         UserPersona userPersona = userPersonaService.findByPersonaUserId(personaUserId);
         if(userPersona == null) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -158,6 +179,8 @@ public class UserPersonaController {
     @PostMapping(value="/authenticate", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity authenticateUserPersona(@RequestBody UserPersonaCredentials userPersonaCredentials){
 
+        LOGGER.info("Inside UserPersonaController - authenticateUserPersona");
+        
         if(userPersonaCredentials == null ||
                 userPersonaCredentials.getUsername() == null ||
                 StringUtils.isEmpty(userPersonaCredentials.getUsername())){

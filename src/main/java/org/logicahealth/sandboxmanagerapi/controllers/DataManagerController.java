@@ -27,6 +27,8 @@ import org.logicahealth.sandboxmanagerapi.model.SandboxImport;
 import org.logicahealth.sandboxmanagerapi.model.User;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +40,7 @@ import java.util.List;
 @RestController
 @RequestMapping({"/fhirdata"})
 public class DataManagerController {
+    private static Logger LOGGER = LoggerFactory.getLogger(DataManagerController.class.getName());
 
     private final SandboxService sandboxService;
     private final UserService userService;
@@ -61,6 +64,8 @@ public class DataManagerController {
     public @ResponseBody
     List<SandboxImport> getSandboxImports(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId)  throws UnsupportedEncodingException {
 
+        LOGGER.info("Inside DataManagerController - getSandboxImports");
+        
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, user.getSbmUserId());
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
@@ -80,6 +85,8 @@ public class DataManagerController {
                                                      @RequestParam(value = "fhirIdPrefix") String fhirIdPrefix,
                                                      @RequestParam(value = "endpoint") String encodedEndpoint)  throws UnsupportedEncodingException {
 
+        LOGGER.info("Inside DataManagerController - importAllPatientData");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, user.getSbmUserId());
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
@@ -97,6 +104,8 @@ public class DataManagerController {
     @Transactional
     public @ResponseBody String reset(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "dataSet") DataSet dataSet)  throws UnsupportedEncodingException {
 
+        LOGGER.info("Inside DataManagerController - reset");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
