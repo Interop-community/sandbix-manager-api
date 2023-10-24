@@ -77,6 +77,7 @@ public class UserServiceImpl implements UserService {
         return repository.findAll();
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public User findBySbmUserId(final String sbmUserId) {
         User user = repository.findBySbmUserId(sbmUserId);
 

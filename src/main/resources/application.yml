@@ -4,6 +4,14 @@ server:
     remote_ip_header: x-forwarded-for
     protocol_header: x-forwarded-proto
 
+logging:
+  level:
+    root: ERROR
+    org.springframework.web: DEBUG
+    org.logicahealth: ERROR
+    org.hibernate: DEBUG
+
+
 spring:
   application:
     name: Interop Community Sandbox Manager
@@ -26,7 +34,8 @@ spring:
     hibernate:
       # Do not commit with a different value (update, create, etc)
       # Instead, use flywaydb scripts at /src/main/resources/db/mysql/migrate
-      ddl-auto: validate
+      #set to none after org.logicahealth.sandboxmanagerapi.model.SandboxExport is failing with validate for token(TEXT)
+      ddl-auto: none #validate
 
       dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
