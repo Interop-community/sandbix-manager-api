@@ -193,23 +193,47 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     @Transactional
     public void deleteQueuedSandboxes() {
+        
+        LOGGER.info("Inside SandboxServiceImpl - deleteQueuedSandboxes");
+
         var queuedSandboxes = repository.findByCreationStatus(SandboxCreationStatus.QUEUED);
         queuedSandboxes.forEach(this::delete);
         LOGGER.info("Queued sandbox creation entries removed.");
+
+        LOGGER.debug("Inside SandboxServiceImpl - deleteQueuedSandboxes: "
+        +"No input parameters; No return value");
+
     }
 
     private void delete(final Sandbox sandbox) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - delete");
+
         deleteSandboxFromSandman(sandbox, null);
+
+        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        +"Parameters: sandbox = "+sandbox+"; No return value");
+
     }
 
     @Override
     public void delete(final int id) {
+
+        LOGGER.info("Inside SandboxServiceImpl - delete");
+
         repository.deleteById(id);
+
+        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        +"Parameters: id = "+id+"; No return value");
+
     }
 
     @Override
     @Transactional
     public synchronized void delete(final Sandbox sandbox, final String bearerToken, final User admin, final boolean sync) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - delete");
+
         if (!sync) {
             // Want this done first in case there's an error with Reference API so that everything else doesn't get deleted
             try {
@@ -221,9 +245,18 @@ public class SandboxServiceImpl implements SandboxService {
 
         deleteSandboxFromSandman(sandbox, admin);
 
+        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+        +", admin = "+admin+", sync = "+sync+"; No return value");
+
     }
 
     private void deleteSandboxFromSandman(final Sandbox sandbox, final User admin) {
+
+        LOGGER.info("Inside SandboxServiceImpl - deleteSandboxFromSandman");
+
+        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxFromSandman: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", admin = "+admin+"; No return value");
 
         deleteAllSandboxItems(sandbox);
 
@@ -247,15 +280,31 @@ public class SandboxServiceImpl implements SandboxService {
 
         delete(sandbox.getId());
 
+        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxFromSandman: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", admin = "+admin+"; No return value");
+
     }
 
     @Override
     @Transactional
     public synchronized void delete(final Sandbox sandbox, final String bearerToken) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - delete");
+
         delete(sandbox, bearerToken, null, false);
+
+        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+        +"; No return value");
+
     }
 
     private void deleteAllSandboxItems(final Sandbox sandbox) {
+
+        LOGGER.info("Inside SandboxServiceImpl - deleteAllSandboxItems");
+
+        LOGGER.debug("Inside SandboxServiceImpl - deleteAllSandboxItems: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+"; No return value");
 
         deleteSandboxItemsExceptApps(sandbox);
 
@@ -264,9 +313,17 @@ public class SandboxServiceImpl implements SandboxService {
         for (App app : apps) {
             appService.delete(app);
         }
+        
+        LOGGER.debug("Inside SandboxServiceImpl - deleteAllSandboxItems: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+"; No return value");
     }
 
     private void deleteSandboxItemsExceptApps(final Sandbox sandbox) {
+
+        LOGGER.info("Inside SandboxServiceImpl - deleteSandboxItemsExceptApps");
+
+        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxItemsExceptApps: "
+        +"Parameters: sandbox = "+sandbox+"; No return value");
 
         //delete launch scenarios, context params
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(sandbox.getSandboxId());
@@ -295,6 +352,9 @@ public class SandboxServiceImpl implements SandboxService {
         }
 
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
+
+        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxItemsExceptApps: "
+        +"Parameters: sandbox = "+sandbox+"; No return value");
     }
 
     // TODO: create no longer used
@@ -302,8 +362,19 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
+        LOGGER.info("Inside SandboxServiceImpl - create");
+
+        LOGGER.debug("Inside SandboxServiceImpl - create: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+
+        ", bearerToken = "+bearerToken);
+
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - create: "
+            +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+
+            ", bearerToken = "+bearerToken+"; Return value = null");
+
             return null;
         }
         UserPersona userPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
@@ -320,23 +391,60 @@ public class SandboxServiceImpl implements SandboxService {
                 addMemberRole(sandbox, user, Role.valueOf(roleName));
             }
             sandboxActivityLogService.sandboxCreate(sandbox, user);
+            
+            LOGGER.debug("Inside SandboxServiceImpl - create: "
+            +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+
+            ", bearerToken = "+bearerToken+"; Return value = "+savedSandbox);
+
             return savedSandbox;
         }
+        
+        LOGGER.debug("Inside SandboxServiceImpl - create: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+
+        ", bearerToken = "+bearerToken+"; Return value = null");
+
         return null;
     }
 
     @Override
     @Transactional
     public void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside SandboxServiceImpl - clone");
+
+        LOGGER.debug("Inside SandboxServiceImpl - clone: "
+        +"(BEFORE) Parameters: newSandbox = "+newSandbox+", cloneSandboxId = "+clonedSandboxId
+        +", user = "+user+", bearerToken = "+bearerToken
+        +"; No return value");
+
         Map<String, Sandbox> savedAndClonedSandboxes = cloneSandbox(newSandbox, clonedSandboxId, user, bearerToken);
         if (savedAndClonedSandboxes != null) {
             this.sandboxBackgroundTasksService.cloneSandboxSchema(savedAndClonedSandboxes.get(SAVED_SANDBOX), savedAndClonedSandboxes.get((CLONED_SANDBOX)), user, bearerToken, getSandboxApiURL(newSandbox));
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - clone: "
+        +"(AFTER) Parameters: newSandbox = "+newSandbox+", cloneSandboxId = "+clonedSandboxId
+        +", user = "+user+", bearerToken = "+bearerToken
+        +"; No return value");
+
     }
 
     private Map<String, Sandbox> cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - cloneSandbox");
+        
+        LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+        +"(BEFORE) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
+        +", user = "+user+", bearerToken = "+bearerToken);
+
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+            +"(AFTER) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
+            +", user = "+user+", bearerToken = "+bearerToken
+            +"; Return value = null");
+
             return null;
         }
         UserPersona initialUserPersona = userPersonaService.findByPersonaUserId(user.getSbmUserId());
@@ -373,23 +481,51 @@ public class SandboxServiceImpl implements SandboxService {
             Map<String, Sandbox> savedAndClonedSandboxes = new HashMap<>(SANDBOXES_TO_RETURN);
             savedAndClonedSandboxes.put(SAVED_SANDBOX, savedSandbox);
             savedAndClonedSandboxes.put(CLONED_SANDBOX, clonedSandbox);
+
+            LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+            +"(AFTER) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
+            +", user = "+user+", bearerToken = "+bearerToken
+            +"; Return value = "+savedAndClonedSandboxes);
+
             return savedAndClonedSandboxes;
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+        +"(AFTER) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
+        +", user = "+user+", bearerToken = "+bearerToken
+        +"; Return value = null");
+
         return null;
     }
 
     private Sandbox saveNewSandbox(Sandbox newSandbox, User user) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - saveNewSandbox");
+
+        LOGGER.debug("Inside SandboxServiceImpl - saveNewSandbox: "
+        +"(BEFORE) Parameters: newSandbox = "+newSandbox+", user = "+user);
+
         newSandbox.setCreatedBy(user);
         newSandbox.setCreatedTimestamp(new Timestamp(new Date().getTime()));
         newSandbox.setVisibility(Visibility.valueOf(defaultSandboxVisibility));
         newSandbox.setPayerUserId(user.getId());
         newSandbox.setCreationStatus(SandboxCreationStatus.QUEUED);
-        return save(newSandbox);
+
+        Sandbox retVal = save(newSandbox);
+
+        LOGGER.debug("Inside SandboxServiceImpl - saveNewSandbox: "
+        +"(AFTER) Parameters: newSandbox = "+newSandbox+", user = "+user
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     @Transactional
     public Sandbox update(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside SandboxServiceImpl - update");
+
         Sandbox existingSandbox = findBySandboxId(sandbox.getSandboxId());
         existingSandbox.setName(sandbox.getName());
         existingSandbox.setDescription(sandbox.getDescription());
@@ -398,12 +534,25 @@ public class SandboxServiceImpl implements SandboxService {
             existingSandbox.setAllowOpenAccess(sandbox.isAllowOpenAccess());
             callCreateOrUpdateSandboxAPI(existingSandbox, bearerToken);
         }
-        return save(existingSandbox);
+
+        Sandbox retVal = save(existingSandbox);
+
+        LOGGER.debug("Inside SandboxServiceImpl - update: "
+        +"Parameters: sandbox = "+sandbox+", user = "+user+", bearerToken = "+bearerToken
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     @Transactional
     public void removeMember(final Sandbox sandbox, final User user, final String bearerToken) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - removeMember");
+
+        LOGGER.debug("Inside SandboxServiceImpl - removeMember: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", bearerToken = "+bearerToken);
+
         if (user != null) {
             userService.removeSandbox(sandbox, user);
 
@@ -452,20 +601,42 @@ public class SandboxServiceImpl implements SandboxService {
             }
             sandboxActivityLogService.sandboxUserRemoved(sandbox, sandbox.getCreatedBy(), user);
         }
+        
+        LOGGER.debug("Inside SandboxServiceImpl - removeMember: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", bearerToken = "+bearerToken
+        +"; No return value");
+
     }
 
     @Override
     @Transactional
     public void addMember(final Sandbox sandbox, final User user) {
+
+        LOGGER.info("Inside SandboxServiceImpl - addMember");
+
+        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user);
+
         String[] defaultRoles = sandbox.getVisibility() == Visibility.PUBLIC ? defaultPublicSandboxRoles : defaultPrivateSandboxRoles;
         for (String roleName : defaultRoles) {
             addMemberRole(sandbox, user, Role.valueOf(roleName));
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user
+        +"; No return value");
+
     }
 
     @Override
     @Transactional
     public void addMember(final Sandbox sandbox, final User user, final Role role) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - addMember");
+
+        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role);
+
         List<UserRole> userRoles = sandbox.getUserRoles();
         userRoles.add(new UserRole(user, role));
         sandboxActivityLogService.sandboxUserRoleChange(sandbox, user, role, true);
@@ -473,12 +644,27 @@ public class SandboxServiceImpl implements SandboxService {
         userService.addSandbox(sandbox, user);
         sandboxActivityLogService.sandboxUserAdded(sandbox, user);
         save(sandbox);
+
+        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
+        +"; No return value");
     }
 
     @Override
     @Transactional
     public void addMemberRole(final Sandbox sandbox, final User user, final Role role) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - addMember");
+
+        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role);
+
         if (hasMemberRole(sandbox, user, role)) {
+
+        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
+        +"; No return value");
+
             return;
         }
         if (!isSandboxMember(sandbox, user)) {
@@ -490,11 +676,22 @@ public class SandboxServiceImpl implements SandboxService {
             sandbox.setUserRoles(userRoles);
             save(sandbox);
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
+        +"; No return value");
     }
 
     @Override
     @Transactional
     public void removeMemberRole(final Sandbox sandbox, final User user, final Role role) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - removeMemberRole");
+
+        LOGGER.debug("Inside SandboxServiceImpl - removeMemberRole: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
+        +"; No return value");
+
         if (isSandboxMember(sandbox, user)) {
             List<UserRole> allUserRoles = sandbox.getUserRoles();
             UserRole removeUserRole = null;
@@ -516,71 +713,152 @@ public class SandboxServiceImpl implements SandboxService {
                 userRoleService.delete(removeUserRole);
             }
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - removeMemberRole: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
+        +"; No return value");
+
     }
 
     @Override
     @Transactional
     public void changePayerForSandbox(final Sandbox sandbox, final User payer) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - changePayerForSandbox");
+
+        LOGGER.debug("Inside SandboxServiceImpl - changePayerForSandbox: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", payer = "+payer);
+
         sandbox.setPayerUserId(payer.getId());
         save(sandbox);
+        
+        LOGGER.debug("Inside SandboxServiceImpl - changePayerForSandbox: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", payer = "+payer
+        +"; No return value");
     }
 
     @Override
     public boolean hasMemberRole(final Sandbox sandbox, final User user, final Role role) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - hasMemberRole");
+
         List<UserRole> userRoles = sandbox.getUserRoles();
         for (UserRole userRole : userRoles) {
             if (userRole.getUser()
                         .getSbmUserId()
                         .equalsIgnoreCase(user.getSbmUserId()) && userRole.getRole() == role) {
+
+                LOGGER.debug("Inside SandboxServiceImpl - hasMemberRole: "
+                +"Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
+                +"; Return value = true");
+
                 return true;
             }
         }
+        
+        LOGGER.debug("Inside SandboxServiceImpl - hasMemberRole: "
+        +"Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
+        +"; Return value = false");
+
         return false;
     }
 
     @Override
     public void addSandboxImport(final Sandbox sandbox, final SandboxImport sandboxImport) {
+
+        LOGGER.info("Inside SandboxServiceImpl - addSandboxImport");
+
+        LOGGER.debug("Inside SandboxServiceImpl - addSandboxImport: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", sandboxImport = "+sandboxImport);
+
         List<SandboxImport> imports = sandbox.getImports();
         imports.add(sandboxImport);
         sandbox.setImports(imports);
         save(sandbox);
+        
+        LOGGER.debug("Inside SandboxServiceImpl - addSandboxImport: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", sandboxImport = "+sandboxImport
+        +"; No return value");
+
     }
 
     @Override
     public void reset(final Sandbox sandbox, final String bearerToken) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - reset");
+
+        LOGGER.debug("Inside SandboxServiceImpl - reset: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken);
+
         deleteSandboxItemsExceptApps(sandbox);
+        
+        LOGGER.debug("Inside SandboxServiceImpl - reset: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+        +"; No return value");
     }
 
     @Override
     public boolean isSandboxMember(final Sandbox sandbox, final User user) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - reset");
+
         for (UserRole userRole : sandbox.getUserRoles()) {
             if (userRole.getUser()
                         .getSbmUserId()
                         .equalsIgnoreCase(user.getSbmUserId())) {
+
+                LOGGER.info("Inside SandboxServiceImpl - reset: "
+                +"Parameters: sandbox = "+sandbox+", user = "+user
+                +"; Return value = true");
+
                 return true;
             }
         }
+        
+        LOGGER.info("Inside SandboxServiceImpl - reset: "
+        +"Parameters: sandbox = "+sandbox+", user = "+user
+        +"; Return value = false");
+
         return false;
     }
 
     @Override
     @Transactional
     public void sandboxLogin(final String sandboxId, final String userId) {
+
+        LOGGER.info("Inside SandboxServiceImpl - sandboxLogin");
+
         Sandbox sandbox = findBySandboxId(sandboxId);
         User user = userService.findBySbmUserId(userId);
         if (isSandboxMember(sandbox, user)) {
             sandboxActivityLogService.sandboxLogin(sandbox, user);
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - sandboxLogin: "
+        +"Parameters: sandboxId = "+sandboxId+", userId = "+userId
+        +"; No return value");
+
     }
 
     @Override
     @Transactional
     public Sandbox save(final Sandbox sandbox) {
-        return repository.save(sandbox);
+
+        LOGGER.info("Inside SandboxServiceImpl - save");
+
+        Sandbox retVal = repository.save(sandbox);
+
+        LOGGER.debug("Inside SandboxServiceImpl - save: "
+        +"Parameters: sandbox = "+sandbox+"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     public List<Sandbox> getAllowedSandboxes(final User user) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - getAllowedSandboxes");
+
         List<Sandbox> sandboxes = new ArrayList<>();
         if (user != null) {
             sandboxes = user.getSandboxes();
@@ -596,112 +874,255 @@ public class SandboxServiceImpl implements SandboxService {
             }
         }
 
+        LOGGER.debug("Inside SandboxServiceImpl - getAllowedSandboxes: "
+        +"Parameters: user = "+user+"; Return value = "+sandboxes);
+
         return sandboxes;
     }
 
     @Override
     public Sandbox findBySandboxId(final String sandboxId) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - findBySandboxId");
+
+        LOGGER.debug("Inside SandboxServiceImpl - findBySandboxId: "
+        +"Parameters: sandboxId = "+sandboxId
+        +"; Return value = "+repository.findBySandboxId(sandboxId));
+
         return repository.findBySandboxId(sandboxId);
     }
 
     @Override
     public List<Sandbox> findByVisibility(final Visibility visibility) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - findByVisibility");
+
+        LOGGER.debug("Inside SandboxServiceImpl - findByVisibility: "
+        +"Parameters: visibility = "+visibility
+        +"; Return value = "+repository.findByVisibility(visibility));
+
         return repository.findByVisibility(visibility);
     }
 
     @Override
     public String fullCount() {
+        
+        LOGGER.info("Inside SandboxServiceImpl - fullCount");
+
+        LOGGER.debug("Inside SandboxServiceImpl - fullCount: "
+        +"No input parameters; Return value = "+repository.fullCount());
+
         return repository.fullCount();
     }
 
     @Override
     public String fullCountForSpecificTimePeriod(Timestamp endDate) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - fullCountForSpecificTimePeriod");
+
+        LOGGER.debug("Inside SandboxServiceImpl - fullCountForSpecificTimePeriod: "
+        +"Parameters: endDate = "+endDate+
+        "; Return value = "+repository.fullCountForSpecificTimePeriod(endDate));
+
         return repository.fullCountForSpecificTimePeriod(endDate);
     }
 
     @Override
     public String schemaCount(String apiEndpointIndex) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - schemaCount");
+
+        LOGGER.debug("Inside SandboxServiceImpl - schemaCount: "
+        +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+        +"; Return value = "+repository.schemaCount(apiEndpointIndex));
+
         return repository.schemaCount(apiEndpointIndex);
     }
 
     @Override
     public String schemaCountForSpecificTimePeriod(final String apiEndpointIndex, final Timestamp endDate) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - schemaCountForSpecificTimePeriod");
+
+        LOGGER.debug("Inside SandboxServiceImpl - schemaCountForSpecificTimePeriod: "
+        +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+        +", endDate = "+endDate+
+        "; Return value = "+repository.schemaCountForSpecificTimePeriod(apiEndpointIndex, endDate));
+
         return repository.schemaCountForSpecificTimePeriod(apiEndpointIndex, endDate);
     }
 
     @Override
     public String intervalCount(Timestamp intervalTime) {
+
+        LOGGER.info("Inside SandboxServiceImpl - intervalCount");
+
+        LOGGER.debug("Inside SandboxServiceImpl - intervalCount: "
+        +"Parameters: intervalTime = "+intervalTime
+        +"; Return value = "+repository.intervalCount(intervalTime));
+
         return repository.intervalCount(intervalTime);
     }
 
     @Override
     public String newSandboxesInIntervalCount(Timestamp intervalTime, String apiEndpointIndex) {
-        return repository.newSandboxesInIntervalCount(intervalTime, apiEndpointIndex);
+        
+        LOGGER.info("Inside SandboxServiceImpl - newSandboxesInIntervalCount");
+
+        String retVal = repository.newSandboxesInIntervalCount(intervalTime, apiEndpointIndex);
+
+        LOGGER.debug("Inside SandboxServiceImpl - newSandboxesInIntervalCount: "
+        +"Parameters: intervalTime = "+intervalTime+", apiEndpointIndex = "+apiEndpointIndex
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     public List<Sandbox> findByPayerId(Integer payerId) {
+
+        LOGGER.info("Inside SandboxServiceImpl - findByPayerId");
+
+        LOGGER.debug("Inside SandboxServiceImpl - findByPayerId: "
+        +"Parameters: payerId = "+payerId
+        +"; Return value = "+repository.findByPayerUserId(payerId));
+
         return repository.findByPayerUserId(payerId);
     }
 
     @Override
     public String getSandboxApiURL(final Sandbox sandbox) {
+
+        LOGGER.info("Inside SandboxServiceImpl - getSandboxApiURL");
+
+        LOGGER.debug("Inside SandboxServiceImpl - getSandboxApiURL: "
+        +"Parameters: sandbox = "+sandbox
+        +"; Return value = "+getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId());
+
         return getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId();
     }
 
     @Override
     public String getSystemSandboxApiURL() {
+
+        LOGGER.info("Inside SandboxServiceImpl - getSystemSandboxApiURL");
+
+        LOGGER.debug("Inside SandboxServiceImpl - getSystemSandboxApiURL: "
+        +"No input parameters; Return value = "
+        +apiEndpointIndexObj.getCurrent()
+                                  .getApiBaseURL_dstu2() + "/system");
+
         return apiEndpointIndexObj.getCurrent()
                                   .getApiBaseURL_dstu2() + "/system";
     }
 
     @Override
     public Iterable<Sandbox> findAll() {
+        
+        LOGGER.info("Inside SandboxServiceImpl - findAll");
+
+        LOGGER.debug("Inside SandboxServiceImpl - findAll: "
+        +"No input parameters; Return value = "+repository.findAll());
+
         return repository.findAll();
     }
 
     @Override
     public String getApiSchemaURL(final String apiEndpointIndex) {
 
+        LOGGER.info("Inside SandboxServiceImpl - getApiSchemaURL");
+
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
                                                        .getDstu2())) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+            +"Return value = "+apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_dstu2());
+
             return apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_dstu2();
         }
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
                                                        .getStu3())) {
+                                                        
+            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+            +"Return value = "+apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_stu3());
+
             return apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_stu3();
         }
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
                                                        .getR4())) {
+                                                        
+            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+            +"Return value = "+apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_r4());
+
             return apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_r4();
         }
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getDstu2())) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+            +"Return value = "+apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_dstu2());
+
             return apiEndpointIndexObj.getCurrent()
                                       .getApiBaseURL_dstu2();
         }
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getStu3())) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+            +"Return value = "+apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_stu3());
+
             return apiEndpointIndexObj.getCurrent()
                                       .getApiBaseURL_stu3();
         }
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getR4())) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+            +"Return value = "+apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_r4());
+                                      
             return apiEndpointIndexObj.getCurrent()
                                       .getApiBaseURL_r4();
         }
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getR5())) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+            +"Return value = "+apiEndpointIndexObj.getPrev()
+                                      .getApiBaseURL_r5());
+            
             return apiEndpointIndexObj.getCurrent()
                                       .getApiBaseURL_r5();
         }
+        
+        LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+        +"Parameters: apiEndpointIndex = "+apiEndpointIndex
+        +"Return value = ");
+
         return "";
     }
 
     private void removeAllMembers(final Sandbox sandbox) {
+
+        LOGGER.info("Inside SandboxServiceImpl - removeAllMembers");
+
+        LOGGER.debug("Inside SandboxServiceImpl - removeAllMembers: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox);
 
         List<UserRole> userRoles = sandbox.getUserRoles();
         sandbox.setUserRoles(Collections.emptyList());
@@ -711,9 +1132,16 @@ public class SandboxServiceImpl implements SandboxService {
             userService.removeSandbox(sandbox, userRole.getUser());
             userRoleService.delete(userRole);
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - removeAllMembers: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+"; No return value");
+
     }
 
     private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside SandboxServiceImpl - callCreateOrUpdateSandboxAPI");
+
         String url = getSandboxApiURL(sandbox) + "/sandbox";
         if (!sandbox.getDataSet()
                     .equals(DataSet.NA)) {
@@ -744,6 +1172,10 @@ public class SandboxServiceImpl implements SandboxService {
                 throw new RuntimeException(errorMsg);
             }
 
+            LOGGER.debug("Inside SandboxServiceImpl - callCreateOrUpdateSandboxAPI: "
+            +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+            +"; Return value = true");
+
             return true;
         } catch (IOException e) {
             LOGGER.error("Error posting to " + url, e);
@@ -758,6 +1190,9 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - callDeleteSandboxAPI");
+
         String url = getSandboxApiURL(sandbox) + "/sandbox";
 
         // TODO: change to using 'simpleRestTemplate'
@@ -777,6 +1212,10 @@ public class SandboxServiceImpl implements SandboxService {
                 LOGGER.error(errorMsg);
                 throw new RuntimeException(errorMsg);
             }
+
+            LOGGER.debug("Inside SandboxServiceImpl - callDeleteSandboxAPI: "
+            +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+            +"; Return value = true");
 
             return true;
         } catch (IOException e) {
@@ -804,6 +1243,9 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     private void cloneUserPersonas(Sandbox newSandbox, Sandbox existingSandbox, User user) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - cloneUserPersonas");
+
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(existingSandbox.getSandboxId());
         for (UserPersona userPersona : userPersonas) {
             UserPersona newUserPersona = new UserPersona();
@@ -822,9 +1264,17 @@ public class SandboxServiceImpl implements SandboxService {
             newUserPersona.setResourceUrl(userPersona.getResourceUrl());
             userPersonaService.save(newUserPersona);
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - cloneUserPersonas: "
+        +"Parameters: newSandbox = "+newSandbox+", existingSandbox = "+existingSandbox
+        +", user = "+user+"; No return value");
+
     }
 
     private void cloneApps(Sandbox newSandbox, Sandbox existingSandbox, User user) {
+
+        LOGGER.info("Inside SandboxServiceImpl - cloneApps");
+
         List<App> clonedSmartApps = appService.findBySandboxId(existingSandbox.getSandboxId());
         for (App app : clonedSmartApps) {
             App newApp = new App();
@@ -850,9 +1300,16 @@ public class SandboxServiceImpl implements SandboxService {
             appService.save(newApp);
         }
 
+        LOGGER.debug("Inside SandboxServiceImpl - cloneApps: "
+        +"Parameters: newSandbox = "+newSandbox+", existingSandbox = "+existingSandbox
+        +", user = "+user+"; No return value");
+
     }
 
     private void cloneLaunchScenarios(Sandbox newSandbox, Sandbox existingSandbox, User user) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - cloneLaunchScenarios");
+
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(existingSandbox.getSandboxId());
         for (LaunchScenario launchScenario : launchScenarios) {
             LaunchScenario newLaunchScenario = new LaunchScenario();
@@ -891,59 +1348,133 @@ public class SandboxServiceImpl implements SandboxService {
             newLaunchScenario.setVisibility(launchScenario.getVisibility());
             launchScenarioService.save(newLaunchScenario);
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - cloneLaunchScenarios: "
+        +"Parameters: newSandbox = "+newSandbox+", existingSandbox = "+existingSandbox
+        +", user = "+user+"; No return value");
+
     }
 
     @Override
     public String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp beginDate, Timestamp endDate) {
-        return repository.newSandboxesInIntervalCountForSpecificTimePeriod(apiEndpointIndex, beginDate, endDate);
+        
+        LOGGER.info("Inside SandboxServiceImpl - newSandboxesInIntervalCountForSpecificTimePeriod");
+
+        String retVal = repository.newSandboxesInIntervalCountForSpecificTimePeriod(apiEndpointIndex, beginDate, endDate); 
+
+        LOGGER.debug("Inside SandboxServiceImpl - newSandboxesInIntervalCountForSpecificTimePeriod: "
+        +"Parameters: apiEndpointIndex = "+apiEndpointIndex+", beginDate = "+beginDate
+        +", endDate = "+endDate+"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - intervalCountForSpecificTimePeriod");
+
+        LOGGER.debug("Inside SandboxServiceImpl - intervalCountForSpecificTimePeriod: "
+        +"Parameters: beginDate = "+beginDate+", endDate = "+endDate
+        +"; Return value = "+repository.intervalCountForSpecificTimePeriod(beginDate, endDate));
+
         return repository.intervalCountForSpecificTimePeriod(beginDate, endDate);
     }
 
     @Override
     @Transactional(readOnly = true)
     public SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - getQueuedCreationStatus");
+
         var sandboxes = repository.findByCreationStatusOrderByCreatedTimestampAsc(SandboxCreationStatus.QUEUED);
         var maybeSandbox = IntStream.range(0, sandboxes.size())
                                     .mapToObj(i -> {
                                         if (sandboxes.get(i)
                                                      .getSandboxId()
                                                      .equals(sandboxId)) {
-                                            return new SandboxCreationStatusQueueOrder(i, sandboxes.get(i)
-                                                                                                   .getCreationStatus());
+                                            
+                                            SandboxCreationStatusQueueOrder retVal = new SandboxCreationStatusQueueOrder(i, sandboxes.get(i)
+                                            .getCreationStatus());
+
+                                            LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+                                            +"Parameters: sandboxId = "+sandboxId
+                                            +"; Return value = "+retVal);
+
+                                            return retVal;
                                         }
+                                        
+                                        LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+                                        +"Parameters: sandboxId = "+sandboxId
+                                        +"; Return value = null");
+
                                         return null;
                                     })
                                     .filter(Objects::nonNull)
                                     .findAny();
         if (maybeSandbox.isPresent()) {
+            
+            LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+            +"Parameters: sandboxId = "+sandboxId
+            +"; Return value = "+maybeSandbox.get());
+
             return maybeSandbox.get();
         }
         var sandbox = repository.findBySandboxId(sandboxId);
-        return new SandboxCreationStatusQueueOrder(0, sandbox.getCreationStatus());
+        
+        SandboxCreationStatusQueueOrder retVal = new SandboxCreationStatusQueueOrder(0, sandbox.getCreationStatus());
+
+        LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+        +"Parameters: sandboxId = "+sandboxId
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     public void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken, String server) {
+
+        LOGGER.info("Inside SandboxServiceImpl - exportSandbox");
+
         sandboxBackgroundTasksService.exportSandbox(sandbox, userService.findBySbmUserId(sbmUserId), bearerToken, getSandboxApiURL(sandbox), server);
+
+        LOGGER.debug("Inside SandboxServiceImpl - exportSandbox: "
+        +"Parameters: sandbox = "+sandbox+", sbmUserId = "+sbmUserId+", bearerToken = "+bearerToken
+        +", server = "+server+"; No return value");
+        
     }
 
     @Override
     @Transactional
     public void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
+
+        LOGGER.info("Inside SandboxServiceImpl - importSandbox");
+
         checkForEmptyFile(zipFile);
         startSandboxImport(zipFile, requestingUser, bearerToken, server);
+
+        LOGGER.debug("Inside SandboxServiceImpl - importSandbox: "
+        +"Parameters: zipFile = "+zipFile+", requestingUser = "+requestingUser
+        +", bearerToken = "+bearerToken+", server = "+server+"; No return value");
+
     }
     private void checkForEmptyFile(MultipartFile zipFile) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - checkForEmptyFile");
+
         if (zipFile.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Failed to import empty file.");
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - checkForEmptyFile: "
+        +"Parameters: zipFile = "+zipFile+"; No return value");
+
     }
 
     private void startSandboxImport(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - startSandboxImport");
+
         ZipInputStream zipInputStream;
         try {
             zipInputStream = new ZipInputStream(zipFile.getInputStream());
@@ -961,9 +1492,17 @@ public class SandboxServiceImpl implements SandboxService {
             LOGGER.error(e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException while reading zip file.");
         }
+
+        LOGGER.debug("Inside SandboxServiceImpl - startSandboxImport: "
+        +"Parameters: zipFile = "+zipFile+", requestingUser = "+requestingUser
+        +", bearerToken = "+bearerToken+", server = "+server+"; No return value");
+
     }
 
     private Sandbox createSandboxTableEntry(Map sandboxVersions, User requestingUser) {
+        
+        LOGGER.info("Inside SandboxServiceImpl - createSandboxTableEntry");
+        
         var newSandbox = new Sandbox();
         newSandbox.setSandboxId((String) sandboxVersions.get("id"));
         newSandbox.setApiEndpointIndex(FhirVersion.getFhirVersion((String) sandboxVersions.get("fhirVersion")).getEndpointIndex());
@@ -972,7 +1511,14 @@ public class SandboxServiceImpl implements SandboxService {
         }
         newSandbox.setName((String) sandboxVersions.get("name"));
         newSandbox.setDescription((String) sandboxVersions.get("description"));
-        return saveNewSandbox(newSandbox, requestingUser);
+        
+        Sandbox retVal = saveNewSandbox(newSandbox, requestingUser);
+
+        LOGGER.debug("Inside SandboxServiceImpl - createSandboxTableEntry: "
+        +"Parameters: sandboxVersions = "+sandboxVersions+", requestingUser = "+requestingUser
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     private enum FhirVersion {
@@ -1022,8 +1568,15 @@ public class SandboxServiceImpl implements SandboxService {
     }
 
     private List<String> getValidDomainsToImportFrom() {
+        
+        LOGGER.info("Inside SandboxServiceImpl - getValidDomainsToImportFrom");
+
         var restTemplate = new RestTemplate();
         var trustedDomains = restTemplate.getForObject(this.trustedDomainsApiUrl, List.class);
+
+        LOGGER.debug("Inside SandboxServiceImpl - getValidDomainsToImportFrom: "
+        +"No input parameters; Return value = "+(List<String>) trustedDomains);
+
         return (List<String>) trustedDomains;
     }
 }

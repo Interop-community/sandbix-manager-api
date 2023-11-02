@@ -67,6 +67,9 @@ public class EmailServiceImpl implements EmailService {
     @Override
     @PublishAtomicMetric
     public void sendEmail(User inviter, User invitee, Sandbox sandbox, int invitationId) throws IOException {
+        
+        LOGGER.info("Inside EmailServiceImpl - sendEmails");
+
         if (sendEmail) {
 
             Message message = new Message(true, Message.ENCODING);
@@ -106,10 +109,18 @@ public class EmailServiceImpl implements EmailService {
                 throw new RuntimeException(e + " Email was not sent");
             }
         }
+
+        LOGGER.debug("Inside EmailServiceImpl - sendEmails: "
+        +"Parameters: inviter = "+inviter+", invitee = "+invitee+", sandbox = "+sandbox+", invitationId = "+invitationId
+        +"; No return value");
+
     }
 
     @Override
     public void sendExportNotificationEmail(User user, URL sandboxExportFile, String sandboxName) {
+
+        LOGGER.info("Inside EmailServiceImpl - sendExportNotificationEmail");
+
         if (sendEmail) {
 
             Message message = new Message(true, Message.ENCODING);
@@ -132,10 +143,18 @@ public class EmailServiceImpl implements EmailService {
                 throw new RuntimeException(e + " Email was not sent");
             }
         }
+
+        LOGGER.debug("Inside EmailServiceImpl - sendExportNotificationEmail: "
+        +"Parameters: user = "+user+", sandboxExportFile = "+sandboxExportFile+", sandboxName = "+sandboxName
+        +"; No return value");
+
     }
 
     @Override
     public void sendImportErrorNotificationEmail(User user, String sandboxName) {
+        
+        LOGGER.info("Inside EmailServiceImpl - sendImportErrorNotificationEmail");
+
         if (sendEmail) {
 
             Message message = new Message(true, Message.ENCODING);
@@ -157,10 +176,16 @@ public class EmailServiceImpl implements EmailService {
                 throw new RuntimeException(e + " Email was not sent");
             }
         }
+
+        LOGGER.debug("Inside EmailServiceImpl - sendImportErrorNotificationEmail: "
+        +"Parameters: user = "+user+", sandboxName = "+sandboxName+"; No return value");
+
     }
 
     public void sendEmailByJavaMail(Message emailMessage, String templateName)
             throws MessagingException {
+
+        LOGGER.info("Inside EmailServiceImpl - sendEmailByJavaMail");
 
         for (Message.Recipient recipient : emailMessage.getRecipients()) {
             final Context ctx = new Context(recipient.getLocale());
@@ -208,16 +233,30 @@ public class EmailServiceImpl implements EmailService {
 
         }
 
+        LOGGER.debug("Inside EmailServiceImpl - sendEmailByJavaMail: "
+        +"Parameters: emailMessage = "+emailMessage+", templateName = "+templateName
+        +"No return value");
+
     }
 
     private static String toJson(Message message) {
+        
+        LOGGER.info("Inside EmailServiceImpl - toJson");
+
         Gson gson = new Gson();
         Type type = new TypeToken<Message>() {
         }.getType();
+
+        LOGGER.debug("Inside EmailServiceImpl - toJson: "
+        +"Parameters: message = "+message+"; Return value = "+gson.toJson(message, type));
+
         return gson.toJson(message, type);
     }
 
     private byte[] getImageFile(String pathName, String imageType) throws IOException {
+        
+        LOGGER.info("Inside EmailServiceImpl - getImageFile");
+
         BufferedImage img;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -228,11 +267,23 @@ public class EmailServiceImpl implements EmailService {
         baos.flush();
         byte[] imageInByte = baos.toByteArray();
         baos.close();
+
+        LOGGER.debug("Inside EmailServiceImpl - getImageFile: "
+        +"Parameters: pathName = "+pathName+", imageType = "+imageType
+        +"Return value = "+imageInByte);
+
         return imageInByte;
     }
 
     private byte[] getFile(String pathName) throws IOException {
+        
+        LOGGER.info("Inside EmailServiceImpl - getFile");
+
         ClassPathResource cpr = new ClassPathResource(pathName);
+
+        LOGGER.debug("Inside EmailServiceImpl - getFile: "
+        +"Parameters: pathName = "+pathName+"; Return value = "+IOUtils.toByteArray(cpr.getInputStream()));
+
         return IOUtils.toByteArray(cpr.getInputStream());
     }
 

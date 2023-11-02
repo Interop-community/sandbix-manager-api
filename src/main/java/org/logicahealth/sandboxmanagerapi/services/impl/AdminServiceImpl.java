@@ -14,6 +14,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class AdminServiceImpl implements AdminService {
+    private static Logger LOGGER = LoggerFactory.getLogger(AdminServiceImpl.class.getName());
 
     @Value("${spring.datasource.base_url}")
     private String databaseUrl;
@@ -65,6 +68,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public HashMap<String, Object> syncSandboxManagerandReferenceApi(Boolean fix, String request) {
+        LOGGER.info("Inside AdminServiceImpl - syncSandboxManagerandReferenceApi");
+        
         List<String> sandboxesInSM = new ArrayList<>();
         Collection<LinkedHashMap> sandboxesInRAPI;
         Iterable<Sandbox> sandboxesIterable = sandboxService.findAll();
@@ -115,6 +120,9 @@ public class AdminServiceImpl implements AdminService {
                 }
             }
 
+            LOGGER.debug("AdminServiceImpl - syncSandboxManagerandReferenceApi: "
+            +"Parameters: fix = "+fix+", request = "+request+"; Return value = "+returnedDict);
+
             return returnedDict;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -123,6 +131,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Set<String> deleteUnusedSandboxes(User user, String bearerToken){
+        LOGGER.info("Inside AdminServiceImpl - deleteUnusedSandboxes");
+        
         Iterable<SandboxActivityLog> sandboxAccessHistories = sandboxActivityLogService.findAll();
         Set<String> set1SandboxIdMoreThanYear = new HashSet<>();
         Set<String> set2SandboxIdLessThanYear = new HashSet<>();
@@ -143,13 +153,23 @@ public class AdminServiceImpl implements AdminService {
             Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
             sandboxService.delete(sandbox, bearerToken, user, false);
         }
+
+        LOGGER.debug("Inside AdminServiceImpl - deleteUnusedSandboxes: "
+        +"Parameters: user = "+user+", bearerToken = "+bearerToken+"; Return value = "+setFinalSandboxIdDeleted);
+
         return setFinalSandboxIdDeleted;
     }
 
     private void callDeleteSandboxAPI(Sandbox sandbox, String request) {
+        LOGGER.info("Inside AdminServiceImpl - callDeleteSandboxAPI");
+
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.set("Authorization", "Bearer " + request);
         HttpEntity<String> httpEntity = new HttpEntity<>(requestHeaders);
         simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandbox)  + "/sandbox?sync=true", HttpMethod.DELETE, httpEntity, String.class);
+
+        LOGGER.debug("Inside AdminServiceImpl - callDeleteSandboxAPI: "
+        +"Parameters: sandbox = "+sandbox+", request = "+request+"; No return value");
+
     }
 }

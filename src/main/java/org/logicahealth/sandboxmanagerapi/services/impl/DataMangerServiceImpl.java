@@ -33,7 +33,7 @@ import java.util.stream.IntStream;
 @Service
 public class DataMangerServiceImpl implements DataManagerService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SandboxServiceImpl.class.getName());
+    private static Logger LOGGER = LoggerFactory.getLogger(DataMangerServiceImpl.class.getName());
 
     private SandboxService sandboxService;
     private CloseableHttpClient httpClient;
@@ -61,6 +61,8 @@ public class DataMangerServiceImpl implements DataManagerService {
     @Override
     public String importPatientData(final Sandbox sandbox, final String bearerToken, final String endpoint, final String patientId, final String fhirIdPrefix) throws UnsupportedEncodingException {
 
+        LOGGER.info("Inside DataMangerServiceImpl - importPatientData");
+
         SandboxImport sandboxImport = new SandboxImport();
         Timestamp start = new Timestamp(new Date().getTime());
         sandboxImport.setTimestamp(start);
@@ -72,15 +74,32 @@ public class DataMangerServiceImpl implements DataManagerService {
         long seconds = (new Date().getTime()-start.getTime())/1000;
         sandboxImport.setDurationSeconds(Long.toString(seconds));
         sandboxService.addSandboxImport(sandbox, sandboxImport);
+
+        LOGGER.debug("Inside DataMangerServiceImpl - importPatientData: "
+        +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken+", endpoint = "+endpoint
+        +", patientId = "+patientId+", fhirIdPrefix = "+fhirIdPrefix+"; Return value = "+success);
+
         return success;
     }
 
     @Override
     public String reset(final Sandbox sandbox, final String bearerToken) throws UnsupportedEncodingException {
-        return resetSandboxFhirData(sandbox, bearerToken ) ? "SUCCESS" : "FAILED";
+        
+        LOGGER.info("Inside DataMangerServiceImpl - reset");
+
+        String retVal = resetSandboxFhirData(sandbox, bearerToken ) ? "SUCCESS" : "FAILED";
+
+        LOGGER.debug("Inside DataMangerServiceImpl - reset: "
+        +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     private String getEverythingForPatient(String patientId, String endpoint, String fhirIdPrefix, Sandbox sandbox, String bearerToken, SandboxImport sandboxImport) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - getEverythingForPatient");
+
         String nextPage;
         List<JSONObject> everythingResources = new ArrayList<>();
         String query = "/Patient/" + patientId + "/$everything";
@@ -113,10 +132,19 @@ public class DataMangerServiceImpl implements DataManagerService {
 
         postFHIRBundle(sandbox, bundleString, bearerToken);
         sandboxImport.setSuccessCount(Integer.toString(resourceIds.size()));
+
+        LOGGER.debug("Inside DataMangerServiceImpl - getEverythingForPatient: "
+        +"Parameters: patientId = "+patientId+", endpoint = "+endpoint
+        +", fhirIdPrefix = "+fhirIdPrefix+", sandbox = "+sandbox+", bearerToken = "+bearerToken
+        +", sandboxImport = "+sandboxImport+"; Return value = SUCCESS");
+
         return "SUCCESS";
     }
 
     private String buildTransactionBundle(List<JSONObject> resources, String fhirIdPrefix) {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - buildTransactionBundle");
+
         JSONObject transactionBundle = new JSONObject();
         JSONArray resourcesArray = new JSONArray();
         transactionBundle.put("resourceType", "Bundle");
@@ -139,11 +167,18 @@ public class DataMangerServiceImpl implements DataManagerService {
 
         transactionBundle.put("entry", resourcesArray);
         fixupIDs(transactionBundle, fhirIdPrefix);
+
+        LOGGER.debug("Inside DataMangerServiceImpl - buildTransactionBundle: "
+        +"Parameters: resources = "+resources+", fhirIdPrefix = "+fhirIdPrefix
+        +"; Return value = "+transactionBundle.toString());
+
         return transactionBundle.toString();
     }
 
     // Prefix resource ids - used for the transaction bundle
     private void fixupIDs(Object json, String fhirIdPrefix) {
+
+        LOGGER.info("Inside DataMangerServiceImpl - fixupIDs");
 
         if (json instanceof JSONObject) {
             fixupJsonObjectIds((JSONObject) json, fhirIdPrefix);
@@ -151,9 +186,17 @@ public class DataMangerServiceImpl implements DataManagerService {
             JSONArray jsonArray = (JSONArray) json;
             IntStream.range(0, jsonArray.length()).forEach(i -> fixupIDs(jsonArray.get(i), fhirIdPrefix));
         }
+
+        LOGGER.debug("Inside DataMangerServiceImpl - fixupIDs: "
+        +"Parameters: json = "+json+", fhirIdPrefix = "+fhirIdPrefix
+        +"; No return value");
+
     }
 
     private void fixupJsonObjectIds(JSONObject json, String fhirIdPrefix) {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - fixupJsonObjectIds");
+
         final String reference = "reference";
         JSONObject jsonObject = json;
         if (jsonObject.has(reference)) {
@@ -170,9 +213,17 @@ public class DataMangerServiceImpl implements DataManagerService {
                 }
             }
         }
+
+        LOGGER.debug("Inside DataMangerServiceImpl - fixupJsonObjectIds: "
+        +"Parameters: json = "+json+", fhirIdPrefix = "+fhirIdPrefix
+        +"; No return value");
+
     }
 
     private List<JSONObject> getResourcesFromSearch(JSONObject jsonObject) {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - getResourcesFromSearch");
+
         List<JSONObject> resources = new ArrayList<>();
 
         JSONArray entries = jsonObject.getJSONArray("entry");
@@ -184,24 +235,42 @@ public class DataMangerServiceImpl implements DataManagerService {
             resources.add(resource);
         }
 
+        LOGGER.debug("Inside DataMangerServiceImpl - getResourcesFromSearch: "
+        +"Parameters: jsonObject = "+jsonObject+"; Return value = "+resources);
+
         return resources;
     }
 
     private String getNextPageLink(JSONObject jsonObject) {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - getNextPageLink");
+
         JSONArray links = jsonObject.getJSONArray("link");
 
         for (int i = 0; i < links.length(); i++) {
             JSONObject link = links.getJSONObject(i);
 
             if ("next".equalsIgnoreCase(link.getString("relation"))) {
+
+                LOGGER.debug("Inside DataMangerServiceImpl - getNextPageLink: "
+                +"Parameters: jsonObject = "+jsonObject
+                +"; Return value = "+link.getString("url"));
+
                 return link.getString("url");
             }
         }
+
+        LOGGER.debug("Inside DataMangerServiceImpl - getNextPageLink: "
+        +"Parameters: jsonObject = "+jsonObject
+        +"; Return value = "+null);
 
         return null;
     }
 
     private String queryFHIRServer(final String endpoint, final String query)  {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - queryFHIRServer");
+
         String url = endpoint + query;
 
         // TODO: change to using 'simpleRestTemplate'
@@ -222,6 +291,11 @@ public class DataMangerServiceImpl implements DataManagerService {
             }
 
             HttpEntity httpEntity = closeableHttpResponse.getEntity();
+
+            LOGGER.debug("Inside DataMangerServiceImpl - queryFHIRServer: "
+            +"Parameters: endpoint = "+endpoint+", query = "+query
+            +"; Return value = "+EntityUtils.toString(httpEntity));
+
             return EntityUtils.toString(httpEntity);
         } catch (IOException e) {
             LOGGER.error("Error posting to " + url, e);
@@ -236,6 +310,9 @@ public class DataMangerServiceImpl implements DataManagerService {
     }
 
     private boolean resetSandboxFhirData(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - resetSandboxFhirData");
+
         String jsonString = "{}";
         if (sandbox.getDataSet().equals(DataSet.DEFAULT)) {
             jsonString = "{\"dataSet\": \"" + sandbox.getDataSet() + "\"}";
@@ -243,16 +320,38 @@ public class DataMangerServiceImpl implements DataManagerService {
 
         if (postToSandbox(sandbox, jsonString, "/sandbox/reset", bearerToken )) {
             sandboxService.reset(sandbox, bearerToken);
+
+            LOGGER.debug("Inside DataMangerServiceImpl - resetSandboxFhirData: "
+            +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+            +"; Return value = true");
+
             return true;
         }
+        
+        LOGGER.debug("Inside DataMangerServiceImpl - resetSandboxFhirData: "
+        +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
+        +"; Return value = false");
+
         return false;
     }
 
     private boolean postFHIRBundle(final Sandbox sandbox, final String jsonString, final String bearerToken ) throws UnsupportedEncodingException {
-        return postToSandbox(sandbox, jsonString, "/data", bearerToken );
+        
+        LOGGER.info("Inside DataMangerServiceImpl - postFHIRBundle");
+
+        boolean retVal = postToSandbox(sandbox, jsonString, "/data", bearerToken );
+
+        LOGGER.debug("Inside DataMangerServiceImpl - postFHIRBundle: "
+        +"Parameters: sandbox = "+sandbox+", jsonString = "+jsonString+", bearerToken = "+bearerToken
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     private boolean postToSandbox(final Sandbox sandbox, final String jsonString, final String requestStr, final String bearerToken ) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside DataMangerServiceImpl - postToSandbox");
+
         String url = sandboxService.getSandboxApiURL(sandbox) + requestStr;
 
         HttpHeaders headers = new HttpHeaders();
@@ -263,6 +362,11 @@ public class DataMangerServiceImpl implements DataManagerService {
 
         try {
             simpleRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+            
+            LOGGER.debug("Inside DataMangerServiceImpl - postToSandbox: "
+            +"Parameters: sandbox = "+sandbox+", jsonString = "+jsonString+", requestStr = "+requestStr
+            +", bearerToken = "+bearerToken+"; Return value = true");
+
             return true;
         } catch (HttpClientErrorException e) {
             if (e.getRawStatusCode() == 401) {

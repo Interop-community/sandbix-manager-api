@@ -5,9 +5,12 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.logicahealth.sandboxmanagerapi.services.JwtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class JwtServiceImpl implements JwtService {
+    private static Logger LOGGER = LoggerFactory.getLogger(JwtServiceImpl.class.getName());
 
     @Value("${hspc.platform.jwt.key}")
     private String jwtKey;
@@ -20,10 +23,18 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String createSignedJwt(String subject) {
-        return Jwts.builder()
+        
+        LOGGER.info("Inside JwtServiceImpl - createSignedJwt");
+
+        String retVal = Jwts.builder()
                 .setSubject(subject)
                 .signWith(SignatureAlgorithm.forName(signatureAlgorithm), jwtKey)
                 .compact();
+
+        LOGGER.debug("Inside JwtServiceImpl - createSignedJwt: "
+        +"Parameters: subject = "+subject+"; Return value = "+retVal);
+
+        return retVal;
     }
 
 //    @Override

@@ -9,9 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class RuleServiceImpl implements RuleService {
+    private static Logger LOGGER = LoggerFactory.getLogger(RuleServiceImpl.class.getName());
 
     private RulesList rulesList;
 
@@ -54,28 +57,62 @@ public class RuleServiceImpl implements RuleService {
     }
 
     public Boolean checkIfUserCanCreateSandbox(User user, String bearerToken) {
+        
+        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanCreateSandbox");
+
         if (rulesList.getTierRuleList() == null) {
+            
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+            +"Parameters: user = "+user+", bearerToken = "+bearerToken
+            +"Return value = true");
+
             return true;
         }
         Rule rules = findRulesByUser(user);
         if (rules == null) {
+
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+            +"Parameters: user = "+user+", bearerToken = "+bearerToken
+            +"Return value = true");
+
             return true;
         }
         List<Sandbox> sandboxes = sandboxService.findByPayerId(user.getId());
         if (rules.getSandboxes() > sandboxes.size()) {
             if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user, bearerToken)) {
+                
+                LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+                +"Parameters: user = "+user+", bearerToken = "+bearerToken
+                +"Return value = true");
+
                 return true;
             }
         }
+
+        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+        +"Parameters: user = "+user+", bearerToken = "+bearerToken
+        +"Return value = false");
+
         return false;
     }
 
     public Boolean checkIfUserCanCreateApp(Sandbox sandbox) {
+        
+        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanCreateApp");
+
         Integer payerId = sandbox.getPayerUserId();
         if (rulesList.getTierRuleList() == null) {
+
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+            +"Parameters: sandbox = "+sandbox+"; Return value = true");
+
             return true;
         }
         if (payerId == null) {
+
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+            +"Parameters: sandbox = "+sandbox+"; Return value = true");
+
             return true;
         }
         List<App> apps = appService.findBySandboxId(sandbox.getSandboxId());
@@ -84,22 +121,45 @@ public class RuleServiceImpl implements RuleService {
         User user = userService.findById(payerId);
         Rule rules = findRulesByUser(user);
         if (rules == null) {
+            
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+            +"Parameters: sandbox = "+sandbox+"; Return value = true");
+
             return true;
         }
+
+        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+        +"Parameters: sandbox = "+sandbox+"; Return value = "+(rules.getApps() > masterApps.size()));
+
         return rules.getApps() > masterApps.size();
     }
 
     public Boolean checkIfUserCanBeAdded(String sandBoxId) {
+        
+        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanBeAdded");
+
         if (rulesList.getTierRuleList() == null) {
+            
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+            +"Parameters: sandboxId = "+sandBoxId+"; Return value = true");
+
             return true;
         }
         Integer payerId = sandboxService.findBySandboxId(sandBoxId).getPayerUserId();
         if (payerId == null) {
+            
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+            +"Parameters: sandboxId = "+sandBoxId+"; Return value = true");
+
             return true;
         }
         User user = userService.findById(payerId);
         Rule rules = findRulesByUser(user);
         if (rules == null) {
+            
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+            +"Parameters: sandboxId = "+sandBoxId+"; Return value = true");
+
             return true;
         }
         List<UserRole> usersRoles = sandboxService.findBySandboxId(sandBoxId).getUserRoles();
@@ -108,20 +168,42 @@ public class RuleServiceImpl implements RuleService {
             // Creates unique list
             uniqueUsers.add(userRole.getUser().getEmail());
         }
+
+        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+            +"Parameters: sandboxId = "+sandBoxId+"; Return value = "+(rules.getUsers() > uniqueUsers.size()));
+
         return rules.getUsers() > uniqueUsers.size();
     }
 
     public Boolean checkIfUserCanPerformTransaction(Sandbox sandbox, String operation, String bearerToken) {
+        
+        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanPerformTransaction");
+
         if (rulesList.getTierRuleList() == null) {
+
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+            +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
+            +"; Return value = true");
+
             return true;
         }
         Integer payerId = sandbox.getPayerUserId();
         if (payerId == null) {
+            
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+            +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
+            +"; Return value = true");
+
             return true;
         }
         User user = userService.findById(payerId);
         Rule rules = findRulesByUser(user);
         if (rules == null) {
+
+            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+            +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
+            +"; Return value = true");
+
             return true;
         }
         Boolean hasNotifForTransaction = false;
@@ -147,19 +229,46 @@ public class RuleServiceImpl implements RuleService {
                     if (rules.getStorage() * rulesList.getThreshold() <= countedTotalMemoryByUser && !hasNotifForMemory) {
                         notificationService.createNotificationForMoreThanThresholdMemory(user);
                     }
+                    
+                    LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+                    +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
+                    +"; Return value = true");
+                    
                     return true;
                 }
             } else {
+                
+                LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+                +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
+                +"; Return value = true");
+                
                 return true;
             }
         }
+        
+        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+        +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
+        +"; Return value = false");
+        
         return false;
     }
 
     public Rule findRulesByUser(User user) {
+        
+        LOGGER.info("Inside RuleServiceImpl - findRulesByUser");
+
         if (user.getTierLevel() == null) {
+
+            LOGGER.debug("Inside RuleServiceImpl - findRulesByUser: "
+            +"Parameters: user = "+user+"; Return value = null");
+
             return null;
         }
+        
+        LOGGER.debug("Inside RuleServiceImpl - findRulesByUser: "
+        +"Parameters: user = "+user
+        +"; Return value = "+rulesList.getTierRuleList().get(user.getTierLevel().name()));
+
         return rulesList.getTierRuleList().get(user.getTierLevel().name());
     }
 

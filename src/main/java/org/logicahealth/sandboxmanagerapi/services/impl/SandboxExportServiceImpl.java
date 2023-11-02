@@ -101,6 +101,15 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     @Override
     public Runnable createZippedSandboxExport(Sandbox sandbox, String sbmUserId, String bearerToken, String apiUrl, PipedOutputStream pipedOutputStream, String server) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - createZippedSandboxExport");
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - createZippedSandboxExport: "
+        +"Parameters: sandbox = "+sandbox+", sbmUserId = "+sbmUserId
+        +", bearerToken = "+bearerToken+", apiUrl = "+apiUrl
+        +", pipedOutputStream = "+pipedOutputStream+", server = "+server
+        +"; Return type: Runnable");
+
         return () -> {
             var zipOutputStream = new ZipOutputStream(pipedOutputStream);
             addSandboxFhirServerDetailsToZipFile(sandbox, zipOutputStream, bearerToken, apiUrl, server);
@@ -122,6 +131,14 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     @Override
     public Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName, User user, String sandboxName) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - sendToS3Bucket");
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - sendToS3Bucket: "
+        +"Parameters: pipedInputStream = "+pipedInputStream+", sandboxExportFileName = "
+        +sandboxExportFileName+", user = "+user+", sandboxName = "+sandboxName
+        +"; Return type: Runnable");
+
         return () -> {
 
             S3AsyncClient  s3AsyncClient = S3AsyncClient.crtBuilder()
@@ -168,6 +185,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken, String apiUrl, String server) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxFhirServerDetailsToZipFile");
+
         var response = getClientResponse(sandbox, bearerToken, apiUrl);
         ZipInputStream zipInputStream = null;
         try (var osPipe = new PipedOutputStream();
@@ -191,9 +211,18 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             } catch (IOException ignored) {
             }
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxFhirServerDetailsToZipFile: "
+        +"Parameters: sandbox = "+sandbox+", zipOutputStream = "+zipOutputStream
+        +", bearerToken = "+bearerToken+", apiUrl = "+apiUrl+", server = "+server
+        +"; No return value");
+
     }
 
     private void addSchemaHashToZipFile(ZipInputStream zipInputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addSchemaHashToZipFile");
+
         try {
             var schemaHash = new String(zipInputStream.readAllBytes(), StandardCharsets.UTF_8);
             var signature = sandboxEncryptionService.encrypt(schemaHash);
@@ -202,9 +231,17 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding zip file entry for schema signature", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addSchemaHashToZipFile: "
+        +"Parameters: zipInputStream = "+zipInputStream+", zipEntry = "+zipEntry
+        +", zipOutputStream = "+zipOutputStream+"; No return value");
+
     }
 
     private void addSandboxUserRolesAndInviteesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxUserRolesAndInviteesToZipFile");
+
         var sandbox = this.repository.findBySandboxId(sandboxId);
         var sandboxUsers = sandbox.getUserRoles()
                                   .stream()
@@ -227,9 +264,17 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding sandbox user roles and invites for sandbox download", e);
         }
         addSandboxUsersToZipFile(sandboxUsers, zipOutputStream);
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxUserRolesAndInviteesToZipFile: "
+        +"Parameters: sandboxId = "+sandboxId+", zipOutputStream = "+zipOutputStream
+        +"; No return value");
+
     }
 
     private ClientResponse getClientResponse(Sandbox sandbox, String bearerToken, String apiUrl) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - getClientResponse");
+
         String url = apiUrl + SandboxExportServiceImpl.SANDBOX_DOWNLOAD_URI + "/" + sandbox.getSandboxId();
         var webClient = WebClient.builder()
                                  .baseUrl(apiUrl)
@@ -254,42 +299,81 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error(errorMsg);
             throw new RuntimeException(errorMsg);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - getClientResponse: "
+        +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken+", apiUrl = "+apiUrl
+        +"Return value = "+response);
+
         return response;
     }
 
     private void addZipFileEntry(InputStream inputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addZipFileEntry");
+
         try {
             zipOutputStream.putNextEntry(zipEntry);
             IOUtils.copyLarge(inputStream, zipOutputStream);
         } catch (IOException e) {
             LOGGER.error("Exception while adding zip file entry for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addZipFileEntry: "
+        +"Parameters: inputStream = "+inputStream+", zipEntry = "+zipEntry
+        +", zipOutputStream = "+zipOutputStream+"; No return value");
+
     }
 
     private Map<String, String> getZipEntryContents(ZipInputStream inputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - getZipEntryContents");
+
         try (var outputStream = new ByteArrayOutputStream()) {
             byte[] bytes = new byte[1024];
             int length;
             while ((length = inputStream.read(bytes)) >= 0) {
                 outputStream.write(bytes, 0, length);
             }
-            return convertFhirVersionsJsonStringToMap(outputStream.toString());
+
+            Map<String, String> retVal = convertFhirVersionsJsonStringToMap(outputStream.toString());
+
+            LOGGER.debug("Inside SandboxExportServiceImpl - getZipEntryContents: "
+            +"Parameters: inputStream = "+inputStream
+            +"; Return value = "+retVal);
+
+            return retVal;
         } catch (IOException e) {
             LOGGER.error("Exception while extracting fhir server versions json", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - getZipEntryContents: "
+            +"Parameters: inputStream = "+inputStream
+            +"; Return value = null");
+
         return null;
     }
 
     private Map<String, String> convertFhirVersionsJsonStringToMap(String fhirServerVersions) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - convertFhirVersionsJsonStringToMap");
+
         var fhirServerVersionsMap = new HashMap<String, String>();
         var jsonObject = new JSONObject(fhirServerVersions);
         fhirServerVersionsMap.put(FHIR_SERVER_VERSION, jsonObject.getString(FHIR_SERVER_VERSION));
         fhirServerVersionsMap.put(HAPI_VERSION, jsonObject.getString(HAPI_VERSION));
         fhirServerVersionsMap.put(FHIR_VERSION, jsonObject.getString(FHIR_VERSION));
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - convertFhirVersionsJsonStringToMap: "
+        +"Parameters: fhirServerVersions = "+fhirServerVersions
+        +"; Return value = "+fhirServerVersionsMap);
+
         return fhirServerVersionsMap;
     }
 
     private void addSandboxDetailsToZipFile(String sandboxId, ZipOutputStream zipOutputStream, Map<String, String> fhirServerVersions, String sandboxApiURL, String server) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxDetailsToZipFile");
+
         var sandbox = this.repository.findBySandboxId(sandboxId);
         var sandboxDetails = new HashMap<String, Object>();
         sandboxDetails.put("id", sandbox.getSandboxId());
@@ -308,9 +392,18 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding sandbox details for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxDetailsToZipFile: "
+        +"Parameters: sandboxId = "+sandboxId+", zipOutputStream = "+zipOutputStream
+        +", fhirServerVersions = "+fhirServerVersions+", sandboxApiURL = "+sandboxApiURL
+        +", server = "+server+"; No return value");
+        
     }
 
     private void addSandboxUsersToZipFile(Set<SandboxExportServiceImpl.SandboxUser> sandboxUsers, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxUsersToZipFile");
+
         var users = sandboxUsers.stream()
                                 .map(SandboxUser::getEmail)
                                 .distinct()
@@ -320,6 +413,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding users for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxUsersToZipFile: "
+        +"Parameters: sandboxUsers = "+sandboxUsers+", zipOutputStream = "+zipOutputStream
+        +"; No return value");
+
     }
 
     @Getter
@@ -350,6 +448,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     private List<AppManifestTemplate> addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addAppsManifestToZipFile");
+
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var appsList = parseAppsListJson(apps);
         addAppImagesToZipFile(appsList, zipOutputStream);
@@ -358,14 +459,27 @@ public class SandboxExportServiceImpl implements SandboxExportService {
                                                                          .toJson(appsList)
                                                                          .getBytes())) {
             addZipFileEntry(inputStream, new ZipEntry("apps.json"), zipOutputStream);
+    
+            LOGGER.debug("Inside SandboxExportServiceImpl - addAppsManifestToZipFile: "
+            +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
+            +", zipOutputStream = "+zipOutputStream+"; Return value = "+appsList);
+            
             return appsList;
         } catch (IOException e) {
             LOGGER.error("Exception while adding apps manifest for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addAppsManifestToZipFile: "
+        +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
+        +", zipOutputStream = "+zipOutputStream+"; Return value = null");
+
         return null;
     }
 
     private List<AppManifestTemplate> parseAppsListJson(List<App> apps) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - parseAppsListJson");
+
         var appManifests = new ArrayList<AppManifestTemplate>();
         int imageCounter = 0;
         for (App app : apps) {
@@ -391,6 +505,10 @@ public class SandboxExportServiceImpl implements SandboxExportService {
                 LOGGER.error("Exception while parsing application client json for sandbox download", e);
             }
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - parseAppsListJson: "
+        +"Parameters: apps = "+apps+"; Return value = "+appManifests);
+
         return appManifests;
     }
 
@@ -433,17 +551,35 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         }
 
         private String stripFhirQuery(String patient) {
+            
+            LOGGER.info("Inside AppManifestTemplate - stripFhirQuery");
+
+            LOGGER.debug("Inside AppManifestTemplate - stripFhirQuery: "
+            +"Parameters: patient = "+patient+"; Return value = "
+            +patient.substring(patient.contains(PATIENT_FHIR_QUERY) ? patient.indexOf(PATIENT_FHIR_QUERY) + PATIENT_FHIR_QUERY.length() : 0));
+
             return patient.substring(patient.contains(PATIENT_FHIR_QUERY) ? patient.indexOf(PATIENT_FHIR_QUERY) + PATIENT_FHIR_QUERY.length() : 0);
         }
 
         private void setLogoFileName() {
+            
+            LOGGER.info("Inside AppManifestTemplate - setLogoFileName");
+
             if (this.logo == null) {
+                
+                LOGGER.debug("Inside AppManifestTemplate - setLogoFileName: "
+                +"No input parameters; No return value");
+
                 return;
             }
             var logoFilename = this.logo.substring(this.logo.lastIndexOf("/") + 1);
             this.logoFileName = IMAGE_NAME_PREFIX + this.imageCounter;
             if (logoFilename.contains(".")) {
                 this.logoFileName += logoFilename.substring(logoFilename.indexOf("."));
+
+                LOGGER.debug("Inside AppManifestTemplate - setLogoFileName: "
+                +"No input parameters; No return value");
+
                 return;
             }
             var pushbackLimit = 100;
@@ -460,31 +596,64 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             } catch (IOException e) {
                 LOGGER.error("Exception while accessing app logo image url connection for sandbox download", e);
             }
+            
+            LOGGER.debug("Inside AppManifestTemplate - setLogoFileName: "
+            +"No input parameters; No return value");
         }
 
         public String getLogoFileName() {
+            
+            LOGGER.info("Inside AppManifestTemplate - getLogoFileName");
+
+            LOGGER.debug("Inside AppManifestTemplate - getLogoFileName: "
+            +"No input parameters; Return value = "+this.logoFileName);
+
             return this.logoFileName;
         }
 
         public InputStream getLogoInputStream() {
+            
+            LOGGER.info("Inside AppManifestTemplate - getLogoInputStream");
+
             try {
-                return new URL(this.logo).openStream();
+
+                InputStream retVal = new URL(this.logo).openStream();
+
+                LOGGER.debug("Inside AppManifestTemplate - getLogoInputStream: "
+                +"No input parameters; Return value"+retVal);
+
+                return retVal;
             } catch (IOException e) {
                 LOGGER.error("Exception while accessing app logo image for sandbox download", e);
             }
+            
+            LOGGER.debug("Inside AppManifestTemplate - getLogoInputStream: "
+            +"No input parameters; Return value = null");
+
             return null;
         }
     }
 
     private void addAppImagesToZipFile(List<AppManifestTemplate> appsList, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addAppImagesToZipFile");
+
         var fileToInputStreamMapping = appsList.stream()
                                                .filter(app -> app.getLogoFileName() != null)
                                                .collect(Collectors.toMap(AppManifestTemplate::getLogoFileName, AppManifestTemplate::getLogoInputStream));
         fileToInputStreamMapping.forEach((fileName, inputStream) -> addZipFileEntry(inputStream, new ZipEntry(IMAGE_FOLDER + fileName), zipOutputStream));
         appsList.forEach(app -> app.setLogo(IMAGE_FOLDER + app.getLogoFileName()));
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addAppImagesToZipFile: "
+        +"Parameters: appList = "+appsList+", zipOutputStream = "+zipOutputStream
+        +"; No return value");
+
     }
 
     private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addUserPersonasToZipFile");
+
         var userPersonas = userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var sandboxUserPersona = userPersonas.stream()
                                              .map(SandboxUserPersona::new)
@@ -497,6 +666,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding personas for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addUserPersonasToZipFile: "
+        +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
+        +", zipOutputStream = "+zipOutputStream+"; No return value");
+
     }
 
     @Getter
@@ -515,6 +689,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     private void addCdsHooksToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addCdsHooksToZipFile");
+
         var cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         for (CdsServiceEndpoint cdsServiceEndpoint : cdsServiceEndpoints) {
             List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
@@ -530,6 +707,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding cds hooks for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addCdsHooksToZipFile: "
+        +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
+        +", zipOutputStream = "+zipOutputStream+"; No return value");
+
     }
 
     @Getter
@@ -576,6 +758,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, List<AppManifestTemplate> appsManifests) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addLaunchScenariosToZipFile");
+
         var launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var appIdToClientIdMapper = appsManifests.stream()
                                                  .collect(Collectors.toMap(AppManifestTemplate::getAppId, AppManifestTemplate::getClientId));
@@ -590,6 +775,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding launch scenarios for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addLaunchScenariosToZipFile: "
+        +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
+        +", zipOutputStream = "+zipOutputStream+"; No return value");
+
     }
 
     @Data
@@ -637,6 +827,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     }
 
     public void addProfilesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
+        
+        LOGGER.info("Inside SandboxExportServiceImpl - addProfilesToZipFile");
+
         var profileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
         var profiles = profileDetails.stream()
                                      .map(SandboxFhirProfileDetail::new)
@@ -653,6 +846,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         } catch (IOException e) {
             LOGGER.error("Exception while adding profiles for sandbox download", e);
         }
+
+        LOGGER.debug("Inside SandboxExportServiceImpl - addProfilesToZipFile: "
+        +"Parameters: sandboxId = "+sandboxId+", zipOutputStream = "+zipOutputStream
+        +"; No return value");
+
     }
 
     @Getter

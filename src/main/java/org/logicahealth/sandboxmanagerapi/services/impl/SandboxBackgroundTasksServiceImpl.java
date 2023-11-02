@@ -67,6 +67,9 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     @Transactional
     @Async("sandboxSingleThreadedTaskExecutor")
     public void cloneSandboxSchema(final Sandbox newSandbox, final Sandbox clonedSandbox, final User user, final String bearerToken, final String sandboxApiURL) throws UnsupportedEncodingException {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - cloneSandboxSchema");
+
         TransactionSynchronizationManager.setActualTransactionActive(true);
         String url = sandboxApiURL + "/sandbox/clone";
 
@@ -108,11 +111,20 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             LOGGER.error("Error posting to " + url, e);
             throw new RuntimeException(e);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - cloneSandboxSchema: "
+        +"Parameters: newSandbox = "+newSandbox+", clonedSandbox = "+clonedSandbox
+        +", user = "+user+", bearerToken = "+bearerToken+", sandboxApiURL = "+sandboxApiURL
+        +"; No return value");
+
     }
 
     @Async("sandboxSingleThreadedTaskExecutor")
     @Override
     public void exportSandbox(Sandbox sandbox, User user, String bearerToken, String apiUrl, String server) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - exportSandbox");
+
         try (final var pipedOutputStream = new PipedOutputStream();
              final var pipedInputStream = new PipedInputStream(pipedOutputStream)) {
             var sandboxExportFileName = UUID.randomUUID() + ".zip";
@@ -126,12 +138,20 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             LOGGER.error("Exception while exporting sandbox to s3 bucket", e);
             throw new RuntimeException("Exception while exporting sandbox to s3 bucket");
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - exportSandbox: "
+        +"Parameters: sandbox = "+sandbox+", user = "+user+", bearerToken = "+bearerToken
+        +"apiUrl = "+apiUrl+", server = "+server+"; No return value");
+
     }
 
     @Override
     @Async("sandboxSingleThreadedTaskExecutor")
     @Transactional
     public void importSandbox(ZipInputStream zipInputStream, Sandbox newSandbox, Map sandboxVersions, User requestingUser, String sandboxApiURL, String bearerToken, String thisServer) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importSandbox");
+
         waitForDatabase();
         newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
         requestingUser = userService.findBySbmUserId(requestingUser.getSbmUserId());
@@ -187,16 +207,33 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             emailService.sendImportErrorNotificationEmail(requestingUser, newSandbox.getName());
             LOGGER.error("Failed to import zip file", e);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importSandbox: "
+        +"Parameters: zipInputStream = "+zipInputStream+", newSandbox = "+newSandbox
+        +", sandboxVersions = "+sandboxVersions+", requestingUser = "+requestingUser
+        +"sandboxApiURL = "+sandboxApiURL+", bearerToken = "+bearerToken
+        +"thisServer = "+thisServer+"; No return value");
+
     }
 
     private void waitForDatabase() {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - waitForDatabase");
+
         try {
             Thread.sleep(3_000);
         } catch (InterruptedException ignored) {
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - waitForDatabase: "
+        +"No input parameters; No return value");
+
     }
 
     private void importSandboxDatabaseSchema(ZipInputStream zipInputStream, Sandbox newSandbox, String sandboxApiURL, String bearerToken, Map sandboxVersions, String decryptedSchemaSignature) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importSandboxDatabaseSchema");
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set(HttpHeaders.AUTHORIZATION, "BEARER " + bearerToken);
@@ -218,16 +255,34 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create schema for sandbox " + newSandbox.getSandboxId(), e);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importSandboxDatabaseSchema: "
+        +"Parameters: zipInputStream = "+zipInputStream+", newSandbox = "+newSandbox
+        +", sandboxApiURL = "+sandboxApiURL+", bearerToken = "+bearerToken
+        +", sandboxVersions = "+sandboxVersions+", decryptedSchemaSignature = "+decryptedSchemaSignature
+        +"; No return value");
+
     }
 
     private void checkForValidSchema(File schemaFile, String decryptedSchemaSignature) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - checkForValidSchema");
+
         var schemaHash = getSHA256Hash(schemaFile);
         if (!schemaHash.equals(decryptedSchemaSignature)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Schema hash does not match");
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - checkForValidSchema: "
+        +"Parameters: schemaFile = "+schemaFile+", decryptedSchemaSignature = "+decryptedSchemaSignature
+        +"; No return value");
+
     }
 
     private String getSHA256Hash(File schemaFile) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - getSHA256Hash");
+
         MessageDigest messageDigest;
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
@@ -240,7 +295,14 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                 var digestInputStream = new DigestInputStream(bufferedInputStream, messageDigest)
         ) {
             while (digestInputStream.read() != -1) ;
-            return Hex.encodeHexString(messageDigest.digest());
+            
+            String retVal = Hex.encodeHexString(messageDigest.digest());
+
+            LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - getSHA256Hash: "
+            +"Parameters: schemaFile = "+schemaFile
+            +"; Return value "+retVal);
+
+            return retVal;
         } catch (IOException e) {
             LOGGER.error("Exception while hashing schema file", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while hashing schema file", e);
@@ -248,40 +310,92 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     }
 
     private String decryptSchemaSignature(ZipInputStream zipInputStream, String originServerUrl, String thisServer) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - decryptSchemaSignature");
+
         var schemaSignature = readFromZipInputStream(zipInputStream);
         if (sandboxExportedFromThisServer(thisServer, originServerUrl)) {
-            return sandboxEncryptionService.decryptSignature(schemaSignature);
+
+            String retVal = sandboxEncryptionService.decryptSignature(schemaSignature);
+
+            LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - decryptSchemaSignature: "
+            +"Parameters: zipInputStream = "+zipInputStream+", originServerUrl = "+originServerUrl
+            +", thisServer = "+thisServer
+            +"; Return value = "+retVal);
+
+            return retVal;
         } else {
-            return decryptSchemaSignatureByCallingOriginServer(schemaSignature, originServerUrl);
+
+            String retVal = decryptSchemaSignatureByCallingOriginServer(schemaSignature, originServerUrl);
+
+            LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - decryptSchemaSignature: "
+            +"Parameters: zipInputStream = "+zipInputStream+", originServerUrl = "+originServerUrl
+            +", thisServer = "+thisServer
+            +"; Return value = "+retVal);
+
+            return retVal;
         }
     }
 
     private String readFromZipInputStream(ZipInputStream zipInputStream) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - readFromZipInputStream");
+
         byte[] zipEntryContents = new byte[0];
         try {
             zipEntryContents = zipInputStream.readAllBytes();
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read schema signature. ", e);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - readFromZipInputStream: "
+        +"Parameters: zipInputStream = "+zipInputStream
+        +"; Return value = "+ new String(zipEntryContents));
+
         return new String(zipEntryContents);
     }
 
     private String decryptSchemaSignatureByCallingOriginServer(String schemaSignature, String originServerUrl) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - decryptSchemaSignatureByCallingOriginServer");
+
         var restTemplate = new RestTemplate();
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         var request = new HttpEntity<>(schemaSignature, headers);
-        return restTemplate.postForObject(originServerUrl + "/sandbox/decryptSignature", request, String.class);
+        
+        String retVal = restTemplate.postForObject(originServerUrl + "/sandbox/decryptSignature", request, String.class);
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - decryptSchemaSignatureByCallingOriginServer: "
+        +"Parameters: schemaSignature = "+schemaSignature+", originServerUrl = "+originServerUrl
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     private boolean sandboxExportedFromThisServer(String thisServer, String sandboxOriginServer) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - sandboxExportedFromThisServer");
+
         var thisServerHost = getHost(thisServer);
         var sandboxOriginServerHost = getHost(sandboxOriginServer);
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - sandboxExportedFromThisServer: "
+        +"Parameters: thisServer = "+thisServer+", sandboxOriginServer = "+sandboxOriginServer
+        +"; Return value = "+thisServerHost.equals(sandboxOriginServerHost));
+
         return thisServerHost.equals(sandboxOriginServerHost);
     }
 
     private String getHost(String serverUrl) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - getHost");
+
         try {
+
+            LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - getHost: "
+            +"Parameters: serverUrl = "+serverUrl+"; Return value = "+new URL(serverUrl).getHost());
+
             return new URL(serverUrl).getHost();
         } catch (MalformedURLException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to while trying to get host from url " + serverUrl);
@@ -289,6 +403,9 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
     }
 
     private void importSandboxUsers(ZipInputStream zipInputStream, User requestingUser, Sandbox newSandbox) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importSandboxUsers");
+
         var bufferedReader = new BufferedReader(new InputStreamReader(zipInputStream));
         var inviteeEmails = bufferedReader.lines()
                                           .map(string -> string.split(","))
@@ -296,9 +413,17 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
                                           .filter(sandboxUserEmail -> !sandboxUserEmail.equals(requestingUser.getEmail()))
                                           .collect(Collectors.toList());
         inviteeEmails.forEach(inviteeEmail -> inviteUser(inviteeEmail, requestingUser, newSandbox));
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importSandboxUsers: "
+        +"Parameters: zipInputStream = "+zipInputStream+", requestingUser = "+requestingUser
+        +", newSandbox = "+newSandbox+"; No return value");
+
     }
 
     private void inviteUser(String inviteeEmail, User invitedBy, Sandbox newSandbox) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - inviteUser");
+
         var sandboxInvite = new SandboxInvite();
         var invitee = new User();
         invitee.setEmail(inviteeEmail);
@@ -310,9 +435,17 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to invite users while importing sandbox", e);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - inviteUser: "
+        +"Parameters: inviteeEmail = "+inviteeEmail+", invitedBy = "+invitedBy
+        +", newSandbox = "+newSandbox+"; No return value");
+
     }
 
     private Map<String, App> importSandboxApps(ZipInputStream zipInputStream, Gson gson, Map<String, Image> appImages, Sandbox newSandbox, User requestingUser, String server) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importSandboxApps");
+
         SandboxExportServiceImpl.AppManifestTemplate[] sandboxApps = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), SandboxExportServiceImpl.AppManifestTemplate[].class);
         Map<String, App> clientIdToApp = new HashMap<>(sandboxApps.length);
         Arrays.stream(sandboxApps).forEach(app -> {
@@ -349,10 +482,19 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             }
             clientIdToApp.put(savedClientId, importedApp);
         });
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importSandboxApps: "
+        +"Parameters: zipInputStream = "+zipInputStream+", gson = "+gson+", appImages = "+appImages
+        +", newSandbox = "+newSandbox+", requestingUser = "+requestingUser
+        +", server = "+server+"; Return value = "+clientIdToApp);
+
         return clientIdToApp;
     }
 
     private Map<String, UserPersona> importUserPersonas(ZipInputStream zipInputStream, Gson gson, Sandbox newSandbox, User requestingUser) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importUserPersonas");
+
         SandboxExportServiceImpl.SandboxUserPersona[] userPersonas = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), SandboxExportServiceImpl.SandboxUserPersona[].class);
         Map<String, UserPersona> personaIdToPersona = new HashMap<>(userPersonas.length);
         for (var userPersona : userPersonas) {
@@ -374,10 +516,18 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             newUserPersona = userPersonaService.save(newUserPersona);
             personaIdToPersona.put(newUserPersona.getPersonaUserId(), newUserPersona);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importUserPersonas: "
+        +"Parameters: zipInputStream = "+zipInputStream+", gson = "+gson+", newSandbox = "+newSandbox
+        +", requestingUser = "+requestingUser+"; Return value = "+personaIdToPersona);
+
         return personaIdToPersona;
     }
 
     private Map<String, CdsHook> importCdsHooks(ZipInputStream zipInputStream, Gson gson, Sandbox newSandbox, User requestingUser) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importCdsHooks");
+
         Map[] sandboxCdsHooks = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), Map[].class);
         Map<String, CdsHook> cdsHookUrlToCdsHook = new HashMap<>();
         for (Map sandboxCdsHook : sandboxCdsHooks) {
@@ -407,10 +557,19 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             cdsHookServiceEndpoint.setSandbox(newSandbox);
             cdsServiceEndpointService.create(cdsHookServiceEndpoint, newSandbox);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importCdsHooks: "
+        +"Parameters: zipInputStream = "+zipInputStream+", gson = "+gson
+        +", newSandbox = "+newSandbox+", requestingUser = "+requestingUser
+        +"; Return value = "+cdsHookUrlToCdsHook);
+
         return cdsHookUrlToCdsHook;
     }
 
     private void importLaunchScenarios(ZipInputStream zipInputStream, Gson gson, Sandbox newSandbox, User requestingUser, Map<String, App> clientIdToApp, Map<String, UserPersona> personaIdToPersona, Map<String, CdsHook> cdsHookUrlToCdsHook) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importLaunchScenarios");
+
         SandboxExportServiceImpl.SandboxLaunchScenario[] sandboxLaunchScenarios = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), SandboxExportServiceImpl.SandboxLaunchScenario[].class);
         for (SandboxExportServiceImpl.SandboxLaunchScenario sandboxLaunchScenario : sandboxLaunchScenarios) {
             var launchScenario = new LaunchScenario();
@@ -447,9 +606,19 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             launchScenario.setApp(clientIdToApp.get(sandboxLaunchScenario.getClientId()));
             launchScenarioService.create(launchScenario);
         }
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importLaunchScenarios: "
+        +"Parameters: zipInputStream = "+zipInputStream+", gson = "+gson+", newSandbox = "+newSandbox
+        +", requestingUser = "+requestingUser+", clientIdToApp = "+clientIdToApp
+        +", personaIdToPersona = "+personaIdToPersona+", cdsHookUrlToCdsHook = "+cdsHookUrlToCdsHook
+        +"; No return value");
+
     }
 
     private void importProfiles(ZipInputStream zipInputStream, Gson gson, Sandbox newSandbox, User requestingUser) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importProfiles");
+
         SandboxExportServiceImpl.SandboxFhirProfileDetail[] sandboxProfiles = gson.fromJson(new JsonReader(new InputStreamReader(zipInputStream)), SandboxExportServiceImpl.SandboxFhirProfileDetail[].class);
         for (SandboxExportServiceImpl.SandboxFhirProfileDetail sandboxFhirProfileDetail : sandboxProfiles) {
             var fhirProfiles = new ArrayList<FhirProfile>(sandboxFhirProfileDetail.getFhirProfiles().size());
@@ -473,9 +642,16 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             fhirProfileDetailService.save(fhirProfileDetail);
         }
 
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importProfiles: "
+        +"Parameters: zipInputStream = "+zipInputStream+", gson = "+gson+", newSandbox = "+newSandbox
+        +", requestingUser = "+requestingUser+"; No return value");
+
     }
 
     private void importAppImages(ZipInputStream zipInputStream, String zipEntryName, Map<String, Image> appImages) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - importAppImages");
+
         var byteArrayOutputStream = new ByteArrayOutputStream();
         try {
             IOUtils.copy(zipInputStream, byteArrayOutputStream);
@@ -488,12 +664,23 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
             throw new RuntimeException("IOException while copying image zip input stream", e);
         }
 
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - importAppImages: "
+        +"Parameters: zipInputStream = "+zipInputStream+", zipEntryName = "+zipEntryName
+        +", appImages = "+appImages+"; No return value");
+
     }
 
     private void updateSandboxCreationStatus(Sandbox newSandbox, SandboxCreationStatus status) {
+        
+        LOGGER.info("Inside SandboxBackgroundTasksServiceImpl - updateSandboxCreationStatus");
+
         newSandbox = repository.findBySandboxId(newSandbox.getSandboxId());
         newSandbox.setCreationStatus(status);
         this.repository.save(newSandbox);
+
+        LOGGER.debug("Inside SandboxBackgroundTasksServiceImpl - updateSandboxCreationStatus: "
+        +"Parameters: newSandbox = "+newSandbox+", status = "+status+"; No return value");
+
     }
 
 }

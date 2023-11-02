@@ -10,9 +10,12 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class NewsItemServiceImpl implements NewsItemService {
+    private static Logger LOGGER = LoggerFactory.getLogger(NewsItemServiceImpl.class.getName());
 
     private final NewsItemRepository repository;
 
@@ -24,12 +27,23 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Override
     @Transactional
     public NewsItem save(final NewsItem newsItem) {
-        return repository.save(newsItem);
+        
+        LOGGER.info("Inside NewsItemServiceImpl - save");
+
+        NewsItem retVal = repository.save(newsItem);
+
+        LOGGER.debug("Inside NewsItemServiceImpl - save: "
+        +"Parameters: newsItem = "+newsItem+"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     @Transactional
     public NewsItem update(NewsItem newsItem) {
+        
+        LOGGER.info("Inside NewsItemServiceImpl - update");
+
         NewsItem existingNewsItem = repository.findById(newsItem.getId()).orElse(null);
         if (existingNewsItem != null) {
             existingNewsItem.setActive(newsItem.getActive());
@@ -38,7 +52,13 @@ public class NewsItemServiceImpl implements NewsItemService {
             existingNewsItem.setTitle(newsItem.getTitle());
             existingNewsItem.setType(newsItem.getType());
             existingNewsItem.setExpiration_date(newsItem.getExpiration_date());
-            return repository.save(existingNewsItem);
+
+            NewsItem retVal = repository.save(existingNewsItem);
+
+            LOGGER.debug("Inside NewsItemServiceImpl - update: "
+            +"Parameters: newsItem = "+newsItem+"; Return value = "+retVal);
+
+            return retVal;
         }
         throw new ResourceNotFoundException("NewsItem not found.");
     }
@@ -46,21 +66,41 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Override
     @Transactional
     public void delete(final int id) {
+        
+        LOGGER.info("Inside NewsItemServiceImpl - delete");
+
         repository.deleteById(id);
+
+        LOGGER.debug("Inside NewsItemServiceImpl - delete: "
+        +"Parameters: id = "+id+"; No return value");
+
     }
 
     @Override
     @Transactional
     public List<NewsItem> findAll() {
+        
+        LOGGER.info("Inside NewsItemServiceImpl - findAll");
+
         Iterable<NewsItem> newsItems = repository.findAll();
         List<NewsItem> target = new ArrayList<>();
         newsItems.forEach(target::add);
+
+        LOGGER.debug("Inside NewsItemServiceImpl - findAll: "
+        +"No input parameters; Return value = "+target);
+
         return target;
     }
 
     @Override
     @Transactional
     public NewsItem findById(Integer id) {
+
+        LOGGER.info("Inside NewsItemServiceImpl - findById");
+
+        LOGGER.debug("Inside NewsItemServiceImpl - findById: "
+        +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
+
         return repository.findById(id).orElse(null);
     }
 

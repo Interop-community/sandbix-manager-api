@@ -5,6 +5,8 @@ import org.logicahealth.sandboxmanagerapi.model.Config;
 import org.logicahealth.sandboxmanagerapi.repositories.ConfigRepository;
 import org.logicahealth.sandboxmanagerapi.services.ConfigService;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @Service
 public class ConfigServiceImpl implements ConfigService {
+    private static Logger LOGGER = LoggerFactory.getLogger(ConfigServiceImpl.class.getName());
 
     private final ConfigRepository repository;
 
@@ -23,11 +26,25 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional
     public Config save(Config configuration) {
-        return repository.save(configuration);
+        
+        LOGGER.info("Inside ConfigServiceImpl - save");
+
+        Config retVal = repository.save(configuration);
+
+        LOGGER.debug("Inside ConfigServiceImpl - save: "
+        +"Parameters: configuration = "+configuration+"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     public List<Config> findByConfigType(ConfigType configType) {
+        
+        LOGGER.info("Inside ConfigServiceImpl - findByConfigType");
+
+        LOGGER.debug("Inside ConfigServiceImpl - findByConfigType: "
+        +"Parameters: configType = "+configType+"; Return value = "+repository.findByConfigType(configType));
+
         return repository.findByConfigType(configType);
     }
 
