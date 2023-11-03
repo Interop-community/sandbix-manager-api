@@ -81,6 +81,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${hspc.platform.trustedDomainsApiUrl}")
     private String trustedDomainsApiUrl;
 
+    @Value("${hspc.platform.api.importSandboxFromTrustedDomainsOnly}")
+    Boolean importSandboxFromTrustedDomainsOnly;
+
     @Autowired
     private ISandboxExportDao mySandboxExportDao;
   
@@ -963,7 +966,8 @@ public class SandboxServiceImpl implements SandboxService {
             var newSandbox = createSandboxTableEntry(sandboxVersions, requestingUser);
             addMember(newSandbox, requestingUser, Role.ADMIN);
             sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
-            // checkIfExportedFromTrustedServer(sandboxVersions);
+            if (importSandboxFromTrustedDomainsOnly)
+                checkIfExportedFromTrustedServer(sandboxVersions);
             sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken, server);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());

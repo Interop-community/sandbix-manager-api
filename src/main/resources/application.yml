@@ -7,9 +7,9 @@ server:
 logging:
   level:
     root: ERROR
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
     org.logicahealth: ERROR
-    org.hibernate: DEBUG
+    org.hibernate: INFO
 
 
 spring:
@@ -29,6 +29,8 @@ spring:
     tomcat:
       initialSize: 1
       maxActive: 5
+    hikari:
+      max-lifetime: ${hikari_maxLifetime:600000} 
   jpa:
     show-sql: false
     hibernate:
@@ -113,6 +115,7 @@ hspc:
       oauthClientEndpointURL: ${hspc.platform.authorization.url}/api/clients
       fhir:
         profileResources: StructureDefinition, CodeSystem, ValueSet, SearchParameter
+      importSandboxFromTrustedDomainsOnly: ${ALLOW_IMPORT_FROM_TRUSTED_SERVER_ONLY:true}   #bypassing trustedDomainsApiUrl
     messaging:
       sendEmail: false
 
