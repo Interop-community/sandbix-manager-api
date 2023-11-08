@@ -48,7 +48,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Override
     public String postOAuthClient(String clientJSON) {
         
-        LOGGER.info("Inside OAuthClientServiceImpl - postOAuthClient");
+        LOGGER.info("postOAuthClient");
 
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -57,7 +57,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL, HttpMethod.POST, requestEntity, String.class);
 
-        LOGGER.debug("Inside OAuthClientServiceImpl - postOAuthClient: "
+        LOGGER.debug("postOAuthClient: "
         +"Parameters: clientJSON = "+clientJSON+"; Return value = "+responseEntity.getBody());
 
         return responseEntity.getBody();
@@ -66,7 +66,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Override
     public String putOAuthClientWithClientId(String clientId, String clientJSON) {
         
-        LOGGER.info("Inside OAuthClientServiceImpl - putOAuthClientWithClientId");
+        LOGGER.info("putOAuthClientWithClientId");
 
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -75,7 +75,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "?clientId=" + clientId, HttpMethod.PUT, requestEntity, String.class);
 
-        LOGGER.debug("Inside OAuthClientServiceImpl - putOAuthClientWithClientId: "
+        LOGGER.debug("putOAuthClientWithClientId: "
         +"Parameters: clientId = "+clientId+", clientJSON = "+clientJSON
         +"; Return value = "+responseEntity.getBody());
 
@@ -85,7 +85,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Override
     public String getOAuthClientWithClientId(String clientId) {
         
-        LOGGER.info("Inside OAuthClientServiceImpl - getOAuthClientWithClientId");
+        LOGGER.info("getOAuthClientWithClientId");
 
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -93,7 +93,7 @@ public class OAuthClientServiceImpl implements OAuthClientService {
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "?clientId=" + clientId, HttpMethod.GET, requestEntity, String.class);
 
-        LOGGER.debug("Inside OAuthClientServiceImpl - getOAuthClientWithClientId: "
+        LOGGER.debug("getOAuthClientWithClientId: "
         +"Parameters: clientId = "+clientId+"; Return value = "+responseEntity.getBody());
 
         return responseEntity.getBody();
@@ -102,11 +102,11 @@ public class OAuthClientServiceImpl implements OAuthClientService {
     @Override
     public void deleteOAuthClientWithClientId(String clientId) {
 
-        LOGGER.info("Inside OAuthClientServiceImpl - deleteOAuthClientWithClientId");
+        LOGGER.info("deleteOAuthClientWithClientId");
 
         restTemplate.delete(oauthClientEndpointURL + "?clientId=" + clientId);
 
-        LOGGER.debug("Inside OAuthClientServiceImpl - deleteOAuthClientWithClientId: "
+        LOGGER.debug("deleteOAuthClientWithClientId: "
         +"Parameters: clientId = "+clientId+"; No return value");
 
     }

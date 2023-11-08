@@ -23,11 +23,11 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     @Transactional
     public void save(FhirProfile fhirProfile) { 
         
-        LOGGER.info("Inside FhirProfileServiceImpl - save");
+        LOGGER.info("save");
 
         repository.save(fhirProfile);
 
-        LOGGER.debug("Inside FhirProfileServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: fhirProfile = "+fhirProfile+"; No return value");
 
     }
@@ -35,9 +35,9 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     @Override
     public List<FhirProfile> getAllResourcesForGivenProfileId(Integer fhirProfileId) {
         
-        LOGGER.info("Inside FhirProfileServiceImpl - getAllResourcesForGivenProfileId");
+        LOGGER.info("getAllResourcesForGivenProfileId");
 
-        LOGGER.debug("Inside FhirProfileServiceImpl - getAllResourcesForGivenProfileId: "
+        LOGGER.debug("getAllResourcesForGivenProfileId: "
         +"Parameters: fhirProfileId = "+fhirProfileId
         +"; Return value = "+repository.findByFhirProfileId(fhirProfileId));
 
@@ -47,9 +47,9 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     @Override
     public List<FhirProfile> getAllSDsForGivenProfileId(Integer fhirProfileId){
         
-        LOGGER.info("Inside FhirProfileServiceImpl - getAllSDsForGivenProfileId");
+        LOGGER.info("getAllSDsForGivenProfileId");
 
-        LOGGER.debug("Inside FhirProfileServiceImpl - getAllSDsForGivenProfileId: "
+        LOGGER.debug("getAllSDsForGivenProfileId: "
         +"Parameters: fhirProfileId = "+fhirProfileId
         +"Return value = "+repository.findAllSDsforAProfileByFhirProfileId(fhirProfileId));
 
@@ -60,23 +60,23 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     @Transactional
     public void delete(Integer fhirProfileId) {
         
-        LOGGER.info("Inside FhirProfileServiceImpl - delete");
+        LOGGER.info("delete");
 
         List<FhirProfile> fhirProfiles = repository.findByFhirProfileId(fhirProfileId);
         for (FhirProfile fhirProfile : fhirProfiles) {
             repository.delete(fhirProfile);
         }
 
-        LOGGER.debug("Inside FhirProfileServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: fhirProfileId = "+fhirProfileId+"; No return value");
 
     }
 
     @Override
     public List<FhirProfile> getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String profileType) {
-        LOGGER.info("Inside FhirProfileServiceImpl - getFhirProfileWithASpecificTypeForAGivenSandbox");
+        LOGGER.info("getFhirProfileWithASpecificTypeForAGivenSandbox");
 
-        LOGGER.debug("Inside FhirProfileServiceImpl - getFhirProfileWithASpecificTypeForAGivenSandbox: "
+        LOGGER.debug("getFhirProfileWithASpecificTypeForAGivenSandbox: "
         +"Parameters: fhirProfileId = "+fhirProfileId+", profileType = "+profileType
         +"; Return value = "+repository.findFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, profileType));
 
@@ -86,9 +86,9 @@ public class FhirProfileServiceImpl implements FhirProfileService {
     @Override
     public List<String> getAllProfileTypesForAGivenProfileId(Integer fhirProfileId) {
         
-        LOGGER.info("Inside FhirProfileServiceImpl - getAllProfileTypesForAGivenProfileId");
+        LOGGER.info("getAllProfileTypesForAGivenProfileId");
 
-        LOGGER.debug("Inside FhirProfileServiceImpl - getAllProfileTypesForAGivenProfileId: "
+        LOGGER.debug("getAllProfileTypesForAGivenProfileId: "
         +"Parameters: fhirProfileId = "+fhirProfileId
         +"Return value = "+repository.findAllProfileTypeForAGivenProfileId(fhirProfileId));
 

@@ -38,7 +38,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public void checkUserAuthorization(final HttpServletRequest request, String userId) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkUserAuthorization");
+        LOGGER.info("checkUserAuthorization");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
@@ -46,7 +46,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkUserAuthorization: "
+        LOGGER.info("checkUserAuthorization: "
         +"Parameters: request = "+request+", userId = "+userId+"; No return value");
     }
 
@@ -54,9 +54,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String getSystemUserId(final HttpServletRequest request) {
 
-        LOGGER.info("Inside AuthorizationServiceImpl - getSystemUserId");
+        LOGGER.info("getSystemUserId");
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - getSystemUserId: "
+        LOGGER.debug("getSystemUserId: "
         +"Parameters: request = "+request+"; Return value = "+oAuthService.getOAuthUserId(request));
 
         return oAuthService.getOAuthUserId(request);
@@ -66,9 +66,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String getUserName(final HttpServletRequest request) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - getUserName");
+        LOGGER.info("getUserName");
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - getUserName: "
+        LOGGER.debug("getUserName: "
         +"Parameters: request = "+request+"; Return value = "+oAuthService.getOAuthUserName(request));
 
         return oAuthService.getOAuthUserName(request);
@@ -78,9 +78,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String getEmail(final HttpServletRequest request) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - getEmail");
+        LOGGER.info("getEmail");
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - getEmail: "
+        LOGGER.debug("getEmail: "
         +"Parameters: request = "+request+"; Return value = "+oAuthService.getOAuthUserEmail(request));
 
         return oAuthService.getOAuthUserEmail(request);
@@ -90,9 +90,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String getBearerToken(final HttpServletRequest request) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - getBearerToken");
+        LOGGER.info("getBearerToken");
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - getBearerToken: "
+        LOGGER.debug("getBearerToken: "
         +"Parameters: request = "+request+"; Return value = "+oAuthService.getBearerToken(request));
 
         return oAuthService.getBearerToken(request);
@@ -102,9 +102,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSandboxUserReadAuthorization(final HttpServletRequest request, final Sandbox sandbox) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSandboxUserReadAuthorization");
+        LOGGER.info("checkSandboxUserReadAuthorization");
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxUserReadAuthorization: "
+        LOGGER.debug("checkSandboxUserReadAuthorization: "
         +"Parameters: request = "+request+", sandbox = "+sandbox
         +"; Return value = "+checkSandboxMember(sandbox, oAuthService.getOAuthUserId(request)));
 
@@ -121,7 +121,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSandboxUserModifyAuthorization(final HttpServletRequest request, final Sandbox sandbox, final AbstractSandboxItem abstractSandboxItem) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSandboxUserModifyAuthorization");
+        LOGGER.info("checkSandboxUserModifyAuthorization");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
@@ -131,7 +131,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             if (abstractSandboxItem.getVisibility() == Visibility.PRIVATE) {
                 if (abstractSandboxItem.getCreatedBy().getSbmUserId().equalsIgnoreCase(oauthUserId)) {
                     
-                    LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxUserModifyAuthorization: "
+                    LOGGER.debug("checkSandboxUserModifyAuthorization: "
                     +"Parameters: request = "+request+", sandbox = "+sandbox+", abstractSandboxItem = "+abstractSandboxItem
                     +"; Return value = "+oauthUserId);
 
@@ -140,7 +140,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             } else { // Item is PUBLIC
                 if (sandbox.getVisibility() == Visibility.PRIVATE) {
 
-                    LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxUserModifyAuthorization: "
+                    LOGGER.debug("checkSandboxUserModifyAuthorization: "
                     +"Parameters: request = "+request+", sandbox = "+sandbox+", abstractSandboxItem = "+abstractSandboxItem
                     +"; Return value = "+checkSandboxUserNotReadOnlyAuthorization(request, sandbox));
 
@@ -148,7 +148,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 } else { // Sandbox is PUBLIC
                     if (checkUserHasSandboxRole(request, sandbox, Role.ADMIN)) {
 
-                        LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxUserModifyAuthorization: "
+                        LOGGER.debug("checkSandboxUserModifyAuthorization: "
                         +"Parameters: request = "+request+", sandbox = "+sandbox+", abstractSandboxItem = "+abstractSandboxItem
                         +"; Return value = "+oauthUserId);
 
@@ -159,7 +159,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxUserModifyAuthorization: "
+        LOGGER.debug("checkSandboxUserModifyAuthorization: "
         +"Parameters: request = "+request+", sandbox = "+sandbox+", abstractSandboxItem = "+abstractSandboxItem
         +"; Return value = "+oauthUserId);
 
@@ -169,7 +169,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSystemUserDeleteSandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSystemUserDeleteSandboxAuthorization");
+        LOGGER.info("checkSystemUserDeleteSandboxAuthorization");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
@@ -179,7 +179,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user)) {
 //                (sandbox.getVisibility() == Visibility.PRIVATE && sandbox.getCreatedBy().getSbmUserId().equalsIgnoreCase(oauthUserId))) {
 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserDeleteSandboxAuthorization: "
+                LOGGER.debug("checkSystemUserDeleteSandboxAuthorization: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
                 +"; Return value = "+oauthUserId);
 
@@ -188,7 +188,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserDeleteSandboxAuthorization: "
+        LOGGER.debug("checkSystemUserDeleteSandboxAuthorization: "
         +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
         +"; Return value = "+oauthUserId);
 
@@ -198,14 +198,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSystemUserCanRemoveUser(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSystemUserCanRemoveUser");
+        LOGGER.info("checkSystemUserCanRemoveUser");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
             if  (user.getSbmUserId().equalsIgnoreCase(oauthUserId) ||
                     (sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.ADMIN))) {
 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanRemoveUser: "
+                LOGGER.debug("checkSystemUserCanRemoveUser: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
                 +";Return value = "+oauthUserId);
 
@@ -214,7 +214,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanRemoveUser: "
+        LOGGER.debug("checkSystemUserCanRemoveUser: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
                 +";Return value = "+oauthUserId);
 
@@ -225,7 +225,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSystemUserCanModifySandboxAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSystemUserCanModifySandboxAuthorization");
+        LOGGER.info("checkSystemUserCanModifySandboxAuthorization");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
@@ -233,7 +233,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             // If the Sandbox is PUBLIC, a system sandbox creator or system Admin can modify.
             if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user)) {
 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanModifySandboxAuthorization: "
+                LOGGER.debug("checkSystemUserCanModifySandboxAuthorization: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
                 +"; Return value = "+oauthUserId);
 
@@ -243,7 +243,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanModifySandboxAuthorization: "
+        LOGGER.debug("checkSystemUserCanModifySandboxAuthorization: "
         +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
         +"; Return value = "+oauthUserId);
 
@@ -253,7 +253,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSystemUserCanManageSandboxDataAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSystemUserCanManageSandboxDataAuthorization");
+        LOGGER.info("checkSystemUserCanManageSandboxDataAuthorization");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
@@ -262,7 +262,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user) ||
                     (sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.MANAGE_DATA))) {
 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanManageSandboxDataAuthorization: "
+                LOGGER.debug("checkSystemUserCanManageSandboxDataAuthorization: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
                 +"; Return value = "+oauthUserId);
 
@@ -272,7 +272,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanManageSandboxDataAuthorization: "
+        LOGGER.debug("checkSystemUserCanManageSandboxDataAuthorization: "
         +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
         +"; Return value = "+oauthUserId);
 
@@ -287,7 +287,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSystemUserCanManageSandboxUsersAuthorization(final HttpServletRequest request, final Sandbox sandbox, final User user) {
 
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSystemUserCanManageSandboxUsersAuthorization");
+        LOGGER.info("checkSystemUserCanManageSandboxUsersAuthorization");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
@@ -296,7 +296,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             if (checkSystemUserCanModifySandbox(oauthUserId, sandbox, user) ||
                     ((sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.ADMIN)))) {
 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanManageSandboxUsersAuthorization: "
+                LOGGER.debug("checkSystemUserCanManageSandboxUsersAuthorization: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
                 +"; Return value = "+oauthUserId);
 
@@ -306,7 +306,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException("User is not authorized.");
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanManageSandboxUsersAuthorization: "
+        LOGGER.debug("checkSystemUserCanManageSandboxUsersAuthorization: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+", user = "+user
                 +"; Return value = "+oauthUserId);
 
@@ -316,14 +316,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public void checkUserSystemRole(final User user, final SystemRole role) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkUserSystemRole");
+        LOGGER.info("checkUserSystemRole");
 
         if (!checkUserHasSystemRole(user, role)) {
 
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkUserSystemRole: "
+        LOGGER.debug("checkUserSystemRole: "
         +"Parameters: user = "+user+", role = "+role+"; No return value");
 
     }
@@ -331,7 +331,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public void checkSystemUserCanMakeTransaction(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSystemUserCanMakeTransaction");
+        LOGGER.info("checkSystemUserCanMakeTransaction");
 
         if (!checkUserHasSystemRole(user, SystemRole.ADMIN)) {
             List<Sandbox> sandboxes = user.getSandboxes();
@@ -340,7 +340,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             }
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanMakeTransaction: "
+        LOGGER.debug("checkSystemUserCanMakeTransaction: "
         +"Parameters: sandbox = "+sandbox+", user = "+user+"; No return value");
 
     }
@@ -348,13 +348,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public void checkIfPersonaAndHasAuthority(Sandbox sandbox, UserPersona userPersona) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkIfPersonaAndHasAuthority");
+        LOGGER.info("checkIfPersonaAndHasAuthority");
 
         if (!sandbox.equals(userPersona.getSandbox())) {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkIfPersonaAndHasAuthority: "
+        LOGGER.debug("checkIfPersonaAndHasAuthority: "
         +"Parameters: sandbox = "+sandbox+", userPersona = "+userPersona);
 
     }
@@ -376,20 +376,20 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public Visibility getDefaultVisibility(final User user, final Sandbox sandbox) {
 
-        LOGGER.info("Inside AuthorizationServiceImpl - getDefaultVisibility");
+        LOGGER.info("getDefaultVisibility");
 
         // For a PRIVATE sandbox, non-readonly user's default visibility is PUBLIC.
         // For a PUBLIC sandbox, only ADMIN's have default visibility of PUBLIC.
         if ((sandbox.getVisibility() == Visibility.PRIVATE && !checkUserHasSandboxRole(user.getSbmUserId(), sandbox, Role.READONLY)) ||
                 checkUserHasSandboxRole(user.getSbmUserId(), sandbox, Role.ADMIN)) {
 
-            LOGGER.debug("Inside AuthorizationServiceImpl - getDefaultVisibility: "
+            LOGGER.debug("getDefaultVisibility: "
             +"Parameters: user = "+user+", sandbox = "+sandbox+"; Return value = "+Visibility.PUBLIC);
 
             return Visibility.PUBLIC;
         }
         
-        LOGGER.debug("Inside AuthorizationServiceImpl - getDefaultVisibility: "
+        LOGGER.debug("getDefaultVisibility: "
         +"Parameters: user = "+user+", sandbox = "+sandbox+"; Return value = "+Visibility.PRIVATE);
 
         return Visibility.PRIVATE;
@@ -398,19 +398,19 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public boolean checkUserHasSystemRole(final User user, final SystemRole role) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkUserHasSystemRole");
+        LOGGER.info("checkUserHasSystemRole");
 
         for(SystemRole systemRole : user.getSystemRoles()) {
             if (systemRole == role) {
 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkUserHasSystemRole: "
+                LOGGER.debug("checkUserHasSystemRole: "
                 +"Parameters: user = "+user+", role = "+role+"; Return value = "+true);
 
                 return true;
             }
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkUserHasSystemRole: "
+        LOGGER.debug("checkUserHasSystemRole: "
         +"Parameters: user = "+user+", role = "+role+"; Return value = "+false);
 
         return false;
@@ -419,13 +419,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public String checkSandboxUserNotReadOnlyAuthorization(final HttpServletRequest request, final Sandbox sandbox) {
 
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSandboxUserNotReadOnlyAuthorization");
+        LOGGER.info("checkSandboxUserNotReadOnlyAuthorization");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
         if (!checkUserHasSystemRole(userService.findBySbmUserId(oauthUserId), SystemRole.ADMIN)) {
             if (!checkUserHasSandboxRole(oauthUserId, sandbox, Role.READONLY)) {
 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxUserNotReadOnlyAuthorization: "
+                LOGGER.debug("checkSandboxUserNotReadOnlyAuthorization: "
                 +"Parameters: request = "+request+", sandbox = "+sandbox+"; Return value = "+oauthUserId);
 
                 return oauthUserId;
@@ -434,7 +434,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxUserNotReadOnlyAuthorization: "
+        LOGGER.debug("checkSandboxUserNotReadOnlyAuthorization: "
         +"Parameters: request = "+request+", sandbox = "+sandbox+"; Return value = "+oauthUserId);
 
         return oauthUserId;
@@ -442,9 +442,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private boolean checkSystemUserCanModifySandbox(final String oauthUserId, final Sandbox sandbox, final User user) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSystemUserCanModifySandbox");
+        LOGGER.info("checkSystemUserCanModifySandbox");
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSystemUserCanModifySandbox: "
+        LOGGER.debug("checkSystemUserCanModifySandbox: "
         +"Parameters: oauthUserId = "+oauthUserId+", sandbox = "+sandbox+", user = "+user
         +"; Return value = "+(user.getSbmUserId().equalsIgnoreCase(oauthUserId) &&
         ((sandbox.getVisibility() == Visibility.PRIVATE && checkUserHasSandboxRole(oauthUserId, sandbox, Role.ADMIN)) ||
@@ -459,14 +459,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private String checkSandboxMember(final Sandbox sandbox, final String sbmUserId) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkSandboxMember");
+        LOGGER.info("checkSandboxMember");
 
         var user = userService.findBySbmUserId(sbmUserId);
         if (user != null && !checkUserHasSystemRole(user, SystemRole.ADMIN)) {
             for (UserRole userRole : sandbox.getUserRoles()) {
                 if (userRole.getUser().getSbmUserId().equalsIgnoreCase(sbmUserId)) {
                     
-                    LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxMember: "
+                    LOGGER.debug("checkSandboxMember: "
                     +"Parameters: sandbox = "+sandbox+", sbmUserId = "+sbmUserId
                     +"; Return value = "+sbmUserId);
 
@@ -476,7 +476,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new UnauthorizedException(String.format(UNAUTHORIZED_ERROR, HttpStatus.SC_UNAUTHORIZED));
         }
         
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkSandboxMember: "
+        LOGGER.debug("checkSandboxMember: "
         +"Parameters: sandbox = "+sandbox+", sbmUserId = "+sbmUserId
         +"; Return value = "+sbmUserId);
 
@@ -485,11 +485,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private boolean checkUserHasSandboxRole(final HttpServletRequest request, final Sandbox sandbox, final Role role) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkUserHasSandboxRole");
+        LOGGER.info("checkUserHasSandboxRole");
 
         String oauthUserId = oAuthService.getOAuthUserId(request);
 
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkUserHasSandboxRole: "
+        LOGGER.debug("checkUserHasSandboxRole: "
         +"Parameters: request = "+request+", sandbox = "+sandbox+", role = "+role
         +"; Return value = "+checkUserHasSandboxRole(oauthUserId, sandbox, role));
 
@@ -498,12 +498,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private boolean checkUserHasSandboxRole(final String oauthUserId, final Sandbox sandbox, final Role role) {
         
-        LOGGER.info("Inside AuthorizationServiceImpl - checkUserHasSandboxRole");
+        LOGGER.info("checkUserHasSandboxRole");
 
         for(UserRole userRole : sandbox.getUserRoles()) {
             if (userRole.getUser().getSbmUserId().equalsIgnoreCase(oauthUserId) && userRole.getRole() == role) {
                 
-                LOGGER.debug("Inside AuthorizationServiceImpl - checkUserHasSandboxRole: "
+                LOGGER.debug("checkUserHasSandboxRole: "
                 +"Parameters: oauthUserId = "+oauthUserId+", sandbox = "+sandbox+", role = "+role
                 +"; Return value = true");
 
@@ -511,7 +511,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             }
         }
         
-        LOGGER.debug("Inside AuthorizationServiceImpl - checkUserHasSandboxRole: "
+        LOGGER.debug("checkUserHasSandboxRole: "
         +"Parameters: oauthUserId = "+oauthUserId+", sandbox = "+sandbox+", role = "+role
         +"; Return value = false");
 

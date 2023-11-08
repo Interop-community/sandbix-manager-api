@@ -80,7 +80,7 @@ public class UserController {
     public @ResponseBody
     User getUser(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId) {
         
-        LOGGER.info("Inside UserController - getUser");
+        LOGGER.info("getUser");
         
         authorizationService.checkUserAuthorization(request, sbmUserId);
         String oauthUsername = authorizationService.getUserName(request);
@@ -105,7 +105,7 @@ public class UserController {
     public @ResponseBody
     Iterable<User> getAllUsers(final HttpServletRequest request) {
         
-        LOGGER.info("Inside UserController - getAllUsers");
+        LOGGER.info("getAllUsers");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -120,7 +120,7 @@ public class UserController {
     public void acceptTermsOfUse(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserId,
                                  @RequestParam(value = "termsId") String termsId) {
 
-        LOGGER.info("Inside UserController - acceptTermsOfUse");
+        LOGGER.info("acceptTermsOfUse");
         
         authorizationService.checkUserAuthorization(request, sbmUserId);
         User user = userService.findBySbmUserId(sbmUserId);
@@ -131,7 +131,7 @@ public class UserController {
     @Transactional
     public ResponseEntity authorizeUserForReferenceApi(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
         
-        LOGGER.info("Inside UserController - authorizeUserForReferenceApi");
+        LOGGER.info("authorizeUserForReferenceApi");
         
         String userId = authorizationService.getSystemUserId(request);
         User user = userService.findBySbmUserId(userId);
@@ -166,7 +166,7 @@ public class UserController {
     @Transactional
     public ResponseEntity authorizeUserForExportImport(final HttpServletRequest request, @RequestBody String sandboxJSONString) {
         
-        LOGGER.info("Inside UserController - authorizeUserForExportImport");
+        LOGGER.info("authorizeUserForExportImport");
         
         String userId = authorizationService.getSystemUserId(request);
         User user = userService.findBySbmUserId(userId);
@@ -198,7 +198,7 @@ public class UserController {
 
     private User createUserIfNotExists(String sbmUserId, String oauthUsername, String oauthUserEmail) {
         
-        LOGGER.info("Inside UserController - createUserIfNotExists");
+        LOGGER.info("createUserIfNotExists");
         
         User user = userService.findBySbmUserId(sbmUserId);
         if (user == null) {

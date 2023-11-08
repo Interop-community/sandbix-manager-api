@@ -64,7 +64,7 @@ public class DataManagerController {
     public @ResponseBody
     List<SandboxImport> getSandboxImports(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId)  throws UnsupportedEncodingException {
 
-        LOGGER.info("Inside DataManagerController - getSandboxImports");
+        LOGGER.info("getSandboxImports");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, user.getSbmUserId());
@@ -85,7 +85,7 @@ public class DataManagerController {
                                                      @RequestParam(value = "fhirIdPrefix") String fhirIdPrefix,
                                                      @RequestParam(value = "endpoint") String encodedEndpoint)  throws UnsupportedEncodingException {
 
-        LOGGER.info("Inside DataManagerController - importAllPatientData");
+        LOGGER.info("importAllPatientData");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, user.getSbmUserId());
@@ -104,7 +104,7 @@ public class DataManagerController {
     @Transactional
     public @ResponseBody String reset(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "dataSet") DataSet dataSet)  throws UnsupportedEncodingException {
 
-        LOGGER.info("Inside DataManagerController - reset");
+        LOGGER.info("reset");
         
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {

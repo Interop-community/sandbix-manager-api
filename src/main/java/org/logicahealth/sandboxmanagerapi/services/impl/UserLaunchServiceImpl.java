@@ -28,11 +28,11 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Transactional
     public UserLaunch save(final UserLaunch userLaunch) {
 
-        LOGGER.info("Inside UserLaunchServiceImpl - save");
+        LOGGER.info("save");
 
         UserLaunch retVal = repository.save(userLaunch);
 
-        LOGGER.debug("Inside UserLaunchServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: userLaunch = "+userLaunch
         +"; Return value = "+retVal);
 
@@ -43,11 +43,11 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Transactional
     public void delete(final int id) {
 
-        LOGGER.info("Inside UserLaunchServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside UserLaunchServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }
@@ -56,11 +56,11 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Transactional
     public void delete(final UserLaunch userLaunch) {
         
-        LOGGER.info("Inside UserLaunchServiceImpl - delete");
+        LOGGER.info("delete");
 
         delete(userLaunch.getId());
 
-        LOGGER.debug("Inside UserLaunchServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: userLaunch = "+userLaunch+"; No return value");
 
     }
@@ -69,11 +69,11 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Transactional
     public UserLaunch create(final UserLaunch userLaunch) {
         
-        LOGGER.info("Inside UserLaunchServiceImpl - create");
+        LOGGER.info("create");
 
         UserLaunch retVal = save(userLaunch);
 
-        LOGGER.info("Inside UserLaunchServiceImpl - create: "
+        LOGGER.info("create: "
         +"Parameters: userLaunch = "+userLaunch
         +"; Return value = "+retVal);
 
@@ -83,9 +83,9 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Override
     public UserLaunch getById(final int id) {
 
-        LOGGER.info("Inside UserLaunchServiceImpl - getById");
+        LOGGER.info("getById");
 
-        LOGGER.debug("Inside UserLaunchServiceImpl - getById: "
+        LOGGER.debug("getById: "
         +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
 
         return repository.findById(id).orElse(null);
@@ -95,7 +95,7 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Transactional
     public UserLaunch update(final UserLaunch userLaunch) {
         
-        LOGGER.info("Inside UserLaunchServiceImpl - update");
+        LOGGER.info("update");
 
         UserLaunch updateUserLaunch = getById(userLaunch.getId());
         if (updateUserLaunch != null) {
@@ -103,14 +103,14 @@ public class UserLaunchServiceImpl implements UserLaunchService {
 
             UserLaunch retVal = save(updateUserLaunch);
 
-            LOGGER.debug("Inside UserLaunchServiceImpl - update: "
+            LOGGER.debug("update: "
             +"Parameters: userLaunch = "+userLaunch
             +"Return value = "+retVal);
 
             return retVal;
         }
         
-        LOGGER.debug("Inside UserLaunchServiceImpl - update: "
+        LOGGER.debug("update: "
         +"Parameters: userLaunch = "+userLaunch
         +"Return value = null");
 
@@ -120,9 +120,9 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Override
     public UserLaunch findByUserIdAndLaunchScenarioId(String sbmUserId, int launchScenarioId) {
 
-        LOGGER.info("Inside UserLaunchServiceImpl - findByUserIdAndLaunchScenarioId");
+        LOGGER.info("findByUserIdAndLaunchScenarioId");
 
-        LOGGER.debug("Inside UserLaunchServiceImpl - findByUserIdAndLaunchScenarioId: "
+        LOGGER.debug("findByUserIdAndLaunchScenarioId: "
         +"Parameters: sbmUserId = "+sbmUserId+", launchScenarioId = "+launchScenarioId
         +"; Return value = "+repository.findByUserIdAndLaunchScenarioId(sbmUserId, launchScenarioId));
 
@@ -132,9 +132,9 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Override
     public List<UserLaunch> findByUserId(String sbmUserId) {
         
-        LOGGER.info("Inside UserLaunchServiceImpl - findByUserId");
+        LOGGER.info("findByUserId");
 
-        LOGGER.debug("Inside UserLaunchServiceImpl - findByUserId: "
+        LOGGER.debug("findByUserId: "
         +"Parameters: sbmUserId = "+sbmUserId
         +"; Return value = "+repository.findByUserId(sbmUserId));
 
@@ -144,9 +144,9 @@ public class UserLaunchServiceImpl implements UserLaunchService {
     @Override
     public List<UserLaunch> findByLaunchScenarioId(int launchScenarioId) {
         
-        LOGGER.info("Inside UserLaunchServiceImpl - findByLaunchScenarioId");
+        LOGGER.info("findByLaunchScenarioId");
 
-        LOGGER.debug("Inside UserLaunchServiceImpl - findByLaunchScenarioId: "
+        LOGGER.debug("findByLaunchScenarioId: "
         +"Parameters: launchScenarioId = "+launchScenarioId
         +"; Return value = "+repository.findByLaunchScenarioId(launchScenarioId));
 

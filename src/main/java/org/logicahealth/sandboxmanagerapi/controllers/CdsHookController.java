@@ -43,7 +43,7 @@ public class CdsHookController {
     @ResponseBody
     public void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
         
-        LOGGER.info("Inside CdsHookController - getFullImage");
+        LOGGER.info("getFullImage");
 
         CdsHook cdsHook = cdsHookService.getById(id);
         if (cdsHook == null) {
@@ -61,7 +61,7 @@ public class CdsHookController {
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
         
-        LOGGER.info("Inside CdsHookController - putFullImage");
+        LOGGER.info("putFullImage");
 
         CdsHook cdsHook = cdsHookService.getById(id);
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
@@ -87,7 +87,7 @@ public class CdsHookController {
     @Transactional
     public CdsHook deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside CdsHookController - deleteFullImage");
+        LOGGER.info("deleteFullImage");
 
         CdsHook cdsHook = cdsHookService.getById(id);
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());

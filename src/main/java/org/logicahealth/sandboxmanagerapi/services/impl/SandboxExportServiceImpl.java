@@ -102,9 +102,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     @Override
     public Runnable createZippedSandboxExport(Sandbox sandbox, String sbmUserId, String bearerToken, String apiUrl, PipedOutputStream pipedOutputStream, String server) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - createZippedSandboxExport");
+        LOGGER.info("createZippedSandboxExport");
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - createZippedSandboxExport: "
+        LOGGER.debug("createZippedSandboxExport: "
         +"Parameters: sandbox = "+sandbox+", sbmUserId = "+sbmUserId
         +", bearerToken = "+bearerToken+", apiUrl = "+apiUrl
         +", pipedOutputStream = "+pipedOutputStream+", server = "+server
@@ -132,9 +132,9 @@ public class SandboxExportServiceImpl implements SandboxExportService {
     @Override
     public Runnable sendToS3Bucket(PipedInputStream pipedInputStream, String sandboxExportFileName, User user, String sandboxName) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - sendToS3Bucket");
+        LOGGER.info("sendToS3Bucket");
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - sendToS3Bucket: "
+        LOGGER.debug("sendToS3Bucket: "
         +"Parameters: pipedInputStream = "+pipedInputStream+", sandboxExportFileName = "
         +sandboxExportFileName+", user = "+user+", sandboxName = "+sandboxName
         +"; Return type: Runnable");
@@ -186,7 +186,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addSandboxFhirServerDetailsToZipFile(Sandbox sandbox, ZipOutputStream zipOutputStream, String bearerToken, String apiUrl, String server) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxFhirServerDetailsToZipFile");
+        LOGGER.info("addSandboxFhirServerDetailsToZipFile");
 
         var response = getClientResponse(sandbox, bearerToken, apiUrl);
         ZipInputStream zipInputStream = null;
@@ -212,7 +212,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             }
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxFhirServerDetailsToZipFile: "
+        LOGGER.debug("addSandboxFhirServerDetailsToZipFile: "
         +"Parameters: sandbox = "+sandbox+", zipOutputStream = "+zipOutputStream
         +", bearerToken = "+bearerToken+", apiUrl = "+apiUrl+", server = "+server
         +"; No return value");
@@ -221,7 +221,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addSchemaHashToZipFile(ZipInputStream zipInputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addSchemaHashToZipFile");
+        LOGGER.info("addSchemaHashToZipFile");
+
+        LOGGER.debug("addSchemaHashToZipFile: "
+        +"(BEFORE) Parameters: zipInputStream = "+zipInputStream+", zipEntry = "+zipEntry
+        +", zipOutputStream = "+zipOutputStream);
 
         try {
             var schemaHash = new String(zipInputStream.readAllBytes(), StandardCharsets.UTF_8);
@@ -232,15 +236,15 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding zip file entry for schema signature", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addSchemaHashToZipFile: "
-        +"Parameters: zipInputStream = "+zipInputStream+", zipEntry = "+zipEntry
+        LOGGER.debug("addSchemaHashToZipFile: "
+        +"(AFTER) Parameters: zipInputStream = "+zipInputStream+", zipEntry = "+zipEntry
         +", zipOutputStream = "+zipOutputStream+"; No return value");
 
     }
 
     private void addSandboxUserRolesAndInviteesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxUserRolesAndInviteesToZipFile");
+        LOGGER.info("addSandboxUserRolesAndInviteesToZipFile");
 
         var sandbox = this.repository.findBySandboxId(sandboxId);
         var sandboxUsers = sandbox.getUserRoles()
@@ -265,7 +269,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         }
         addSandboxUsersToZipFile(sandboxUsers, zipOutputStream);
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxUserRolesAndInviteesToZipFile: "
+        LOGGER.debug("addSandboxUserRolesAndInviteesToZipFile: "
         +"Parameters: sandboxId = "+sandboxId+", zipOutputStream = "+zipOutputStream
         +"; No return value");
 
@@ -273,7 +277,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private ClientResponse getClientResponse(Sandbox sandbox, String bearerToken, String apiUrl) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - getClientResponse");
+        LOGGER.info("getClientResponse");
 
         String url = apiUrl + SandboxExportServiceImpl.SANDBOX_DOWNLOAD_URI + "/" + sandbox.getSandboxId();
         var webClient = WebClient.builder()
@@ -300,7 +304,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             throw new RuntimeException(errorMsg);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - getClientResponse: "
+        LOGGER.debug("getClientResponse: "
         +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken+", apiUrl = "+apiUrl
         +"Return value = "+response);
 
@@ -309,7 +313,11 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addZipFileEntry(InputStream inputStream, ZipEntry zipEntry, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addZipFileEntry");
+        LOGGER.info("addZipFileEntry");
+
+        LOGGER.debug("addZipFileEntry: "
+        +"(BEFORE) Parameters: inputStream = "+inputStream+", zipEntry = "+zipEntry
+        +", zipOutputStream = "+zipOutputStream);
 
         try {
             zipOutputStream.putNextEntry(zipEntry);
@@ -318,15 +326,15 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding zip file entry for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addZipFileEntry: "
-        +"Parameters: inputStream = "+inputStream+", zipEntry = "+zipEntry
+        LOGGER.debug("addZipFileEntry: "
+        +"(AFTER) Parameters: inputStream = "+inputStream+", zipEntry = "+zipEntry
         +", zipOutputStream = "+zipOutputStream+"; No return value");
 
     }
 
     private Map<String, String> getZipEntryContents(ZipInputStream inputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - getZipEntryContents");
+        LOGGER.info("getZipEntryContents");
 
         try (var outputStream = new ByteArrayOutputStream()) {
             byte[] bytes = new byte[1024];
@@ -337,7 +345,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
             Map<String, String> retVal = convertFhirVersionsJsonStringToMap(outputStream.toString());
 
-            LOGGER.debug("Inside SandboxExportServiceImpl - getZipEntryContents: "
+            LOGGER.debug("getZipEntryContents: "
             +"Parameters: inputStream = "+inputStream
             +"; Return value = "+retVal);
 
@@ -346,7 +354,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while extracting fhir server versions json", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - getZipEntryContents: "
+        LOGGER.debug("getZipEntryContents: "
             +"Parameters: inputStream = "+inputStream
             +"; Return value = null");
 
@@ -355,7 +363,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private Map<String, String> convertFhirVersionsJsonStringToMap(String fhirServerVersions) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - convertFhirVersionsJsonStringToMap");
+        LOGGER.info("convertFhirVersionsJsonStringToMap");
 
         var fhirServerVersionsMap = new HashMap<String, String>();
         var jsonObject = new JSONObject(fhirServerVersions);
@@ -363,7 +371,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         fhirServerVersionsMap.put(HAPI_VERSION, jsonObject.getString(HAPI_VERSION));
         fhirServerVersionsMap.put(FHIR_VERSION, jsonObject.getString(FHIR_VERSION));
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - convertFhirVersionsJsonStringToMap: "
+        LOGGER.debug("convertFhirVersionsJsonStringToMap: "
         +"Parameters: fhirServerVersions = "+fhirServerVersions
         +"; Return value = "+fhirServerVersionsMap);
 
@@ -372,7 +380,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addSandboxDetailsToZipFile(String sandboxId, ZipOutputStream zipOutputStream, Map<String, String> fhirServerVersions, String sandboxApiURL, String server) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxDetailsToZipFile");
+        LOGGER.info("addSandboxDetailsToZipFile");
 
         var sandbox = this.repository.findBySandboxId(sandboxId);
         var sandboxDetails = new HashMap<String, Object>();
@@ -393,7 +401,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding sandbox details for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxDetailsToZipFile: "
+        LOGGER.debug("addSandboxDetailsToZipFile: "
         +"Parameters: sandboxId = "+sandboxId+", zipOutputStream = "+zipOutputStream
         +", fhirServerVersions = "+fhirServerVersions+", sandboxApiURL = "+sandboxApiURL
         +", server = "+server+"; No return value");
@@ -402,7 +410,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addSandboxUsersToZipFile(Set<SandboxExportServiceImpl.SandboxUser> sandboxUsers, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addSandboxUsersToZipFile");
+        LOGGER.info("addSandboxUsersToZipFile");
 
         var users = sandboxUsers.stream()
                                 .map(SandboxUser::getEmail)
@@ -414,7 +422,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding users for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addSandboxUsersToZipFile: "
+        LOGGER.debug("addSandboxUsersToZipFile: "
         +"Parameters: sandboxUsers = "+sandboxUsers+", zipOutputStream = "+zipOutputStream
         +"; No return value");
 
@@ -449,7 +457,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private List<AppManifestTemplate> addAppsManifestToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addAppsManifestToZipFile");
+        LOGGER.info("addAppsManifestToZipFile");
 
         var apps = appService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var appsList = parseAppsListJson(apps);
@@ -460,7 +468,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
                                                                          .getBytes())) {
             addZipFileEntry(inputStream, new ZipEntry("apps.json"), zipOutputStream);
     
-            LOGGER.debug("Inside SandboxExportServiceImpl - addAppsManifestToZipFile: "
+            LOGGER.debug("addAppsManifestToZipFile: "
             +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
             +", zipOutputStream = "+zipOutputStream+"; Return value = "+appsList);
             
@@ -469,7 +477,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding apps manifest for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addAppsManifestToZipFile: "
+        LOGGER.debug("addAppsManifestToZipFile: "
         +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
         +", zipOutputStream = "+zipOutputStream+"; Return value = null");
 
@@ -478,7 +486,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private List<AppManifestTemplate> parseAppsListJson(List<App> apps) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - parseAppsListJson");
+        LOGGER.info("parseAppsListJson");
 
         var appManifests = new ArrayList<AppManifestTemplate>();
         int imageCounter = 0;
@@ -506,7 +514,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             }
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - parseAppsListJson: "
+        LOGGER.debug("parseAppsListJson: "
         +"Parameters: apps = "+apps+"; Return value = "+appManifests);
 
         return appManifests;
@@ -636,7 +644,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addAppImagesToZipFile(List<AppManifestTemplate> appsList, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addAppImagesToZipFile");
+        LOGGER.info("addAppImagesToZipFile");
 
         var fileToInputStreamMapping = appsList.stream()
                                                .filter(app -> app.getLogoFileName() != null)
@@ -644,7 +652,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
         fileToInputStreamMapping.forEach((fileName, inputStream) -> addZipFileEntry(inputStream, new ZipEntry(IMAGE_FOLDER + fileName), zipOutputStream));
         appsList.forEach(app -> app.setLogo(IMAGE_FOLDER + app.getLogoFileName()));
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addAppImagesToZipFile: "
+        LOGGER.debug("addAppImagesToZipFile: "
         +"Parameters: appList = "+appsList+", zipOutputStream = "+zipOutputStream
         +"; No return value");
 
@@ -652,7 +660,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addUserPersonasToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addUserPersonasToZipFile");
+        LOGGER.info("addUserPersonasToZipFile");
 
         var userPersonas = userPersonaService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var sandboxUserPersona = userPersonas.stream()
@@ -667,7 +675,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding personas for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addUserPersonasToZipFile: "
+        LOGGER.debug("addUserPersonasToZipFile: "
         +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
         +", zipOutputStream = "+zipOutputStream+"; No return value");
 
@@ -690,7 +698,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addCdsHooksToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addCdsHooksToZipFile");
+        LOGGER.info("addCdsHooksToZipFile");
 
         var cdsServiceEndpoints = cdsServiceEndpointService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         for (CdsServiceEndpoint cdsServiceEndpoint : cdsServiceEndpoints) {
@@ -708,7 +716,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding cds hooks for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addCdsHooksToZipFile: "
+        LOGGER.debug("addCdsHooksToZipFile: "
         +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
         +", zipOutputStream = "+zipOutputStream+"; No return value");
 
@@ -759,7 +767,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     private void addLaunchScenariosToZipFile(String sandboxId, String sbmUserId, ZipOutputStream zipOutputStream, List<AppManifestTemplate> appsManifests) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addLaunchScenariosToZipFile");
+        LOGGER.info("addLaunchScenariosToZipFile");
 
         var launchScenarios = launchScenarioService.findBySandboxIdAndCreatedByOrVisibility(sandboxId, sbmUserId, Visibility.PUBLIC);
         var appIdToClientIdMapper = appsManifests.stream()
@@ -776,7 +784,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding launch scenarios for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addLaunchScenariosToZipFile: "
+        LOGGER.debug("addLaunchScenariosToZipFile: "
         +"Parameters: sandboxId = "+sandboxId+", sbmUserId = "+sbmUserId
         +", zipOutputStream = "+zipOutputStream+"; No return value");
 
@@ -828,7 +836,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
 
     public void addProfilesToZipFile(String sandboxId, ZipOutputStream zipOutputStream) {
         
-        LOGGER.info("Inside SandboxExportServiceImpl - addProfilesToZipFile");
+        LOGGER.info("addProfilesToZipFile");
 
         var profileDetails = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
         var profiles = profileDetails.stream()
@@ -847,7 +855,7 @@ public class SandboxExportServiceImpl implements SandboxExportService {
             LOGGER.error("Exception while adding profiles for sandbox download", e);
         }
 
-        LOGGER.debug("Inside SandboxExportServiceImpl - addProfilesToZipFile: "
+        LOGGER.debug("addProfilesToZipFile: "
         +"Parameters: sandboxId = "+sandboxId+", zipOutputStream = "+zipOutputStream
         +"; No return value");
 

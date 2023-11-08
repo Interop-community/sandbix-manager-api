@@ -25,11 +25,11 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Transactional
     public void delete(final int id){
         
-        LOGGER.info("Inside UserRoleServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside UserRoleServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }
@@ -38,11 +38,11 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Transactional
     public void delete(final UserRole userRole){
         
-        LOGGER.info("Inside UserRoleServiceImpl - delete");
+        LOGGER.info("delete");
 
         delete(userRole.getId());
 
-        LOGGER.debug("Inside UserRoleServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: userRole = "+userRole+"; No return value");
 
     }
@@ -51,11 +51,11 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Transactional
     public UserRole save(final UserRole userRole) {
 
-        LOGGER.info("Inside UserRoleServiceImpl - save");
+        LOGGER.info("save");
 
         UserRole retVal = repository.save(userRole);
 
-        LOGGER.debug("Inside UserRoleServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: userRole = "+userRole+"; Return value = "+retVal);
 
         return retVal;

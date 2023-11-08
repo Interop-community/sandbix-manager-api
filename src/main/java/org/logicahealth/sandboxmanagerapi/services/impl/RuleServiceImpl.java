@@ -58,11 +58,11 @@ public class RuleServiceImpl implements RuleService {
 
     public Boolean checkIfUserCanCreateSandbox(User user, String bearerToken) {
         
-        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanCreateSandbox");
+        LOGGER.info("checkIfUserCanCreateSandbox");
 
         if (rulesList.getTierRuleList() == null) {
             
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+            LOGGER.debug("checkIfUserCanCreateSandbox: "
             +"Parameters: user = "+user+", bearerToken = "+bearerToken
             +"Return value = true");
 
@@ -71,7 +71,7 @@ public class RuleServiceImpl implements RuleService {
         Rule rules = findRulesByUser(user);
         if (rules == null) {
 
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+            LOGGER.debug("checkIfUserCanCreateSandbox: "
             +"Parameters: user = "+user+", bearerToken = "+bearerToken
             +"Return value = true");
 
@@ -81,7 +81,7 @@ public class RuleServiceImpl implements RuleService {
         if (rules.getSandboxes() > sandboxes.size()) {
             if (rules.getStorage() > analyticsService.retrieveTotalMemoryByUser(user, bearerToken)) {
                 
-                LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+                LOGGER.debug("checkIfUserCanCreateSandbox: "
                 +"Parameters: user = "+user+", bearerToken = "+bearerToken
                 +"Return value = true");
 
@@ -89,7 +89,7 @@ public class RuleServiceImpl implements RuleService {
             }
         }
 
-        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateSandbox: "
+        LOGGER.debug("checkIfUserCanCreateSandbox: "
         +"Parameters: user = "+user+", bearerToken = "+bearerToken
         +"Return value = false");
 
@@ -98,19 +98,19 @@ public class RuleServiceImpl implements RuleService {
 
     public Boolean checkIfUserCanCreateApp(Sandbox sandbox) {
         
-        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanCreateApp");
+        LOGGER.info("checkIfUserCanCreateApp");
 
         Integer payerId = sandbox.getPayerUserId();
         if (rulesList.getTierRuleList() == null) {
 
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+            LOGGER.debug("checkIfUserCanCreateApp: "
             +"Parameters: sandbox = "+sandbox+"; Return value = true");
 
             return true;
         }
         if (payerId == null) {
 
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+            LOGGER.debug("checkIfUserCanCreateApp: "
             +"Parameters: sandbox = "+sandbox+"; Return value = true");
 
             return true;
@@ -122,13 +122,13 @@ public class RuleServiceImpl implements RuleService {
         Rule rules = findRulesByUser(user);
         if (rules == null) {
             
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+            LOGGER.debug("checkIfUserCanCreateApp: "
             +"Parameters: sandbox = "+sandbox+"; Return value = true");
 
             return true;
         }
 
-        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanCreateApp: "
+        LOGGER.debug("checkIfUserCanCreateApp: "
         +"Parameters: sandbox = "+sandbox+"; Return value = "+(rules.getApps() > masterApps.size()));
 
         return rules.getApps() > masterApps.size();
@@ -136,11 +136,11 @@ public class RuleServiceImpl implements RuleService {
 
     public Boolean checkIfUserCanBeAdded(String sandBoxId) {
         
-        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanBeAdded");
+        LOGGER.info("checkIfUserCanBeAdded");
 
         if (rulesList.getTierRuleList() == null) {
             
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+            LOGGER.debug("checkIfUserCanBeAdded: "
             +"Parameters: sandboxId = "+sandBoxId+"; Return value = true");
 
             return true;
@@ -148,7 +148,7 @@ public class RuleServiceImpl implements RuleService {
         Integer payerId = sandboxService.findBySandboxId(sandBoxId).getPayerUserId();
         if (payerId == null) {
             
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+            LOGGER.debug("checkIfUserCanBeAdded: "
             +"Parameters: sandboxId = "+sandBoxId+"; Return value = true");
 
             return true;
@@ -157,7 +157,7 @@ public class RuleServiceImpl implements RuleService {
         Rule rules = findRulesByUser(user);
         if (rules == null) {
             
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+            LOGGER.debug("checkIfUserCanBeAdded: "
             +"Parameters: sandboxId = "+sandBoxId+"; Return value = true");
 
             return true;
@@ -169,7 +169,7 @@ public class RuleServiceImpl implements RuleService {
             uniqueUsers.add(userRole.getUser().getEmail());
         }
 
-        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanBeAdded: "
+        LOGGER.debug("checkIfUserCanBeAdded: "
             +"Parameters: sandboxId = "+sandBoxId+"; Return value = "+(rules.getUsers() > uniqueUsers.size()));
 
         return rules.getUsers() > uniqueUsers.size();
@@ -177,11 +177,11 @@ public class RuleServiceImpl implements RuleService {
 
     public Boolean checkIfUserCanPerformTransaction(Sandbox sandbox, String operation, String bearerToken) {
         
-        LOGGER.info("Inside RuleServiceImpl - checkIfUserCanPerformTransaction");
+        LOGGER.info("checkIfUserCanPerformTransaction");
 
         if (rulesList.getTierRuleList() == null) {
 
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+            LOGGER.debug("checkIfUserCanPerformTransaction: "
             +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
             +"; Return value = true");
 
@@ -190,7 +190,7 @@ public class RuleServiceImpl implements RuleService {
         Integer payerId = sandbox.getPayerUserId();
         if (payerId == null) {
             
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+            LOGGER.debug("checkIfUserCanPerformTransaction: "
             +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
             +"; Return value = true");
 
@@ -200,7 +200,7 @@ public class RuleServiceImpl implements RuleService {
         Rule rules = findRulesByUser(user);
         if (rules == null) {
 
-            LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+            LOGGER.debug("checkIfUserCanPerformTransaction: "
             +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
             +"; Return value = true");
 
@@ -230,7 +230,7 @@ public class RuleServiceImpl implements RuleService {
                         notificationService.createNotificationForMoreThanThresholdMemory(user);
                     }
                     
-                    LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+                    LOGGER.debug("checkIfUserCanPerformTransaction: "
                     +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
                     +"; Return value = true");
                     
@@ -238,7 +238,7 @@ public class RuleServiceImpl implements RuleService {
                 }
             } else {
                 
-                LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+                LOGGER.debug("checkIfUserCanPerformTransaction: "
                 +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
                 +"; Return value = true");
                 
@@ -246,7 +246,7 @@ public class RuleServiceImpl implements RuleService {
             }
         }
         
-        LOGGER.debug("Inside RuleServiceImpl - checkIfUserCanPerformTransaction: "
+        LOGGER.debug("checkIfUserCanPerformTransaction: "
         +"Parameters: sandbox = "+sandbox+", operation = "+operation+", bearerToken = "+bearerToken
         +"; Return value = false");
         
@@ -255,17 +255,17 @@ public class RuleServiceImpl implements RuleService {
 
     public Rule findRulesByUser(User user) {
         
-        LOGGER.info("Inside RuleServiceImpl - findRulesByUser");
+        LOGGER.info("findRulesByUser");
 
         if (user.getTierLevel() == null) {
 
-            LOGGER.debug("Inside RuleServiceImpl - findRulesByUser: "
+            LOGGER.debug("findRulesByUser: "
             +"Parameters: user = "+user+"; Return value = null");
 
             return null;
         }
         
-        LOGGER.debug("Inside RuleServiceImpl - findRulesByUser: "
+        LOGGER.debug("findRulesByUser: "
         +"Parameters: user = "+user
         +"; Return value = "+rulesList.getTierRuleList().get(user.getTierLevel().name()));
 

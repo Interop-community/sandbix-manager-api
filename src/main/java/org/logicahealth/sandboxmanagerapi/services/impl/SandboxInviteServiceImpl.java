@@ -66,11 +66,11 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Transactional
     public SandboxInvite save(final SandboxInvite sandboxInvite) {
 
-        LOGGER.info("Inside SandboxInviteServiceImpl - save");
+        LOGGER.info("save");
 
         SandboxInvite retVal = repository.save(sandboxInvite);
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: sandboxInvite = "+sandboxInvite
         +"; Return value = "+retVal);
 
@@ -81,11 +81,11 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Transactional
     public void delete(final int id) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }
@@ -94,11 +94,11 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Transactional
     public void delete(List<User> invitees) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteAllByInviteeIn(invitees);
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: invitees = "+invitees+"; No return value");
 
     }
@@ -107,11 +107,11 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Transactional
     public void delete(final SandboxInvite sandboxInvite) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - delete");
+        LOGGER.info("delete");
 
         delete(sandboxInvite.getId());
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: sandboxInvite = "+sandboxInvite+"; No return value");
 
     }
@@ -120,14 +120,17 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Transactional
     public SandboxInvite create(final SandboxInvite sandboxInvite) throws IOException {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - create");
+        LOGGER.info("create");
+
+        LOGGER.debug("create: "
+        +"(BEFORE) Parameters: sandboxInvite = "+sandboxInvite);
 
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId());
         User invitedBy = userService.findBySbmUserId(sandboxInvite.getInvitedBy().getSbmUserId());
         if (!ruleService.checkIfUserCanBeAdded(sandbox.getSandboxId())) {
             
-            LOGGER.debug("Inside SandboxInviteServiceImpl - create: "
-            +"Parameters: sandboxInvite = "+sandboxInvite
+            LOGGER.debug("create: "
+            +"(AFTER) Parameters: sandboxInvite = "+sandboxInvite
             +"; Return value = null");
 
             return null;
@@ -164,15 +167,15 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
 
             sandboxActivityLogService.sandboxUserInvited(sandbox, invitedBy, invitee);
             
-            LOGGER.debug("Inside SandboxInviteServiceImpl - create: "
-            +"Parameters: sandboxInvite = "+sandboxInvite
+            LOGGER.debug("create: "
+            +"(AFTER) Parameters: sandboxInvite = "+sandboxInvite
             +"; Return value = "+sandboxInviteSaved);
 
             return sandboxInviteSaved;
         }
         
-        LOGGER.debug("Inside SandboxInviteServiceImpl - create: "
-        +"Parameters: sandboxInvite = "+sandboxInvite
+        LOGGER.debug("create: "
+        +"(AFTER) Parameters: sandboxInvite = "+sandboxInvite
         +"; Return value = null");
 
         return null;
@@ -182,7 +185,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Transactional
     public void mergeSandboxInvites(final User user, final String oauthUserEmail) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - mergeSandboxInvites");
+        LOGGER.info("mergeSandboxInvites");
 
         User tempUser = userService.findByUserEmail(oauthUserEmail);
 
@@ -196,7 +199,7 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
             userService.delete(tempUser);
         }
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - mergeSandboxInvites: "
+        LOGGER.debug("mergeSandboxInvites: "
         +"user = "+user+", oauthUserEmail = "+oauthUserEmail
         +"; No return value");
 
@@ -205,9 +208,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public SandboxInvite getById(final int id) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - mergeSandboxInvites");
+        LOGGER.info("mergeSandboxInvites");
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - mergeSandboxInvites: "
+        LOGGER.debug("mergeSandboxInvites: "
         +"Parameters: id = "+id+"; Return value = "
         +repository.findById(id).orElse(null));
 
@@ -217,9 +220,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesByInviteeId(final String inviteeId) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesByInviteeId");
+        LOGGER.info("findInvitesByInviteeId");
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - findInvitesByInviteeId: "
+        LOGGER.debug("findInvitesByInviteeId: "
         +"Parameters: inviteeId = "+inviteeId
         +"; Return value: "+repository.findInvitesByInviteeId(inviteeId));
 
@@ -229,9 +232,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesBySandboxId(final String sandboxId) {
 
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesBySandboxId");
+        LOGGER.info("findInvitesBySandboxId");
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - findInvitesBySandboxId: "
+        LOGGER.debug("findInvitesBySandboxId: "
         +"Parameters: sandboxId = "+sandboxId
         +"; Return value = "+repository.findInvitesBySandboxId(sandboxId));
 
@@ -241,9 +244,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesByInviteeIdAndSandboxId(final String inviteeId, final String sandboxId) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesByInviteeIdAndSandboxId");
+        LOGGER.info("findInvitesByInviteeIdAndSandboxId");
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - findInvitesByInviteeIdAndSandboxId: "
+        LOGGER.debug("findInvitesByInviteeIdAndSandboxId: "
         +"Parameters: inviteeId = "+inviteeId+", sandboxId = "+sandboxId
         +"; Return value = "+repository.findInvitesByInviteeIdAndSandboxId(inviteeId, sandboxId));
 
@@ -253,9 +256,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesByInviteeEmailAndSandboxId(final String inviteeEmail, final String sandboxId) {
 
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesByInviteeIdAndSandboxId");
+        LOGGER.info("findInvitesByInviteeIdAndSandboxId");
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - findInvitesByInviteeIdAndSandboxId: "
+        LOGGER.debug("findInvitesByInviteeIdAndSandboxId: "
         +"Parameters: inviteeEmail = "+inviteeEmail+", sandboxId = "+sandboxId
         +"; Return value = "+repository.findInvitesByInviteeEmailAndSandboxId(inviteeEmail, sandboxId));
 
@@ -265,9 +268,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesByInviteeEmail(final String inviteeEmail) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesByInviteeEmail");
+        LOGGER.info("findInvitesByInviteeEmail");
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - findInvitesByInviteeEmail: "
+        LOGGER.debug("findInvitesByInviteeEmail: "
         +"Parameters: inviteeEmail = "+inviteeEmail
         +"; Return value = "+repository.findInvitesByInviteeEmail(inviteeEmail));
 
@@ -277,9 +280,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesByInviteeIdAndStatus(final String inviteeId, final InviteStatus status) {
 
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesByInviteeIdAndStatus");
+        LOGGER.info("findInvitesByInviteeIdAndStatus");
 
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesByInviteeIdAndStatus: "
+        LOGGER.info("findInvitesByInviteeIdAndStatus: "
         +"Parameters: inviteeId = "+inviteeId+"; status = "+status
         +"; Return value = "+repository.findInvitesByInviteeIdAndStatus(inviteeId, status));
 
@@ -289,9 +292,9 @@ public class SandboxInviteServiceImpl implements SandboxInviteService {
     @Override
     public List<SandboxInvite> findInvitesBySandboxIdAndStatus(final String sandboxId, final InviteStatus status) {
         
-        LOGGER.info("Inside SandboxInviteServiceImpl - findInvitesBySandboxIdAndStatus");
+        LOGGER.info("findInvitesBySandboxIdAndStatus");
 
-        LOGGER.debug("Inside SandboxInviteServiceImpl - findInvitesBySandboxIdAndStatus: "
+        LOGGER.debug("findInvitesBySandboxIdAndStatus: "
         +"Parameters: sandboxId = "+sandboxId+", status = "+status
         +"; Return value = "+repository.findInvitesBySandboxIdAndStatus(sandboxId, status));
 

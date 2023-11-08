@@ -32,11 +32,11 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Transactional
     public SandboxActivityLog save(SandboxActivityLog sandboxActivityLog) {
 
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - save");
+        LOGGER.info("save");
 
         SandboxActivityLog retVal = repository.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: sandboxActivityLog = "+sandboxActivityLog
         +"; Return value = "+retVal);
 
@@ -47,11 +47,11 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Transactional
     public void delete(SandboxActivityLog sandboxActivityLog) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.delete(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: sandboxActivityLog = "+sandboxActivityLog
         +"No return value");
 
@@ -62,14 +62,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxCreate(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxCreate");
+        LOGGER.info("sandboxCreate");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.CREATED);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxCreate: "
+        LOGGER.debug("sandboxCreate: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -81,14 +81,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxLogin(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxLogin");
+        LOGGER.info("sandboxLogin");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.LOGGED_IN);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxLogin: "
+        LOGGER.debug("sandboxLogin: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"Return value = "+retVal);
 
@@ -100,7 +100,10 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxDelete(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxDelete");
+        LOGGER.info("sandboxDelete");
+
+        LOGGER.debug("sandboxDelete: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user);
 
         List<SandboxActivityLog> sandboxActivityLogList = findBySandboxId(sandbox.getSandboxId());
         for (SandboxActivityLog sandboxActivityLog : sandboxActivityLogList) {
@@ -114,8 +117,8 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxDelete: "
-        +"Parameters: sandbox = "+sandbox+", user = "+user
+        LOGGER.debug("sandboxDelete: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
         return retVal;
@@ -126,14 +129,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInviteAccepted(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxUserInviteAccepted");
+        LOGGER.info("sandboxUserInviteAccepted");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_ACCEPTED_INVITE);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxUserInviteAccepted: "
+        LOGGER.debug("sandboxUserInviteAccepted: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -144,14 +147,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInviteRevoked(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxUserInviteRevoked");
+        LOGGER.info("sandboxUserInviteRevoked");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_INVITATION_REVOKED);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxUserInviteRevoked: "
+        LOGGER.debug("sandboxUserInviteRevoked: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -162,14 +165,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInviteRejected(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxUserInviteRejected");
+        LOGGER.info("sandboxUserInviteRejected");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_INVITATION_REJECTED);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxUserInviteRejected: "
+        LOGGER.debug("sandboxUserInviteRejected: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -181,7 +184,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxUserRemoved(Sandbox sandbox, User user, User removedUser) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxUserRemoved");
+        LOGGER.info("sandboxUserRemoved");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_REMOVED);
@@ -189,7 +192,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxUserRemoved: "
+        LOGGER.debug("sandboxUserRemoved: "
         +"Parameters: sandbox = "+sandbox+", user = "+user+", removedUser = "+removedUser
         +"; Return value = "+retVal);
 
@@ -201,7 +204,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxUserInvited(Sandbox sandbox, User user, User invitedUser) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxUserInvited");
+        LOGGER.info("sandboxUserInvited");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_INVITED);
@@ -209,7 +212,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxUserInvited: "
+        LOGGER.debug("sandboxUserInvited: "
         +"Parameters: sandbox = "+sandbox+", user = "+user+", invitedUser = "+invitedUser
         +"; Return value = "+retVal);
 
@@ -220,7 +223,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxOpenEndpoint(Sandbox sandbox, User user, Boolean openEndpoint) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxOpenEndpoint");
+        LOGGER.info("sandboxOpenEndpoint");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.OPEN_ENDPOINT);
@@ -228,7 +231,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
         
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxOpenEndpoint: "
+        LOGGER.debug("sandboxOpenEndpoint: "
         +"Parameters: sandbox = "+sandbox+", user = "+user+", openEndpoint = "+openEndpoint
         +"; Return value = "+retVal);
 
@@ -239,14 +242,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxUserAdded(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxUserAdded");
+        LOGGER.info("sandboxUserAdded");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_ADDED);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxUserAdded: "
+        LOGGER.debug("sandboxUserAdded: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -256,7 +259,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public SandboxActivityLog sandboxUserRoleChange(Sandbox sandbox, User user, Role role, boolean roleAdded) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxUserRoleChange");
+        LOGGER.info("sandboxUserRoleChange");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_SANDBOX_ROLE_CHANGE);
@@ -264,7 +267,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxUserRoleChange: "
+        LOGGER.debug("sandboxUserRoleChange: "
         +"Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role+", roleAdded = "+roleAdded
         +"; Return value = "+retVal);
 
@@ -275,14 +278,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxImport(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxImport");
+        LOGGER.info("sandboxImport");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.SANDBOX_DATA_IMPORT);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxImport: "
+        LOGGER.debug("sandboxImport: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -293,14 +296,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog sandboxReset(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - sandboxReset");
+        LOGGER.info("sandboxReset");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.SANDBOX_RESET);
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - sandboxReset: "
+        LOGGER.debug("sandboxReset: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -310,7 +313,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public SandboxActivityLog systemUserCreated(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - systemUserCreated");
+        LOGGER.info("systemUserCreated");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(sandbox, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_CREATED);
@@ -318,7 +321,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - systemUserCreated: "
+        LOGGER.debug("systemUserCreated: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -328,7 +331,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public SandboxActivityLog systemUserRoleChange(User user, SystemRole systemRole, boolean roleAdded) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - systemUserRoleChange");
+        LOGGER.info("systemUserRoleChange");
 
         SandboxActivityLog sandboxActivityLog = createSandboxActivityLog(null, user);
         sandboxActivityLog.setActivity(SandboxActivity.USER_SYSTEM_ROLE_CHANGE);
@@ -336,7 +339,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
         
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - systemUserRoleChange: "
+        LOGGER.debug("systemUserRoleChange: "
         +"Parameters: user = "+user+", systemRole = "+systemRole+", roleAdded = "+roleAdded
         +"; Return value = "+retVal);
 
@@ -347,7 +350,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @PublishAtomicMetric
     public SandboxActivityLog userDelete(final User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - userDelete");
+        LOGGER.info("userDelete");
 
         List<SandboxActivityLog> sandboxActivityLogList = findByUserId(user.getId());
         for (SandboxActivityLog sandboxActivityLog : sandboxActivityLogList) {
@@ -360,7 +363,7 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
         SandboxActivityLog retVal = this.save(sandboxActivityLog);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - userDelete: "
+        LOGGER.debug("userDelete: "
         +"Parameters: user = "+user+"; Return value = "+retVal);
 
         return retVal;
@@ -371,9 +374,9 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public List<SandboxActivityLog> findBySandboxId(String sandboxId) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - findBySandboxId");
+        LOGGER.info("findBySandboxId");
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - findBySandboxId: "
+        LOGGER.debug("findBySandboxId: "
         +"Parameters: sandboxId = "+sandboxId
         +"; Return value = "+repository.findBySandboxId(sandboxId));
 
@@ -383,9 +386,9 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public List<SandboxActivityLog> findByUserSbmUserId(String sbmUserId) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - findByUserSbmUserId");
+        LOGGER.info("findByUserSbmUserId");
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - findByUserSbmUserId: "
+        LOGGER.debug("findByUserSbmUserId: "
         +"Parameters: sbmUserId = "+sbmUserId
         +"; Return value = "+repository.findByUserSbmUserId(sbmUserId));
 
@@ -395,9 +398,9 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public List<SandboxActivityLog> findByUserId(int userId) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - findByUserId");
+        LOGGER.info("findByUserId");
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - findByUserId: "
+        LOGGER.debug("findByUserId: "
         +"Parameters: userId = "+userId
         +"; Return value = "+repository.findByUserId(userId));
 
@@ -407,9 +410,9 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public List<SandboxActivityLog> findBySandboxActivity(SandboxActivity sandboxActivity) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - findBySandboxActivity");
+        LOGGER.info("findBySandboxActivity");
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - findBySandboxActivity: "
+        LOGGER.debug("findBySandboxActivity: "
         +"Parameters: sandboxActivity = "+sandboxActivity
         +"; Return value = "+repository.findBySandboxActivity(sandboxActivity));
 
@@ -419,9 +422,9 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public Iterable<SandboxActivityLog> findAll() {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - findAll");
+        LOGGER.info("findAll");
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - findAll: "
+        LOGGER.debug("findAll: "
         +"No input parameters; Return value = "+repository.findAll());
 
         return repository.findAll();
@@ -430,9 +433,9 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public List<SandboxActivityLog> findAllForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - findAllForSpecificTimePeriod");
+        LOGGER.info("findAllForSpecificTimePeriod");
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - findAllForSpecificTimePeriod: "
+        LOGGER.debug("findAllForSpecificTimePeriod: "
         +"Parameters: beginDate = "+beginDate+", endDate = "+endDate
         +"; Return value = "+repository.findAllForSpecificTimePeriod(beginDate, endDate));
 
@@ -442,11 +445,11 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
     @Override
     public String intervalActive(final Timestamp intervalTime) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - intervalActive");
+        LOGGER.info("intervalActive");
 
         String retVal = repository.intervalActive(intervalTime);
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - intervalActive: "
+        LOGGER.debug("intervalActive: "
         +"Parameters: intervalTime = "+intervalTime
         +"; Return value = "+retVal);
 
@@ -455,14 +458,14 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     private SandboxActivityLog createSandboxActivityLog(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - createSandboxActivityLog");
+        LOGGER.info("createSandboxActivityLog");
 
         SandboxActivityLog sandboxActivityLog = new SandboxActivityLog();
         sandboxActivityLog.setSandbox(sandbox);
         sandboxActivityLog.setUser(user);
         sandboxActivityLog.setTimestamp(new Timestamp(new Date().getTime()));
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - createSandboxActivityLog: "
+        LOGGER.debug("createSandboxActivityLog: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+sandboxActivityLog);
 
@@ -471,13 +474,13 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     private static String toJson(Sandbox sandbox) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - toJson");
+        LOGGER.info("toJson");
 
         Gson gson = new Gson();
         Type type = new TypeToken<Sandbox>() {
         }.getType();
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - toJson: "
+        LOGGER.debug("toJson: "
         +"Parameters: sandbox = "+sandbox
         +"; Return value = "+gson.toJson(sandbox, type));
 
@@ -486,13 +489,13 @@ public class SandboxActivityLogServiceImpl implements SandboxActivityLogService 
 
     private static String userToJson(User user) {
         
-        LOGGER.info("Inside SandboxActivityLogServiceImpl - userToJson");
+        LOGGER.info("userToJson");
 
         Gson gson = new Gson();
         Type type = new TypeToken<User>() {
         }.getType();
 
-        LOGGER.debug("Inside SandboxActivityLogServiceImpl - userToJson: "
+        LOGGER.debug("userToJson: "
         +"Parameters: user = "+user+"; Return value = "+gson.toJson(user, type));
 
         return gson.toJson(user, type);

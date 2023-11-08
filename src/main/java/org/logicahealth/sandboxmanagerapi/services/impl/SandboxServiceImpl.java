@@ -194,24 +194,24 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void deleteQueuedSandboxes() {
         
-        LOGGER.info("Inside SandboxServiceImpl - deleteQueuedSandboxes");
+        LOGGER.info("deleteQueuedSandboxes");
 
         var queuedSandboxes = repository.findByCreationStatus(SandboxCreationStatus.QUEUED);
         queuedSandboxes.forEach(this::delete);
         LOGGER.info("Queued sandbox creation entries removed.");
 
-        LOGGER.debug("Inside SandboxServiceImpl - deleteQueuedSandboxes: "
+        LOGGER.debug("deleteQueuedSandboxes: "
         +"No input parameters; No return value");
 
     }
 
     private void delete(final Sandbox sandbox) {
         
-        LOGGER.info("Inside SandboxServiceImpl - delete");
+        LOGGER.info("delete");
 
         deleteSandboxFromSandman(sandbox, null);
 
-        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: sandbox = "+sandbox+"; No return value");
 
     }
@@ -219,11 +219,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public void delete(final int id) {
 
-        LOGGER.info("Inside SandboxServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }
@@ -232,7 +232,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public synchronized void delete(final Sandbox sandbox, final String bearerToken, final User admin, final boolean sync) {
         
-        LOGGER.info("Inside SandboxServiceImpl - delete");
+        LOGGER.info("delete");
 
         if (!sync) {
             // Want this done first in case there's an error with Reference API so that everything else doesn't get deleted
@@ -245,7 +245,7 @@ public class SandboxServiceImpl implements SandboxService {
 
         deleteSandboxFromSandman(sandbox, admin);
 
-        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
         +", admin = "+admin+", sync = "+sync+"; No return value");
 
@@ -253,9 +253,9 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void deleteSandboxFromSandman(final Sandbox sandbox, final User admin) {
 
-        LOGGER.info("Inside SandboxServiceImpl - deleteSandboxFromSandman");
+        LOGGER.info("deleteSandboxFromSandman");
 
-        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxFromSandman: "
+        LOGGER.debug("deleteSandboxFromSandman: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", admin = "+admin+"; No return value");
 
         deleteAllSandboxItems(sandbox);
@@ -280,7 +280,7 @@ public class SandboxServiceImpl implements SandboxService {
 
         delete(sandbox.getId());
 
-        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxFromSandman: "
+        LOGGER.debug("deleteSandboxFromSandman: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", admin = "+admin+"; No return value");
 
     }
@@ -289,11 +289,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public synchronized void delete(final Sandbox sandbox, final String bearerToken) {
         
-        LOGGER.info("Inside SandboxServiceImpl - delete");
+        LOGGER.info("delete");
 
         delete(sandbox, bearerToken, null, false);
 
-        LOGGER.debug("Inside SandboxServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
         +"; No return value");
 
@@ -301,9 +301,9 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void deleteAllSandboxItems(final Sandbox sandbox) {
 
-        LOGGER.info("Inside SandboxServiceImpl - deleteAllSandboxItems");
+        LOGGER.info("deleteAllSandboxItems");
 
-        LOGGER.debug("Inside SandboxServiceImpl - deleteAllSandboxItems: "
+        LOGGER.debug("deleteAllSandboxItems: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+"; No return value");
 
         deleteSandboxItemsExceptApps(sandbox);
@@ -314,15 +314,15 @@ public class SandboxServiceImpl implements SandboxService {
             appService.delete(app);
         }
         
-        LOGGER.debug("Inside SandboxServiceImpl - deleteAllSandboxItems: "
+        LOGGER.debug("deleteAllSandboxItems: "
         +"(AFTER) Parameters: sandbox = "+sandbox+"; No return value");
     }
 
     private void deleteSandboxItemsExceptApps(final Sandbox sandbox) {
 
-        LOGGER.info("Inside SandboxServiceImpl - deleteSandboxItemsExceptApps");
+        LOGGER.info("deleteSandboxItemsExceptApps");
 
-        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxItemsExceptApps: "
+        LOGGER.debug("deleteSandboxItemsExceptApps: "
         +"Parameters: sandbox = "+sandbox+"; No return value");
 
         //delete launch scenarios, context params
@@ -353,7 +353,7 @@ public class SandboxServiceImpl implements SandboxService {
 
         userAccessHistoryService.deleteUserAccessInstancesForSandbox(sandbox);
 
-        LOGGER.debug("Inside SandboxServiceImpl - deleteSandboxItemsExceptApps: "
+        LOGGER.debug("deleteSandboxItemsExceptApps: "
         +"Parameters: sandbox = "+sandbox+"; No return value");
     }
 
@@ -362,16 +362,16 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox create(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
 
-        LOGGER.info("Inside SandboxServiceImpl - create");
+        LOGGER.info("create");
 
-        LOGGER.debug("Inside SandboxServiceImpl - create: "
+        LOGGER.debug("create: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+
         ", bearerToken = "+bearerToken);
 
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - create: "
+            LOGGER.debug("create: "
             +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+
             ", bearerToken = "+bearerToken+"; Return value = null");
 
@@ -392,14 +392,14 @@ public class SandboxServiceImpl implements SandboxService {
             }
             sandboxActivityLogService.sandboxCreate(sandbox, user);
             
-            LOGGER.debug("Inside SandboxServiceImpl - create: "
+            LOGGER.debug("create: "
             +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+
             ", bearerToken = "+bearerToken+"; Return value = "+savedSandbox);
 
             return savedSandbox;
         }
         
-        LOGGER.debug("Inside SandboxServiceImpl - create: "
+        LOGGER.debug("create: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+
         ", bearerToken = "+bearerToken+"; Return value = null");
 
@@ -410,9 +410,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void clone(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside SandboxServiceImpl - clone");
+        LOGGER.info("clone");
 
-        LOGGER.debug("Inside SandboxServiceImpl - clone: "
+        LOGGER.debug("clone: "
         +"(BEFORE) Parameters: newSandbox = "+newSandbox+", cloneSandboxId = "+clonedSandboxId
         +", user = "+user+", bearerToken = "+bearerToken
         +"; No return value");
@@ -422,7 +422,7 @@ public class SandboxServiceImpl implements SandboxService {
             this.sandboxBackgroundTasksService.cloneSandboxSchema(savedAndClonedSandboxes.get(SAVED_SANDBOX), savedAndClonedSandboxes.get((CLONED_SANDBOX)), user, bearerToken, getSandboxApiURL(newSandbox));
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - clone: "
+        LOGGER.debug("clone: "
         +"(AFTER) Parameters: newSandbox = "+newSandbox+", cloneSandboxId = "+clonedSandboxId
         +", user = "+user+", bearerToken = "+bearerToken
         +"; No return value");
@@ -431,16 +431,16 @@ public class SandboxServiceImpl implements SandboxService {
 
     private Map<String, Sandbox> cloneSandbox(final Sandbox newSandbox, final String clonedSandboxId, final User user, final String bearerToken) {
         
-        LOGGER.info("Inside SandboxServiceImpl - cloneSandbox");
+        LOGGER.info("cloneSandbox");
         
-        LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+        LOGGER.debug("cloneSandbox: "
         +"(BEFORE) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
         +", user = "+user+", bearerToken = "+bearerToken);
 
         Boolean canCreate = ruleService.checkIfUserCanCreateSandbox(user, bearerToken);
         if (!canCreate) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+            LOGGER.debug("cloneSandbox: "
             +"(AFTER) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
             +", user = "+user+", bearerToken = "+bearerToken
             +"; Return value = null");
@@ -482,7 +482,7 @@ public class SandboxServiceImpl implements SandboxService {
             savedAndClonedSandboxes.put(SAVED_SANDBOX, savedSandbox);
             savedAndClonedSandboxes.put(CLONED_SANDBOX, clonedSandbox);
 
-            LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+            LOGGER.debug("cloneSandbox: "
             +"(AFTER) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
             +", user = "+user+", bearerToken = "+bearerToken
             +"; Return value = "+savedAndClonedSandboxes);
@@ -490,7 +490,7 @@ public class SandboxServiceImpl implements SandboxService {
             return savedAndClonedSandboxes;
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - cloneSandbox: "
+        LOGGER.debug("cloneSandbox: "
         +"(AFTER) Parameters: newSandbox = "+newSandbox+", clonedSandboxId = "+clonedSandboxId
         +", user = "+user+", bearerToken = "+bearerToken
         +"; Return value = null");
@@ -500,9 +500,9 @@ public class SandboxServiceImpl implements SandboxService {
 
     private Sandbox saveNewSandbox(Sandbox newSandbox, User user) {
         
-        LOGGER.info("Inside SandboxServiceImpl - saveNewSandbox");
+        LOGGER.info("saveNewSandbox");
 
-        LOGGER.debug("Inside SandboxServiceImpl - saveNewSandbox: "
+        LOGGER.debug("saveNewSandbox: "
         +"(BEFORE) Parameters: newSandbox = "+newSandbox+", user = "+user);
 
         newSandbox.setCreatedBy(user);
@@ -513,7 +513,7 @@ public class SandboxServiceImpl implements SandboxService {
 
         Sandbox retVal = save(newSandbox);
 
-        LOGGER.debug("Inside SandboxServiceImpl - saveNewSandbox: "
+        LOGGER.debug("saveNewSandbox: "
         +"(AFTER) Parameters: newSandbox = "+newSandbox+", user = "+user
         +"; Return value = "+retVal);
 
@@ -524,7 +524,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox update(final Sandbox sandbox, final User user, final String bearerToken) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside SandboxServiceImpl - update");
+        LOGGER.info("update");
 
         Sandbox existingSandbox = findBySandboxId(sandbox.getSandboxId());
         existingSandbox.setName(sandbox.getName());
@@ -537,7 +537,7 @@ public class SandboxServiceImpl implements SandboxService {
 
         Sandbox retVal = save(existingSandbox);
 
-        LOGGER.debug("Inside SandboxServiceImpl - update: "
+        LOGGER.debug("update: "
         +"Parameters: sandbox = "+sandbox+", user = "+user+", bearerToken = "+bearerToken
         +"; Return value = "+retVal);
 
@@ -548,9 +548,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void removeMember(final Sandbox sandbox, final User user, final String bearerToken) {
         
-        LOGGER.info("Inside SandboxServiceImpl - removeMember");
+        LOGGER.info("removeMember");
 
-        LOGGER.debug("Inside SandboxServiceImpl - removeMember: "
+        LOGGER.debug("removeMember: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", bearerToken = "+bearerToken);
 
         if (user != null) {
@@ -602,7 +602,7 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxActivityLogService.sandboxUserRemoved(sandbox, sandbox.getCreatedBy(), user);
         }
         
-        LOGGER.debug("Inside SandboxServiceImpl - removeMember: "
+        LOGGER.debug("removeMember: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", bearerToken = "+bearerToken
         +"; No return value");
 
@@ -612,9 +612,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void addMember(final Sandbox sandbox, final User user) {
 
-        LOGGER.info("Inside SandboxServiceImpl - addMember");
+        LOGGER.info("addMember");
 
-        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        LOGGER.debug("addMember: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user);
 
         String[] defaultRoles = sandbox.getVisibility() == Visibility.PUBLIC ? defaultPublicSandboxRoles : defaultPrivateSandboxRoles;
@@ -622,7 +622,7 @@ public class SandboxServiceImpl implements SandboxService {
             addMemberRole(sandbox, user, Role.valueOf(roleName));
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        LOGGER.debug("addMember: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user
         +"; No return value");
 
@@ -632,9 +632,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void addMember(final Sandbox sandbox, final User user, final Role role) {
         
-        LOGGER.info("Inside SandboxServiceImpl - addMember");
+        LOGGER.info("addMember");
 
-        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        LOGGER.debug("addMember: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role);
 
         List<UserRole> userRoles = sandbox.getUserRoles();
@@ -645,7 +645,7 @@ public class SandboxServiceImpl implements SandboxService {
         sandboxActivityLogService.sandboxUserAdded(sandbox, user);
         save(sandbox);
 
-        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        LOGGER.debug("addMember: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
         +"; No return value");
     }
@@ -654,14 +654,14 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void addMemberRole(final Sandbox sandbox, final User user, final Role role) {
         
-        LOGGER.info("Inside SandboxServiceImpl - addMember");
+        LOGGER.info("addMember");
 
-        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        LOGGER.debug("addMember: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role);
 
         if (hasMemberRole(sandbox, user, role)) {
 
-        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        LOGGER.debug("addMember: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
         +"; No return value");
 
@@ -677,7 +677,7 @@ public class SandboxServiceImpl implements SandboxService {
             save(sandbox);
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - addMember: "
+        LOGGER.debug("addMember: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
         +"; No return value");
     }
@@ -686,9 +686,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void removeMemberRole(final Sandbox sandbox, final User user, final Role role) {
         
-        LOGGER.info("Inside SandboxServiceImpl - removeMemberRole");
+        LOGGER.info("removeMemberRole");
 
-        LOGGER.debug("Inside SandboxServiceImpl - removeMemberRole: "
+        LOGGER.debug("removeMemberRole: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
         +"; No return value");
 
@@ -714,7 +714,7 @@ public class SandboxServiceImpl implements SandboxService {
             }
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - removeMemberRole: "
+        LOGGER.debug("removeMemberRole: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
         +"; No return value");
 
@@ -724,15 +724,15 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void changePayerForSandbox(final Sandbox sandbox, final User payer) {
         
-        LOGGER.info("Inside SandboxServiceImpl - changePayerForSandbox");
+        LOGGER.info("changePayerForSandbox");
 
-        LOGGER.debug("Inside SandboxServiceImpl - changePayerForSandbox: "
+        LOGGER.debug("changePayerForSandbox: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", payer = "+payer);
 
         sandbox.setPayerUserId(payer.getId());
         save(sandbox);
         
-        LOGGER.debug("Inside SandboxServiceImpl - changePayerForSandbox: "
+        LOGGER.debug("changePayerForSandbox: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", payer = "+payer
         +"; No return value");
     }
@@ -740,7 +740,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public boolean hasMemberRole(final Sandbox sandbox, final User user, final Role role) {
         
-        LOGGER.info("Inside SandboxServiceImpl - hasMemberRole");
+        LOGGER.info("hasMemberRole");
 
         List<UserRole> userRoles = sandbox.getUserRoles();
         for (UserRole userRole : userRoles) {
@@ -748,7 +748,7 @@ public class SandboxServiceImpl implements SandboxService {
                         .getSbmUserId()
                         .equalsIgnoreCase(user.getSbmUserId()) && userRole.getRole() == role) {
 
-                LOGGER.debug("Inside SandboxServiceImpl - hasMemberRole: "
+                LOGGER.debug("hasMemberRole: "
                 +"Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
                 +"; Return value = true");
 
@@ -756,7 +756,7 @@ public class SandboxServiceImpl implements SandboxService {
             }
         }
         
-        LOGGER.debug("Inside SandboxServiceImpl - hasMemberRole: "
+        LOGGER.debug("hasMemberRole: "
         +"Parameters: sandbox = "+sandbox+", user = "+user+", role = "+role
         +"; Return value = false");
 
@@ -766,9 +766,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public void addSandboxImport(final Sandbox sandbox, final SandboxImport sandboxImport) {
 
-        LOGGER.info("Inside SandboxServiceImpl - addSandboxImport");
+        LOGGER.info("addSandboxImport");
 
-        LOGGER.debug("Inside SandboxServiceImpl - addSandboxImport: "
+        LOGGER.debug("addSandboxImport: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", sandboxImport = "+sandboxImport);
 
         List<SandboxImport> imports = sandbox.getImports();
@@ -776,7 +776,7 @@ public class SandboxServiceImpl implements SandboxService {
         sandbox.setImports(imports);
         save(sandbox);
         
-        LOGGER.debug("Inside SandboxServiceImpl - addSandboxImport: "
+        LOGGER.debug("addSandboxImport: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", sandboxImport = "+sandboxImport
         +"; No return value");
 
@@ -785,14 +785,14 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public void reset(final Sandbox sandbox, final String bearerToken) {
         
-        LOGGER.info("Inside SandboxServiceImpl - reset");
+        LOGGER.info("reset");
 
-        LOGGER.debug("Inside SandboxServiceImpl - reset: "
+        LOGGER.debug("reset: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken);
 
         deleteSandboxItemsExceptApps(sandbox);
         
-        LOGGER.debug("Inside SandboxServiceImpl - reset: "
+        LOGGER.debug("reset: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
         +"; No return value");
     }
@@ -800,14 +800,14 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public boolean isSandboxMember(final Sandbox sandbox, final User user) {
         
-        LOGGER.info("Inside SandboxServiceImpl - reset");
+        LOGGER.info("reset");
 
         for (UserRole userRole : sandbox.getUserRoles()) {
             if (userRole.getUser()
                         .getSbmUserId()
                         .equalsIgnoreCase(user.getSbmUserId())) {
 
-                LOGGER.info("Inside SandboxServiceImpl - reset: "
+                LOGGER.info("reset: "
                 +"Parameters: sandbox = "+sandbox+", user = "+user
                 +"; Return value = true");
 
@@ -815,7 +815,7 @@ public class SandboxServiceImpl implements SandboxService {
             }
         }
         
-        LOGGER.info("Inside SandboxServiceImpl - reset: "
+        LOGGER.info("reset: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = false");
 
@@ -826,7 +826,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void sandboxLogin(final String sandboxId, final String userId) {
 
-        LOGGER.info("Inside SandboxServiceImpl - sandboxLogin");
+        LOGGER.info("sandboxLogin");
 
         Sandbox sandbox = findBySandboxId(sandboxId);
         User user = userService.findBySbmUserId(userId);
@@ -834,7 +834,7 @@ public class SandboxServiceImpl implements SandboxService {
             sandboxActivityLogService.sandboxLogin(sandbox, user);
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - sandboxLogin: "
+        LOGGER.debug("sandboxLogin: "
         +"Parameters: sandboxId = "+sandboxId+", userId = "+userId
         +"; No return value");
 
@@ -844,11 +844,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public Sandbox save(final Sandbox sandbox) {
 
-        LOGGER.info("Inside SandboxServiceImpl - save");
+        LOGGER.info("save");
 
         Sandbox retVal = repository.save(sandbox);
 
-        LOGGER.debug("Inside SandboxServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: sandbox = "+sandbox+"; Return value = "+retVal);
 
         return retVal;
@@ -857,7 +857,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public List<Sandbox> getAllowedSandboxes(final User user) {
         
-        LOGGER.info("Inside SandboxServiceImpl - getAllowedSandboxes");
+        LOGGER.info("getAllowedSandboxes");
 
         List<Sandbox> sandboxes = new ArrayList<>();
         if (user != null) {
@@ -874,7 +874,7 @@ public class SandboxServiceImpl implements SandboxService {
             }
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - getAllowedSandboxes: "
+        LOGGER.debug("getAllowedSandboxes: "
         +"Parameters: user = "+user+"; Return value = "+sandboxes);
 
         return sandboxes;
@@ -883,9 +883,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public Sandbox findBySandboxId(final String sandboxId) {
         
-        LOGGER.info("Inside SandboxServiceImpl - findBySandboxId");
+        LOGGER.info("findBySandboxId");
 
-        LOGGER.debug("Inside SandboxServiceImpl - findBySandboxId: "
+        LOGGER.debug("findBySandboxId: "
         +"Parameters: sandboxId = "+sandboxId
         +"; Return value = "+repository.findBySandboxId(sandboxId));
 
@@ -895,9 +895,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public List<Sandbox> findByVisibility(final Visibility visibility) {
         
-        LOGGER.info("Inside SandboxServiceImpl - findByVisibility");
+        LOGGER.info("findByVisibility");
 
-        LOGGER.debug("Inside SandboxServiceImpl - findByVisibility: "
+        LOGGER.debug("findByVisibility: "
         +"Parameters: visibility = "+visibility
         +"; Return value = "+repository.findByVisibility(visibility));
 
@@ -907,9 +907,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String fullCount() {
         
-        LOGGER.info("Inside SandboxServiceImpl - fullCount");
+        LOGGER.info("fullCount");
 
-        LOGGER.debug("Inside SandboxServiceImpl - fullCount: "
+        LOGGER.debug("fullCount: "
         +"No input parameters; Return value = "+repository.fullCount());
 
         return repository.fullCount();
@@ -918,9 +918,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String fullCountForSpecificTimePeriod(Timestamp endDate) {
         
-        LOGGER.info("Inside SandboxServiceImpl - fullCountForSpecificTimePeriod");
+        LOGGER.info("fullCountForSpecificTimePeriod");
 
-        LOGGER.debug("Inside SandboxServiceImpl - fullCountForSpecificTimePeriod: "
+        LOGGER.debug("fullCountForSpecificTimePeriod: "
         +"Parameters: endDate = "+endDate+
         "; Return value = "+repository.fullCountForSpecificTimePeriod(endDate));
 
@@ -930,9 +930,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String schemaCount(String apiEndpointIndex) {
         
-        LOGGER.info("Inside SandboxServiceImpl - schemaCount");
+        LOGGER.info("schemaCount");
 
-        LOGGER.debug("Inside SandboxServiceImpl - schemaCount: "
+        LOGGER.debug("schemaCount: "
         +"Parameters: apiEndpointIndex = "+apiEndpointIndex
         +"; Return value = "+repository.schemaCount(apiEndpointIndex));
 
@@ -942,9 +942,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String schemaCountForSpecificTimePeriod(final String apiEndpointIndex, final Timestamp endDate) {
         
-        LOGGER.info("Inside SandboxServiceImpl - schemaCountForSpecificTimePeriod");
+        LOGGER.info("schemaCountForSpecificTimePeriod");
 
-        LOGGER.debug("Inside SandboxServiceImpl - schemaCountForSpecificTimePeriod: "
+        LOGGER.debug("schemaCountForSpecificTimePeriod: "
         +"Parameters: apiEndpointIndex = "+apiEndpointIndex
         +", endDate = "+endDate+
         "; Return value = "+repository.schemaCountForSpecificTimePeriod(apiEndpointIndex, endDate));
@@ -955,9 +955,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String intervalCount(Timestamp intervalTime) {
 
-        LOGGER.info("Inside SandboxServiceImpl - intervalCount");
+        LOGGER.info("intervalCount");
 
-        LOGGER.debug("Inside SandboxServiceImpl - intervalCount: "
+        LOGGER.debug("intervalCount: "
         +"Parameters: intervalTime = "+intervalTime
         +"; Return value = "+repository.intervalCount(intervalTime));
 
@@ -967,11 +967,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String newSandboxesInIntervalCount(Timestamp intervalTime, String apiEndpointIndex) {
         
-        LOGGER.info("Inside SandboxServiceImpl - newSandboxesInIntervalCount");
+        LOGGER.info("newSandboxesInIntervalCount");
 
         String retVal = repository.newSandboxesInIntervalCount(intervalTime, apiEndpointIndex);
 
-        LOGGER.debug("Inside SandboxServiceImpl - newSandboxesInIntervalCount: "
+        LOGGER.debug("newSandboxesInIntervalCount: "
         +"Parameters: intervalTime = "+intervalTime+", apiEndpointIndex = "+apiEndpointIndex
         +"; Return value = "+retVal);
 
@@ -981,9 +981,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public List<Sandbox> findByPayerId(Integer payerId) {
 
-        LOGGER.info("Inside SandboxServiceImpl - findByPayerId");
+        LOGGER.info("findByPayerId");
 
-        LOGGER.debug("Inside SandboxServiceImpl - findByPayerId: "
+        LOGGER.debug("findByPayerId: "
         +"Parameters: payerId = "+payerId
         +"; Return value = "+repository.findByPayerUserId(payerId));
 
@@ -993,9 +993,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String getSandboxApiURL(final Sandbox sandbox) {
 
-        LOGGER.info("Inside SandboxServiceImpl - getSandboxApiURL");
+        LOGGER.info("getSandboxApiURL");
 
-        LOGGER.debug("Inside SandboxServiceImpl - getSandboxApiURL: "
+        LOGGER.debug("getSandboxApiURL: "
         +"Parameters: sandbox = "+sandbox
         +"; Return value = "+getApiSchemaURL(sandbox.getApiEndpointIndex()) + "/" + sandbox.getSandboxId());
 
@@ -1005,9 +1005,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String getSystemSandboxApiURL() {
 
-        LOGGER.info("Inside SandboxServiceImpl - getSystemSandboxApiURL");
+        LOGGER.info("getSystemSandboxApiURL");
 
-        LOGGER.debug("Inside SandboxServiceImpl - getSystemSandboxApiURL: "
+        LOGGER.debug("getSystemSandboxApiURL: "
         +"No input parameters; Return value = "
         +apiEndpointIndexObj.getCurrent()
                                   .getApiBaseURL_dstu2() + "/system");
@@ -1019,9 +1019,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public Iterable<Sandbox> findAll() {
         
-        LOGGER.info("Inside SandboxServiceImpl - findAll");
+        LOGGER.info("findAll");
 
-        LOGGER.debug("Inside SandboxServiceImpl - findAll: "
+        LOGGER.debug("findAll: "
         +"No input parameters; Return value = "+repository.findAll());
 
         return repository.findAll();
@@ -1030,12 +1030,12 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String getApiSchemaURL(final String apiEndpointIndex) {
 
-        LOGGER.info("Inside SandboxServiceImpl - getApiSchemaURL");
+        LOGGER.info("getApiSchemaURL");
 
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
                                                        .getDstu2())) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            LOGGER.debug("getApiSchemaURL: "
             +"Parameters: apiEndpointIndex = "+apiEndpointIndex
             +"Return value = "+apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_dstu2());
@@ -1046,7 +1046,7 @@ public class SandboxServiceImpl implements SandboxService {
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
                                                        .getStu3())) {
                                                         
-            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            LOGGER.debug("getApiSchemaURL: "
             +"Parameters: apiEndpointIndex = "+apiEndpointIndex
             +"Return value = "+apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_stu3());
@@ -1057,7 +1057,7 @@ public class SandboxServiceImpl implements SandboxService {
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getPrev()
                                                        .getR4())) {
                                                         
-            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            LOGGER.debug("getApiSchemaURL: "
             +"Parameters: apiEndpointIndex = "+apiEndpointIndex
             +"Return value = "+apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_r4());
@@ -1068,7 +1068,7 @@ public class SandboxServiceImpl implements SandboxService {
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getDstu2())) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            LOGGER.debug("getApiSchemaURL: "
             +"Parameters: apiEndpointIndex = "+apiEndpointIndex
             +"Return value = "+apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_dstu2());
@@ -1079,7 +1079,7 @@ public class SandboxServiceImpl implements SandboxService {
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getStu3())) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            LOGGER.debug("getApiSchemaURL: "
             +"Parameters: apiEndpointIndex = "+apiEndpointIndex
             +"Return value = "+apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_stu3());
@@ -1090,7 +1090,7 @@ public class SandboxServiceImpl implements SandboxService {
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getR4())) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            LOGGER.debug("getApiSchemaURL: "
             +"Parameters: apiEndpointIndex = "+apiEndpointIndex
             +"Return value = "+apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_r4());
@@ -1101,7 +1101,7 @@ public class SandboxServiceImpl implements SandboxService {
         if (apiEndpointIndex.equals(apiEndpointIndexObj.getCurrent()
                                                        .getR5())) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+            LOGGER.debug("getApiSchemaURL: "
             +"Parameters: apiEndpointIndex = "+apiEndpointIndex
             +"Return value = "+apiEndpointIndexObj.getPrev()
                                       .getApiBaseURL_r5());
@@ -1110,7 +1110,7 @@ public class SandboxServiceImpl implements SandboxService {
                                       .getApiBaseURL_r5();
         }
         
-        LOGGER.debug("Inside SandboxServiceImpl - getApiSchemaURL: "
+        LOGGER.debug("getApiSchemaURL: "
         +"Parameters: apiEndpointIndex = "+apiEndpointIndex
         +"Return value = ");
 
@@ -1119,9 +1119,9 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void removeAllMembers(final Sandbox sandbox) {
 
-        LOGGER.info("Inside SandboxServiceImpl - removeAllMembers");
+        LOGGER.info("removeAllMembers");
 
-        LOGGER.debug("Inside SandboxServiceImpl - removeAllMembers: "
+        LOGGER.debug("removeAllMembers: "
         +"(BEFORE) Parameters: sandbox = "+sandbox);
 
         List<UserRole> userRoles = sandbox.getUserRoles();
@@ -1133,14 +1133,14 @@ public class SandboxServiceImpl implements SandboxService {
             userRoleService.delete(userRole);
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - removeAllMembers: "
+        LOGGER.debug("removeAllMembers: "
         +"(AFTER) Parameters: sandbox = "+sandbox+"; No return value");
 
     }
 
     private boolean callCreateOrUpdateSandboxAPI(final Sandbox sandbox, final String bearerToken) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside SandboxServiceImpl - callCreateOrUpdateSandboxAPI");
+        LOGGER.info("callCreateOrUpdateSandboxAPI");
 
         String url = getSandboxApiURL(sandbox) + "/sandbox";
         if (!sandbox.getDataSet()
@@ -1172,7 +1172,7 @@ public class SandboxServiceImpl implements SandboxService {
                 throw new RuntimeException(errorMsg);
             }
 
-            LOGGER.debug("Inside SandboxServiceImpl - callCreateOrUpdateSandboxAPI: "
+            LOGGER.debug("callCreateOrUpdateSandboxAPI: "
             +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
             +"; Return value = true");
 
@@ -1191,7 +1191,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private boolean callDeleteSandboxAPI(final Sandbox sandbox, final String bearerToken) {
         
-        LOGGER.info("Inside SandboxServiceImpl - callDeleteSandboxAPI");
+        LOGGER.info("callDeleteSandboxAPI");
 
         String url = getSandboxApiURL(sandbox) + "/sandbox";
 
@@ -1213,7 +1213,7 @@ public class SandboxServiceImpl implements SandboxService {
                 throw new RuntimeException(errorMsg);
             }
 
-            LOGGER.debug("Inside SandboxServiceImpl - callDeleteSandboxAPI: "
+            LOGGER.debug("callDeleteSandboxAPI: "
             +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
             +"; Return value = true");
 
@@ -1244,7 +1244,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneUserPersonas(Sandbox newSandbox, Sandbox existingSandbox, User user) {
         
-        LOGGER.info("Inside SandboxServiceImpl - cloneUserPersonas");
+        LOGGER.info("cloneUserPersonas");
 
         List<UserPersona> userPersonas = userPersonaService.findBySandboxId(existingSandbox.getSandboxId());
         for (UserPersona userPersona : userPersonas) {
@@ -1265,7 +1265,7 @@ public class SandboxServiceImpl implements SandboxService {
             userPersonaService.save(newUserPersona);
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - cloneUserPersonas: "
+        LOGGER.debug("cloneUserPersonas: "
         +"Parameters: newSandbox = "+newSandbox+", existingSandbox = "+existingSandbox
         +", user = "+user+"; No return value");
 
@@ -1273,7 +1273,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneApps(Sandbox newSandbox, Sandbox existingSandbox, User user) {
 
-        LOGGER.info("Inside SandboxServiceImpl - cloneApps");
+        LOGGER.info("cloneApps");
 
         List<App> clonedSmartApps = appService.findBySandboxId(existingSandbox.getSandboxId());
         for (App app : clonedSmartApps) {
@@ -1300,7 +1300,7 @@ public class SandboxServiceImpl implements SandboxService {
             appService.save(newApp);
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - cloneApps: "
+        LOGGER.debug("cloneApps: "
         +"Parameters: newSandbox = "+newSandbox+", existingSandbox = "+existingSandbox
         +", user = "+user+"; No return value");
 
@@ -1308,7 +1308,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private void cloneLaunchScenarios(Sandbox newSandbox, Sandbox existingSandbox, User user) {
         
-        LOGGER.info("Inside SandboxServiceImpl - cloneLaunchScenarios");
+        LOGGER.info("cloneLaunchScenarios");
 
         List<LaunchScenario> launchScenarios = launchScenarioService.findBySandboxId(existingSandbox.getSandboxId());
         for (LaunchScenario launchScenario : launchScenarios) {
@@ -1349,7 +1349,7 @@ public class SandboxServiceImpl implements SandboxService {
             launchScenarioService.save(newLaunchScenario);
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - cloneLaunchScenarios: "
+        LOGGER.debug("cloneLaunchScenarios: "
         +"Parameters: newSandbox = "+newSandbox+", existingSandbox = "+existingSandbox
         +", user = "+user+"; No return value");
 
@@ -1358,11 +1358,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String newSandboxesInIntervalCountForSpecificTimePeriod(String apiEndpointIndex, Timestamp beginDate, Timestamp endDate) {
         
-        LOGGER.info("Inside SandboxServiceImpl - newSandboxesInIntervalCountForSpecificTimePeriod");
+        LOGGER.info("newSandboxesInIntervalCountForSpecificTimePeriod");
 
         String retVal = repository.newSandboxesInIntervalCountForSpecificTimePeriod(apiEndpointIndex, beginDate, endDate); 
 
-        LOGGER.debug("Inside SandboxServiceImpl - newSandboxesInIntervalCountForSpecificTimePeriod: "
+        LOGGER.debug("newSandboxesInIntervalCountForSpecificTimePeriod: "
         +"Parameters: apiEndpointIndex = "+apiEndpointIndex+", beginDate = "+beginDate
         +", endDate = "+endDate+"; Return value = "+retVal);
 
@@ -1372,9 +1372,9 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
         
-        LOGGER.info("Inside SandboxServiceImpl - intervalCountForSpecificTimePeriod");
+        LOGGER.info("intervalCountForSpecificTimePeriod");
 
-        LOGGER.debug("Inside SandboxServiceImpl - intervalCountForSpecificTimePeriod: "
+        LOGGER.debug("intervalCountForSpecificTimePeriod: "
         +"Parameters: beginDate = "+beginDate+", endDate = "+endDate
         +"; Return value = "+repository.intervalCountForSpecificTimePeriod(beginDate, endDate));
 
@@ -1385,7 +1385,7 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional(readOnly = true)
     public SandboxCreationStatusQueueOrder getQueuedCreationStatus(String sandboxId) {
         
-        LOGGER.info("Inside SandboxServiceImpl - getQueuedCreationStatus");
+        LOGGER.info("getQueuedCreationStatus");
 
         var sandboxes = repository.findByCreationStatusOrderByCreatedTimestampAsc(SandboxCreationStatus.QUEUED);
         var maybeSandbox = IntStream.range(0, sandboxes.size())
@@ -1397,14 +1397,14 @@ public class SandboxServiceImpl implements SandboxService {
                                             SandboxCreationStatusQueueOrder retVal = new SandboxCreationStatusQueueOrder(i, sandboxes.get(i)
                                             .getCreationStatus());
 
-                                            LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+                                            LOGGER.debug("getQueuedCreationStatus: "
                                             +"Parameters: sandboxId = "+sandboxId
                                             +"; Return value = "+retVal);
 
                                             return retVal;
                                         }
                                         
-                                        LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+                                        LOGGER.debug("getQueuedCreationStatus: "
                                         +"Parameters: sandboxId = "+sandboxId
                                         +"; Return value = null");
 
@@ -1414,7 +1414,7 @@ public class SandboxServiceImpl implements SandboxService {
                                     .findAny();
         if (maybeSandbox.isPresent()) {
             
-            LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+            LOGGER.debug("getQueuedCreationStatus: "
             +"Parameters: sandboxId = "+sandboxId
             +"; Return value = "+maybeSandbox.get());
 
@@ -1424,7 +1424,7 @@ public class SandboxServiceImpl implements SandboxService {
         
         SandboxCreationStatusQueueOrder retVal = new SandboxCreationStatusQueueOrder(0, sandbox.getCreationStatus());
 
-        LOGGER.debug("Inside SandboxServiceImpl - getQueuedCreationStatus: "
+        LOGGER.debug("getQueuedCreationStatus: "
         +"Parameters: sandboxId = "+sandboxId
         +"; Return value = "+retVal);
 
@@ -1434,11 +1434,11 @@ public class SandboxServiceImpl implements SandboxService {
     @Override
     public void exportSandbox(Sandbox sandbox, String sbmUserId, String bearerToken, String server) {
 
-        LOGGER.info("Inside SandboxServiceImpl - exportSandbox");
+        LOGGER.info("exportSandbox");
 
         sandboxBackgroundTasksService.exportSandbox(sandbox, userService.findBySbmUserId(sbmUserId), bearerToken, getSandboxApiURL(sandbox), server);
 
-        LOGGER.debug("Inside SandboxServiceImpl - exportSandbox: "
+        LOGGER.debug("exportSandbox: "
         +"Parameters: sandbox = "+sandbox+", sbmUserId = "+sbmUserId+", bearerToken = "+bearerToken
         +", server = "+server+"; No return value");
         
@@ -1448,32 +1448,32 @@ public class SandboxServiceImpl implements SandboxService {
     @Transactional
     public void importSandbox(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
 
-        LOGGER.info("Inside SandboxServiceImpl - importSandbox");
+        LOGGER.info("importSandbox");
 
         checkForEmptyFile(zipFile);
         startSandboxImport(zipFile, requestingUser, bearerToken, server);
 
-        LOGGER.debug("Inside SandboxServiceImpl - importSandbox: "
+        LOGGER.debug("importSandbox: "
         +"Parameters: zipFile = "+zipFile+", requestingUser = "+requestingUser
         +", bearerToken = "+bearerToken+", server = "+server+"; No return value");
 
     }
     private void checkForEmptyFile(MultipartFile zipFile) {
         
-        LOGGER.info("Inside SandboxServiceImpl - checkForEmptyFile");
+        LOGGER.info("checkForEmptyFile");
 
         if (zipFile.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Failed to import empty file.");
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - checkForEmptyFile: "
+        LOGGER.debug("checkForEmptyFile: "
         +"Parameters: zipFile = "+zipFile+"; No return value");
 
     }
 
     private void startSandboxImport(MultipartFile zipFile, User requestingUser, String bearerToken, String server) {
         
-        LOGGER.info("Inside SandboxServiceImpl - startSandboxImport");
+        LOGGER.info("startSandboxImport");
 
         ZipInputStream zipInputStream;
         try {
@@ -1493,7 +1493,7 @@ public class SandboxServiceImpl implements SandboxService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException while reading zip file.");
         }
 
-        LOGGER.debug("Inside SandboxServiceImpl - startSandboxImport: "
+        LOGGER.debug("startSandboxImport: "
         +"Parameters: zipFile = "+zipFile+", requestingUser = "+requestingUser
         +", bearerToken = "+bearerToken+", server = "+server+"; No return value");
 
@@ -1501,7 +1501,7 @@ public class SandboxServiceImpl implements SandboxService {
 
     private Sandbox createSandboxTableEntry(Map sandboxVersions, User requestingUser) {
         
-        LOGGER.info("Inside SandboxServiceImpl - createSandboxTableEntry");
+        LOGGER.info("createSandboxTableEntry");
         
         var newSandbox = new Sandbox();
         newSandbox.setSandboxId((String) sandboxVersions.get("id"));
@@ -1514,7 +1514,7 @@ public class SandboxServiceImpl implements SandboxService {
         
         Sandbox retVal = saveNewSandbox(newSandbox, requestingUser);
 
-        LOGGER.debug("Inside SandboxServiceImpl - createSandboxTableEntry: "
+        LOGGER.debug("createSandboxTableEntry: "
         +"Parameters: sandboxVersions = "+sandboxVersions+", requestingUser = "+requestingUser
         +"; Return value = "+retVal);
 
@@ -1569,12 +1569,12 @@ public class SandboxServiceImpl implements SandboxService {
 
     private List<String> getValidDomainsToImportFrom() {
         
-        LOGGER.info("Inside SandboxServiceImpl - getValidDomainsToImportFrom");
+        LOGGER.info("getValidDomainsToImportFrom");
 
         var restTemplate = new RestTemplate();
         var trustedDomains = restTemplate.getForObject(this.trustedDomainsApiUrl, List.class);
 
-        LOGGER.debug("Inside SandboxServiceImpl - getValidDomainsToImportFrom: "
+        LOGGER.debug("getValidDomainsToImportFrom: "
         +"No input parameters; Return value = "+(List<String>) trustedDomains);
 
         return (List<String>) trustedDomains;

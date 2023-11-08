@@ -25,11 +25,11 @@ public class TermsOfUseAcceptanceServiceImpl implements TermsOfUseAcceptanceServ
     @Transactional
     public TermsOfUseAcceptance save(TermsOfUseAcceptance termsOfUseAcceptance) {
 
-        LOGGER.info("Inside TermsOfUseAcceptanceServiceImpl - save");
+        LOGGER.info("save");
 
         TermsOfUseAcceptance retVal = repository.save(termsOfUseAcceptance);
 
-        LOGGER.debug("Inside TermsOfUseAcceptanceServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: termsOfUseAcceptance = "+termsOfUseAcceptance
         +"; Return value = "+retVal);
 
@@ -39,9 +39,9 @@ public class TermsOfUseAcceptanceServiceImpl implements TermsOfUseAcceptanceServ
     @Override
     public TermsOfUseAcceptance getById(final int id) {
         
-        LOGGER.info("Inside TermsOfUseAcceptanceServiceImpl - getById");
+        LOGGER.info("getById");
 
-        LOGGER.debug("Inside TermsOfUseAcceptanceServiceImpl - getById: "
+        LOGGER.debug("getById: "
         +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
 
         return  repository.findById(id).orElse(null);

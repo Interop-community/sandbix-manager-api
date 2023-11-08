@@ -66,7 +66,7 @@ public class AppController {
     public @ResponseBody
     App createApp(final HttpServletRequest request, @RequestBody App app) {
         
-        LOGGER.info("Inside AppController - createApp");
+        LOGGER.info("createApp");
 
         Sandbox sandbox = sandboxService.findBySandboxId(app.getSandbox().getSandboxId());
         if (sandbox == null) {
@@ -88,7 +88,7 @@ public class AppController {
     @GetMapping(params = {"sandboxId"})
     public @ResponseBody List<App> getApps(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
         
-        LOGGER.info("Inside AppController - getApps");
+        LOGGER.info("getApps");
         
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -101,7 +101,7 @@ public class AppController {
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody App getApp(final HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside AppController - getApp");
+        LOGGER.info("getApp");
 
         App app = appService.getById(id);
         if (app != null) {
@@ -116,7 +116,7 @@ public class AppController {
     @Transactional
     public @ResponseBody void deleteApp(final HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside AppController - deleteApp");
+        LOGGER.info("deleteApp");
         
         App app = appService.getById(id);
         if (app != null) {
@@ -131,7 +131,7 @@ public class AppController {
     @Transactional
     public @ResponseBody App updateApp(final HttpServletRequest request, @PathVariable Integer id, @RequestBody App app) {
         
-        LOGGER.info("Inside AppController - updateApp");
+        LOGGER.info("updateApp");
 
         App existingApp = appService.getById(id);
         if (existingApp == null || existingApp.getId().intValue() != id.intValue()) {
@@ -147,7 +147,7 @@ public class AppController {
     @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
     public @ResponseBody void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
         
-        LOGGER.info("Inside AppController - getFullImage");
+        LOGGER.info("getFullImage");
         
         App app = appService.getById(id);
         if (app == null) {
@@ -165,7 +165,7 @@ public class AppController {
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
         
-        LOGGER.info("Inside AppController - putFullImage");
+        LOGGER.info("putFullImage");
 
         App app = appService.getById(id);
         if (app == null) {
@@ -190,7 +190,7 @@ public class AppController {
     @Transactional
     public App deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside AppController - deleteFullImage");
+        LOGGER.info("deleteFullImage");
 
         App app = appService.getById(id);
         if (app == null) {

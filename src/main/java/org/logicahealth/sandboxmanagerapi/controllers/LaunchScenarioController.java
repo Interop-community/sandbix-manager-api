@@ -79,7 +79,7 @@ public class LaunchScenarioController {
     public @ResponseBody
     LaunchScenario createLaunchScenario(HttpServletRequest request, @RequestBody final LaunchScenario launchScenario) {
 
-        LOGGER.info("Inside LaunchScenarioController - createLaunchScenario");
+        LOGGER.info("createLaunchScenario");
         
         Sandbox sandbox = sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId());
         if (sandbox == null) {
@@ -106,7 +106,7 @@ public class LaunchScenarioController {
     @Transactional
     public @ResponseBody LaunchScenario updateLaunchScenario(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
         
-        LOGGER.info("Inside LaunchScenarioController - updateLaunchScenario");
+        LOGGER.info("updateLaunchScenario");
 
         LaunchScenario existingLaunchScenario = launchScenarioService.getById(id);
         if (existingLaunchScenario == null || id.intValue() != launchScenario.getId().intValue()) {
@@ -126,7 +126,7 @@ public class LaunchScenarioController {
     @Transactional
     public void updateLaunchTimestamp(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
         
-        LOGGER.info("Inside LaunchScenarioController - updateLaunchTimestamp");
+        LOGGER.info("updateLaunchTimestamp");
         
         LaunchScenario existingLaunchScenario = launchScenarioService.getById(id);
         if (existingLaunchScenario == null || id.intValue() != launchScenario.getId().intValue()) {
@@ -152,7 +152,7 @@ public class LaunchScenarioController {
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
                                                                            @RequestParam(value = "appId") int appId) {
         
-        LOGGER.info("Inside LaunchScenarioController - getLaunchScenariosForApp");
+        LOGGER.info("getLaunchScenariosForApp");
 
         App app = appService.getById(appId);
         if (app == null) {
@@ -167,7 +167,7 @@ public class LaunchScenarioController {
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForCdsHook(HttpServletRequest request,
                                                                            @RequestParam(value = "cdsHookId") int cdsHookId) {
         
-        LOGGER.info("Inside LaunchScenarioController - getLaunchScenariosForCdsHook");
+        LOGGER.info("getLaunchScenariosForCdsHook");
         
         CdsHook cdsHook = cdsHookService.getById(cdsHookId);
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
@@ -183,7 +183,7 @@ public class LaunchScenarioController {
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForPersona(HttpServletRequest request,
                                                                            @RequestParam(value = "userPersonaId") int personaId) {
 
-        LOGGER.info("Inside LaunchScenarioController - getLaunchScenariosForPersona");
+        LOGGER.info("getLaunchScenariosForPersona");
         
         UserPersona userPersona = userPersonaService.getById(personaId);
         if (userPersona == null) {
@@ -198,7 +198,7 @@ public class LaunchScenarioController {
     @Transactional
     public @ResponseBody void deleteLaunchScenario(HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside LaunchScenarioController - deleteLaunchScenario");
+        LOGGER.info("deleteLaunchScenario");
         
         LaunchScenario launchScenario = launchScenarioService.getById(id);
         if (launchScenario == null) {
@@ -217,7 +217,7 @@ public class LaunchScenarioController {
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenarios(HttpServletRequest request,
         @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException{
 
-        LOGGER.info("Inside LaunchScenarioController - getLaunchScenarios");
+        LOGGER.info("getLaunchScenarios");
         
         String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);

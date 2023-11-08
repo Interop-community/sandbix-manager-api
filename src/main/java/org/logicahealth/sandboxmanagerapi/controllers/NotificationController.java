@@ -37,7 +37,7 @@ public class NotificationController {
     @GetMapping(value = "", params = {"userId"})
     public List<Notification> getAllNotificationsByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside NotificationController - getAllNotificationsByUser");
+        LOGGER.info("getAllNotificationsByUser");
         
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -48,7 +48,7 @@ public class NotificationController {
     @PostMapping(value = "", params = {"userId"})
     public void createNotificationsForAllUsers(HttpServletRequest request, @RequestParam(value = "userId") String userId, @RequestBody final NewsItem newsItem) {
         
-        LOGGER.info("Inside NotificationController - createNotificationsForAllUsers");
+        LOGGER.info("createNotificationsForAllUsers");
         
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
@@ -59,7 +59,7 @@ public class NotificationController {
     @PutMapping(value = "/mark-hidden", params = {"userId"})
     public List<Notification> markAllNotificationsAsHiddenByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside NotificationController - markAllNotificationsAsHiddenByUser");
+        LOGGER.info("markAllNotificationsAsHiddenByUser");
         
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -70,7 +70,7 @@ public class NotificationController {
     @PutMapping(value = "/mark-seen", params = {"userId"})
     public List<Notification> markAllNotificationsAsSeenByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside NotificationController - markAllNotificationsAsSeenByUser");
+        LOGGER.info("markAllNotificationsAsSeenByUser");
         
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -81,7 +81,7 @@ public class NotificationController {
     @PutMapping(value = "/{id}", params = {"userId"})
     public Notification updateNotification(HttpServletRequest request, @PathVariable Integer id, @RequestParam(value = "userId") String userIdEncoded, @RequestBody final Notification notification) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside NotificationController - updateNotification");
+        LOGGER.info("updateNotification");
         
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -92,7 +92,7 @@ public class NotificationController {
     @DeleteMapping(value = "", params = {"userId", "newsItemId"})
     public void deleteNotificationForAllUsers(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded, @RequestParam(value = "newsItemId") Integer newsItemId) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside NotificationController - deleteNotificationForAllUsers");
+        LOGGER.info("deleteNotificationForAllUsers");
         
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);

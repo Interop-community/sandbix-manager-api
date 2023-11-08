@@ -44,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void createNotificationsForAllUsers(NewsItem newsItem) {
         
-        LOGGER.info("Inside NotificationServiceImpl - createNotificationsForAllUsers");
+        LOGGER.info("createNotificationsForAllUsers");
 
         NewsItem existingNewsItem = newsItemService.findById(newsItem.getId());
         if (existingNewsItem == null) {
@@ -61,7 +61,7 @@ public class NotificationServiceImpl implements NotificationService {
             save(notification);
         }
 
-        LOGGER.debug("Inside NotificationServiceImpl - createNotificationsForAllUsers: "
+        LOGGER.debug("createNotificationsForAllUsers: "
         +"Parameters: newsItem = "+newsItem+"; No return value");
 
     }
@@ -69,7 +69,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void createNotificationsForAGivenUser(NewsItem newsItem, User user){
         
-        LOGGER.info("Inside NotificationServiceImpl - createNotificationsForAGivenUser");
+        LOGGER.info("createNotificationsForAGivenUser");
 
         NewsItem existingNewsItem = newsItemService.findById(newsItem.getId());
         if (existingNewsItem == null) {
@@ -83,7 +83,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setUser(user);
         save(notification);
 
-        LOGGER.debug("Inside NotificationServiceImpl - createNotificationsForAGivenUser: "
+        LOGGER.debug("createNotificationsForAGivenUser: "
         +"Parameters: newsItem = "+newsItem+", user = "+user+"; No return value");
 
     }
@@ -91,9 +91,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public Notification findById(Integer id) {
 
-        LOGGER.info("Inside NotificationServiceImpl - findById");
+        LOGGER.info("findById");
 
-        LOGGER.debug("Inside NotificationServiceImpl - findById: "
+        LOGGER.debug("findById: "
         +"Parameters: id = "+id+"; Return value = "+notificationRepository.findById(id).orElse(null));
 
         return notificationRepository.findById(id).orElse(null);
@@ -102,7 +102,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public Notification update(Notification notification) {
         
-        LOGGER.info("Inside NotificationServiceImpl - update");
+        LOGGER.info("update");
 
         Notification existingNotification = findById(notification.getId());
         if (existingNotification != null) {
@@ -111,7 +111,7 @@ public class NotificationServiceImpl implements NotificationService {
 
             Notification retVal = save(existingNotification);
 
-            LOGGER.debug("Inside NotificationServiceImpl - update: "
+            LOGGER.debug("update: "
             +"Parameters: notification = "+notification+"; Return value = "+retVal);
 
             return retVal;
@@ -122,9 +122,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<Notification> getAllNotificationsByUser(User user) {
         
-        LOGGER.info("Inside NotificationServiceImpl - getAllNotificationsByUser");
+        LOGGER.info("getAllNotificationsByUser");
 
-        LOGGER.debug("Inside NotificationServiceImpl - getAllNotificationsByUser: "
+        LOGGER.debug("getAllNotificationsByUser: "
         +"Parameters: user = "+user+"; Return value = "+notificationRepository.findByUserId(user.getId()));
 
         return notificationRepository.findByUserId(user.getId());
@@ -133,7 +133,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<Notification> markAllNotificationsAsHiddenByUser(User user) {
         
-        LOGGER.info("Inside NotificationServiceImpl - markAllNotificationsAsHiddenByUser");
+        LOGGER.info("markAllNotificationsAsHiddenByUser");
 
         List<Notification> notifications = notificationRepository.findByUserId(user.getId());
         for (Notification notification: notifications) {
@@ -141,7 +141,7 @@ public class NotificationServiceImpl implements NotificationService {
             save(notification);
         }
 
-        LOGGER.debug("Inside NotificationServiceImpl - markAllNotificationsAsHiddenByUser: "
+        LOGGER.debug("markAllNotificationsAsHiddenByUser: "
         +"Parameters: user = "+user+"; Return value = "+notifications);
 
         return notifications;
@@ -150,7 +150,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<Notification> markAllNotificationsAsSeenByUser(User user) {
         
-        LOGGER.info("Inside NotificationServiceImpl - markAllNotificationsAsSeenByUser");
+        LOGGER.info("markAllNotificationsAsSeenByUser");
 
         List<Notification> notifications = notificationRepository.findByUserId(user.getId());
         for (Notification notification: notifications) {
@@ -158,7 +158,7 @@ public class NotificationServiceImpl implements NotificationService {
             save(notification);
         }
 
-        LOGGER.debug("Inside NotificationServiceImpl - markAllNotificationsAsSeenByUser: "
+        LOGGER.debug("markAllNotificationsAsSeenByUser: "
         +"Parameters: user = "+user+"; Return value = "+notifications);
 
         return notifications;
@@ -167,7 +167,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void deleteNotificationForAllUsers(Integer newsItemId) {
         
-        LOGGER.info("Inside NotificationServiceImpl - deleteNotificationForAllUsers");
+        LOGGER.info("deleteNotificationForAllUsers");
 
         NewsItem newsItem = newsItemService.findById(newsItemId);
         if (newsItem == null) {
@@ -178,18 +178,18 @@ public class NotificationServiceImpl implements NotificationService {
             delete(notification.getId());
         }
 
-        LOGGER.debug("Inside NotificationServiceImpl - deleteNotificationForAllUsers: "
+        LOGGER.debug("deleteNotificationForAllUsers: "
         +"Parameters: newsItemId = "+newsItemId+"; No return value");
 
     }
 
     public Notification save(Notification notification) {
         
-        LOGGER.info("Inside NotificationServiceImpl - save");
+        LOGGER.info("save");
 
         Notification retVal = notificationRepository.save(notification);
 
-        LOGGER.debug("Inside NotificationServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: notification = "+notification+"; Return value = "+retVal);
 
         return retVal;
@@ -197,11 +197,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     public void delete(Integer id) {
 
-        LOGGER.info("Inside NotificationServiceImpl - delete");
+        LOGGER.info("delete");
 
         notificationRepository.deleteById(id);
 
-        LOGGER.debug("Inside NotificationServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }
@@ -209,7 +209,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void createNotificationForMoreThanThresholdTransaction(User user){
         
-        LOGGER.info("Inside NotificationServiceImpl - createNotificationForMoreThanThresholdTransaction");
+        LOGGER.info("createNotificationForMoreThanThresholdTransaction");
 
         NewsItem newsItemTransaction = new NewsItem();
         newsItemTransaction.setTitle("Transactions more than threshold");
@@ -218,7 +218,7 @@ public class NotificationServiceImpl implements NotificationService {
         newsItemService.save(newsItemTransaction);
         createNotificationsForAGivenUser(newsItemTransaction, user);
 
-        LOGGER.debug("Inside NotificationServiceImpl - createNotificationForMoreThanThresholdTransaction: "
+        LOGGER.debug("createNotificationForMoreThanThresholdTransaction: "
         +"Parameters: user = "+user+"; No return value");
 
     }
@@ -226,7 +226,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void createNotificationForMoreThanThresholdMemory(User user){
         
-        LOGGER.info("Inside NotificationServiceImpl - createNotificationForMoreThanThresholdMemory");
+        LOGGER.info("createNotificationForMoreThanThresholdMemory");
 
         NewsItem newsItemStorage = new NewsItem();
         newsItemStorage.setTitle("Used storage more than 90%");
@@ -235,7 +235,7 @@ public class NotificationServiceImpl implements NotificationService {
         newsItemService.save(newsItemStorage);
         createNotificationsForAGivenUser(newsItemStorage, user);
 
-        LOGGER.debug("Inside NotificationServiceImpl - createNotificationForMoreThanThresholdMemory: "
+        LOGGER.debug("createNotificationForMoreThanThresholdMemory: "
         +"Parameters: user = "+user+"; No return value");
 
     }
@@ -244,11 +244,11 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void delete(List<User> invitees) {
 
-        LOGGER.info("Inside NotificationServiceImpl - delete");
+        LOGGER.info("delete");
 
         notificationRepository.deleteAllByUserIn(invitees);
 
-        LOGGER.debug("Inside NotificationServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: "+invitees+"; No return value");
 
     }

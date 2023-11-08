@@ -70,18 +70,18 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     public ProfileTask getTaskRunning(String id) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - getTaskRunning");
+        LOGGER.info("getTaskRunning");
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - getTaskRunning: "
+        LOGGER.debug("getTaskRunning: "
         +"Parameters: id = "+id+"; Return value = "+idProfileTask.get(id));
 
         return idProfileTask.get(id);
     }
 
     public HashMap<String, ProfileTask> getIdProfileTask() {
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - getIdProfileTask");
+        LOGGER.info("getIdProfileTask");
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - getIdProfileTask: "
+        LOGGER.debug("getIdProfileTask: "
         +"No input parameters; Return value = "+idProfileTask);
 
         return idProfileTask;
@@ -91,7 +91,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Transactional
     public FhirProfileDetail save(FhirProfileDetail fhirProfileDetail) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - save");
+        LOGGER.info("save");
 
         FhirProfileDetail fhirProfileDetailSaved = repository.save(fhirProfileDetail);
         List<FhirProfile> fhirProfiles = fhirProfileDetailSaved.getFhirProfiles();
@@ -100,7 +100,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             fhirProfileService.save(fhirProfile);
         }
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: fhirProfileDetail = "+fhirProfileDetail+"; Return value = "+fhirProfileDetailSaved);
 
         return fhirProfileDetailSaved;
@@ -108,9 +108,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     public FhirProfileDetail findByProfileIdAndSandboxId(String profileId, String sandboxId) {
 
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - findByProfileIdAndSandboxId");
+        LOGGER.info("findByProfileIdAndSandboxId");
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - findByProfileIdAndSandboxId: "
+        LOGGER.debug("findByProfileIdAndSandboxId: "
         +"Parameters: profileId = "+profileId+", sandboxId = "+sandboxId
         +"; Return value = "+repository.findByProfileIdAndSandboxId(profileId, sandboxId));
 
@@ -119,9 +119,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     @Override
     public FhirProfileDetail getFhirProfileDetail(Integer fhirProfileId) {
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - getFhirProfileDetail");
+        LOGGER.info("getFhirProfileDetail");
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - getFhirProfileDetail: "
+        LOGGER.debug("getFhirProfileDetail: "
         +"Parameters: fhirProfileId = "+fhirProfileId
         +"; Return value = "+repository.findByFhirProfileId(fhirProfileId));
 
@@ -131,9 +131,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public List<FhirProfileDetail> getAllProfilesForAGivenSandbox(String sandboxId) {
 
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - getAllProfilesForAGivenSandbox");
+        LOGGER.info("getAllProfilesForAGivenSandbox");
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - getAllProfilesForAGivenSandbox: "
+        LOGGER.debug("getAllProfilesForAGivenSandbox: "
         +"Parameters: sandboxId = "+sandboxId+"; Return value = "+repository.findBySandboxId(sandboxId));
 
         return repository.findBySandboxId(sandboxId);
@@ -142,9 +142,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public List<FhirProfile> getFhirProfileWithASpecificTypeForAGivenSandbox(Integer fhirProfileId, String type) {
 
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - getFhirProfileWithASpecificTypeForAGivenSandbox");
+        LOGGER.info("getFhirProfileWithASpecificTypeForAGivenSandbox");
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - getFhirProfileWithASpecificTypeForAGivenSandbox: "
+        LOGGER.debug("getFhirProfileWithASpecificTypeForAGivenSandbox: "
         +"Parameters: fhirProfileId = "+fhirProfileId+", type = "+type
         +"; Return value = "+fhirProfileService.getFhirProfileWithASpecificTypeForAGivenSandbox(fhirProfileId, type));
 
@@ -154,9 +154,9 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public List<Integer> getAllFhirProfileIdsAssociatedWithASandbox(String sandboxId) {
 
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - getAllFhirProfileIdsAssociatedWithASandbox");
+        LOGGER.info("getAllFhirProfileIdsAssociatedWithASandbox");
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - getAllFhirProfileIdsAssociatedWithASandbox: "
+        LOGGER.debug("getAllFhirProfileIdsAssociatedWithASandbox: "
         +"Parameters: sandboxId = "+sandboxId+"; Return value = "+repository.findAllFhirProfileIdsBySandboxId(sandboxId));
 
         return repository.findAllFhirProfileIdsBySandboxId(sandboxId);
@@ -166,7 +166,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Transactional
     public void markAsDeleted(Integer fhirProfileId) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - markAsDeleted");
+        LOGGER.info("markAsDeleted");
         
         var fhirProfileDetail = repository.findByFhirProfileId(fhirProfileId);
         if (fhirProfileDetail != null) {
@@ -174,7 +174,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             repository.save(fhirProfileDetail);
         }
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - markAsDeleted: "
+        LOGGER.debug("markAsDeleted: "
         +"Parameters: fhirProfileId = "+fhirProfileId+"; No return value");
 
     }
@@ -184,13 +184,13 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Async("taskExecutor")
     public void backgroundDelete(HttpServletRequest request, Integer fhirProfileId, String sandboxId) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - backgroundDelete");
+        LOGGER.info("backgroundDelete");
 
         String authToken = request.getHeader("Authorization");
         List<FhirProfile> fhirProfiles = fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
         if (fhirProfiles.isEmpty()) {
 
-            LOGGER.debug("Inside FhirProfileDetailServiceImpl - backgroundDelete: "
+            LOGGER.debug("backgroundDelete: "
             +"Parameters: request = "+request+", fhirProfileId = "+fhirProfileId+", sandboxId = "+sandboxId
             +"; No return value");
 
@@ -212,7 +212,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         }
         delete(fhirProfileId);
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - backgroundDelete: "
+        LOGGER.debug("backgroundDelete: "
             +"Parameters: request = "+request+", fhirProfileId = "+fhirProfileId+", sandboxId = "+sandboxId
             +"; No return value");
     }
@@ -221,12 +221,12 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Transactional
     public void delete(Integer fhirProfileId) {
 
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - delete");
+        LOGGER.info("delete");
 
         fhirProfileService.delete(fhirProfileId);
         repository.delete(getFhirProfileDetail(fhirProfileId));
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: fhirProfileId = "+fhirProfileId+"; No return value");
 
     }
@@ -235,7 +235,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public void saveZipFile(FhirProfileDetail fhirProfileDetail, ZipFile zipFile, String authToken, String sandboxId, String id) throws IOException {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - saveZipFile");
+        LOGGER.info("saveZipFile");
 
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId)
                                            .getApiEndpointIndex();
@@ -257,7 +257,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         }
         saveFhirProfileDetail(fhirProfileDetail, id, profileTask, fhirProfiles);
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveZipFile: "
+        LOGGER.debug("saveZipFile: "
         +"Parameters: fhirProfileDetail = "+fhirProfileDetail+", zipFile = "+zipFile
         +", authToken = "+authToken+", sandboxId = "+sandboxId+", id = "+id+"; No return value");
 
@@ -265,7 +265,10 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     private void saveFhirProfileDetail(FhirProfileDetail fhirProfileDetail, String id, ProfileTask profileTask, List<FhirProfile> fhirProfiles) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - saveFhirProfileDetail");
+        LOGGER.info("saveFhirProfileDetail");
+
+        LOGGER.debug("saveFhirProfileDetail: "
+        +"(BEFORE) Parameters: fhirProfileDetail: "+fhirProfileDetail+", id = "+id+", profileTask = "+profileTask);
 
         profileTask.setStatus(false);
         idProfileTask.put(id, profileTask);
@@ -276,21 +279,24 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             throw new RuntimeException("Unable to open the file. The profile was not uploaded"); //TODO: ask about this exception
         }
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveFhirProfileDetail: "
-        +"Parameters: fhirProfileDetail: "+fhirProfileDetail+", id = "+id+", profileTask = "+profileTask
+        LOGGER.debug("saveFhirProfileDetail: "
+        +"(AFTER) Parameters: fhirProfileDetail: "+fhirProfileDetail+", id = "+id+", profileTask = "+profileTask
         +", fhirProfiles = "+fhirProfiles+"; No return value");
 
     }
 
     private boolean addToFhirProfiles(JSONObject profileTaskAndFhirProfile, List<FhirProfile> fhirProfiles) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - addToFhirProfiles");
+        LOGGER.info("addToFhirProfiles");
+
+        LOGGER.debug("addToFhirProfiles: "
+        +"(BEFORE) Parameters: profileTaskAndFhirProfile = "+profileTaskAndFhirProfile+", fhirProfiles = "+fhirProfiles);
 
         ProfileTask profileTask = (ProfileTask) profileTaskAndFhirProfile.get("profileTask");
         if (profileTask.getError() != null) {
 
-            LOGGER.debug("Inside FhirProfileDetailServiceImpl - addToFhirProfiles: "
-            +"Parameters: profileTaskAndFhirProfile = "+profileTaskAndFhirProfile+", fhirProfiles = "+fhirProfiles
+            LOGGER.debug("addToFhirProfiles: "
+            +"(AFTER) Parameters: profileTaskAndFhirProfile = "+profileTaskAndFhirProfile+", fhirProfiles = "+fhirProfiles
             +"; Return value = false");
 
             return false;
@@ -300,8 +306,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
             fhirProfiles.add(fhirProfile);
         }
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - addToFhirProfiles: "
-        +"Parameters: profileTaskAndFhirProfile = "+profileTaskAndFhirProfile+", fhirProfiles = "+fhirProfiles
+        LOGGER.debug("addToFhirProfiles: "
+        +"(AFTER) Parameters: profileTaskAndFhirProfile = "+profileTaskAndFhirProfile+", fhirProfiles = "+fhirProfiles
         +"; Return value = true");
 
         return true;
@@ -311,7 +317,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public void saveTGZfile(FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
 
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - saveTGZfile");
+        LOGGER.info("saveTGZfile");
 
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId)
                                            .getApiEndpointIndex();
@@ -321,7 +327,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(new GzipCompressorInputStream(fileInputStream));
         importFromTarball(fhirProfileDetail, fileInputStream, authToken, sandboxId, id, apiEndpoint, sandboxService.getApiSchemaURL(apiEndpoint), profileTask, new ArrayList<>(), tarArchiveInputStream);
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveTGZfile: "
+        LOGGER.debug("saveTGZfile: "
         +"Parameters: fhirProfileDetail = "+fhirProfileDetail+", fileInputStream = "+fileInputStream
         +", authToken = "+authToken+", sandboxId = "+sandboxId+", id = "+id
         +"; No return value");
@@ -330,7 +336,13 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     private void importFromTarball(FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id, String apiEndpoint, String apiSchemaURL, ProfileTask profileTask, List<FhirProfile> fhirProfiles, TarArchiveInputStream tarArchiveInputStream) throws IOException {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - importFromTarball");
+        LOGGER.info("importFromTarball");
+
+        LOGGER.debug("importFromTarball: "
+        +"(BEFORE) Parameters: fhirProfileData = "+fhirProfileDetail+", fileInputStream = "+fileInputStream
+        +", authToken = "+authToken+", sandboxId = "+sandboxId+", id = "+id+", apiEndpoint = "+apiEndpoint
+        +", apiSchemaURL = "+apiSchemaURL+", profileTask = "+profileTask+", fhirProfiles = "+fhirProfiles
+        +", tarArchiveInputStream = "+tarArchiveInputStream);
 
         TarArchiveEntry entry;
         while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
@@ -351,8 +363,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         fileInputStream.close();
         saveFhirProfileDetail(fhirProfileDetail, id, profileTask, fhirProfiles);
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - importFromTarball: "
-        +"Parameters: fhirProfileData = "+fhirProfileDetail+", fileInputStream = "+fileInputStream
+        LOGGER.debug("importFromTarball: "
+        +"(AFTER) Parameters: fhirProfileData = "+fhirProfileDetail+", fileInputStream = "+fileInputStream
         +", authToken = "+authToken+", sandboxId = "+sandboxId+", id = "+id+", apiEndpoint = "+apiEndpoint
         +", apiSchemaURL = "+apiSchemaURL+", profileTask = "+profileTask+", fhirProfiles = "+fhirProfiles
         +", tarArchiveInputStream = "+tarArchiveInputStream+"; No return value");
@@ -363,7 +375,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
     @Override
     public void saveTarballfile (FhirProfileDetail fhirProfileDetail, InputStream fileInputStream, String authToken, String sandboxId, String id) throws IOException {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - saveTarballfile");
+        LOGGER.info("saveTarballfile");
 
         String apiEndpoint = sandboxService.findBySandboxId(sandboxId).getApiEndpointIndex();
         ProfileTask profileTask = addToProfileTask(id, true, new HashMap<>(), new HashMap<>(), 0, 0, 0 );
@@ -371,7 +383,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(fileInputStream);
         importFromTarball(fhirProfileDetail, fileInputStream, authToken, sandboxId, id, apiEndpoint, sandboxService.getApiSchemaURL(apiEndpoint), profileTask, fhirProfiles, tarArchiveInputStream);
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveTarballfile: "
+        LOGGER.debug("saveTarballfile: "
         +"Parameters: fhirProfileDetail = "+fhirProfileDetail+", fileInputStream = "+fileInputStream
         +", authToken = "+authToken+", sandboxId = "+sandboxId+", id = "+id+"; No return value");
 
@@ -379,7 +391,12 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
     private JSONObject saveProfileResource(String apiSchemaURL, String authToken, String sandboxId, String apiEndpoint, String id, InputStream inputStream, String fileName, ProfileTask profileTask) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - saveProfileResource");
+        LOGGER.info("saveProfileResource");
+
+        LOGGER.debug("saveProfileResource: "
+        +"(BEFORE) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+        +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
+        +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask);
 
         JSONObject profileTaskAndFhirProfile = new JSONObject();
         var resourceSaved = profileTask.getResourceSaved();
@@ -415,8 +432,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                     idProfileTask.put(id, profileTask);
                     profileTaskAndFhirProfile.put("profileTask", profileTask);
 
-                    LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveProfileResource: "
-                    +"Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+                    LOGGER.debug("saveProfileResource: "
+                    +"(AFTER) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
                     +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
                     +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask
                     +"; Return value = "+profileTaskAndFhirProfile);
@@ -434,8 +451,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         
-                        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveProfileResource: "
-                        +"Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+                        LOGGER.debug("saveProfileResource: "
+                        +"(AFTER) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
                         +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
                         +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask
                         +"; Return value = "+profileTaskAndFhirProfile);
@@ -453,8 +470,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         
-                        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveProfileResource: "
-                        +"Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+                        LOGGER.debug("saveProfileResource: "
+                        +"(AFTER) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
                         +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
                         +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask
                         +"; Return value = "+profileTaskAndFhirProfile);
@@ -469,8 +486,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
                         
-                        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveProfileResource: "
-                        +"Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+                        LOGGER.debug("saveProfileResource: "
+                        +"(AFTER) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
                         +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
                         +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask
                         +"; Return value = "+profileTaskAndFhirProfile);
@@ -483,8 +500,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
 
-                        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveProfileResource: "
-                        +"Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+                        LOGGER.debug("saveProfileResource: "
+                        +"(AFTER) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
                         +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
                         +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask
                         +"; Return value = "+profileTaskAndFhirProfile);
@@ -497,8 +514,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                         idProfileTask.put(id, profileTask);
                         profileTaskAndFhirProfile.put("profileTask", profileTask);
 
-                        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveProfileResource: "
-                        +"Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+                        LOGGER.debug("saveProfileResource: "
+                        +"(AFTER) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
                         +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
                         +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask
                         +"; Return value = "+profileTaskAndFhirProfile);
@@ -576,8 +593,8 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
 
         }
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - saveProfileResource: "
-        +"Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
+        LOGGER.debug("saveProfileResource: "
+        +"(AFTER) Parameters: apiSchemaURL = "+apiSchemaURL+", authToken = "+authToken
         +", sandboxId = "+sandboxId+", apiEndpoint = "+apiEndpoint+", id = "+id
         +", inputStream = "+inputStream+", fileName = "+fileName+", profileTask = "+profileTask
         +"; Return value = "+profileTaskAndFhirProfile);
@@ -589,7 +606,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
                                          Map<String, List<String>> resourceNotSaved, int totalCount, int resourceSavedCount,
                                          int resourceNotSavedCount) {
         
-        LOGGER.info("Inside FhirProfileDetailServiceImpl - addToProfileTask");
+        LOGGER.info("addToProfileTask");
 
         ProfileTask profileTask = new ProfileTask();
         profileTask.setId(id);
@@ -600,7 +617,7 @@ public class FhirProfileDetailServiceImpl implements FhirProfileDetailService {
         profileTask.setResourceSavedCount(resourceSavedCount);
         profileTask.setResourceNotSavedCount(resourceNotSavedCount);
 
-        LOGGER.debug("Inside FhirProfileDetailServiceImpl - addToProfileTask: "
+        LOGGER.debug("addToProfileTask: "
         +"Parameters: id = "+id+", runStatus = "+runStatus+", resourceSaved = "+resourceSaved
         +", resourceNotSaved = "+resourceNotSaved+", totalCount = "+totalCount
         +",resourceSavedCount = "+resourceSavedCount+", resourceNotSavedCount = "+resourceNotSavedCount

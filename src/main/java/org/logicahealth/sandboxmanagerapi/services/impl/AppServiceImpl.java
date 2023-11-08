@@ -61,11 +61,11 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public App save(final App app) {
 
-        LOGGER.info("Inside AppServiceImpl - save");
+        LOGGER.info("save");
 
         App retVal = repository.save(app);
 
-        LOGGER.debug("Inside AppServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: app = "+app+"; Return value = "+retVal);
 
         return retVal;
@@ -75,11 +75,11 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public void delete(final int id) {
         
-        LOGGER.info("Inside AppServiceImpl - delete");
+        LOGGER.info("delete");
         
         repository.deleteById(id);
 
-        LOGGER.debug("Inside AppServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
     }
 
@@ -87,7 +87,7 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public void delete(final App app) {
 
-        LOGGER.info("Inside AppServiceImpl - delete");
+        LOGGER.info("delete");
 
         //Integer authDatabaseId = app.getAuthClient().getAuthDatabaseId();
         if (app.getCopyType() == CopyType.MASTER && !app.isCustomApp()) {
@@ -113,7 +113,7 @@ public class AppServiceImpl implements AppService {
 
         delete(app.getId());
 
-        LOGGER.debug("Inside AppServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: app = "+app+"; No return value");
 
     }
@@ -123,7 +123,10 @@ public class AppServiceImpl implements AppService {
     @PublishAtomicMetric
     public App create(final App app, final Sandbox sandbox) {
         
-        LOGGER.info("Inside AppServiceImpl - create");
+        LOGGER.info("create");
+
+        LOGGER.debug("create: "
+        +"(BEFORE) Parameters: app = "+app+", sandbox = "+sandbox);
 
         app.setLogo(null);
         app.setCreatedTimestamp(new Timestamp(new Date().getTime()));
@@ -138,8 +141,8 @@ public class AppServiceImpl implements AppService {
 
             App retVal = save(app);
 
-            LOGGER.debug("Inside AppServiceImpl - create: "
-            +"Parameters: app = "+app+", sandbox = "+sandbox+"; Return value = "+retVal);
+            LOGGER.debug("create: "
+            +"(AFTER) Parameters: app = "+app+", sandbox = "+sandbox+"; Return value = "+retVal);
 
             return retVal;
         } catch (JSONException e) {
@@ -152,7 +155,7 @@ public class AppServiceImpl implements AppService {
     @Transactional
     public App update(final App app) {
 
-        LOGGER.info("Inside AppServiceImpl - update");
+        LOGGER.info("update");
 
         App existingApp = getById(app.getId());
         if (app.getCopyType() == CopyType.MASTER) {
@@ -180,13 +183,13 @@ public class AppServiceImpl implements AppService {
 
             App retVal = save(existingApp);
 
-            LOGGER.debug("Inside AppServiceImpl - update: "
+            LOGGER.debug("update: "
             + "Parameters: app = "+app+"; Return value = "+retVal);
 
             return retVal;
         }
 
-        LOGGER.debug("Inside AppServiceImpl - update: "
+        LOGGER.debug("update: "
         + "Parameters: app = "+app+"; Return value = "+app);
 
         return app;
@@ -195,13 +198,16 @@ public class AppServiceImpl implements AppService {
     @Override
     public App getClientJSON(final App app) {
         
-        LOGGER.info("Inside AppServiceImpl - getClientJSON");
+        LOGGER.info("getClientJSON");
+        
+        LOGGER.debug("getClientJSON: "
+        +"(BEFORE) Parameters: app = "+app);
         
         String clientJSON = oAuthClientService.getOAuthClientWithClientId(app.getClientId());
         app.setClientJSON(clientJSON);
         
-        LOGGER.debug("Inside AppServiceImpl - getClientJSON: "
-        +"Parameters: app = "+app+"; Return value = "+app);
+        LOGGER.debug("getClientJSON: "
+        +"(AFTER) Parameters: app = "+app+"; Return value = "+app);
         
         return app;
     }
@@ -209,7 +215,10 @@ public class AppServiceImpl implements AppService {
     @Override
     public App updateAppImage(final App app, final Image image) {
         
-        LOGGER.info("Inside AppServiceImpl - updateAppImage");
+        LOGGER.info("updateAppImage");
+
+        LOGGER.debug("updateAppImage: "
+        +"(BEFORE) Parameters: app = "+app+", image = "+image);
 
         if (app.getCopyType() == CopyType.MASTER) {
             String clientJSON = oAuthClientService.getOAuthClientWithClientId(app.getClientId());
@@ -230,8 +239,8 @@ public class AppServiceImpl implements AppService {
 
         App retVal = save(app);
 
-        LOGGER.debug("Inside AppServiceImpl - updateAppImage: "
-        +"Parameters: app = "+app+", image = "+image+"; Return value = "+retVal);
+        LOGGER.debug("updateAppImage: "
+        +"(AFTER) Parameters: app = "+app+", image = "+image+"; Return value = "+retVal);
 
         return retVal;
     }
@@ -239,7 +248,10 @@ public class AppServiceImpl implements AppService {
     @Override
     public App deleteAppImage(final App existingApp) {
         
-        LOGGER.info("Inside AppServiceImpl - deleteAppImage");
+        LOGGER.info("deleteAppImage");
+
+        LOGGER.debug("deleteAppImage: "
+        +"Parameters: existingApp = "+existingApp+"; Return value = "+existingApp);
 
         if (existingApp.getCopyType() == CopyType.MASTER) {
             try {
@@ -258,14 +270,14 @@ public class AppServiceImpl implements AppService {
     
             App retVal = save(existingApp);
 
-            LOGGER.debug("Inside AppServiceImpl - deleteAppImage: "
-            +"Parameters: existingApp = "+existingApp+"; Return value = "+retVal);
+            LOGGER.debug("deleteAppImage: "
+            +"(AFTER) Parameters: existingApp = "+existingApp+"; Return value = "+retVal);
 
             return retVal;
         }
 
-        LOGGER.debug("Inside AppServiceImpl - deleteAppImage: "
-        +"Parameters: existingApp = "+existingApp+"; Return value = "+existingApp);
+        LOGGER.debug("deleteAppImage: "
+        +"(AFTER) Parameters: existingApp = "+existingApp+"; Return value = "+existingApp);
 
         return existingApp;
     }
@@ -273,9 +285,9 @@ public class AppServiceImpl implements AppService {
     @Override
     public App getById(final int id) {
 
-        LOGGER.info("Inside AppServiceImpl - getById");
+        LOGGER.info("getById");
 
-        LOGGER.debug("Inside AppServiceImpl - getById: "
+        LOGGER.debug("getById: "
         +"Parameters: id = "+id+"; Return Value = "+repository.findById(id).orElse(null));
 
         return repository.findById(id).orElse(null);
@@ -283,9 +295,9 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public App findByLaunchUriAndClientIdAndSandboxId(final String launchUri, final String clientId, final String sandboxId) {
-        LOGGER.info("Inside AppServiceImpl - findByLaunchUriAndClientIdAndSandboxId");
+        LOGGER.info("findByLaunchUriAndClientIdAndSandboxId");
 
-        LOGGER.debug("Inside AppServiceImpl - findByLaunchUriAndClientIdAndSandboxId: "
+        LOGGER.debug("findByLaunchUriAndClientIdAndSandboxId: "
         +"Parameters: launchUri = "+launchUri+", clientId = "+clientId+", sandboxId = "+sandboxId
         +"; Return value = "+repository.findByLaunchUriAndClientIdAndSandboxId(launchUri, clientId, sandboxId));
 
@@ -295,9 +307,9 @@ public class AppServiceImpl implements AppService {
     @Override
     public List<App> findBySandboxId(final String sandboxId){
 
-        LOGGER.info("Inside AppServiceImpl - findBySandboxId");
+        LOGGER.info("findBySandboxId");
 
-        LOGGER.debug("Inside AppServiceImpl - findBySandboxId: "
+        LOGGER.debug("findBySandboxId: "
         +"Parameters: sandboxId = "+sandboxId+"; Return value = "+repository.findBySandboxId(sandboxId));
 
         return repository.findBySandboxId(sandboxId);
@@ -307,9 +319,9 @@ public class AppServiceImpl implements AppService {
     @Override
     public List<App> findBySandboxIdIncludingCustomApps(final String sandboxId) {
         
-        LOGGER.info("Inside AppServiceImpl - findBySandboxIdIncludingCustomApps");
+        LOGGER.info("findBySandboxIdIncludingCustomApps");
 
-        LOGGER.debug("Inside AppServiceImpl - findBySandboxIdIncludingCustomApps: "
+        LOGGER.debug("findBySandboxIdIncludingCustomApps: "
         +"Parameters: sandboxId = "+sandboxId
         +"; Return value = "+repository.findBySandboxIdIncludingCustomApps(sandboxId));
 
@@ -319,14 +331,14 @@ public class AppServiceImpl implements AppService {
     @Override
     public List<App> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
         
-        LOGGER.info("Inside AppServiceImpl - findBySandboxIdAndCreatedByOrVisibility");
+        LOGGER.info("findBySandboxIdAndCreatedByOrVisibility");
 
         List<App> apps = repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
         for (App app: apps) {
             getClientJSON(app);
         }
 
-        LOGGER.debug("Inside AppServiceImpl - findBySandboxIdAndCreatedByOrVisibility: "
+        LOGGER.debug("findBySandboxIdAndCreatedByOrVisibility: "
         +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy+", visibility = "+visibility
         +"; Return value = "+apps);
 
@@ -336,9 +348,9 @@ public class AppServiceImpl implements AppService {
     @Override
     public List<App> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy) {
         
-        LOGGER.info("Inside AppServiceImpl - findBySandboxIdAndCreatedBy");
+        LOGGER.info("findBySandboxIdAndCreatedBy");
 
-        LOGGER.debug("Inside AppServiceImpl - findBySandboxIdAndCreatedBy: "
+        LOGGER.debug("findBySandboxIdAndCreatedBy: "
         +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy
         +"; Return value = "+repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy));
         

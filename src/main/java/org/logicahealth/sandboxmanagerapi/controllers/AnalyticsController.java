@@ -58,7 +58,7 @@ public class AnalyticsController {
     public @ResponseBody
     Integer countSandboxesByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside AnalyticsController - countSandboxesByUser");
+        LOGGER.info("countSandboxesByUser");
 
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -74,7 +74,7 @@ public class AnalyticsController {
     @GetMapping(value = "/users", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countUsersBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside AnalyticsController - countUsersBySandbox");
+        LOGGER.info("countUsersBySandbox");
 
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -88,7 +88,7 @@ public class AnalyticsController {
     @GetMapping(value = "/apps", params = {"userId"})
     public @ResponseBody HashMap<String, Integer> countAppsBySandbox(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside AnalyticsController - countAppsBySandbox");
+        LOGGER.info("countAppsBySandbox");
 
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -102,7 +102,7 @@ public class AnalyticsController {
     @GetMapping(value = "/memory", params = {"userId"})
     public @ResponseBody Double memoryUsedByUser(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside AnalyticsController - memoryUsedByUser");
+        LOGGER.info("memoryUsedByUser");
 
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -119,7 +119,7 @@ public class AnalyticsController {
     public @ResponseBody
     FhirTransaction handleFhirTransaction(final HttpServletRequest request, @RequestBody final HashMap transactionInfo) {
         
-        LOGGER.info("Inside AnalyticsController - handleFhirTransaction");
+        LOGGER.info("handleFhirTransaction");
 
         Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
         String userId = transactionInfo.get("userId").toString();
@@ -152,7 +152,7 @@ public class AnalyticsController {
     @GetMapping(value="/getStats", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody void getStats(HttpServletRequest request) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside AnalyticsController - getStats");
+        LOGGER.info("getStats");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -166,7 +166,7 @@ public class AnalyticsController {
     @GetMapping(value="/overallStats", produces = APPLICATION_JSON_VALUE, params = {"numberOfMonths"})
     public @ResponseBody List<Statistics> displayStats(HttpServletRequest request, @RequestParam(value = "numberOfMonths") String numberOfMonths) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside AnalyticsController - displayStats");
+        LOGGER.info("displayStats");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -179,7 +179,7 @@ public class AnalyticsController {
     @GetMapping(value="/overallStats", produces = APPLICATION_JSON_VALUE, params = {"numberOfDays"})
     public @ResponseBody Statistics getStatsOverNumberOfDays(HttpServletRequest request, @RequestParam(value = "numberOfDays") String numberOfDays) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside AnalyticsController - getStatsOverNumberOfDays");
+        LOGGER.info("getStatsOverNumberOfDays");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -192,7 +192,7 @@ public class AnalyticsController {
     @GetMapping(value="/overallStats/transactions", params = {"interval"})
     public HashMap<String, Object> transactionStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
         
-        LOGGER.info("Inside AnalyticsController - transactionStats");
+        LOGGER.info("transactionStats");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -205,7 +205,7 @@ public class AnalyticsController {
     @GetMapping(value="/overallStats/sandboxMemory", params = {"interval"})
     public HashMap<String, Object> sandboxMemoryStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
         
-        LOGGER.info("Inside AnalyticsController - sandboxMemoryStats");
+        LOGGER.info("sandboxMemoryStats");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -218,7 +218,7 @@ public class AnalyticsController {
     @GetMapping(value="/overallStats/usersPerSandbox", params = {"interval"})
     public HashMap<String, Object> usersPerSandboxStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
         
-        LOGGER.info("Inside AnalyticsController - usersPerSandboxStats");
+        LOGGER.info("usersPerSandboxStats");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -231,7 +231,7 @@ public class AnalyticsController {
     @GetMapping(value="/overallStats/sandboxesPerUser", params = {"interval"})
     public HashMap<String, Object> sandboxesPerUserStats(HttpServletRequest request, @RequestParam(value = "interval") Integer intervalDays, @RequestParam(value = "n", required = false) Integer n) {
         
-        LOGGER.info("Inside AnalyticsController - sandboxesPerUserStats");
+        LOGGER.info("sandboxesPerUserStats");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -244,7 +244,7 @@ public class AnalyticsController {
     @GetMapping(value = "/userStatistics")
     public UserStatistics currentStatisticsByUser(HttpServletRequest request) {
         
-        LOGGER.info("Inside AnalyticsController - currentStatisticsByUser");
+        LOGGER.info("currentStatisticsByUser");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -257,7 +257,7 @@ public class AnalyticsController {
     @GetMapping(value="/overallStatsForSpecificTimePeriod", params = {"begin", "end"},  produces = APPLICATION_JSON_VALUE)
     public Statistics getStatsForSpecificTimePeriod(HttpServletRequest request, @RequestParam(value = "begin") String begin, @RequestParam(value = "end") String end) {
         
-        LOGGER.info("Inside AnalyticsController - getStatsForSpecificTimePeriod");
+        LOGGER.info("getStatsForSpecificTimePeriod");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {

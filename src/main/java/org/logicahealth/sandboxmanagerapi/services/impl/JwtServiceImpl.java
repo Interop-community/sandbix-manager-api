@@ -24,14 +24,14 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String createSignedJwt(String subject) {
         
-        LOGGER.info("Inside JwtServiceImpl - createSignedJwt");
+        LOGGER.info("createSignedJwt");
 
         String retVal = Jwts.builder()
                 .setSubject(subject)
                 .signWith(SignatureAlgorithm.forName(signatureAlgorithm), jwtKey)
                 .compact();
 
-        LOGGER.debug("Inside JwtServiceImpl - createSignedJwt: "
+        LOGGER.debug("createSignedJwt: "
         +"Parameters: subject = "+subject+"; Return value = "+retVal);
 
         return retVal;

@@ -68,7 +68,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public HashMap<String, Object> syncSandboxManagerandReferenceApi(Boolean fix, String request) {
-        LOGGER.info("Inside AdminServiceImpl - syncSandboxManagerandReferenceApi");
+        LOGGER.info("syncSandboxManagerandReferenceApi");
         
         List<String> sandboxesInSM = new ArrayList<>();
         Collection<LinkedHashMap> sandboxesInRAPI;
@@ -120,7 +120,7 @@ public class AdminServiceImpl implements AdminService {
                 }
             }
 
-            LOGGER.debug("AdminServiceImpl - syncSandboxManagerandReferenceApi: "
+            LOGGER.debug("syncSandboxManagerandReferenceApi: "
             +"Parameters: fix = "+fix+", request = "+request+"; Return value = "+returnedDict);
 
             return returnedDict;
@@ -131,7 +131,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Set<String> deleteUnusedSandboxes(User user, String bearerToken){
-        LOGGER.info("Inside AdminServiceImpl - deleteUnusedSandboxes");
+        LOGGER.info("deleteUnusedSandboxes");
         
         Iterable<SandboxActivityLog> sandboxAccessHistories = sandboxActivityLogService.findAll();
         Set<String> set1SandboxIdMoreThanYear = new HashSet<>();
@@ -154,21 +154,21 @@ public class AdminServiceImpl implements AdminService {
             sandboxService.delete(sandbox, bearerToken, user, false);
         }
 
-        LOGGER.debug("Inside AdminServiceImpl - deleteUnusedSandboxes: "
+        LOGGER.debug("deleteUnusedSandboxes: "
         +"Parameters: user = "+user+", bearerToken = "+bearerToken+"; Return value = "+setFinalSandboxIdDeleted);
 
         return setFinalSandboxIdDeleted;
     }
 
     private void callDeleteSandboxAPI(Sandbox sandbox, String request) {
-        LOGGER.info("Inside AdminServiceImpl - callDeleteSandboxAPI");
+        LOGGER.info("callDeleteSandboxAPI");
 
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.set("Authorization", "Bearer " + request);
         HttpEntity<String> httpEntity = new HttpEntity<>(requestHeaders);
         simpleRestTemplate.exchange(sandboxService.getSandboxApiURL(sandbox)  + "/sandbox?sync=true", HttpMethod.DELETE, httpEntity, String.class);
 
-        LOGGER.debug("Inside AdminServiceImpl - callDeleteSandboxAPI: "
+        LOGGER.debug("callDeleteSandboxAPI: "
         +"Parameters: sandbox = "+sandbox+", request = "+request+"; No return value");
 
     }

@@ -32,7 +32,10 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Transactional
     public CdsHook create(final CdsHook cdsHook) {
         
-        LOGGER.info("Inside CdsHookServiceImpl - create");
+        LOGGER.info("create");
+
+        LOGGER.debug("create: "
+        +"(BEFORE) Parameters: cdsHook = "+cdsHook);
 
         CdsHook existingCdsHook = findByHookIdAndCdsServiceEndpointId(cdsHook.getHookId(),
                 cdsHook.getCdsServiceEndpointId());
@@ -41,16 +44,16 @@ public class CdsHookServiceImpl implements CdsHookService {
 
             CdsHook retVal = update(cdsHook);
 
-            LOGGER.debug("Inside CdsHookServiceImpl - create: "
-            +"Parameters: cdsHook = "+cdsHook+"; Return value = "+retVal);
+            LOGGER.debug("create: "
+            +"(AFTER) Parameters: cdsHook = "+cdsHook+"; Return value = "+retVal);
 
             return retVal;
         }
 
         CdsHook retVal = save(cdsHook);
 
-        LOGGER.debug("Inside CdsHookServiceImpl - create: "
-        +"Parameters: cdsHook = "+cdsHook+"; Return value = "+retVal);
+        LOGGER.debug("create: "
+        +"(AFTER) Parameters: cdsHook = "+cdsHook+"; Return value = "+retVal);
 
         return retVal;
     }
@@ -59,11 +62,11 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Transactional
     public CdsHook save(final CdsHook cdsHook) {
 
-        LOGGER.info("Inside CdsHookServiceImpl - save");
+        LOGGER.info("save");
 
         CdsHook retVal = repository.save(cdsHook);
 
-        LOGGER.debug("Inside CdsHookServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: cdsHook = "+cdsHook+"; Return value = "+retVal);
 
         return retVal;
@@ -73,7 +76,7 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Transactional
     public CdsHook update(final CdsHook cdsHook) {
         
-        LOGGER.info("Inside CdsHookServiceImpl - update");
+        LOGGER.info("update");
 
         CdsHook existingCdsHook = getById(cdsHook.getId());
         existingCdsHook.setLogo(cdsHook.getLogo());
@@ -88,7 +91,7 @@ public class CdsHookServiceImpl implements CdsHookService {
 
         CdsHook retVal = save(existingCdsHook);
 
-        LOGGER.debug("Inside CdsHookServiceImpl - update: "
+        LOGGER.debug("update: "
         +"Parameters: cdsHook = "+cdsHook+"; Return value = "+retVal);
 
         return retVal;
@@ -98,11 +101,11 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Transactional
     public void delete(final int id) {
 
-        LOGGER.info("Inside CdsHookServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside CdsHookServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
     }
 
@@ -110,25 +113,25 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Transactional
     public void delete(CdsHook cdsHook) {
         
-        LOGGER.info("Inside CdsHookServiceImpl - delete");
+        LOGGER.info("delete");
 
         if (cdsHook.getLogo() != null) {
             imageService.delete(cdsHook.getLogo().getId());
         }
         delete(cdsHook.getId());
 
-        LOGGER.debug("Inside CdsHookServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: cdsHook "+cdsHook+"; No return value");
 
     }
 
     @Override
     public CdsHook getById(final int id) {
-        LOGGER.info("Inside CdsHookServiceImpl - getById");
+        LOGGER.info("getById");
 
         CdsHook retVal = repository.findById(id).orElse(null);
 
-        LOGGER.debug("Inside CdsHookServiceImpl - getById: "
+        LOGGER.debug("getById: "
         +"Parameters: id = "+id+"; Return value = "+retVal);
 
         return retVal;
@@ -138,7 +141,10 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Transactional
     public CdsHook updateCdsHookImage(final CdsHook cdsHook, final Image image) {
 
-        LOGGER.info("Inside CdsHookServiceImpl - updateCdsHookImage");
+        LOGGER.info("updateCdsHookImage");
+
+        LOGGER.debug("updateCdsHookImage: "
+        +"(BEFORE) Parameters: cdsHook = "+cdsHook+", image = "+image);
 
         if (cdsHook.getLogo() != null) {
             imageService.delete(cdsHook.getLogo().getId());
@@ -148,8 +154,8 @@ public class CdsHookServiceImpl implements CdsHookService {
 
         CdsHook retVal = save(cdsHook);
 
-        LOGGER.debug("Inside CdsHookServiceImpl - updateCdsHookImage: "
-        +"Parameters: cdsHook = "+cdsHook+", image = "+image+"; Return value "+retVal);
+        LOGGER.debug("updateCdsHookImage: "
+        +"(AFTER) Parameters: cdsHook = "+cdsHook+", image = "+image+"; Return value "+retVal);
 
         return retVal;
     }
@@ -158,7 +164,10 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Transactional
     public CdsHook deleteCdsHookImage(final CdsHook existingCdsHook) {
         
-        LOGGER.info("Inside CdsHookServiceImpl - deleteCdsHookImage");
+        LOGGER.info("deleteCdsHookImage");
+
+        LOGGER.debug("deleteCdsHookImage: "
+        +"(BEFORE) Parameters: existingCdsHook = "+existingCdsHook);
 
         if (existingCdsHook.getLogo() != null) {
             imageService.delete(existingCdsHook.getLogo().getId());
@@ -168,8 +177,8 @@ public class CdsHookServiceImpl implements CdsHookService {
 
         CdsHook retVal = save(existingCdsHook);
 
-        LOGGER.debug("Inside CdsHookServiceImpl - deleteCdsHookImage: "
-        +"Parameters: existingCdsHook = "+existingCdsHook+"; Return value = "+retVal);
+        LOGGER.debug("deleteCdsHookImage: "
+        +"(AFTER) Parameters: existingCdsHook = "+existingCdsHook+"; Return value = "+retVal);
 
         return retVal;
     }
@@ -177,9 +186,9 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Override
     public CdsHook findByHookIdAndCdsServiceEndpointId(final String hookId, final int cdsServiceEndpointId) {
         
-        LOGGER.info("Inside CdsHookServiceImpl - findByHookIdAndCdsServiceEndpointId");
+        LOGGER.info("findByHookIdAndCdsServiceEndpointId");
 
-        LOGGER.debug("Inside CdsHookServiceImpl - findByHookIdAndCdsServiceEndpointId: "
+        LOGGER.debug("findByHookIdAndCdsServiceEndpointId: "
         +"Parameters: hookId = "+hookId+", cdsServiceEndpointId = "+cdsServiceEndpointId
         +"; Return value = "+repository.findByHookIdAndCdsServiceEndpointId(hookId, cdsServiceEndpointId));
 
@@ -189,9 +198,9 @@ public class CdsHookServiceImpl implements CdsHookService {
     @Override
     public List<CdsHook> findByCdsServiceEndpointId(final int cdsServiceEndpointId) {
         
-        LOGGER.info("Inside CdsHookServiceImpl - findByCdsServiceEndpointId");
+        LOGGER.info("findByCdsServiceEndpointId");
 
-        LOGGER.debug("Inside CdsHookServiceImpl - findByCdsServiceEndpointId: "
+        LOGGER.debug("findByCdsServiceEndpointId: "
         +"Parameters: cdsServiceEndpointId = "+cdsServiceEndpointId
         +"; Return value = "+repository.findByCdsServiceEndpointId(cdsServiceEndpointId));
 

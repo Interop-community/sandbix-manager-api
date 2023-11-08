@@ -40,7 +40,7 @@ public class UserAccessHistoryController {
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSandboxId(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside UserAccessHistoryController - getLastSandboxAccessWithSandboxId");
+        LOGGER.info("getLastSandboxAccessWithSandboxId");
         
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -54,7 +54,7 @@ public class UserAccessHistoryController {
     public @ResponseBody
     List<UserAccessHistory> getLastSandboxAccessWithSbmUserId(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside UserAccessHistoryController - getLastSandboxAccessWithSbmUserId");
+        LOGGER.info("getLastSandboxAccessWithSbmUserId");
         
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
@@ -70,7 +70,7 @@ public class UserAccessHistoryController {
     Timestamp getLastSandboxAccess(final HttpServletRequest request, @RequestParam(value = "sbmUserId") String userIdEncoded,
                                    @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside UserAccessHistoryController - getLastSandboxAccess");
+        LOGGER.info("getLastSandboxAccess");
         
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);

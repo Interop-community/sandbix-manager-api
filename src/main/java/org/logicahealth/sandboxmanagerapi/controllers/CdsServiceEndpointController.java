@@ -66,7 +66,7 @@ public class CdsServiceEndpointController {
     public List<CdsServiceEndpoint> createCdsServiceEndpoint(final HttpServletRequest request,
                                                              @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
 
-        LOGGER.info("Inside CdsServiceEndpointController - createCdsServiceEndpoint");
+        LOGGER.info("createCdsServiceEndpoint");
         
         checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);
         authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
@@ -77,7 +77,7 @@ public class CdsServiceEndpointController {
     private CdsServiceEndpoint checkUserAuthorizationAndModifyCdsServiceEndpoint (HttpServletRequest request,
                                                                                   CdsServiceEndpoint cdsServiceEndpoint) {
         
-        LOGGER.info("Inside CdsServiceEndpointController - checkUserAuthorizationAndModifyCdsServiceEndpoint");
+        LOGGER.info("checkUserAuthorizationAndModifyCdsServiceEndpoint");
 
         Sandbox sandbox = sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
@@ -102,7 +102,7 @@ public class CdsServiceEndpointController {
                                                        @PathVariable Integer id,
                                                        @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
         
-        LOGGER.info("Inside CdsServiceEndpointController - updateCdsServiceEndpoint");
+        LOGGER.info("updateCdsServiceEndpoint");
 
         CdsServiceEndpoint existingCdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         if (existingCdsServiceEndpoint == null || existingCdsServiceEndpoint.getId().intValue() != id.intValue()) {
@@ -120,7 +120,7 @@ public class CdsServiceEndpointController {
     public List<CdsServiceEndpoint> getCdsServiceEndpoints(final HttpServletRequest request,
                                                @RequestParam(value = "sandboxId") String sandboxId) {
         
-        LOGGER.info("Inside CdsServiceEndpointController - getCdsServiceEndpoints");
+        LOGGER.info("getCdsServiceEndpoints");
         
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -139,7 +139,7 @@ public class CdsServiceEndpointController {
     @ResponseBody
     public CdsServiceEndpoint getCdsServicEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside CdsServiceEndpointController - getCdsServicEndpoint");
+        LOGGER.info("getCdsServicEndpoint");
         
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
@@ -157,7 +157,7 @@ public class CdsServiceEndpointController {
     @ResponseBody
     public void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside CdsServiceEndpointController - deleteCdsServiceEndpoint");
+        LOGGER.info("deleteCdsServiceEndpoint");
         
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         if (cdsServiceEndpoint != null) {

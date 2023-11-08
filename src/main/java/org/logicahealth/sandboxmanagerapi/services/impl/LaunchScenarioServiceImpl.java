@@ -58,11 +58,11 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Transactional
     public LaunchScenario save(final LaunchScenario launchScenario) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - save");
+        LOGGER.info("save");
         
         LaunchScenario retVal = repository.save(launchScenario);
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: launchScenario = "+launchScenario+"; Return value = "+retVal);
 
         return retVal;
@@ -72,11 +72,11 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Transactional
     public void delete(final int id) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameter: id = "+id+"; No return value");
 
     }
@@ -85,7 +85,10 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Transactional
     public void delete(final LaunchScenario launchScenario) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - delete");
+        LOGGER.info("delete");
+
+        LOGGER.debug("delete: "
+        +"(BEFORE) Parameters: launchScenario = "+launchScenario);
 
         if (launchScenario.getApp() != null) {
             if (launchScenario.getApp().isCustomApp()) {
@@ -109,8 +112,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
         delete(launchScenario.getId());
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - delete: "
-        +"Parameters: launchScenario = "+launchScenario+"; No return value");
+        LOGGER.debug("delete: "
+        +"(AFTER) Parameters: launchScenario = "+launchScenario+"; No return value");
 
     }
 
@@ -118,7 +121,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Transactional
     public void deleteAssociatedLaunchScenarios(List<LaunchScenario> launchScenarios) {
 
-        LOGGER.info("Inside LaunchScenarioServiceImpl - deleteAssociatedLaunchScenarios");
+        LOGGER.info("deleteAssociatedLaunchScenarios");
 
         for (LaunchScenario launchScenario: launchScenarios) {
             for (ContextParams contextParams : launchScenario.getContextParams()) {
@@ -131,7 +134,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             delete(launchScenario.getId());
         }
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - deleteAssociatedLaunchScenarios: "
+        LOGGER.debug("deleteAssociatedLaunchScenarios: "
         +"launchScenarios = "+launchScenarios+"; No return value");
 
     }
@@ -140,7 +143,10 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Transactional
     public LaunchScenario create(final LaunchScenario launchScenario) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - create");
+        LOGGER.info("create");
+
+        LOGGER.debug("create: "
+        +"(BEFORE) Parameters: launchScenario = "+launchScenario);
 
         Sandbox sandbox = launchScenario.getSandbox();
         launchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
@@ -175,8 +181,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
         LaunchScenario retVal = save(launchScenario);
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - create: "
-        +"Parameters: launchScenario = "+launchScenario+"; Return value = "+retVal);
+        LOGGER.debug("create: "
+        +"(AFTER) Parameters: launchScenario = "+launchScenario+"; Return value = "+retVal);
 
         return retVal;
     }
@@ -186,7 +192,7 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
     public LaunchScenario update(final LaunchScenario launchScenario) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - update");
+        LOGGER.info("update");
 
         LaunchScenario updateLaunchScenario = getById(launchScenario.getId());
         if (updateLaunchScenario != null) {
@@ -223,14 +229,14 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
 
             LaunchScenario retVal = save(updateLaunchScenario);
 
-            LOGGER.debug("Inside LaunchScenarioServiceImpl - update: "
+            LOGGER.debug("update: "
             +"Parameters: launchScenario = "+launchScenario
             +"; Return value = "+retVal);
 
             return retVal;
         }
         
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - update: "
+        LOGGER.debug("update: "
         +"Parameters: launchScenario = "+launchScenario
         +"; Return value = null");
 
@@ -240,7 +246,10 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public LaunchScenario updateContextParams(final LaunchScenario launchScenario, final List<ContextParams> newContextParams) {
 
-        LOGGER.info("Inside LaunchScenarioServiceImpl - updateContextParams");
+        LOGGER.info("updateContextParams");
+
+        LOGGER.debug("updateContextParams: "
+        +"(BEFORE) Parameters: launchScenario = "+launchScenario+", newContextParams = "+newContextParams);
 
         List<ContextParams> currentContextParams = launchScenario.getContextParams();
         List<ContextParams> removeContextParams = new ArrayList<>();
@@ -261,12 +270,10 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             contextParamsService.delete(removeContextParam);
         }
 
-        LaunchScenario inputParam = launchScenario;
-
         launchScenario.setContextParams(newContextParams); 
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - updateContextParams: "
-        +"Parameters: launchScenario = "+inputParam+", newContextParams = "+newContextParams
+        LOGGER.debug("updateContextParams: "
+        +"(AFTER) Parameters: launchScenario = "+launchScenario+", newContextParams = "+newContextParams
         +"; Return value = "+launchScenario);
 
         return launchScenario;
@@ -275,9 +282,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public Iterable<LaunchScenario> findAll(){
 
-        LOGGER.info("Inside LaunchScenarioServiceImpl - findAll");
+        LOGGER.info("findAll");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - findAll: "
+        LOGGER.debug("findAll: "
         +"No input parameters; Return value = "+repository.findAll());
 
         return repository.findAll();
@@ -286,9 +293,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public LaunchScenario getById(final int id) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - getById");
+        LOGGER.info("getById");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - getById: "
+        LOGGER.debug("getById: "
         +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
 
         return repository.findById(id).orElse(null);
@@ -297,9 +304,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public List<LaunchScenario> findBySandboxId(final String sandboxId) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - findBySandboxId");
+        LOGGER.info("findBySandboxId");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - findBySandboxId: "
+        LOGGER.debug("findBySandboxId: "
         +"Parameters: sandboxId = "+sandboxId+"; Return value = "+repository.findBySandboxId(sandboxId));
 
         return  repository.findBySandboxId(sandboxId);
@@ -308,9 +315,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public List<LaunchScenario> findByAppIdAndSandboxId(final int appId, final String sandboxId) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - findByAppIdAndSandboxId");
+        LOGGER.info("findByAppIdAndSandboxId");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - findByAppIdAndSandboxId: "
+        LOGGER.debug("findByAppIdAndSandboxId: "
         +"Parameters: appId = "+appId+", sandboxId = "+sandboxId
         +"; Return value = "+repository.findByAppIdAndSandboxId(appId, sandboxId));
 
@@ -320,9 +327,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public List<LaunchScenario> findByUserPersonaIdAndSandboxId(final int userPersonaId, final String sandboxId) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - findByUserPersonaIdAndSandboxId");
+        LOGGER.info("findByUserPersonaIdAndSandboxId");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - findByUserPersonaIdAndSandboxId: "
+        LOGGER.debug("findByUserPersonaIdAndSandboxId: "
         +"Parameters: userPersonaId = "+userPersonaId+", sandboxId = "+sandboxId
         +"; Return value = "+repository.findByUserPersonaIdAndSandboxId(userPersonaId, sandboxId));
 
@@ -332,9 +339,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public List<LaunchScenario> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - findBySandboxIdAndCreatedByOrVisibility");
+        LOGGER.info("findBySandboxIdAndCreatedByOrVisibility");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - findBySandboxIdAndCreatedByOrVisibility: "
+        LOGGER.debug("findBySandboxIdAndCreatedByOrVisibility: "
         +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy+", visibility = "+visibility
         +"; Return value = "+repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility));
 
@@ -344,9 +351,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public List<LaunchScenario> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy) {
 
-        LOGGER.info("Inside LaunchScenarioServiceImpl - findBySandboxIdAndCreatedBy");
+        LOGGER.info("findBySandboxIdAndCreatedBy");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - findBySandboxIdAndCreatedBy: "
+        LOGGER.debug("findBySandboxIdAndCreatedBy: "
         +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy
         +"; Return value = "+repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy));
 
@@ -356,9 +363,10 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public List<LaunchScenario> updateLastLaunchForCurrentUser(final List<LaunchScenario> launchScenarios, final User user) {
         
-        LOGGER.info("Inside LaunchScenarioServiceImpl - updateLastLaunchForCurrentUser");
+        LOGGER.info("updateLastLaunchForCurrentUser");
 
-        List<LaunchScenario> inputParam = launchScenarios;
+        LOGGER.debug("updateLastLaunchForCurrentUser: "
+        +"(BEFORE) Parameters: launchScenarios = "+launchScenarios+", user = "+user);
 
         for (LaunchScenario launchScenario : launchScenarios) {
             UserLaunch userLaunch = userLaunchService.findByUserIdAndLaunchScenarioId(user.getSbmUserId(), launchScenario.getId());
@@ -370,8 +378,8 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             }
         }
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - updateLastLaunchForCurrentUser: "
-        +"Parameters: launchScenarios = "+inputParam+", user = "+user
+        LOGGER.debug("updateLastLaunchForCurrentUser: "
+        +"(AFTER) Parameters: launchScenarios = "+launchScenarios+", user = "+user
         +"; Return value = "+launchScenarios);
 
         return launchScenarios;
@@ -380,9 +388,9 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     public List<LaunchScenario> findByCdsHookIdAndSandboxId(final int cdsHookId, final String sandboxId) {
 
-        LOGGER.info("Inside LaunchScenarioServiceImpl - findByCdsHookIdAndSandboxId");
+        LOGGER.info("findByCdsHookIdAndSandboxId");
 
-        LOGGER.debug("Inside LaunchScenarioServiceImpl - findByCdsHookIdAndSandboxId: "
+        LOGGER.debug("findByCdsHookIdAndSandboxId: "
         +"Parameters: cdsHookId = "+cdsHookId+", sandboxId = "+sandboxId
         +"; Return Value = "+repository.findByCdsHookIdAndSandboxId(cdsHookId, sandboxId));
 

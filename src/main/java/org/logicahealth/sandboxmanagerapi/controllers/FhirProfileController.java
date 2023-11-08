@@ -56,7 +56,7 @@ public class FhirProfileController {
                                      @RequestParam(value = "profileName") String profileName,
                                      @RequestParam(value = "profileId") String profileId) throws IOException {
 
-        LOGGER.info("Inside FhirProfileController - uploadProfile");
+        LOGGER.info("uploadProfile");
         
         FhirProfileDetail existingFhirProfileDetail = fhirProfileDetailService.findByProfileIdAndSandboxId(profileId, sandboxId);
         if (existingFhirProfileDetail != null) {
@@ -133,7 +133,7 @@ public class FhirProfileController {
     @ResponseBody
     public ProfileTask fetchStatus(@RequestParam(value = "id") String id) {
         
-        LOGGER.info("Inside FhirProfileController - fetchStatus");
+        LOGGER.info("fetchStatus");
         
         ProfileTask profileTask = fhirProfileDetailService.getTaskRunning(id);
         if (profileTask != null) {
@@ -150,7 +150,7 @@ public class FhirProfileController {
     @ResponseBody
     public List<FhirProfile> getStructureDefinitions (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
         
-        LOGGER.info("Inside FhirProfileController - getStructureDefinitions");
+        LOGGER.info("getStructureDefinitions");
         
         return fhirProfileService.getAllSDsForGivenProfileId(fhirProfileId);
     }
@@ -159,7 +159,7 @@ public class FhirProfileController {
     @ResponseBody
     public List<FhirProfile> getAllResourcesForGivenProfileId (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
         
-        LOGGER.info("Inside FhirProfileController - getAllResourcesForGivenProfileId");
+        LOGGER.info("getAllResourcesForGivenProfileId");
         
         return fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
     }
@@ -168,7 +168,7 @@ public class FhirProfileController {
     @ResponseBody
     public List<FhirProfileDetail> getFhirProfiles(@RequestParam(value = "sandboxId") String sandboxId) {
         
-        LOGGER.info("Inside FhirProfileController - getFhirProfiles");
+        LOGGER.info("getFhirProfiles");
 
         return fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
     }
@@ -191,7 +191,7 @@ public class FhirProfileController {
     @ResponseBody
     public HashMap<String, List<FhirProfile>> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
         
-        LOGGER.info("Inside FhirProfileController - getFhirProfilesWithASpecificType");
+        LOGGER.info("getFhirProfilesWithASpecificType");
         
         HashMap<String, List<FhirProfile>> profileNameAndFhirProfile = new HashMap<>();
         List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
@@ -209,7 +209,7 @@ public class FhirProfileController {
     @ResponseBody
     public FhirProfileDetail getFhirProfile(@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
         
-        LOGGER.info("Inside FhirProfileController - getFhirProfile");
+        LOGGER.info("getFhirProfile");
 
         return fhirProfileDetailService.getFhirProfileDetail(fhirProfileId);
     }
@@ -218,7 +218,7 @@ public class FhirProfileController {
     @ResponseBody
     public Set<String> getAllProfileTypes (@RequestParam(value = "sandboxId") String sandboxId) {
         
-        LOGGER.info("Inside FhirProfileController - getAllProfileTypes");
+        LOGGER.info("getAllProfileTypes");
         
         List<FhirProfileDetail> fhirProfiles = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
         Set<String> types = new HashSet<>();
@@ -235,7 +235,7 @@ public class FhirProfileController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProfile(HttpServletRequest request, @RequestParam(value = "fhirProfileId") Integer fhirProfileId, @RequestParam(value = "sandboxId") String sandboxId, HttpServletResponse response) {
         
-        LOGGER.info("Inside FhirProfileController - deleteProfile");
+        LOGGER.info("deleteProfile");
         
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));

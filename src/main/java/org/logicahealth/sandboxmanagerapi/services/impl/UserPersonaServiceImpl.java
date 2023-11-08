@@ -38,11 +38,11 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Transactional
     public UserPersona save(UserPersona userPersona) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - save");
+        LOGGER.info("save");
 
         UserPersona retVal = repository.save(userPersona);
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: userPersona = "+userPersona+"; Return value = "+retVal);
 
         return retVal;
@@ -51,9 +51,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public UserPersona getById(final int id) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - getById");
+        LOGGER.info("getById");
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - getById: "
+        LOGGER.debug("getById: "
         +"Parameters: id = "+id
         +"; Return value = "+repository.findById(id).orElse(null));
 
@@ -63,9 +63,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public UserPersona findByPersonaUserId(String personaUserId) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - findByPersonaUserId");
+        LOGGER.info("findByPersonaUserId");
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - findByPersonaUserId: "
+        LOGGER.debug("findByPersonaUserId: "
         +"Parameters: personaUserId = "+personaUserId
         +"; Return value = "+repository.findByPersonaUserId(personaUserId));
 
@@ -75,9 +75,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public UserPersona findByPersonaUserIdAndSandboxId(final String personaUserId, final String sandboxId) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - findByPersonaUserIdAndSandboxId");
+        LOGGER.info("findByPersonaUserIdAndSandboxId");
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - findByPersonaUserIdAndSandboxId: "
+        LOGGER.debug("findByPersonaUserIdAndSandboxId: "
         +"Parameters: personaUserId = "+personaUserId+", sandboxId = "+sandboxId
         +"; Return value = "+repository.findByPersonaUserIdAndSandboxId(personaUserId, sandboxId));
 
@@ -87,9 +87,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public List<UserPersona> findBySandboxIdAndCreatedByOrVisibility(String sandboxId, String createdBy, Visibility visibility) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - findBySandboxIdAndCreatedByOrVisibility");
+        LOGGER.info("findBySandboxIdAndCreatedByOrVisibility");
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - findBySandboxIdAndCreatedByOrVisibility: "
+        LOGGER.debug("findBySandboxIdAndCreatedByOrVisibility: "
         +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy
         +", visibility = "+visibility
         +"; Return value = "+repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility));
@@ -100,11 +100,11 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public UserPersona findDefaultBySandboxId(String sandboxId, String createdBy, Visibility visibility) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - findDefaultBySandboxId");
+        LOGGER.info("findDefaultBySandboxId");
 
         List<UserPersona> personas = repository.findDefaultBySandboxId(sandboxId, createdBy, visibility);
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - findDefaultBySandboxId: "
+        LOGGER.debug("findDefaultBySandboxId: "
         +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy
         +", visibility = "+visibility+"; Return value = "
         +(!personas.isEmpty() ? personas.get(0) : null));
@@ -115,9 +115,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public List<UserPersona> findBySandboxIdAndCreatedBy(String sandboxId, String createdBy) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - findBySandboxIdAndCreatedBy");
+        LOGGER.info("findBySandboxIdAndCreatedBy");
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - findBySandboxIdAndCreatedBy: "
+        LOGGER.debug("findBySandboxIdAndCreatedBy: "
         +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy
         +"; Return value = "+repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy));
 
@@ -127,9 +127,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public List<UserPersona> findBySandboxId(final String sandboxId) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - findBySandboxId");
+        LOGGER.info("findBySandboxId");
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - findBySandboxId: "
+        LOGGER.debug("findBySandboxId: "
         +"Parameters: sandboxId = "+sandboxId
         +"; Return value = "+repository.findBySandboxId(sandboxId));
 
@@ -140,11 +140,11 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Transactional
     public void delete(final int id) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }
@@ -152,7 +152,7 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Override
     public void delete(UserPersona userPersona) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - delete");
+        LOGGER.info("delete");
 
         List<LaunchScenario> launchScenarios = launchScenarioService.findByUserPersonaIdAndSandboxId(userPersona.getId(), userPersona.getSandbox().getSandboxId());
         if (launchScenarios.size() > 0) {
@@ -160,7 +160,7 @@ public class UserPersonaServiceImpl implements UserPersonaService {
         }
         delete(userPersona.getId());
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: userPersona = "+userPersona+"; No return value");
 
     }
@@ -169,9 +169,9 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Transactional
     public UserPersona create(UserPersona userPersona) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - create");
+        LOGGER.info("create");
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - create: "
+        LOGGER.debug("create: "
         +"(BEFORE) Parameters: userPersona = "+userPersona);
 
         userPersona.setCreatedTimestamp(new Timestamp(new Date().getTime()));
@@ -179,7 +179,7 @@ public class UserPersonaServiceImpl implements UserPersonaService {
 
         UserPersona retVal = createOrUpdate(userPersona);
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - create: "
+        LOGGER.debug("create: "
         +"(AFTER) Parameters: userPersona = "+userPersona
         +"; Return value = "+retVal);
 
@@ -190,11 +190,11 @@ public class UserPersonaServiceImpl implements UserPersonaService {
     @Transactional
     public UserPersona update(UserPersona userPersona) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - update");
+        LOGGER.info("update");
 
         UserPersona retVal = createOrUpdate(userPersona);
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - update: "
+        LOGGER.debug("update: "
         +"Parameters: userPersona = "+userPersona
         +"; Return value = "+retVal);
 
@@ -203,11 +203,11 @@ public class UserPersonaServiceImpl implements UserPersonaService {
 
     private UserPersona createOrUpdate(final UserPersona userPersona) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - createOrUpdate");
+        LOGGER.info("createOrUpdate");
 
         UserPersona retVal = save(userPersona);
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - createOrUpdate: "
+        LOGGER.debug("createOrUpdate: "
         +"Parameters: userPersona = "+userPersona
         +"; Return value = "+retVal);
 
@@ -216,14 +216,14 @@ public class UserPersonaServiceImpl implements UserPersonaService {
 
     private void checkpersonaUserId(UserPersona userPersona) {
         
-        LOGGER.info("Inside UserPersonaServiceImpl - checkpersonaUserId");
+        LOGGER.info("checkpersonaUserId");
 
         UserPersona userPersonaExists = findByPersonaUserIdAndSandboxId(userPersona.getPersonaUserId(), userPersona.getSandbox().getSandboxId());
         if (userPersonaExists != null) {
             throw new IllegalArgumentException("Persona user " + userPersona.getPersonaUserId() + " already in use in sandbox " + userPersona.getSandbox().getSandboxId());
         }
 
-        LOGGER.debug("Inside UserPersonaServiceImpl - checkpersonaUserId: "
+        LOGGER.debug("checkpersonaUserId: "
         +"Parameters: userPersona = "+userPersona+"; No return value");
 
     }

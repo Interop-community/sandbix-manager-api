@@ -109,17 +109,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     public Integer countSandboxesByUser(String userId) {
-        LOGGER.info("Inside AnalyticsServiceImpl - countSandboxesByUser");
+        LOGGER.info("countSandboxesByUser");
 
         User user = userService.findBySbmUserId(userId);
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - countSandboxesByUser: "
+        LOGGER.debug("countSandboxesByUser: "
         +"Parameters: userId = "+userId+"; Return value = "+1);
         return 1;
     }
 
     public HashMap<String, Integer> countAppsPerSandboxByUser(User user) {
-        LOGGER.info("Inside AnalyticsServiceImpl - countAppsPerSandboxByUser");
+        LOGGER.info("countAppsPerSandboxByUser");
 
         HashMap<String, Integer> sandboxApps = new HashMap<>();
         List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
@@ -128,14 +128,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             sandboxApps.put(sandboxId, appService.findBySandboxId(sandboxId).size());
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - countAppsPerSandboxByUser: "
+        LOGGER.debug("countAppsPerSandboxByUser: "
         + "Parameters: user = "+user+"; Return value = "+sandboxApps);
 
         return sandboxApps;
     }
 
     public HashMap<String, Integer> countUsersPerSandboxByUser(User user) {
-        LOGGER.info("Inside AnalyticsServiceImpl - countUsersPerSandboxByUser");
+        LOGGER.info("countUsersPerSandboxByUser");
 
         HashMap<String, Integer> sandboxUsers = new HashMap<>();
         List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
@@ -148,14 +148,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             sandboxUsers.put(sandbox.getSandboxId(), uniqueUsers.size());
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - countUsersPerSandboxByUser: "
+        LOGGER.debug("countUsersPerSandboxByUser: "
         +"Parameters: user = "+user+";Return value = "+sandboxUsers);
 
         return sandboxUsers;
     }
 
     public FhirTransaction handleFhirTransaction(User user, HashMap transactionInfo, String bearerToken) {
-        LOGGER.info("Inside AnalyticsServiceImpl - handleFhirTransaction");
+        LOGGER.info("handleFhirTransaction");
 
         Sandbox sandbox = sandboxService.findBySandboxId(transactionInfo.get("tenant").toString());
         if (!ruleService.checkIfUserCanPerformTransaction(sandbox, transactionInfo.get("method").toString(), bearerToken)) {
@@ -182,7 +182,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         
         FhirTransaction returnValue = fhirTransactionRepository.save(fhirTransaction);
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - handleFhirTransaction: "
+        LOGGER.debug("handleFhirTransaction: "
         +"Parameters: user = "+user+", transactionInfo = "+transactionInfo
         +", bearerToken = "+bearerToken+"; Return Value = "+returnValue);
 
@@ -191,17 +191,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     public Integer countTransactionsByPayer(User payer) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - countTransactionsByPayer");
+        LOGGER.info("countTransactionsByPayer");
 
         List<FhirTransaction> fhirTransactions = fhirTransactionRepository.findByPayerUserId(payer.getId());
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - countTransactionsByPayer "+
+        LOGGER.debug("countTransactionsByPayer "+
         "Parameters: payer = "+payer+"; Return Value = "+fhirTransactions.size());
         return fhirTransactions.size();
     }
 
     public Double retrieveTotalMemoryByUser(User user, String request) {
-        LOGGER.info("Inside AnalyticsServiceImpl - retrieveTotalMemoryByUser");
+        LOGGER.info("retrieveTotalMemoryByUser");
 
         List<Sandbox> userCreatedSandboxes = sandboxService.findByPayerId(user.getId());
         List<String> sandboxIds = new ArrayList<>();
@@ -211,14 +211,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         Double returnValue = retrieveMemoryInSchemas(sandboxIds, request);
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - retrieveTotalMemoryByUser: "
+        LOGGER.debug("retrieveTotalMemoryByUser: "
         +"Parameters: user = "+user+", request = "+request+"; Return Value = "+returnValue);
 
         return returnValue;
     }
 
     public Double retrieveMemoryInSchemas(List<String> schemaNames, String request) {
-        LOGGER.info("Inside AnalyticsServiceImpl - retrieveMemoryInSchemas");
+        LOGGER.info("retrieveMemoryInSchemas");
 
         HashMap<String, Double> sandboxMemorySizes;
         Double count = 0.0;
@@ -231,14 +231,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             count += memory;
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - retrieveMemoryInSchemas: "
+        LOGGER.debug("retrieveMemoryInSchemas: "
         +"Parameters: schemaNames = "+schemaNames+", request = "+request+"; Return Value = "+count);
 
         return count;
     }
 
     private void sandboxActivityLogListIntervalFilter(Timestamp timestamp, Integer intervalDays) {
-        LOGGER.info("Inside AnalyticsServiceImpl - sandboxActivityLogListIntervalFilter");
+        LOGGER.info("sandboxActivityLogListIntervalFilter");
 
         sandboxActivityLogs = sandboxActivityLogService.findAll();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogs) {
@@ -250,28 +250,28 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         sandboxActivityLogs.forEach(sandboxActivityLogList::add);
         sandboxActivityLogListIntervalFilter = sandboxActivityLogList.stream().filter(x -> new Date().getTime() - x.getTimestamp().getTime() < TimeUnit.DAYS.toMillis(intervalDays)).collect(Collectors.toList());
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - sandboxActivityLogListIntervalFilter: "
+        LOGGER.debug("sandboxActivityLogListIntervalFilter: "
         +"Parameters: timestamp = "+timestamp+", intervalDays = "+intervalDays+"; No return value");
     }
 
     private void sandboxActivityLogListIntervalFilterForSpecificTimePeriod(Timestamp beginDateTimestamp, Timestamp endDateTimestamp) {
-        LOGGER.info("Inside AnalyticsServiceImpl - sandboxActivityLogListIntervalFilterForSpecificTimePeriod");
+        LOGGER.info("sandboxActivityLogListIntervalFilterForSpecificTimePeriod");
 
         sandboxActivityLogListIntervalFilter = sandboxActivityLogService.findAllForSpecificTimePeriod(beginDateTimestamp, endDateTimestamp);
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - sandboxActivityLogListIntervalFilterForSpecificTimePeriod: "
+        LOGGER.debug("sandboxActivityLogListIntervalFilterForSpecificTimePeriod: "
         +"Parameters: beginDateTimestamp = "+beginDateTimestamp+", endDateTimestamp = "+endDateTimestamp);
     }
 
     private String activeUserCount() {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - activeUserCount");
+        LOGGER.info("activeUserCount");
 
         HashSet<Object> seen = new HashSet<>();
         List<SandboxActivityLog> activeInInterval = new ArrayList<>(sandboxActivityLogListIntervalFilter);
         activeInInterval.removeIf(e->!seen.add(e.getUser().getSbmUserId()));
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - activeUserCount: "
+        LOGGER.debug("activeUserCount: "
         +"No parameters; Return Value = "+Integer.toString(seen.size()));
 
         return Integer.toString(seen.size());
@@ -279,13 +279,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private String activeSandboxCount() {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - activeSandboxCount");
+        LOGGER.info("activeSandboxCount");
 
         List<SandboxActivityLog> activeInInterval = new ArrayList<>(sandboxActivityLogListIntervalFilter);
         HashSet<Object> seenSandboxes = new HashSet<>();
         activeInInterval.removeIf(e->e.getSandbox() != null && !seenSandboxes.add(e.getSandbox().getSandboxId()));
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - activeSandboxCount: "
+        LOGGER.debug("activeSandboxCount: "
         +"No parameters; Return Value = "+Integer.toString(seenSandboxes.size()));
 
         return Integer.toString(seenSandboxes.size());
@@ -293,7 +293,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private String activeDstu2SandboxesInInterval() {
                 
-        LOGGER.info("Inside AnalyticsServiceImpl - activeDstu2SandboxesInInterval");
+        LOGGER.info("activeDstu2SandboxesInInterval");
         
         Set<String> dstu2Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
@@ -304,7 +304,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - activeDstu2SandboxesInInterval: "
+        LOGGER.debug("activeDstu2SandboxesInInterval: "
         +"No parameters; Return Value = "+Integer.toString(dstu2Sandbox.size()));
 
         return Integer.toString(dstu2Sandbox.size());
@@ -312,7 +312,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private String activeStu3SandboxesInInterval() {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - activeStu3SandboxesInInterval");
+        LOGGER.info("activeStu3SandboxesInInterval");
 
         Set<String> stu3Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
@@ -323,7 +323,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - activeStu3SandboxesInInterval: "
+        LOGGER.debug("activeStu3SandboxesInInterval: "
         +"No parameters; Return Value = "+Integer.toString(stu3Sandbox.size()));
 
         return Integer.toString(stu3Sandbox.size());
@@ -331,7 +331,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private String activeR4SandboxesInInterval() {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - activeR4SandboxesInInterval");
+        LOGGER.info("activeR4SandboxesInInterval");
 
         Set<String> r4Sandbox = new HashSet<>();
         for (SandboxActivityLog sandboxActivityLog: sandboxActivityLogListIntervalFilter) {
@@ -342,7 +342,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - activeR4SandboxesInInterval: "
+        LOGGER.debug("activeR4SandboxesInInterval: "
         +"No parameters; Return Value = "+Integer.toString(r4Sandbox.size()));
 
         return Integer.toString(r4Sandbox.size());
@@ -350,7 +350,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private Statistics getSandboxStatistics(String intervalDays) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - getSandboxStatistics");
+        LOGGER.info("getSandboxStatistics");
 
         int intDays = Integer.parseInt(intervalDays);
         Date d = new Date();
@@ -400,7 +400,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         statistics.setFhirTransactions(Integer.toString(statisticsRepository.getFhirTransaction(firstDayOfTheMonthTimestamp, lastDayOfTheMonthTimestamp)));
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - getSandboxStatistics: "
+        LOGGER.debug("getSandboxStatistics: "
         +"Parameters: intervalDays = "+intervalDays+"; Return Value = "+statistics);
 
         return statistics;
@@ -409,12 +409,12 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Override
     public void saveMonthlySandboxStatistics(final String intervalDays) {
 
-        LOGGER.info("Inside AnalyticsServiceImpl - saveMonthlySandboxStatistics");
+        LOGGER.info("saveMonthlySandboxStatistics");
 
         Statistics statistics = getSandboxStatistics(intervalDays);
         statisticsRepository.save(statistics);
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - saveMonthlySandboxStatistics: "
+        LOGGER.debug("saveMonthlySandboxStatistics: "
         +"Parameters: intervalDays = "+intervalDays+"; No return value");
 
     }
@@ -422,9 +422,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Override
     public Statistics getSandboxStatisticsOverNumberOfDays(final String intervalDays) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - getSandboxStatisticsOverNumberOfDays");
+        LOGGER.info("getSandboxStatisticsOverNumberOfDays");
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - getSandboxStatisticsOverNumberOfDays: "
+        LOGGER.debug("getSandboxStatisticsOverNumberOfDays: "
         +"Parameters: intervalDays = "+intervalDays+"; Return Value = "+getSandboxStatistics(intervalDays));
 
         return getSandboxStatistics(intervalDays);
@@ -433,7 +433,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Scheduled(cron = "0 50 23 28-31 * ?")
     public void snapshotStatistics() {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - snapshotStatistics");
+        LOGGER.info("snapshotStatistics");
 
         final Calendar c = Calendar.getInstance();
         if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
@@ -441,13 +441,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             saveMonthlySandboxStatistics(Integer.toString(intDays));
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - snapshotStatistics: No parameters; No return value");
+        LOGGER.debug("snapshotStatistics: No parameters; No return value");
 
    }
 
     public void getSandboxAndUserStatsForLastTwoYears() {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - getSandboxAndUserStatsForLastTwoYears");
+        LOGGER.info("getSandboxAndUserStatsForLastTwoYears");
 
         totalSandboxCount.clear();
         totalUserCount.clear();
@@ -558,13 +558,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - getSandboxAndUserStatsForLastTwoYears: No parameters; No return value");
+        LOGGER.debug("getSandboxAndUserStatsForLastTwoYears: No parameters; No return value");
 
     }
 
     public List<Statistics> displayStatsForGivenNumberOfMonths(String numberOfMonths) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - displayStatsForGivenNumberOfMonths");
+        LOGGER.info("displayStatsForGivenNumberOfMonths");
 
         int intNumberOfMonths = Integer.parseInt(numberOfMonths);
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
@@ -574,7 +574,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         Date dateYearAgo = new Date(d.getTime() - intNumberOfMonths * lengthOfMonth * 24 * 3600 * 1000L );
         Timestamp yearAgoTimestamp = new Timestamp(dateYearAgo.getTime());
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - displayStatsForGivenNumberOfMonths: "
+        LOGGER.debug("displayStatsForGivenNumberOfMonths: "
         +"Parameters: numberOfMonths = "+numberOfMonths
         +"; Return value = "+statisticsRepository.get12MonthStatistics(yearAgoTimestamp, currentTimestamp));
 
@@ -583,7 +583,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     public HashMap<String, Object> transactionStats(Integer interval, Integer n) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - transactionStats");
+        LOGGER.info("transactionStats");
 
         HashMap<String, Double> fhirTransactions = new HashMap<>();
         Set<String> sandboxIds = activeSandboxes(interval);
@@ -595,7 +595,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             fhirTransactions.put(sandboxId, (double) fhirTransactionList.size());
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - transactionStats: "
+        LOGGER.debug("transactionStats: "
         +"Parameters: interval = "+interval+", n = "+n+"; Return Value = "+compileStats(fhirTransactions, n));
 
         return compileStats(fhirTransactions, n);
@@ -603,7 +603,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     public HashMap<String, Object> sandboxMemoryStats(Integer interval, Integer n, String request) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - sandboxMemoryStats");
+        LOGGER.info("sandboxMemoryStats");
 
         Set<String> sandboxIds = activeSandboxes(interval);
         List<String> fullSandboxIds = new ArrayList<>();
@@ -629,7 +629,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         HttpEntity<String> httpEntity = new HttpEntity(fullSandboxIds, requestHeaders);
         sandboxMemorySizes = simpleRestTemplate.exchange(sandboxService.getSystemSandboxApiURL() + "/memory", HttpMethod.PUT, httpEntity, HashMap.class).getBody();
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - sandboxMemoryStats: "
+        LOGGER.debug("sandboxMemoryStats: "
         +"Parameters: interval = "+interval+", n = "+n+", request = "+request
         +"; Return Value = "+compileStats(sandboxMemorySizes, n));
 
@@ -638,7 +638,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     public HashMap<String, Object> usersPerSandboxStats(Integer interval, Integer n) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - usersPerSandboxStats");
+        LOGGER.info("usersPerSandboxStats");
 
         Iterable<Sandbox> sandboxIterable = sandboxService.findAll();
         HashMap<String, Double> countsMap = new HashMap<>();
@@ -649,7 +649,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             countsMap.put(sandbox.getSandboxId(), (double) count);
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - usersPerSandboxStats: "
+        LOGGER.debug("usersPerSandboxStats: "
         +"Parameters: interval = "+interval+", n = "+n+"; Return Value = "+compileStats(countsMap, n));
 
         return compileStats(countsMap, n);
@@ -657,7 +657,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     public HashMap<String, Object> sandboxesPerUserStats(Integer interval, Integer n) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - sandboxesPerUserStats");
+        LOGGER.info("sandboxesPerUserStats");
 
         HashMap<String, Double> countsMap = new HashMap<>();
         Iterable<User> users = userService.findAll();
@@ -669,7 +669,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - sandboxesPerUserStats: "
+        LOGGER.debug("sandboxesPerUserStats: "
         +"Parameters: interval = "+interval+", n = "+n+"; Return Value = "+compileStats(countsMap, n));
 
         return compileStats(countsMap, n);
@@ -677,7 +677,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     public UserStatistics getUserStats(User user, String request) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - getUserStats");
+        LOGGER.info("getUserStats");
 
         UserStatistics usrStats = new UserStatistics(ruleService.findRulesByUser(user));
 
@@ -687,7 +687,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         usrStats.setSandboxesCount(countSandboxesByUser(user.getSbmUserId()));
         usrStats.setUsersCount(countUsersPerSandboxByUser(user));
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - getUserStats: "
+        LOGGER.debug("getUserStats: "
         +"Parameters: user = "+user+", request = "+request+"; Return Value = "+usrStats);
 
         return usrStats;
@@ -695,7 +695,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private HashMap<String, Object> compileStats(HashMap<String, Double> valuesMap, Integer n) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - compileStats");
+        LOGGER.info("compileStats");
 
         HashMap<String, Object> stats = new HashMap<>();
 
@@ -713,7 +713,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }
         stats.put("top_values", topValues);
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - compileStats: "
+        LOGGER.debug("compileStats: "
         +"Parameters: valuesMap = "+valuesMap+", n = "+n+"; Return Value = "+stats);
 
         return stats;
@@ -721,7 +721,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private Set<String> activeSandboxes(Integer interval) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - activeSandboxes");
+        LOGGER.info("activeSandboxes");
 
         Iterable<SandboxActivityLog> sandboxActivityLogs = sandboxActivityLogService.findAll();
         Set<String> sandboxIds = new HashSet<>();
@@ -731,7 +731,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - activeSandboxes: "
+        LOGGER.debug("activeSandboxes: "
         +"Parameters: interval = "+interval+"; Return Value = "+sandboxIds);
 
         return sandboxIds;
@@ -739,7 +739,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private double calculateAverage(List <Double> values) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - calculateAverage");
+        LOGGER.info("calculateAverage");
 
         Double sum = 0.0;
         if(!values.isEmpty()) {
@@ -749,7 +749,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             return sum / values.size();
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - calculateAverage: "
+        LOGGER.debug("calculateAverage: "
         +"Parameters: values = "+values+"; Return Value = "+sum);
 
         return sum;
@@ -757,11 +757,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private double calculateMedian(List <Double> values) {
 
-        LOGGER.info("Inside AnalyticsServiceImpl - calculateMedian");
+        LOGGER.info("calculateMedian");
 
         if (values.size() % 2 == 0){
 
-            LOGGER.debug("Inside AnalyticsServiceImpl - calculateMedian: "
+            LOGGER.debug("calculateMedian: "
             +"Parameters: values = "+values
             +"; Return Value = "+((double) values.get(values.size()/2) + values.get(values.size()/2 - 1))/2);
 
@@ -769,7 +769,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }
         else{
 
-            LOGGER.debug("Inside AnalyticsServiceImpl - calculateMedian: "
+            LOGGER.debug("calculateMedian: "
             +"Parameters: values = "+values
             +"; Return Value = "+values.get(values.size()/2));
 
@@ -779,7 +779,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private void addToDifferentSandboxStats (){
         
-        LOGGER.info("Inside AnalyticsServiceImpl - addToDifferentSandboxStats");
+        LOGGER.info("addToDifferentSandboxStats");
 
         if (!sandboxId.equals("-1") && !totalSandboxCount.contains(sandboxId)) {
             countNewSandbox++;
@@ -815,24 +815,24 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             totalR4Count.add(sandboxId);
         }
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - addToDifferentSandboxStats: "
+        LOGGER.debug("addToDifferentSandboxStats: "
         +"No parameters; No return value");
 
     }
 
     private int getInteger(String num) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - getInteger");
+        LOGGER.info("getInteger");
 
         if (num !=null) {
             
-            LOGGER.debug("Inside AnalyticsServiceImpl - getInteger: "
+            LOGGER.debug("getInteger: "
             +"Parameters: num = "+num+"; Return Value = "+Integer.parseInt(num));
 
             return Integer.parseInt(num);
         } else {
 
-            LOGGER.debug("Inside AnalyticsServiceImpl - getInteger: "
+            LOGGER.debug("getInteger: "
             +"Parameters: num = "+num+"; Return Value = "+0);
 
             return 0;
@@ -841,7 +841,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Override
     public Statistics getSandboxStatisticsForSpecificTimePeriod(Date beginDate, Date endDate) {
         
-        LOGGER.info("Inside AnalyticsServiceImpl - getSandboxStatisticsForSpecificTimePeriod");
+        LOGGER.info("getSandboxStatisticsForSpecificTimePeriod");
 
         Timestamp beginDateTimestamp = new Timestamp(beginDate.getTime());
         Timestamp endDateTimestamp = new Timestamp(endDate.getTime());
@@ -887,7 +887,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         statistics.setFhirTransactions(Integer.toString(statisticsRepository.getFhirTransaction(beginDateTimestamp, endDateTimestamp)));
 
-        LOGGER.debug("Inside AnalyticsServiceImpl - getSandboxStatisticsForSpecificTimePeriod: "
+        LOGGER.debug("getSandboxStatisticsForSpecificTimePeriod: "
         +"Parameters: beginDate = "+beginDate+", endDate = "+endDate+"; Return Value = "+statistics);
 
         return statistics;

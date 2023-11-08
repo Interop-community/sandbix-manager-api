@@ -45,7 +45,7 @@ public class ConfigController {
     @GetMapping(value = "/{type}")
     public @ResponseBody List<Config> getConfigValuesByType(@PathVariable int type) {
         
-        LOGGER.info("Inside ConfigController - getConfigValuesByType");
+        LOGGER.info("getConfigValuesByType");
         
         ConfigType configType = ConfigType.fromInt(type);
         return configurationService.findByConfigType(configType);

@@ -68,7 +68,7 @@ public class UserPersonaController {
     @Transactional
     public @ResponseBody UserPersona createUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
-        LOGGER.info("Inside UserPersonaController - createUserPersona");
+        LOGGER.info("createUserPersona");
         
         Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
         if (sandbox == null) {
@@ -86,7 +86,7 @@ public class UserPersonaController {
     @Transactional
     public @ResponseBody UserPersona updateUserPersona(HttpServletRequest request, @RequestBody final UserPersona userPersona) {
 
-        LOGGER.info("Inside UserPersonaController - updateUserPersona");
+        LOGGER.info("updateUserPersona");
         
         Sandbox sandbox = sandboxService.findBySandboxId(userPersona.getSandbox().getSandboxId());
         if (sandbox == null) {
@@ -101,7 +101,7 @@ public class UserPersonaController {
     public @ResponseBody Iterable<UserPersona> getSandboxUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
 
-        LOGGER.info("Inside UserPersonaController - getSandboxUserPersona");
+        LOGGER.info("getSandboxUserPersona");
         
         String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
@@ -117,7 +117,7 @@ public class UserPersonaController {
     public @ResponseBody UserPersona getSandboxDefaultUserPersona(HttpServletRequest request,
                                                                      @RequestParam(value = "sandboxId") String sandboxId) {
 
-        LOGGER.info("Inside UserPersonaController - getSandboxDefaultUserPersona");
+        LOGGER.info("getSandboxDefaultUserPersona");
         
         String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
@@ -131,7 +131,7 @@ public class UserPersonaController {
     @GetMapping(params = {"lookUpId"})
     public @ResponseBody String checkForUserPersonaById(@RequestParam(value = "lookUpId")  String id) {
         
-        LOGGER.info("Inside UserPersonaController - checkForUserPersonaById");
+        LOGGER.info("checkForUserPersonaById");
         
         UserPersona userPersona = userPersonaService.findByPersonaUserId(id);
         return (userPersona == null) ? null : userPersona.getPersonaUserId();
@@ -141,7 +141,7 @@ public class UserPersonaController {
     @Transactional
     public ResponseEntity deleteSandboxUserPersona(HttpServletRequest request, @PathVariable Integer id) {
         
-        LOGGER.info("Inside UserPersonaController - deleteSandboxUserPersona");
+        LOGGER.info("deleteSandboxUserPersona");
         
         UserPersona userPersona = userPersonaService.getById(id);
         if (userPersona == null) {
@@ -159,7 +159,7 @@ public class UserPersonaController {
     @GetMapping(value = "/{personaUserId}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody UserPersonaDto readUserPersona(HttpServletResponse response, @PathVariable String personaUserId) {
         
-        LOGGER.info("Inside UserPersonaController - readUserPersona");
+        LOGGER.info("readUserPersona");
         
         UserPersona userPersona = userPersonaService.findByPersonaUserId(personaUserId);
         if(userPersona == null) {
@@ -179,7 +179,7 @@ public class UserPersonaController {
     @PostMapping(value="/authenticate", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity authenticateUserPersona(@RequestBody UserPersonaCredentials userPersonaCredentials){
 
-        LOGGER.info("Inside UserPersonaController - authenticateUserPersona");
+        LOGGER.info("authenticateUserPersona");
         
         if(userPersonaCredentials == null ||
                 userPersonaCredentials.getUsername() == null ||

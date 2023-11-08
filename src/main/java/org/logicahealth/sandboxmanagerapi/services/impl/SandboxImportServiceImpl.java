@@ -25,11 +25,11 @@ public class SandboxImportServiceImpl implements SandboxImportService {
     @Transactional
     public SandboxImport save(final SandboxImport sandboxImport) {
 
-        LOGGER.info("Inside SandboxImportServiceImpl - save");
+        LOGGER.info("save");
 
         SandboxImport retVal = repository.save(sandboxImport);
 
-        LOGGER.debug("Inside SandboxImportServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: sandboxImport = "+sandboxImport+"; Return value = "+retVal);
 
         return retVal;
@@ -39,9 +39,9 @@ public class SandboxImportServiceImpl implements SandboxImportService {
     @Transactional
     public void delete(final int id) {
         
-        LOGGER.info("Inside SandboxImportServiceImpl - delete");
+        LOGGER.info("delete");
 
-        LOGGER.debug("Inside SandboxImportServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
         repository.deleteById(id);
@@ -51,9 +51,9 @@ public class SandboxImportServiceImpl implements SandboxImportService {
     @Transactional
     public void delete(final SandboxImport sandboxImport) {
 
-        LOGGER.info("Inside SandboxImportServiceImpl - delete");
+        LOGGER.info("delete");
 
-        LOGGER.debug("Inside SandboxImportServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: sandboxImport = "+sandboxImport
         +"; No return value");
 

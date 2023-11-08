@@ -25,11 +25,11 @@ public class ContextParamsServiceImpl implements ContextParamsService {
     @Transactional
     public ContextParams save(final ContextParams contextParams) {
         
-        LOGGER.info("Inside ContextParamsServiceImpl - save");
+        LOGGER.info("save");
 
         ContextParams retVal = repository.save(contextParams);
 
-        LOGGER.debug("Inside ContextParamsServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: contextParams = "+contextParams+"; Return value = "+retVal);
 
         return retVal;
@@ -39,11 +39,11 @@ public class ContextParamsServiceImpl implements ContextParamsService {
     @Transactional
     public void delete(final int id) {
 
-        LOGGER.info("Inside ContextParamsServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
         
-        LOGGER.debug("Inside ContextParamsServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
     }
 
@@ -51,11 +51,11 @@ public class ContextParamsServiceImpl implements ContextParamsService {
     @Transactional
     public void delete(final ContextParams contextParams) {
         
-        LOGGER.info("Inside ContextParamsServiceImpl - delete");
+        LOGGER.info("delete");
 
         delete(contextParams.getId());
         
-        LOGGER.debug("Inside ContextParamsServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: contextParams = "+contextParams+"; No return value");
     }
 

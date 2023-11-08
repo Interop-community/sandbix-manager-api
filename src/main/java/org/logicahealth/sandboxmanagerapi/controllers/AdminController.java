@@ -66,7 +66,7 @@ public class AdminController {
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {
         
-        LOGGER.info("Inside AdminController - deleteSandboxById");
+        LOGGER.info("deleteSandboxById");
         
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
@@ -87,7 +87,7 @@ public class AdminController {
     @ResponseBody
     public Set<String> deleteUnusedSandboxes(HttpServletRequest request) {
         
-        LOGGER.info("Inside AdminController - deleteUnusedSandboxes");
+        LOGGER.info("deleteUnusedSandboxes");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -103,7 +103,7 @@ public class AdminController {
     @Transactional
     public HashMap<String, Object> listSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
         
-        LOGGER.info("Inside AdminController - listSandboxManagerReferenceApiDiscrepencies");
+        LOGGER.info("listSandboxManagerReferenceApiDiscrepencies");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -117,7 +117,7 @@ public class AdminController {
     @Transactional
     public HashMap<String, Object> syncSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
         
-        LOGGER.info("Inside AdminController - syncSandboxManagerReferenceApiDiscrepencies");
+        LOGGER.info("syncSandboxManagerReferenceApiDiscrepencies");
 
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {

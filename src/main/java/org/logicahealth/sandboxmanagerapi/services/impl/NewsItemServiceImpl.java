@@ -28,11 +28,11 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Transactional
     public NewsItem save(final NewsItem newsItem) {
         
-        LOGGER.info("Inside NewsItemServiceImpl - save");
+        LOGGER.info("save");
 
         NewsItem retVal = repository.save(newsItem);
 
-        LOGGER.debug("Inside NewsItemServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: newsItem = "+newsItem+"; Return value = "+retVal);
 
         return retVal;
@@ -42,7 +42,7 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Transactional
     public NewsItem update(NewsItem newsItem) {
         
-        LOGGER.info("Inside NewsItemServiceImpl - update");
+        LOGGER.info("update");
 
         NewsItem existingNewsItem = repository.findById(newsItem.getId()).orElse(null);
         if (existingNewsItem != null) {
@@ -55,7 +55,7 @@ public class NewsItemServiceImpl implements NewsItemService {
 
             NewsItem retVal = repository.save(existingNewsItem);
 
-            LOGGER.debug("Inside NewsItemServiceImpl - update: "
+            LOGGER.debug("update: "
             +"Parameters: newsItem = "+newsItem+"; Return value = "+retVal);
 
             return retVal;
@@ -67,11 +67,11 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Transactional
     public void delete(final int id) {
         
-        LOGGER.info("Inside NewsItemServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside NewsItemServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }
@@ -80,13 +80,13 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Transactional
     public List<NewsItem> findAll() {
         
-        LOGGER.info("Inside NewsItemServiceImpl - findAll");
+        LOGGER.info("findAll");
 
         Iterable<NewsItem> newsItems = repository.findAll();
         List<NewsItem> target = new ArrayList<>();
         newsItems.forEach(target::add);
 
-        LOGGER.debug("Inside NewsItemServiceImpl - findAll: "
+        LOGGER.debug("findAll: "
         +"No input parameters; Return value = "+target);
 
         return target;
@@ -96,9 +96,9 @@ public class NewsItemServiceImpl implements NewsItemService {
     @Transactional
     public NewsItem findById(Integer id) {
 
-        LOGGER.info("Inside NewsItemServiceImpl - findById");
+        LOGGER.info("findById");
 
-        LOGGER.debug("Inside NewsItemServiceImpl - findById: "
+        LOGGER.debug("findById: "
         +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
 
         return repository.findById(id).orElse(null);

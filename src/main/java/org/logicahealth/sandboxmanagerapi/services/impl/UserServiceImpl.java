@@ -64,11 +64,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User save(final User user) {
         
-        LOGGER.info("Inside UserServiceImpl - save");
+        LOGGER.info("save");
 
         User retVal = repository.save(user);
 
-        LOGGER.debug("Inside UserServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: user = "+user+"; Return value = "+retVal);
 
         return retVal;
@@ -78,21 +78,21 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void delete(final User user) {
         
-        LOGGER.info("Inside UserServiceImpl - delete");
+        LOGGER.info("delete");
 
         userAccessHistoryService.deleteUserAccessInstancesForUser(user);
         repository.delete(user);
 
-        LOGGER.debug("Inside UserServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: user = "+user+"; No return value");
 
     }
 
     public Iterable<User> findAll() {
         
-        LOGGER.info("Inside UserServiceImpl - findAll");
+        LOGGER.info("findAll");
 
-        LOGGER.debug("Inside UserServiceImpl - findAll: "
+        LOGGER.debug("findAll: "
         +"No input parameters; Return value = "+repository.findAll());
 
         return repository.findAll();
@@ -100,13 +100,13 @@ public class UserServiceImpl implements UserService {
 
     public User findBySbmUserId(final String sbmUserId) {
         
-        LOGGER.info("Inside UserServiceImpl - findBySbmUserId");
+        LOGGER.info("findBySbmUserId");
 
         User user = repository.findBySbmUserId(sbmUserId);
 
         if(user == null){
 
-            LOGGER.debug("Inside UserServiceImpl - findBySbmUserId: "
+            LOGGER.debug("findBySbmUserId: "
             +"Parameters: sbmUserId = "+sbmUserId+"; Return value = null");
 
             return null;
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
 
         userHasAcceptedTermsOfUse(user);
 
-        LOGGER.debug("Inside UserServiceImpl - findBySbmUserId: "
+        LOGGER.debug("findBySbmUserId: "
         +"Parameters: sbmUserId = "+sbmUserId+"; Return value = "+user);
 
         return user;
@@ -122,20 +122,20 @@ public class UserServiceImpl implements UserService {
 
     public User findByUserEmail(final String email) {
         
-        LOGGER.info("Inside UserServiceImpl - findByUserEmail");
+        LOGGER.info("findByUserEmail");
 
         User user = repository.findByUserEmail(email);
 
         if(user == null){
             
-            LOGGER.debug("Inside UserServiceImpl - findByUserEmail: "
+            LOGGER.debug("findByUserEmail: "
             +"Parameters: email = "+email+"; Return value = null");
 
             return null;
         }
         userHasAcceptedTermsOfUse(user);
 
-        LOGGER.debug("Inside UserServiceImpl - findByUserEmail: "
+        LOGGER.debug("findByUserEmail: "
         +"Parameters: email = "+email+"; Return value = "+user);
 
         return user;
@@ -143,13 +143,13 @@ public class UserServiceImpl implements UserService {
 
     public User findById(final Integer id) {
         
-        LOGGER.info("Inside UserServiceImpl - findById");
+        LOGGER.info("findById");
 
         User user = repository.findById(id).orElse(null);
 
         if(user == null){
 
-            LOGGER.debug("Inside UserServiceImpl - findById: "
+            LOGGER.debug("findById: "
             +"Parameters: id = "+id+"; Return value = null");
 
             return null;
@@ -157,7 +157,7 @@ public class UserServiceImpl implements UserService {
 
         userHasAcceptedTermsOfUse(user);
         
-        LOGGER.debug("Inside UserServiceImpl - findById: "
+        LOGGER.debug("findById: "
         +"Parameters: id = "+id+"; Return value = "+user);
 
         return user;
@@ -166,9 +166,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public String fullCount() {
 
-        LOGGER.info("Inside UserServiceImpl - fullCount");
+        LOGGER.info("fullCount");
 
-        LOGGER.debug("Inside UserServiceImpl - fullCount: "
+        LOGGER.debug("fullCount: "
         +"No input parameters; Return value = "+repository.fullCount());
 
         return repository.fullCount();
@@ -177,9 +177,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public String fullCountForSpecificPeriod(Timestamp endDate) {
         
-        LOGGER.info("Inside UserServiceImpl - fullCountForSpecificPeriod");
+        LOGGER.info("fullCountForSpecificPeriod");
 
-        LOGGER.debug("Inside UserServiceImpl - fullCountForSpecificPeriod: "
+        LOGGER.debug("fullCountForSpecificPeriod: "
         +"Parameters: endDate = "+endDate+
         "; Return value = "+repository.fullCountForSpecificTimePeriod(endDate));
 
@@ -189,9 +189,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public String intervalCount(final Timestamp intervalTime) {
 
-        LOGGER.info("Inside UserServiceImpl - intervalCount");
+        LOGGER.info("intervalCount");
 
-        LOGGER.debug("Inside UserServiceImpl - intervalCount: "
+        LOGGER.debug("intervalCount: "
         +"Parameters: intervalTime = "+intervalTime
         +"; Return value = "+repository.intervalCount(intervalTime));
 
@@ -201,9 +201,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public String intervalCountForSpecificTimePeriod(Timestamp beginDate, Timestamp endDate) {
         
-        LOGGER.info("Inside UserServiceImpl - intervalCountForSpecificTimePeriod");
+        LOGGER.info("intervalCountForSpecificTimePeriod");
 
-        LOGGER.debug("Inside UserServiceImpl - intervalCountForSpecificTimePeriod: "
+        LOGGER.debug("intervalCountForSpecificTimePeriod: "
         +"Parameters: beginDate = "+beginDate+", endDate = "+endDate
         +"; Return value = "+repository.intervalCountForSpecificTimePeriod(beginDate, endDate));
 
@@ -214,9 +214,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void removeSandbox(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside UserServiceImpl - removeSandbox");
+        LOGGER.info("removeSandbox");
 
-        LOGGER.debug("Inside UserServiceImpl - removeSandbox: "
+        LOGGER.debug("removeSandbox: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user);
 
         List<Sandbox> sandboxes = user.getSandboxes();
@@ -224,7 +224,7 @@ public class UserServiceImpl implements UserService {
         user.setSandboxes(sandboxes);
         save(user);
 
-        LOGGER.debug("Inside UserServiceImpl - removeSandbox: "
+        LOGGER.debug("removeSandbox: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user
         +"; No return value");
     }
@@ -233,9 +233,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void addSandbox(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside UserServiceImpl - addSandbox");
+        LOGGER.info("addSandbox");
 
-        LOGGER.debug("Inside UserServiceImpl - addSandbox: "
+        LOGGER.debug("addSandbox: "
         +"(BEFORE) Parameters: sandbox = "+sandbox+", user = "+user);
 
         List<Sandbox> sandboxes = user.getSandboxes();
@@ -245,7 +245,7 @@ public class UserServiceImpl implements UserService {
             save(user);
         }
         
-        LOGGER.debug("Inside UserServiceImpl - addSandbox: "
+        LOGGER.debug("addSandbox: "
         +"(AFTER) Parameters: sandbox = "+sandbox+", user = "+user
         +"; No return value");
     }
@@ -253,9 +253,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean hasSandbox(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside UserServiceImpl - hasSandbox");
+        LOGGER.info("hasSandbox");
 
-        LOGGER.debug("Inside UserServiceImpl - hasSandbox: "
+        LOGGER.debug("hasSandbox: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = "+user.getSandboxes().contains(sandbox));
 
@@ -265,9 +265,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void acceptTermsOfUse(final User user, final String termsOfUseId){
         
-        LOGGER.info("Inside UserServiceImpl - acceptTermsOfUse");
+        LOGGER.info("acceptTermsOfUse");
 
-        LOGGER.debug("Inside UserServiceImpl - acceptTermsOfUse: "
+        LOGGER.debug("acceptTermsOfUse: "
         +"(BEFORE) Parameters: user = "+user+", termsOfUseId = "+termsOfUseId);
 
         TermsOfUse termsOfUse = termsOfUseService.getById(Integer.parseInt(termsOfUseId));
@@ -280,7 +280,7 @@ public class UserServiceImpl implements UserService {
         user.setTermsOfUseAcceptances(acceptances);
         save(user);
 
-        LOGGER.debug("Inside UserServiceImpl - acceptTermsOfUse: "
+        LOGGER.debug("acceptTermsOfUse: "
         +"(AFTER) Parameters: user = "+user+", termsOfUseId = "+termsOfUseId
         +"; No return value");
 
@@ -288,9 +288,9 @@ public class UserServiceImpl implements UserService {
 
     private void userHasAcceptedTermsOfUse(User user) {
         
-        LOGGER.info("Inside UserServiceImpl - userHasAcceptedTermsOfUse");
+        LOGGER.info("userHasAcceptedTermsOfUse");
 
-        LOGGER.debug("Inside UserServiceImpl - userHasAcceptedTermsOfUse: "
+        LOGGER.debug("userHasAcceptedTermsOfUse: "
         +"(BEFORE) Parameters: user = "+user);
 
         TermsOfUse latestTermsOfUse = termsOfUseService.mostRecent();
@@ -300,7 +300,7 @@ public class UserServiceImpl implements UserService {
                 if (termsOfUseAcceptance.getTermsOfUse().getId().equals(latestTermsOfUse.getId())) {
                     user.setHasAcceptedLatestTermsOfUse(true);
                     
-                    LOGGER.debug("Inside UserServiceImpl - userHasAcceptedTermsOfUse: "
+                    LOGGER.debug("userHasAcceptedTermsOfUse: "
                     +"(AFTER) Parameters: user = "+user+"; No return value");
 
                     return;
@@ -311,7 +311,7 @@ public class UserServiceImpl implements UserService {
             user.setHasAcceptedLatestTermsOfUse(true);
         }
         
-        LOGGER.debug("Inside UserServiceImpl - userHasAcceptedTermsOfUse: "
+        LOGGER.debug("userHasAcceptedTermsOfUse: "
         +"(AFTER) Parameters: user = "+user+"; No return value");
     }
 
@@ -327,7 +327,7 @@ public class UserServiceImpl implements UserService {
 
     private Timestamp oneMonthAgo() {
         
-        LOGGER.info("Inside UserServiceImpl - oneMonthAgo");
+        LOGGER.info("oneMonthAgo");
 
         var timestamp = new Timestamp(System.currentTimeMillis());
         var calendar = Calendar.getInstance();
@@ -336,7 +336,7 @@ public class UserServiceImpl implements UserService {
 
         Timestamp retVal = new Timestamp(calendar.getTime().getTime());
         
-        LOGGER.debug("Inside UserServiceImpl - oneMonthAgo: "
+        LOGGER.debug("oneMonthAgo: "
         +"No input parameters; Return value = "+retVal);
 
         return retVal;

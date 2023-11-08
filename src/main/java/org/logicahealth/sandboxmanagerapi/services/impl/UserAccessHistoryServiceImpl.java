@@ -24,19 +24,19 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
 
     public Timestamp getLatestUserAccessHistoryInstance(Sandbox sandbox, User user) {
         
-        LOGGER.info("Inside UserAccessHistoryServiceImpl - getLatestUserAccessHistoryInstance");
+        LOGGER.info("getLatestUserAccessHistoryInstance");
 
         List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserIdAndSandboxId(user.getSbmUserId(), sandbox.getSandboxId());
         if (userAccessHistories.size() > 0) {
 
-            LOGGER.debug("Inside UserAccessHistoryServiceImpl - getLatestUserAccessHistoryInstance: "
+            LOGGER.debug("getLatestUserAccessHistoryInstance: "
             +"Parameters: sandbox = "+sandbox+", user = "+user
             +"; Return value = "+userAccessHistories.get(0).getAccessTimestamp());
 
             return userAccessHistories.get(0).getAccessTimestamp();
         }
         
-        LOGGER.debug("Inside UserAccessHistoryServiceImpl - getLatestUserAccessHistoryInstance: "
+        LOGGER.debug("getLatestUserAccessHistoryInstance: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; Return value = null");
 
@@ -45,9 +45,9 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
 
     public List<UserAccessHistory> getLatestUserAccessHistoryInstancesWithSandbox(Sandbox sandbox) {
         
-        LOGGER.info("Inside UserAccessHistoryServiceImpl - getLatestUserAccessHistoryInstancesWithSandbox");
+        LOGGER.info("getLatestUserAccessHistoryInstancesWithSandbox");
 
-        LOGGER.debug("Inside UserAccessHistoryServiceImpl - getLatestUserAccessHistoryInstancesWithSandbox: "
+        LOGGER.debug("getLatestUserAccessHistoryInstancesWithSandbox: "
         +"Parameters: sandbox = "+sandbox
         +"; Return value = "+userAccessHistoryRepository.findBySandboxId(sandbox.getSandboxId()));
 
@@ -56,9 +56,9 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
 
     public List<UserAccessHistory> getLatestUserAccessHistoryInstancesWithSbmUser(User user) {
 
-        LOGGER.info("Inside UserAccessHistoryServiceImpl - getLatestUserAccessHistoryInstancesWithSbmUser");
+        LOGGER.info("getLatestUserAccessHistoryInstancesWithSbmUser");
 
-        LOGGER.debug("Inside UserAccessHistoryServiceImpl - getLatestUserAccessHistoryInstancesWithSbmUser: "
+        LOGGER.debug("getLatestUserAccessHistoryInstancesWithSbmUser: "
         +"Parameters: user = "+user
         +"; Return value = "+userAccessHistoryRepository.findBySbmUserId(user.getSbmUserId()));
 
@@ -67,7 +67,7 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
 
     public void saveUserAccessInstance(Sandbox sandbox, User user) {
 
-        LOGGER.info("Inside UserAccessHistoryServiceImpl - saveUserAccessInstance");
+        LOGGER.info("saveUserAccessInstance");
 
         List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserIdAndSandboxId(user.getSbmUserId(), sandbox.getSandboxId());
         if (userAccessHistories.size() > 0) {
@@ -84,7 +84,7 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
             userAccessHistoryRepository.save(userAccessHistory);
         }
 
-        LOGGER.debug("Inside UserAccessHistoryServiceImpl - saveUserAccessInstance: "
+        LOGGER.debug("saveUserAccessInstance: "
         +"Parameters: sandbox = "+sandbox+", user = "+user
         +"; No return value");
 
@@ -92,28 +92,28 @@ public class UserAccessHistoryServiceImpl implements UserAccessHistoryService {
 
     public void deleteUserAccessInstancesForSandbox(Sandbox sandbox) {
         
-        LOGGER.info("Inside UserAccessHistoryServiceImpl - deleteUserAccessInstancesForSandbox");
+        LOGGER.info("deleteUserAccessInstancesForSandbox");
 
         List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySandboxId(sandbox.getSandboxId());
         for (UserAccessHistory userAccessHistory: userAccessHistories) {
             userAccessHistoryRepository.delete(userAccessHistory);
         }
 
-        LOGGER.debug("Inside UserAccessHistoryServiceImpl - deleteUserAccessInstancesForSandbox: "
+        LOGGER.debug("deleteUserAccessInstancesForSandbox: "
         +"Parameters: sandbox = "+sandbox+"; No return value");
 
     }
 
     public void deleteUserAccessInstancesForUser(User user) {
         
-        LOGGER.info("Inside UserAccessHistoryServiceImpl - deleteUserAccessInstancesForUser");
+        LOGGER.info("deleteUserAccessInstancesForUser");
 
         List<UserAccessHistory> userAccessHistories = userAccessHistoryRepository.findBySbmUserId(user.getSbmUserId());
         for (UserAccessHistory userAccessHistory: userAccessHistories) {
             userAccessHistoryRepository.delete(userAccessHistory);
         }
 
-        LOGGER.debug("Inside UserAccessHistoryServiceImpl - deleteUserAccessInstancesForUser: "
+        LOGGER.debug("deleteUserAccessInstancesForUser: "
         +"Parameters: user = "+user+"; No return value");
 
     }

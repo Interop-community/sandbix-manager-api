@@ -26,11 +26,11 @@ public class TermsOfUseServiceImpl implements TermsOfUseService {
     @Transactional
     public TermsOfUse save(TermsOfUse termsOfUse) {
         
-        LOGGER.info("Inside TermsOfUseServiceImpl - save");
+        LOGGER.info("save");
 
         TermsOfUse retVal = repository.save(termsOfUse);
 
-        LOGGER.debug("Inside TermsOfUseServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: termsOfUse = "+termsOfUse
         +"; Return value = "+retVal);
 
@@ -40,9 +40,9 @@ public class TermsOfUseServiceImpl implements TermsOfUseService {
     @Override
     public TermsOfUse getById(final int id) {
 
-        LOGGER.info("Inside TermsOfUseServiceImpl - getById");
+        LOGGER.info("getById");
 
-        LOGGER.debug("Inside TermsOfUseServiceImpl - getById: "
+        LOGGER.debug("getById: "
         +"Parameters: id = "+id
         +"; Return value = "+repository.findById(id).orElse(null));
 
@@ -52,11 +52,11 @@ public class TermsOfUseServiceImpl implements TermsOfUseService {
     @Override
     public TermsOfUse mostRecent() {
 
-        LOGGER.info("Inside TermsOfUseServiceImpl - mostRecent");
+        LOGGER.info("mostRecent");
 
         List<TermsOfUse> all = repository.orderByCreatedTimestamp();
 
-        LOGGER.debug("Inside TermsOfUseServiceImpl - mostRecent: "
+        LOGGER.debug("mostRecent: "
         +"No input parameters; Return value = "+(all != null && !all.isEmpty() ? all.get(0) : null));
 
         return (all != null && !all.isEmpty() ? all.get(0) : null);

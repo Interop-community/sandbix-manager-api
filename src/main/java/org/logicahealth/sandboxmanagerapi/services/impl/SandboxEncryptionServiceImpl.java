@@ -47,12 +47,12 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     @Override
     public void generateKeyPair() {
         
-        LOGGER.info("Inside SandboxEncryptionServiceImpl - generateKeyPair");
+        LOGGER.info("generateKeyPair");
 
         if (keysExist()) {
             LOGGER.info("Key pair already exists");
 
-            LOGGER.debug("Inside SandboxEncryptionServiceImpl - generateKeyPair: "
+            LOGGER.debug("generateKeyPair: "
             +"No input parameters; No return value");
 
             return;
@@ -68,14 +68,14 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
             LOGGER.error("Exception while generating key pair", e);
         }
 
-        LOGGER.debug("Inside SandboxEncryptionServiceImpl - generateKeyPair: "
+        LOGGER.debug("generateKeyPair: "
         +"No input parameters; No return value");
     }
 
     @Override
     public String encrypt(String key) {
         
-        LOGGER.info("Inside SandboxEncryptionServiceImpl - encrypt");
+        LOGGER.info("encrypt");
 
         try {
             var privateKey = retrievePrivateKey();
@@ -84,7 +84,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
 
             String retVal = Base64.encodeBase64String(cipher.doFinal(key.getBytes(StandardCharsets.UTF_8)));
 
-            LOGGER.debug("Inside SandboxEncryptionServiceImpl - encrypt: "
+            LOGGER.debug("encrypt: "
             +"Parameters: key = "+key+"; Return value = "+retVal);
 
             return retVal;
@@ -96,7 +96,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
 
     private PrivateKey retrievePrivateKey() {
         
-        LOGGER.info("Inside SandboxEncryptionServiceImpl - retrievePrivateKey");
+        LOGGER.info("retrievePrivateKey");
 
         try {
             var keyBytes = Files.readAllBytes(new File(this.privateKeyFilePath).toPath());
@@ -105,7 +105,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
             PrivateKey retVal = KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
                              .generatePrivate(spec);
 
-            LOGGER.debug("Inside SandboxEncryptionServiceImpl - retrievePrivateKey: "
+            LOGGER.debug("retrievePrivateKey: "
             +"No input parameters; Return value = "+retVal);
 
             return retVal;
@@ -118,14 +118,14 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     @Override
     public String decryptSignature(String signature) {
         
-        LOGGER.info("Inside SandboxEncryptionServiceImpl - decryptSignature");
+        LOGGER.info("decryptSignature");
 
         try {
             var publicKey = retrievePublicKey();
             var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, publicKey);
             
-            LOGGER.debug("Inside SandboxEncryptionServiceImpl - decryptSignature: "
+            LOGGER.debug("decryptSignature: "
             +"Parameters: signature = "+signature
             +"; Return value = "+new String(cipher.doFinal(Base64.decodeBase64(signature)), StandardCharsets.UTF_8));
 
@@ -137,7 +137,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
 
     private PublicKey retrievePublicKey() {
         
-        LOGGER.info("Inside SandboxEncryptionServiceImpl - retrievePublicKey");
+        LOGGER.info("retrievePublicKey");
 
         try {
             var keyBytes = Files.readAllBytes(new File(this.publicKeyFilePath).toPath());
@@ -146,7 +146,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
             PublicKey retVal = KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
                              .generatePublic(spec);
 
-            LOGGER.debug("Inside SandboxEncryptionServiceImpl - retrievePublicKey: "
+            LOGGER.debug("retrievePublicKey: "
             +"No input parameters; Return value = "+retVal);
 
             return retVal;
@@ -158,21 +158,21 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
 
     private boolean keysExist() {
         
-        LOGGER.info("Inside SandboxEncryptionServiceImpl - keysExist");
+        LOGGER.info("keysExist");
 
         var keysDirectory = new File(this.asymmetricKeysFolder);
         if (keysDirectory.isDirectory() && keysDirectory.exists()) {
             var privateKeyFile = new File(privateKeyFilePath);
             var publicKeyFile = new File(this.publicKeyFilePath);
 
-            LOGGER.debug("Inside SandboxEncryptionServiceImpl - keysExist: "
+            LOGGER.debug("keysExist: "
             +"No input parameters; Return value = "
             +(privateKeyFile.isFile() && privateKeyFile.exists() && publicKeyFile.isFile() && publicKeyFile.exists()));
 
             return privateKeyFile.isFile() && privateKeyFile.exists() && publicKeyFile.isFile() && publicKeyFile.exists();
         }
 
-        LOGGER.debug("Inside SandboxEncryptionServiceImpl - keysExist: "
+        LOGGER.debug("keysExist: "
             +"No input parameters; Return value = false");
 
         return false;
@@ -180,7 +180,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
 
     private void storeKey(String keyFile, byte[] key) {
         
-        LOGGER.info("Inside SandboxEncryptionServiceImpl - storeKey");
+        LOGGER.info("storeKey");
 
         new File(this.asymmetricKeysFolder).mkdir();
         try (var fileOutputStream = new FileOutputStream(new File(keyFile))) {
@@ -190,7 +190,7 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
             LOGGER.error("Exception while storing key pair", e);
         }
 
-        LOGGER.debug("Inside SandboxEncryptionServiceImpl - storeKey: "
+        LOGGER.debug("storeKey: "
         +"Parameters: keyFile = "+keyFile+", key = "+key+"; No return value");
 
     }

@@ -38,7 +38,7 @@ public class NewsItemController {
     public @ResponseBody
     List<NewsItem> findAllNewsItems(HttpServletRequest request){
         
-        LOGGER.info("Inside NewsItemController - findAllNewsItems");
+        LOGGER.info("findAllNewsItems");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -52,7 +52,7 @@ public class NewsItemController {
     @Transactional
     public void deleteNewsItemById(HttpServletRequest request, @PathVariable int id) {
         
-        LOGGER.info("Inside NewsItemController - deleteNewsItemById");
+        LOGGER.info("deleteNewsItemById");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -65,7 +65,7 @@ public class NewsItemController {
     @PostMapping(value = "/save", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody NewsItem saveNewsItem(HttpServletRequest request, @RequestBody NewsItem newsItem) {
         
-        LOGGER.info("Inside NewsItemController - saveNewsItem");
+        LOGGER.info("saveNewsItem");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
@@ -79,7 +79,7 @@ public class NewsItemController {
     @Transactional
     public @ResponseBody NewsItem updateNewsItem(HttpServletRequest request, @RequestBody NewsItem newsItem) {
         
-        LOGGER.info("Inside NewsItemController - updateNewsItem");
+        LOGGER.info("updateNewsItem");
         
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {

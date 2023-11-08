@@ -25,11 +25,11 @@ public class ImageServiceImpl implements ImageService {
     @Transactional
     public Image save(final Image image) {
 
-        LOGGER.info("Inside ImageServiceImpl - save");
+        LOGGER.info("save");
 
         Image retVal = repository.save(image);
 
-        LOGGER.debug("Inside ImageServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: image = "+image+"; Return value = "+retVal);
         
         return retVal;
@@ -39,11 +39,11 @@ public class ImageServiceImpl implements ImageService {
     @Transactional
     public void delete(final int id) {
         
-        LOGGER.info("Inside ImageServiceImpl - delete");
+        LOGGER.info("delete");
 
         repository.deleteById(id);
 
-        LOGGER.debug("Inside ImageServiceImpl - delete: "
+        LOGGER.debug("delete: "
         +"Parameters: id = "+id+"; No return value");
 
     }

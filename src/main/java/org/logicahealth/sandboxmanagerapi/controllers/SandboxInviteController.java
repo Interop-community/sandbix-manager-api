@@ -83,7 +83,7 @@ public class SandboxInviteController {
     public @ResponseBody
     SandboxInvite createOrUpdateSandboxInvite(HttpServletRequest request, @RequestBody final SandboxInvite sandboxInvite) throws IOException {
 
-        LOGGER.info("Inside SandboxInviteController - createOrUpdateSandboxInvite");
+        LOGGER.info("createOrUpdateSandboxInvite");
         
         // Make sure the inviter has rights to this sandbox
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxInvite.getSandbox().getSandboxId());
@@ -131,7 +131,7 @@ public class SandboxInviteController {
     List<SecuredSandboxInviteDto> getSandboxInvitesByInvitee(HttpServletRequest request, @RequestParam(value = "sbmUserId") String sbmUserIdEncoded,
                                                              @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside SandboxInviteController - getSandboxInvitesByInvitee");
+        LOGGER.info("getSandboxInvitesByInvitee");
         
         String sbmUserId = java.net.URLDecoder.decode(sbmUserIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, sbmUserId);
@@ -158,7 +158,7 @@ public class SandboxInviteController {
     List<SecuredSandboxInviteDto> getSandboxInvitesBySandbox(HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId,
                                                              @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside SandboxInviteController - getSandboxInvitesBySandbox");
+        LOGGER.info("getSandboxInvitesBySandbox");
         
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -192,7 +192,7 @@ public class SandboxInviteController {
     @SuppressWarnings("unchecked")
     void updateSandboxInvite(HttpServletRequest request, @PathVariable Integer id, @RequestParam(value = "status") InviteStatus status) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside SandboxInviteController - updateSandboxInvite");
+        LOGGER.info("updateSandboxInvite");
         
         SandboxInvite sandboxInvite = sandboxInviteService.getById(id);
         if (sandboxInvite == null) {

@@ -14,7 +14,7 @@ public class AliveController {
     @RequestMapping(value = "/alive", method = RequestMethod.GET)
     public String aliveEndpoint(){
         
-        LOGGER.info("Inside AliveController - aliveEndpoint");
+        LOGGER.info("aliveEndpoint");
         
         return "{\"status\": \"alive\"}";
     }

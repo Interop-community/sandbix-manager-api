@@ -61,7 +61,11 @@ public class DataMangerServiceImpl implements DataManagerService {
     @Override
     public String importPatientData(final Sandbox sandbox, final String bearerToken, final String endpoint, final String patientId, final String fhirIdPrefix) throws UnsupportedEncodingException {
 
-        LOGGER.info("Inside DataMangerServiceImpl - importPatientData");
+        LOGGER.info("importPatientData");
+
+        LOGGER.debug("importPatientData: "
+        +"(BEFORE) Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken+", endpoint = "+endpoint
+        +", patientId = "+patientId+", fhirIdPrefix = "+fhirIdPrefix);
 
         SandboxImport sandboxImport = new SandboxImport();
         Timestamp start = new Timestamp(new Date().getTime());
@@ -75,8 +79,8 @@ public class DataMangerServiceImpl implements DataManagerService {
         sandboxImport.setDurationSeconds(Long.toString(seconds));
         sandboxService.addSandboxImport(sandbox, sandboxImport);
 
-        LOGGER.debug("Inside DataMangerServiceImpl - importPatientData: "
-        +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken+", endpoint = "+endpoint
+        LOGGER.debug("importPatientData: "
+        +"(AFTER) Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken+", endpoint = "+endpoint
         +", patientId = "+patientId+", fhirIdPrefix = "+fhirIdPrefix+"; Return value = "+success);
 
         return success;
@@ -85,11 +89,11 @@ public class DataMangerServiceImpl implements DataManagerService {
     @Override
     public String reset(final Sandbox sandbox, final String bearerToken) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside DataMangerServiceImpl - reset");
+        LOGGER.info("reset");
 
         String retVal = resetSandboxFhirData(sandbox, bearerToken ) ? "SUCCESS" : "FAILED";
 
-        LOGGER.debug("Inside DataMangerServiceImpl - reset: "
+        LOGGER.debug("reset: "
         +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
         +"; Return value = "+retVal);
 
@@ -98,7 +102,12 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private String getEverythingForPatient(String patientId, String endpoint, String fhirIdPrefix, Sandbox sandbox, String bearerToken, SandboxImport sandboxImport) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside DataMangerServiceImpl - getEverythingForPatient");
+        LOGGER.info("getEverythingForPatient");
+
+        LOGGER.debug("getEverythingForPatient: "
+        +"(BEFORE) Parameters: patientId = "+patientId+", endpoint = "+endpoint
+        +", fhirIdPrefix = "+fhirIdPrefix+", sandbox = "+sandbox+", bearerToken = "+bearerToken
+        +", sandboxImport = "+sandboxImport);
 
         String nextPage;
         List<JSONObject> everythingResources = new ArrayList<>();
@@ -133,8 +142,8 @@ public class DataMangerServiceImpl implements DataManagerService {
         postFHIRBundle(sandbox, bundleString, bearerToken);
         sandboxImport.setSuccessCount(Integer.toString(resourceIds.size()));
 
-        LOGGER.debug("Inside DataMangerServiceImpl - getEverythingForPatient: "
-        +"Parameters: patientId = "+patientId+", endpoint = "+endpoint
+        LOGGER.debug("getEverythingForPatient: "
+        +"(AFTER) Parameters: patientId = "+patientId+", endpoint = "+endpoint
         +", fhirIdPrefix = "+fhirIdPrefix+", sandbox = "+sandbox+", bearerToken = "+bearerToken
         +", sandboxImport = "+sandboxImport+"; Return value = SUCCESS");
 
@@ -143,7 +152,10 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private String buildTransactionBundle(List<JSONObject> resources, String fhirIdPrefix) {
         
-        LOGGER.info("Inside DataMangerServiceImpl - buildTransactionBundle");
+        LOGGER.info("buildTransactionBundle");
+
+        LOGGER.debug("buildTransactionBundle: "
+        +"(BEFORE) Parameters: resources = "+resources+", fhirIdPrefix = "+fhirIdPrefix);
 
         JSONObject transactionBundle = new JSONObject();
         JSONArray resourcesArray = new JSONArray();
@@ -168,8 +180,8 @@ public class DataMangerServiceImpl implements DataManagerService {
         transactionBundle.put("entry", resourcesArray);
         fixupIDs(transactionBundle, fhirIdPrefix);
 
-        LOGGER.debug("Inside DataMangerServiceImpl - buildTransactionBundle: "
-        +"Parameters: resources = "+resources+", fhirIdPrefix = "+fhirIdPrefix
+        LOGGER.debug("buildTransactionBundle: "
+        +"(AFTER) Parameters: resources = "+resources+", fhirIdPrefix = "+fhirIdPrefix
         +"; Return value = "+transactionBundle.toString());
 
         return transactionBundle.toString();
@@ -178,7 +190,7 @@ public class DataMangerServiceImpl implements DataManagerService {
     // Prefix resource ids - used for the transaction bundle
     private void fixupIDs(Object json, String fhirIdPrefix) {
 
-        LOGGER.info("Inside DataMangerServiceImpl - fixupIDs");
+        LOGGER.info("fixupIDs");
 
         if (json instanceof JSONObject) {
             fixupJsonObjectIds((JSONObject) json, fhirIdPrefix);
@@ -187,7 +199,7 @@ public class DataMangerServiceImpl implements DataManagerService {
             IntStream.range(0, jsonArray.length()).forEach(i -> fixupIDs(jsonArray.get(i), fhirIdPrefix));
         }
 
-        LOGGER.debug("Inside DataMangerServiceImpl - fixupIDs: "
+        LOGGER.debug("fixupIDs: "
         +"Parameters: json = "+json+", fhirIdPrefix = "+fhirIdPrefix
         +"; No return value");
 
@@ -195,7 +207,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private void fixupJsonObjectIds(JSONObject json, String fhirIdPrefix) {
         
-        LOGGER.info("Inside DataMangerServiceImpl - fixupJsonObjectIds");
+        LOGGER.info("fixupJsonObjectIds");
 
         final String reference = "reference";
         JSONObject jsonObject = json;
@@ -214,7 +226,7 @@ public class DataMangerServiceImpl implements DataManagerService {
             }
         }
 
-        LOGGER.debug("Inside DataMangerServiceImpl - fixupJsonObjectIds: "
+        LOGGER.debug("fixupJsonObjectIds: "
         +"Parameters: json = "+json+", fhirIdPrefix = "+fhirIdPrefix
         +"; No return value");
 
@@ -222,7 +234,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private List<JSONObject> getResourcesFromSearch(JSONObject jsonObject) {
         
-        LOGGER.info("Inside DataMangerServiceImpl - getResourcesFromSearch");
+        LOGGER.info("getResourcesFromSearch");
 
         List<JSONObject> resources = new ArrayList<>();
 
@@ -235,7 +247,7 @@ public class DataMangerServiceImpl implements DataManagerService {
             resources.add(resource);
         }
 
-        LOGGER.debug("Inside DataMangerServiceImpl - getResourcesFromSearch: "
+        LOGGER.debug("getResourcesFromSearch: "
         +"Parameters: jsonObject = "+jsonObject+"; Return value = "+resources);
 
         return resources;
@@ -243,7 +255,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private String getNextPageLink(JSONObject jsonObject) {
         
-        LOGGER.info("Inside DataMangerServiceImpl - getNextPageLink");
+        LOGGER.info("getNextPageLink");
 
         JSONArray links = jsonObject.getJSONArray("link");
 
@@ -252,7 +264,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
             if ("next".equalsIgnoreCase(link.getString("relation"))) {
 
-                LOGGER.debug("Inside DataMangerServiceImpl - getNextPageLink: "
+                LOGGER.debug("getNextPageLink: "
                 +"Parameters: jsonObject = "+jsonObject
                 +"; Return value = "+link.getString("url"));
 
@@ -260,7 +272,7 @@ public class DataMangerServiceImpl implements DataManagerService {
             }
         }
 
-        LOGGER.debug("Inside DataMangerServiceImpl - getNextPageLink: "
+        LOGGER.debug("getNextPageLink: "
         +"Parameters: jsonObject = "+jsonObject
         +"; Return value = "+null);
 
@@ -269,7 +281,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private String queryFHIRServer(final String endpoint, final String query)  {
         
-        LOGGER.info("Inside DataMangerServiceImpl - queryFHIRServer");
+        LOGGER.info("queryFHIRServer");
 
         String url = endpoint + query;
 
@@ -292,7 +304,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
             HttpEntity httpEntity = closeableHttpResponse.getEntity();
 
-            LOGGER.debug("Inside DataMangerServiceImpl - queryFHIRServer: "
+            LOGGER.debug("queryFHIRServer: "
             +"Parameters: endpoint = "+endpoint+", query = "+query
             +"; Return value = "+EntityUtils.toString(httpEntity));
 
@@ -311,7 +323,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private boolean resetSandboxFhirData(final Sandbox sandbox, final String bearerToken ) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside DataMangerServiceImpl - resetSandboxFhirData");
+        LOGGER.info("resetSandboxFhirData");
 
         String jsonString = "{}";
         if (sandbox.getDataSet().equals(DataSet.DEFAULT)) {
@@ -321,14 +333,14 @@ public class DataMangerServiceImpl implements DataManagerService {
         if (postToSandbox(sandbox, jsonString, "/sandbox/reset", bearerToken )) {
             sandboxService.reset(sandbox, bearerToken);
 
-            LOGGER.debug("Inside DataMangerServiceImpl - resetSandboxFhirData: "
+            LOGGER.debug("resetSandboxFhirData: "
             +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
             +"; Return value = true");
 
             return true;
         }
         
-        LOGGER.debug("Inside DataMangerServiceImpl - resetSandboxFhirData: "
+        LOGGER.debug("resetSandboxFhirData: "
         +"Parameters: sandbox = "+sandbox+", bearerToken = "+bearerToken
         +"; Return value = false");
 
@@ -337,11 +349,11 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private boolean postFHIRBundle(final Sandbox sandbox, final String jsonString, final String bearerToken ) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside DataMangerServiceImpl - postFHIRBundle");
+        LOGGER.info("postFHIRBundle");
 
         boolean retVal = postToSandbox(sandbox, jsonString, "/data", bearerToken );
 
-        LOGGER.debug("Inside DataMangerServiceImpl - postFHIRBundle: "
+        LOGGER.debug("postFHIRBundle: "
         +"Parameters: sandbox = "+sandbox+", jsonString = "+jsonString+", bearerToken = "+bearerToken
         +"; Return value = "+retVal);
 
@@ -350,7 +362,7 @@ public class DataMangerServiceImpl implements DataManagerService {
 
     private boolean postToSandbox(final Sandbox sandbox, final String jsonString, final String requestStr, final String bearerToken ) throws UnsupportedEncodingException {
         
-        LOGGER.info("Inside DataMangerServiceImpl - postToSandbox");
+        LOGGER.info("postToSandbox");
 
         String url = sandboxService.getSandboxApiURL(sandbox) + requestStr;
 
@@ -363,7 +375,7 @@ public class DataMangerServiceImpl implements DataManagerService {
         try {
             simpleRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
             
-            LOGGER.debug("Inside DataMangerServiceImpl - postToSandbox: "
+            LOGGER.debug("postToSandbox: "
             +"Parameters: sandbox = "+sandbox+", jsonString = "+jsonString+", requestStr = "+requestStr
             +", bearerToken = "+bearerToken+"; Return value = true");
 

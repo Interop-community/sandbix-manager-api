@@ -56,18 +56,18 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public String getBearerToken(HttpServletRequest request) {
 
-        LOGGER.info("Inside OAuthServiceImpl - getBearerToken");
+        LOGGER.info("getBearerToken");
 
         String authToken = request.getHeader("Authorization");
         if (authToken == null) {
 
-            LOGGER.debug("Inside OAuthServiceImpl - getBearerToken: "
+            LOGGER.debug("getBearerToken: "
             +"Parameters: request = "+request+"; Return value = null");
 
             return null;
         }
 
-        LOGGER.debug("Inside OAuthServiceImpl - getBearerToken: "
+        LOGGER.debug("getBearerToken: "
         +"Parameters: request = "+request+"; Return value = "+authToken.substring(7));
 
         return authToken.substring(7);
@@ -76,13 +76,13 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public String getOAuthUserId(HttpServletRequest request) {
         
-        LOGGER.info("Inside OAuthServiceImpl - getOAuthUserId");
+        LOGGER.info("getOAuthUserId");
 
         try {
             JSONObject jsonObject = getOAuthUser(request);
             if (jsonObject != null) {
 
-                LOGGER.debug("Inside OAuthServiceImpl - getOAuthUserId: "
+                LOGGER.debug("getOAuthUserId: "
                 +"Parameters: request = "+request
                 +"; Return value "+((String) jsonObject.get("sub")));
 
@@ -92,7 +92,7 @@ public class OAuthServiceImpl implements OAuthService {
             throw new RuntimeException(e);
         }
 
-        LOGGER.debug("Inside OAuthServiceImpl - getOAuthUserId: "
+        LOGGER.debug("getOAuthUserId: "
         +"Parameters: request = "+request
         +"; Return value = null");
 
@@ -102,13 +102,13 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public String getOAuthUserName(HttpServletRequest request) {
         
-        LOGGER.info("Inside OAuthServiceImpl - getOAuthUserId");
+        LOGGER.info("getOAuthUserId");
 
         try {
             JSONObject jsonObject = getOAuthUser(request);
             if (jsonObject != null) {
 
-                LOGGER.debug("Inside OAuthServiceImpl - getOAuthUserId: "
+                LOGGER.debug("getOAuthUserId: "
                 +"Parameters: request = "+request
                 +"; Return value = "+((String) jsonObject.get("name")));
 
@@ -118,7 +118,7 @@ public class OAuthServiceImpl implements OAuthService {
             throw new RuntimeException(e);
         }
 
-        LOGGER.debug("Inside OAuthServiceImpl - getOAuthUserId: "
+        LOGGER.debug("getOAuthUserId: "
         +"Parameters: request = "+request
         +"; Return value = null");
 
@@ -128,14 +128,14 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public String getOAuthUserEmail(HttpServletRequest request) {
         
-        LOGGER.info("Inside OAuthServiceImpl - getOAuthUserEmail");
+        LOGGER.info("getOAuthUserEmail");
 
         try {
             JSONObject jsonObject = getOAuthUser(request);
             if (jsonObject != null) {
                 //TODO change to email when FireBase starts sending email
 
-                LOGGER.debug("Inside OAuthServiceImpl - getOAuthUserEmail: "
+                LOGGER.debug("getOAuthUserEmail: "
                 +"Parameters: request = "+request
                 +"; Return value = "+((String) jsonObject.get("preferred_username")));
 
@@ -145,7 +145,7 @@ public class OAuthServiceImpl implements OAuthService {
             throw new RuntimeException(e);
         }
 
-        LOGGER.debug("Inside OAuthServiceImpl - getOAuthUserEmail: "
+        LOGGER.debug("getOAuthUserEmail: "
         +"Parameters: request = "+request
         +"; Return value = null");
 
@@ -155,12 +155,12 @@ public class OAuthServiceImpl implements OAuthService {
 
     private JSONObject getOAuthUser(HttpServletRequest request) {
 
-        LOGGER.info("Inside OAuthServiceImpl - getOAuthUser");
+        LOGGER.info("getOAuthUser");
 
         String authToken = getBearerToken(request);
         if (authToken == null) {
 
-            LOGGER.debug("Inside OAuthServiceImpl - getOAuthUser: "
+            LOGGER.debug("getOAuthUser: "
             +"Parameters: request = "+request
             +"; Return value = null");
 
@@ -176,7 +176,7 @@ public class OAuthServiceImpl implements OAuthService {
             ResponseEntity<String> response = simpleRestTemplate.exchange(this.oauthUserInfoEndpointURL, HttpMethod.GET, entity, String.class);
             try {
 
-                LOGGER.debug("Inside OAuthServiceImpl - getOAuthUser: "
+                LOGGER.debug("getOAuthUser: "
                 +"Parameters: request = "+request
                 +"; Return value = "+ new JSONObject(response.getBody()));
 

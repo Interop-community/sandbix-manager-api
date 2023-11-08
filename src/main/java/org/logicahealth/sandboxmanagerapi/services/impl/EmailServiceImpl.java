@@ -68,7 +68,7 @@ public class EmailServiceImpl implements EmailService {
     @PublishAtomicMetric
     public void sendEmail(User inviter, User invitee, Sandbox sandbox, int invitationId) throws IOException {
         
-        LOGGER.info("Inside EmailServiceImpl - sendEmails");
+        LOGGER.info("sendEmails");
 
         if (sendEmail) {
 
@@ -110,7 +110,7 @@ public class EmailServiceImpl implements EmailService {
             }
         }
 
-        LOGGER.debug("Inside EmailServiceImpl - sendEmails: "
+        LOGGER.debug("sendEmails: "
         +"Parameters: inviter = "+inviter+", invitee = "+invitee+", sandbox = "+sandbox+", invitationId = "+invitationId
         +"; No return value");
 
@@ -119,7 +119,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendExportNotificationEmail(User user, URL sandboxExportFile, String sandboxName) {
 
-        LOGGER.info("Inside EmailServiceImpl - sendExportNotificationEmail");
+        LOGGER.info("sendExportNotificationEmail");
 
         if (sendEmail) {
 
@@ -144,7 +144,7 @@ public class EmailServiceImpl implements EmailService {
             }
         }
 
-        LOGGER.debug("Inside EmailServiceImpl - sendExportNotificationEmail: "
+        LOGGER.debug("sendExportNotificationEmail: "
         +"Parameters: user = "+user+", sandboxExportFile = "+sandboxExportFile+", sandboxName = "+sandboxName
         +"; No return value");
 
@@ -153,7 +153,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendImportErrorNotificationEmail(User user, String sandboxName) {
         
-        LOGGER.info("Inside EmailServiceImpl - sendImportErrorNotificationEmail");
+        LOGGER.info("sendImportErrorNotificationEmail");
 
         if (sendEmail) {
 
@@ -177,7 +177,7 @@ public class EmailServiceImpl implements EmailService {
             }
         }
 
-        LOGGER.debug("Inside EmailServiceImpl - sendImportErrorNotificationEmail: "
+        LOGGER.debug("sendImportErrorNotificationEmail: "
         +"Parameters: user = "+user+", sandboxName = "+sandboxName+"; No return value");
 
     }
@@ -185,7 +185,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendEmailByJavaMail(Message emailMessage, String templateName)
             throws MessagingException {
 
-        LOGGER.info("Inside EmailServiceImpl - sendEmailByJavaMail");
+        LOGGER.info("sendEmailByJavaMail");
 
         for (Message.Recipient recipient : emailMessage.getRecipients()) {
             final Context ctx = new Context(recipient.getLocale());
@@ -233,7 +233,7 @@ public class EmailServiceImpl implements EmailService {
 
         }
 
-        LOGGER.debug("Inside EmailServiceImpl - sendEmailByJavaMail: "
+        LOGGER.debug("sendEmailByJavaMail: "
         +"Parameters: emailMessage = "+emailMessage+", templateName = "+templateName
         +"No return value");
 
@@ -241,13 +241,13 @@ public class EmailServiceImpl implements EmailService {
 
     private static String toJson(Message message) {
         
-        LOGGER.info("Inside EmailServiceImpl - toJson");
+        LOGGER.info("toJson");
 
         Gson gson = new Gson();
         Type type = new TypeToken<Message>() {
         }.getType();
 
-        LOGGER.debug("Inside EmailServiceImpl - toJson: "
+        LOGGER.debug("toJson: "
         +"Parameters: message = "+message+"; Return value = "+gson.toJson(message, type));
 
         return gson.toJson(message, type);
@@ -255,7 +255,7 @@ public class EmailServiceImpl implements EmailService {
 
     private byte[] getImageFile(String pathName, String imageType) throws IOException {
         
-        LOGGER.info("Inside EmailServiceImpl - getImageFile");
+        LOGGER.info("getImageFile");
 
         BufferedImage img;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -268,7 +268,7 @@ public class EmailServiceImpl implements EmailService {
         byte[] imageInByte = baos.toByteArray();
         baos.close();
 
-        LOGGER.debug("Inside EmailServiceImpl - getImageFile: "
+        LOGGER.debug("getImageFile: "
         +"Parameters: pathName = "+pathName+", imageType = "+imageType
         +"Return value = "+imageInByte);
 
@@ -277,11 +277,11 @@ public class EmailServiceImpl implements EmailService {
 
     private byte[] getFile(String pathName) throws IOException {
         
-        LOGGER.info("Inside EmailServiceImpl - getFile");
+        LOGGER.info("getFile");
 
         ClassPathResource cpr = new ClassPathResource(pathName);
 
-        LOGGER.debug("Inside EmailServiceImpl - getFile: "
+        LOGGER.debug("getFile: "
         +"Parameters: pathName = "+pathName+"; Return value = "+IOUtils.toByteArray(cpr.getInputStream()));
 
         return IOUtils.toByteArray(cpr.getInputStream());

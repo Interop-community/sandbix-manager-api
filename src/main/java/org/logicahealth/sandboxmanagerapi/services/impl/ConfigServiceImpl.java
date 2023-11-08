@@ -27,11 +27,11 @@ public class ConfigServiceImpl implements ConfigService {
     @Transactional
     public Config save(Config configuration) {
         
-        LOGGER.info("Inside ConfigServiceImpl - save");
+        LOGGER.info("save");
 
         Config retVal = repository.save(configuration);
 
-        LOGGER.debug("Inside ConfigServiceImpl - save: "
+        LOGGER.debug("save: "
         +"Parameters: configuration = "+configuration+"; Return value = "+retVal);
 
         return retVal;
@@ -40,9 +40,9 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     public List<Config> findByConfigType(ConfigType configType) {
         
-        LOGGER.info("Inside ConfigServiceImpl - findByConfigType");
+        LOGGER.info("findByConfigType");
 
-        LOGGER.debug("Inside ConfigServiceImpl - findByConfigType: "
+        LOGGER.debug("findByConfigType: "
         +"Parameters: configType = "+configType+"; Return value = "+repository.findByConfigType(configType));
 
         return repository.findByConfigType(configType);
