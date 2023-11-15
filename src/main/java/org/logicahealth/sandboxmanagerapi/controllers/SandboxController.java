@@ -25,6 +25,7 @@ import org.logicahealth.sandboxmanagerapi.model.*;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
@@ -43,6 +44,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Date;
+
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -53,6 +56,9 @@ public class SandboxController {
 
     @Value("${hspc.platform.templateSandboxIds}")
     private String[] templateSandboxIds;
+
+	@Autowired
+	private ISandboxExportDao mySandboxExportDao;
 
     private final SandboxService sandboxService;
     private final UserService userService;
@@ -143,7 +149,8 @@ public class SandboxController {
         }
         authorizationService.checkSandboxUserReadAuthorization(request, sandbox);
         checkExportAllowedOnlyForAdminUsers(sandbox, userService.findBySbmUserId(sbmUserId));
-        sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request), getServer(request));
+        mySandboxExportDao.save(new SandboxExport(sandbox, sbmUserId, authorizationService.getBearerToken(request), getServer(request), SandboxExportEnum.SUBMITTED, new Date()));
+        // sandboxService.exportSandbox(sandbox, sbmUserId, authorizationService.getBearerToken(request), getServer(request));
     }
 
     private void checkExportAllowedOnlyForAdminUsers(Sandbox sandbox, User user) {

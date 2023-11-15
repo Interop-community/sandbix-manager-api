@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -39,6 +42,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.lang3.time.DateUtils;
 
 @Service
 public class SandboxServiceImpl implements SandboxService {
@@ -76,6 +81,12 @@ public class SandboxServiceImpl implements SandboxService {
     @Value("${hspc.platform.trustedDomainsApiUrl}")
     private String trustedDomainsApiUrl;
 
+    @Value("${hspc.platform.api.importSandboxFromTrustedDomainsOnly}")
+    Boolean importSandboxFromTrustedDomainsOnly;
+
+    @Autowired
+    private ISandboxExportDao mySandboxExportDao;
+  
     private UserService userService;
     private UserRoleService userRoleService;
     private UserPersonaService userPersonaService;
@@ -1486,7 +1497,8 @@ public class SandboxServiceImpl implements SandboxService {
             var newSandbox = createSandboxTableEntry(sandboxVersions, requestingUser);
             addMember(newSandbox, requestingUser, Role.ADMIN);
             sandboxActivityLogService.sandboxCreate(newSandbox, requestingUser);
-            // checkIfExportedFromTrustedServer(sandboxVersions);
+            if (importSandboxFromTrustedDomainsOnly)
+                checkIfExportedFromTrustedServer(sandboxVersions);
             sandboxBackgroundTasksService.importSandbox(zipInputStream, newSandbox, sandboxVersions, requestingUser, getSandboxApiURL(newSandbox), bearerToken, server);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
@@ -1578,5 +1590,59 @@ public class SandboxServiceImpl implements SandboxService {
         +"No input parameters; Return value = "+(List<String>) trustedDomains);
 
         return (List<String>) trustedDomains;
+    }
+  
+    @Scheduled(fixedDelay = 10000L) //every 10 seconds
+    @Transactional
+    public void startExportJob() {
+        Optional<List<SandboxExport>> inprogress = this.mySandboxExportDao.findByStatus(SandboxExportEnum.INPROGRESS);
+        if (!inprogress.isPresent()) {
+            PageRequest pageRequest = PageRequest.of(0, 1);
+            Slice<SandboxExport> submittedJobs = this.mySandboxExportDao.findByStatus( pageRequest,
+                    SandboxExportEnum.SUBMITTED);
+            if (!submittedJobs.isEmpty()) {
+                SandboxExport job = submittedJobs.getContent().get(0);
+                try {
+                    job.setStatus(SandboxExportEnum.INPROGRESS);
+                    mySandboxExportDao.saveAndFlush(job);
+
+                    sandboxBackgroundTasksService.exportSandbox(
+                            job.getSandbox(),
+                            userService.findBySbmUserId(job.getuserId()),
+                            job.gettoken(),
+                            getSandboxApiURL(job.getSandbox()), 
+                            job.getserver(),
+                            mySandboxExportDao, 
+                            job);
+
+                } catch (Exception e) {
+                    LOGGER.error("" + e.getStackTrace());
+                    job.setStatus(SandboxExportEnum.ERROR);
+                    job.setReason(e.getMessage());
+                    mySandboxExportDao.saveAndFlush(job);
+                }
+            }
+        } else {
+            SandboxExport job = ((List<SandboxExport>) inprogress.get()).iterator().next();
+            if (DateUtils.addMinutes(job.getcreatedTime(), 15).compareTo(new Date()) < 0) {
+                job.setStatus(SandboxExportEnum.WAITED);
+                this.mySandboxExportDao.saveAndFlush(job);
+            }
+        }
+    }
+
+    @Scheduled(cron="0 0 0 1 * *")   //monthly
+    private void cleanupExportJobs() {
+        Optional<List<SandboxExport>> deletionMarks = this.mySandboxExportDao.findByStatus(SandboxExportEnum.DELETION);
+        if (deletionMarks.isPresent())
+            for (SandboxExport job : deletionMarks.get())
+                this.mySandboxExportDao.delete(job);
+        List<SandboxExport> existingJobs = this.mySandboxExportDao.findExistingJob(DateUtils.addHours(new Date(), -1),
+                SandboxExportEnum.COMPLETE, SandboxExportEnum.WAITED);
+        for (SandboxExport job : existingJobs) {
+            job.setStatus(SandboxExportEnum.DELETION);
+            this.mySandboxExportDao.save(job);
+        }
+        this.mySandboxExportDao.flush();
     }
 }

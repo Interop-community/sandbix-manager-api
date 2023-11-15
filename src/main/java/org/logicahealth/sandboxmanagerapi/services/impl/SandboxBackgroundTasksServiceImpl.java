@@ -119,12 +119,35 @@ public class SandboxBackgroundTasksServiceImpl implements SandboxBackgroundTasks
 
     }
 
+
     @Async("sandboxSingleThreadedTaskExecutor")
     @Override
     public void exportSandbox(Sandbox sandbox, User user, String bearerToken, String apiUrl, String server) {
         
         LOGGER.info("exportSandbox");
 
+        _exportSandbox( sandbox, user, bearerToken, apiUrl, server);
+    }
+
+    @Async("sandboxSingleThreadedTaskExecutor")
+    @Override
+    @Transactional
+    public void exportSandbox(Sandbox sandbox, User user, String bearerToken, String apiUrl, String server, ISandboxExportDao mydao, SandboxExport myjob) {
+        LOGGER.info("exportSandbox from persisted queue");
+
+        try {
+            _exportSandbox(sandbox, user, bearerToken, apiUrl, server);
+            myjob.setCompletedTime(new Date());
+            myjob.setStatus(SandboxExportEnum.COMPLETE);
+            mydao.saveAndFlush(myjob);
+        } catch (Exception e) {
+            myjob.setStatus(SandboxExportEnum.ERROR);
+            myjob.setReason(e.getMessage());
+            mydao.saveAndFlush(myjob);
+        }
+    }
+
+    private void _exportSandbox(Sandbox sandbox, User user, String bearerToken, String apiUrl, String server) {
         try (final var pipedOutputStream = new PipedOutputStream();
              final var pipedInputStream = new PipedInputStream(pipedOutputStream)) {
             var sandboxExportFileName = UUID.randomUUID() + ".zip";
