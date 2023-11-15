@@ -57,7 +57,6 @@ public class SandboxController {
     @Value("${hspc.platform.templateSandboxIds}")
     private String[] templateSandboxIds;
 
-	@Autowired
 	private ISandboxExportDao mySandboxExportDao;
 
     private final SandboxService sandboxService;
@@ -90,6 +89,7 @@ public class SandboxController {
     @Transactional
     public @ResponseBody
     Sandbox createSandbox(HttpServletRequest request, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException {
+        LOGGER.info("createSandbox");
 
         Sandbox existingSandbox = sandboxService.findBySandboxId(sandbox.getSandboxId());
         if (existingSandbox != null) {
@@ -105,6 +105,8 @@ public class SandboxController {
     @PostMapping(value = "/clone", consumes = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void cloneSandbox(HttpServletRequest request, @RequestBody final HashMap<String, Sandbox> sandboxes) throws UnsupportedEncodingException {
+        
+        LOGGER.info("cloneSandbox");
         Sandbox newSandbox = sandboxes.get("newSandbox");
         if (newSandbox.getName().equalsIgnoreCase("test")) {
             throw new IllegalArgumentException("Test is a reserved sandbox name. Please change your sandbox name and try again.");
@@ -124,6 +126,8 @@ public class SandboxController {
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody
     SandboxCreationStatusQueueOrder getSandboxCreationStatus(HttpServletRequest request, @PathVariable(value = "id") String sandboxId) {
+        
+        LOGGER.info("getSandboxCreationStatus");
         authorizationService.checkUserAuthorization(request, authorizationService.getSystemUserId(request));
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -135,6 +139,8 @@ public class SandboxController {
     @GetMapping(value = "/download/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void downloadSandboxAndApps(HttpServletRequest request, @PathVariable(value = "id") String sandboxId, HttpServletResponse response) throws IOException {
+        
+        LOGGER.info("Inside SandboxController - downloadSandboxAndApps");
         var sbmUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
@@ -147,6 +153,8 @@ public class SandboxController {
     }
 
     private void checkExportAllowedOnlyForAdminUsers(Sandbox sandbox, User user) {
+        
+        LOGGER.info("checkExportAllowedOnlyForAdminUsers");
         var adminUser = sandbox.getUserRoles()
                                .stream()
                                .filter(userRole -> userRole.getUser().getSbmUserId().equals(user.getSbmUserId()))
@@ -160,6 +168,8 @@ public class SandboxController {
     @PostMapping(value = "/import")
     @ResponseStatus(HttpStatus.CREATED)
     public void importSandboxAndApps(HttpServletRequest request, @RequestParam("zipFile") MultipartFile zipFile) {
+        
+        LOGGER.info("importSandboxAndApps");
         try{
         var requestingUser = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkUserAuthorization(request, requestingUser.getSbmUserId());
@@ -172,6 +182,8 @@ public class SandboxController {
     }
 
     private String getServer(HttpServletRequest request) {
+        
+        LOGGER.info("getServer");
         var server = request.getScheme() + "://" + request.getServerName();
         var serverPort = request.getServerPort();
         if (server.startsWith(SECURE_PROTOCOL) && serverPort == SECURE_PROTOCOL_PORT || !server.startsWith(SECURE_PROTOCOL) && serverPort == UNSECURE_PROTOCOL_PORT) {
@@ -183,12 +195,16 @@ public class SandboxController {
     @PostMapping(value = "/decryptSignature")
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody String decryptSignature(@RequestBody String signature) {
+        
+        LOGGER.info("decryptSignature");
         return sandboxEncryptionService.decryptSignature(signature);
     }
 
     @GetMapping(params = {"lookUpId"}, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
     String checkForSandboxById(@RequestParam(value = "lookUpId") String id) {
+        
+        LOGGER.info("checkForSandboxById");
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {
             return "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\"}";
@@ -199,6 +215,8 @@ public class SandboxController {
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
     String getSandboxById(@RequestParam(value = "sandboxId") String id) {
+        
+        LOGGER.info("getSandboxById");
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox != null) {
             return "{\"sandboxId\": \"" + sandbox.getSandboxId() + "\",\"apiEndpointIndex\": \"" + sandbox.getApiEndpointIndex() + "\",\"allowOpenAccess\": \"" + sandbox.isAllowOpenAccess() + "\"}";
@@ -209,6 +227,8 @@ public class SandboxController {
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
     Sandbox getSandboxById(HttpServletRequest request, @PathVariable String id) {
+        
+        LOGGER.info("getSandboxById");
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -224,6 +244,8 @@ public class SandboxController {
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {
+        
+        LOGGER.info("deleteSandboxById");
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -243,6 +265,8 @@ public class SandboxController {
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void updateSandboxById(HttpServletRequest request, @PathVariable String id, @RequestBody final Sandbox sandbox) throws UnsupportedEncodingException {
+        
+        LOGGER.info("updateSandboxById");
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         authorizationService.checkSystemUserCanModifySandboxAuthorization(request, sandbox, user);
         sandboxService.update(sandbox, user, authorizationService.getBearerToken(request));
@@ -252,6 +276,8 @@ public class SandboxController {
     public @ResponseBody
     @SuppressWarnings("unchecked")
     List<Sandbox> getSandboxesByMember(HttpServletRequest request, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("getSandboxesByMember");
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         User user = userService.findBySbmUserId(userId);
@@ -264,6 +290,8 @@ public class SandboxController {
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, params = {"removeUserId"})
     @Transactional
     public void removeSandboxMember(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "removeUserId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("removeSandboxMember");
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -285,6 +313,8 @@ public class SandboxController {
     @Transactional
     public void updateSandboxMemberRole(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "editUserRole") String userIdEncoded,
                                         @RequestParam(value = "role") Role role, @RequestParam(value = "add") boolean add) throws UnsupportedEncodingException {
+        
+        LOGGER.info("updateSandboxMemberRole");
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -310,6 +340,8 @@ public class SandboxController {
     @PutMapping(value = "/{id}/changePayer", params = {"newPayerId"})
     @Transactional
     public void changePayerForSandbox(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "newPayerId") String newPayerIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("changePayerForSandbox");
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -326,6 +358,8 @@ public class SandboxController {
     @PostMapping(value = "/{id}/login", params = {"userId"})
     @Transactional
     public void sandboxLogin(HttpServletRequest request, @PathVariable String id, @RequestParam(value = "userId") String userIdEncoded) throws UnsupportedEncodingException {
+        
+        LOGGER.info("sandboxLogin");
         String userId = java.net.URLDecoder.decode(userIdEncoded, StandardCharsets.UTF_8.name());
         authorizationService.checkUserAuthorization(request, userId);
         Sandbox sandbox = sandboxService.findBySandboxId(id);
@@ -346,6 +380,8 @@ public class SandboxController {
     @Transactional
     public @ResponseBody
     Iterable<Sandbox> getAllSandboxes(final HttpServletRequest request) {
+        
+        LOGGER.info("getAllSandboxes");
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -364,6 +400,8 @@ public class SandboxController {
      * @return true if the user can be removed
      */
     private boolean canRemoveUser(Sandbox sandbox, User removedUser) {
+        
+        LOGGER.info("canRemoveUser");
         Optional<UserRole> first = sandbox.getUserRoles()
                                           .stream()
                                           .filter(u -> u.getUser().getId().equals(removedUser.getId())
@@ -374,6 +412,8 @@ public class SandboxController {
     }
 
     private boolean isAdminUser(UserRole u) {
+        
+        LOGGER.info("isAdminUser");
         return Role.ADMIN.equals(u.getRole());
     }
 }

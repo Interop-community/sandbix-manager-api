@@ -25,6 +25,8 @@ import org.apache.http.HttpStatus;
 import org.logicahealth.sandboxmanagerapi.model.*;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +41,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping("/launchScenario")
 public class LaunchScenarioController {
+    private static Logger LOGGER = LoggerFactory.getLogger(LaunchScenarioController.class.getName());
 
     private final LaunchScenarioService launchScenarioService;
     private final UserService userService;
@@ -76,6 +79,8 @@ public class LaunchScenarioController {
     public @ResponseBody
     LaunchScenario createLaunchScenario(HttpServletRequest request, @RequestBody final LaunchScenario launchScenario) {
 
+        LOGGER.info("createLaunchScenario");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(launchScenario.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -100,6 +105,9 @@ public class LaunchScenarioController {
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody LaunchScenario updateLaunchScenario(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
+        
+        LOGGER.info("updateLaunchScenario");
+
         LaunchScenario existingLaunchScenario = launchScenarioService.getById(id);
         if (existingLaunchScenario == null || id.intValue() != launchScenario.getId().intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
@@ -117,6 +125,9 @@ public class LaunchScenarioController {
     @PutMapping(value = "/{id}/launched", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void updateLaunchTimestamp(HttpServletRequest request, @PathVariable Integer id, @RequestBody final LaunchScenario launchScenario) {
+        
+        LOGGER.info("updateLaunchTimestamp");
+        
         LaunchScenario existingLaunchScenario = launchScenarioService.getById(id);
         if (existingLaunchScenario == null || id.intValue() != launchScenario.getId().intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
@@ -140,6 +151,9 @@ public class LaunchScenarioController {
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"appId"})
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForApp(HttpServletRequest request,
                                                                            @RequestParam(value = "appId") int appId) {
+        
+        LOGGER.info("getLaunchScenariosForApp");
+
         App app = appService.getById(appId);
         if (app == null) {
             throw new ResourceNotFoundException("App not found.");
@@ -152,6 +166,9 @@ public class LaunchScenarioController {
     @GetMapping(produces = APPLICATION_JSON_VALUE, params = {"cdsHookId"})
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForCdsHook(HttpServletRequest request,
                                                                            @RequestParam(value = "cdsHookId") int cdsHookId) {
+        
+        LOGGER.info("getLaunchScenariosForCdsHook");
+        
         CdsHook cdsHook = cdsHookService.getById(cdsHookId);
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(cdsHook.getCdsServiceEndpointId());
         if (cdsHook == null) {
@@ -166,6 +183,8 @@ public class LaunchScenarioController {
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenariosForPersona(HttpServletRequest request,
                                                                            @RequestParam(value = "userPersonaId") int personaId) {
 
+        LOGGER.info("getLaunchScenariosForPersona");
+        
         UserPersona userPersona = userPersonaService.getById(personaId);
         if (userPersona == null) {
             throw new ResourceNotFoundException("UserPersona not found.");
@@ -178,6 +197,9 @@ public class LaunchScenarioController {
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void deleteLaunchScenario(HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("deleteLaunchScenario");
+        
         LaunchScenario launchScenario = launchScenarioService.getById(id);
         if (launchScenario == null) {
             throw new ResourceNotFoundException("LaunchScenario not found.");
@@ -195,6 +217,8 @@ public class LaunchScenarioController {
     public @ResponseBody Iterable<LaunchScenario> getLaunchScenarios(HttpServletRequest request,
         @RequestParam(value = "sandboxId") String sandboxId) throws UnsupportedEncodingException{
 
+        LOGGER.info("getLaunchScenarios");
+        
         String oauthUserId = authorizationService.getSystemUserId(request);
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {

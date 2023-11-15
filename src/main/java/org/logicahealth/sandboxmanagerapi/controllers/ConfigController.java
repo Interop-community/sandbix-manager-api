@@ -24,6 +24,8 @@ import org.logicahealth.sandboxmanagerapi.model.ConfigType;
 import org.logicahealth.sandboxmanagerapi.model.Config;
 import org.logicahealth.sandboxmanagerapi.services.ConfigService;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -31,6 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/config")
 public class ConfigController {
+    private static Logger LOGGER = LoggerFactory.getLogger(ConfigController.class.getName());
 
     private final ConfigService configurationService;
 
@@ -41,6 +44,9 @@ public class ConfigController {
 
     @GetMapping(value = "/{type}")
     public @ResponseBody List<Config> getConfigValuesByType(@PathVariable int type) {
+        
+        LOGGER.info("getConfigValuesByType");
+        
         ConfigType configType = ConfigType.fromInt(type);
         return configurationService.findByConfigType(configType);
     }

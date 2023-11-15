@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +31,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping({"/profile"})
 public class FhirProfileController {
+    private static Logger LOGGER = LoggerFactory.getLogger(FhirProfileController.class.getName());
+    
     private FhirProfileService fhirProfileService;
     private SandboxService sandboxService;
     private UserService userService;
@@ -52,6 +56,8 @@ public class FhirProfileController {
                                      @RequestParam(value = "profileName") String profileName,
                                      @RequestParam(value = "profileId") String profileId) throws IOException {
 
+        LOGGER.info("uploadProfile");
+        
         FhirProfileDetail existingFhirProfileDetail = fhirProfileDetailService.findByProfileIdAndSandboxId(profileId, sandboxId);
         if (existingFhirProfileDetail != null) {
             throw new IllegalArgumentException(profileName + " has already been uploaded");
@@ -126,6 +132,9 @@ public class FhirProfileController {
     @RequestMapping(value = "/profileUploadStatus", params = {"id"})
     @ResponseBody
     public ProfileTask fetchStatus(@RequestParam(value = "id") String id) {
+        
+        LOGGER.info("fetchStatus");
+        
         ProfileTask profileTask = fhirProfileDetailService.getTaskRunning(id);
         if (profileTask != null) {
             if (!profileTask.getStatus()){
@@ -140,18 +149,27 @@ public class FhirProfileController {
     @GetMapping(value = "/getProfileSDs", params = {"fhirProfileId"})
     @ResponseBody
     public List<FhirProfile> getStructureDefinitions (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
+        
+        LOGGER.info("getStructureDefinitions");
+        
         return fhirProfileService.getAllSDsForGivenProfileId(fhirProfileId);
     }
 
     @GetMapping(value = "/getProfileResources", params = {"fhirProfileId"})
     @ResponseBody
     public List<FhirProfile> getAllResourcesForGivenProfileId (@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
+        
+        LOGGER.info("getAllResourcesForGivenProfileId");
+        
         return fhirProfileService.getAllResourcesForGivenProfileId(fhirProfileId);
     }
 
     @GetMapping(params = {"sandboxId"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<FhirProfileDetail> getFhirProfiles(@RequestParam(value = "sandboxId") String sandboxId) {
+        
+        LOGGER.info("getFhirProfiles");
+
         return fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
     }
 
@@ -172,6 +190,9 @@ public class FhirProfileController {
     @GetMapping(params = {"sandboxId", "type"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public HashMap<String, List<FhirProfile>> getFhirProfilesWithASpecificType(@RequestParam(value = "sandboxId") String sandboxId, @RequestParam(value = "type") String type) {
+        
+        LOGGER.info("getFhirProfilesWithASpecificType");
+        
         HashMap<String, List<FhirProfile>> profileNameAndFhirProfile = new HashMap<>();
         List<Integer> fhirProfileIds = fhirProfileDetailService.getAllFhirProfileIdsAssociatedWithASandbox(sandboxId);
         for (Integer fhirProfileId: fhirProfileIds) {
@@ -187,12 +208,18 @@ public class FhirProfileController {
     @GetMapping(params = {"fhirProfileId"}, produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public FhirProfileDetail getFhirProfile(@RequestParam(value = "fhirProfileId") Integer fhirProfileId) {
+        
+        LOGGER.info("getFhirProfile");
+
         return fhirProfileDetailService.getFhirProfileDetail(fhirProfileId);
     }
 
     @GetMapping(value = "/getAllProfileTypes", params = {"sandboxId"})
     @ResponseBody
     public Set<String> getAllProfileTypes (@RequestParam(value = "sandboxId") String sandboxId) {
+        
+        LOGGER.info("getAllProfileTypes");
+        
         List<FhirProfileDetail> fhirProfiles = fhirProfileDetailService.getAllProfilesForAGivenSandbox(sandboxId);
         Set<String> types = new HashSet<>();
         for (FhirProfileDetail fhirProfile: fhirProfiles) {
@@ -207,6 +234,9 @@ public class FhirProfileController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProfile(HttpServletRequest request, @RequestParam(value = "fhirProfileId") Integer fhirProfileId, @RequestParam(value = "sandboxId") String sandboxId, HttpServletResponse response) {
+        
+        LOGGER.info("deleteProfile");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if(!authorizationService.checkSandboxUserNotReadOnlyAuthorization(request, sandbox).equals(user.getSbmUserId())) {

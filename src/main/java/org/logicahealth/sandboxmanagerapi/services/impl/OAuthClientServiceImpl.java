@@ -28,9 +28,12 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class OAuthClientServiceImpl implements OAuthClientService {
+    private static Logger LOGGER = LoggerFactory.getLogger(OAuthClientServiceImpl.class.getName());
 
     @Value("${hspc.platform.api.oauthClientEndpointURL}")
     String oauthClientEndpointURL;
@@ -44,38 +47,67 @@ public class OAuthClientServiceImpl implements OAuthClientService {
 
     @Override
     public String postOAuthClient(String clientJSON) {
+        
+        LOGGER.info("postOAuthClient");
+
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL, HttpMethod.POST, requestEntity, String.class);
+
+        LOGGER.debug("postOAuthClient: "
+        +"Parameters: clientJSON = "+clientJSON+"; Return value = "+responseEntity.getBody());
+
         return responseEntity.getBody();
     }
 
     @Override
     public String putOAuthClientWithClientId(String clientId, String clientJSON) {
+        
+        LOGGER.info("putOAuthClientWithClientId");
+
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(clientJSON, requestHeaders);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "?clientId=" + clientId, HttpMethod.PUT, requestEntity, String.class);
+
+        LOGGER.debug("putOAuthClientWithClientId: "
+        +"Parameters: clientId = "+clientId+", clientJSON = "+clientJSON
+        +"; Return value = "+responseEntity.getBody());
+
         return responseEntity.getBody();
     }
 
     @Override
     public String getOAuthClientWithClientId(String clientId) {
+        
+        LOGGER.info("getOAuthClientWithClientId");
+
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         HttpEntity<String> requestEntity = new HttpEntity<>(requestHeaders);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(oauthClientEndpointURL + "?clientId=" + clientId, HttpMethod.GET, requestEntity, String.class);
+
+        LOGGER.debug("getOAuthClientWithClientId: "
+        +"Parameters: clientId = "+clientId+"; Return value = "+responseEntity.getBody());
+
         return responseEntity.getBody();
     }
 
     @Override
     public void deleteOAuthClientWithClientId(String clientId) {
+
+        LOGGER.info("deleteOAuthClientWithClientId");
+
         restTemplate.delete(oauthClientEndpointURL + "?clientId=" + clientId);
+
+        LOGGER.debug("deleteOAuthClientWithClientId: "
+        +"Parameters: clientId = "+clientId+"; No return value");
+
     }
 }

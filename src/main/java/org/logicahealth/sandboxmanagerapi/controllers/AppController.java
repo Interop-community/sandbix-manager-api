@@ -65,6 +65,9 @@ public class AppController {
     @Transactional
     public @ResponseBody
     App createApp(final HttpServletRequest request, @RequestBody App app) {
+        
+        LOGGER.info("createApp");
+
         Sandbox sandbox = sandboxService.findBySandboxId(app.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox specified in app not found.");
@@ -84,6 +87,9 @@ public class AppController {
 
     @GetMapping(params = {"sandboxId"})
     public @ResponseBody List<App> getApps(final HttpServletRequest request, @RequestParam(value = "sandboxId") String sandboxId) {
+        
+        LOGGER.info("getApps");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -94,6 +100,9 @@ public class AppController {
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody App getApp(final HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("getApp");
+
         App app = appService.getById(id);
         if (app != null) {
             authorizationService.checkSandboxUserReadAuthorization(request, app.getSandbox());
@@ -106,6 +115,9 @@ public class AppController {
     @DeleteMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody void deleteApp(final HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("deleteApp");
+        
         App app = appService.getById(id);
         if (app != null) {
             authorizationService.checkSandboxUserModifyAuthorization(request, app.getSandbox(), app);
@@ -118,6 +130,9 @@ public class AppController {
     @PutMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public @ResponseBody App updateApp(final HttpServletRequest request, @PathVariable Integer id, @RequestBody App app) {
+        
+        LOGGER.info("updateApp");
+
         App existingApp = appService.getById(id);
         if (existingApp == null || existingApp.getId().intValue() != id.intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
@@ -131,6 +146,9 @@ public class AppController {
 
     @GetMapping(value = "/{id}/image", produces ={IMAGE_GIF_VALUE, IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE, "image/jpg"})
     public @ResponseBody void getFullImage(final HttpServletResponse response, @PathVariable Integer id) {
+        
+        LOGGER.info("getFullImage");
+        
         App app = appService.getById(id);
         if (app == null) {
             throw new ResourceNotFoundException("App not found.");
@@ -146,6 +164,9 @@ public class AppController {
     @PostMapping(value = "/{id}/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE} )
     @Transactional
     public @ResponseBody void putFullImage(final HttpServletRequest request, @PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+        
+        LOGGER.info("putFullImage");
+
         App app = appService.getById(id);
         if (app == null) {
             throw new ResourceNotFoundException("App does not exist. Cannot upload image.");
@@ -168,6 +189,9 @@ public class AppController {
     @DeleteMapping(value = "/{id}/image")
     @Transactional
     public App deleteFullImage(final HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("deleteFullImage");
+
         App app = appService.getById(id);
         if (app == null) {
             throw new ResourceNotFoundException("App does not exist. Cannot delete image.");

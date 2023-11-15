@@ -12,9 +12,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class LaunchScenarioServiceImpl implements LaunchScenarioService {
+    private static Logger LOGGER = LoggerFactory.getLogger(LaunchScenarioServiceImpl.class.getName());
 
     private LaunchScenarioRepository repository;
     private ContextParamsService contextParamsService;
@@ -54,18 +57,39 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
     @Override
     @Transactional
     public LaunchScenario save(final LaunchScenario launchScenario) {
-        return repository.save(launchScenario);
+        
+        LOGGER.info("save");
+        
+        LaunchScenario retVal = repository.save(launchScenario);
+
+        LOGGER.debug("save: "
+        +"Parameters: launchScenario = "+launchScenario+"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     @Transactional
     public void delete(final int id) {
+        
+        LOGGER.info("delete");
+
         repository.deleteById(id);
+
+        LOGGER.debug("delete: "
+        +"Parameter: id = "+id+"; No return value");
+
     }
 
     @Override
     @Transactional
     public void delete(final LaunchScenario launchScenario) {
+        
+        LOGGER.info("delete");
+
+        LOGGER.debug("delete: "
+        +"(BEFORE) Parameters: launchScenario = "+launchScenario);
+
         if (launchScenario.getApp() != null) {
             if (launchScenario.getApp().isCustomApp()) {
                 // This is an anonymous App created for a custom launch
@@ -87,11 +111,18 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         }
 
         delete(launchScenario.getId());
+
+        LOGGER.debug("delete: "
+        +"(AFTER) Parameters: launchScenario = "+launchScenario+"; No return value");
+
     }
 
     @Override
     @Transactional
     public void deleteAssociatedLaunchScenarios(List<LaunchScenario> launchScenarios) {
+
+        LOGGER.info("deleteAssociatedLaunchScenarios");
+
         for (LaunchScenario launchScenario: launchScenarios) {
             for (ContextParams contextParams : launchScenario.getContextParams()) {
                 contextParamsService.delete(contextParams);
@@ -102,11 +133,21 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             }
             delete(launchScenario.getId());
         }
+
+        LOGGER.debug("deleteAssociatedLaunchScenarios: "
+        +"launchScenarios = "+launchScenarios+"; No return value");
+
     }
 
     @Override
     @Transactional
     public LaunchScenario create(final LaunchScenario launchScenario) {
+        
+        LOGGER.info("create");
+
+        LOGGER.debug("create: "
+        +"(BEFORE) Parameters: launchScenario = "+launchScenario);
+
         Sandbox sandbox = launchScenario.getSandbox();
         launchScenario.setCreatedTimestamp(new Timestamp(new Date().getTime()));
 
@@ -138,13 +179,21 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             throw new ResourceNotFoundException("No app or CDS-Hook provided");
         }
 
-        return save(launchScenario);
+        LaunchScenario retVal = save(launchScenario);
+
+        LOGGER.debug("create: "
+        +"(AFTER) Parameters: launchScenario = "+launchScenario+"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     @Transactional
 
     public LaunchScenario update(final LaunchScenario launchScenario) {
+        
+        LOGGER.info("update");
+
         LaunchScenario updateLaunchScenario = getById(launchScenario.getId());
         if (updateLaunchScenario != null) {
             updateLaunchScenario.setLastLaunchSeconds(launchScenario.getLastLaunchSeconds());
@@ -177,13 +226,30 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
             if (launchScenario.getContextParams() != null) {
                 updateContextParams(updateLaunchScenario, launchScenario.getContextParams());
             }
-            return save(updateLaunchScenario);
+
+            LaunchScenario retVal = save(updateLaunchScenario);
+
+            LOGGER.debug("update: "
+            +"Parameters: launchScenario = "+launchScenario
+            +"; Return value = "+retVal);
+
+            return retVal;
         }
+        
+        LOGGER.debug("update: "
+        +"Parameters: launchScenario = "+launchScenario
+        +"; Return value = null");
+
         return null;
     }
 
     @Override
     public LaunchScenario updateContextParams(final LaunchScenario launchScenario, final List<ContextParams> newContextParams) {
+
+        LOGGER.info("updateContextParams");
+
+        LOGGER.debug("updateContextParams: "
+        +"(BEFORE) Parameters: launchScenario = "+launchScenario+", newContextParams = "+newContextParams);
 
         List<ContextParams> currentContextParams = launchScenario.getContextParams();
         List<ContextParams> removeContextParams = new ArrayList<>();
@@ -203,47 +269,105 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
         for (ContextParams removeContextParam : removeContextParams) {
             contextParamsService.delete(removeContextParam);
         }
-        launchScenario.setContextParams(newContextParams);
+
+        launchScenario.setContextParams(newContextParams); 
+
+        LOGGER.debug("updateContextParams: "
+        +"(AFTER) Parameters: launchScenario = "+launchScenario+", newContextParams = "+newContextParams
+        +"; Return value = "+launchScenario);
+
         return launchScenario;
     }
 
     @Override
     public Iterable<LaunchScenario> findAll(){
+
+        LOGGER.info("findAll");
+
+        LOGGER.debug("findAll: "
+        +"No input parameters; Return value = "+repository.findAll());
+
         return repository.findAll();
     }
 
     @Override
     public LaunchScenario getById(final int id) {
+        
+        LOGGER.info("getById");
+
+        LOGGER.debug("getById: "
+        +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
+
         return repository.findById(id).orElse(null);
     }
 
     @Override
     public List<LaunchScenario> findBySandboxId(final String sandboxId) {
+        
+        LOGGER.info("findBySandboxId");
+
+        LOGGER.debug("findBySandboxId: "
+        +"Parameters: sandboxId = "+sandboxId+"; Return value = "+repository.findBySandboxId(sandboxId));
+
         return  repository.findBySandboxId(sandboxId);
     }
 
     @Override
     public List<LaunchScenario> findByAppIdAndSandboxId(final int appId, final String sandboxId) {
+        
+        LOGGER.info("findByAppIdAndSandboxId");
+
+        LOGGER.debug("findByAppIdAndSandboxId: "
+        +"Parameters: appId = "+appId+", sandboxId = "+sandboxId
+        +"; Return value = "+repository.findByAppIdAndSandboxId(appId, sandboxId));
+
         return  repository.findByAppIdAndSandboxId(appId, sandboxId);
     }
 
     @Override
     public List<LaunchScenario> findByUserPersonaIdAndSandboxId(final int userPersonaId, final String sandboxId) {
+        
+        LOGGER.info("findByUserPersonaIdAndSandboxId");
+
+        LOGGER.debug("findByUserPersonaIdAndSandboxId: "
+        +"Parameters: userPersonaId = "+userPersonaId+", sandboxId = "+sandboxId
+        +"; Return value = "+repository.findByUserPersonaIdAndSandboxId(userPersonaId, sandboxId));
+
         return  repository.findByUserPersonaIdAndSandboxId(userPersonaId, sandboxId);
     }
 
     @Override
     public List<LaunchScenario> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
+        
+        LOGGER.info("findBySandboxIdAndCreatedByOrVisibility");
+
+        LOGGER.debug("findBySandboxIdAndCreatedByOrVisibility: "
+        +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy+", visibility = "+visibility
+        +"; Return value = "+repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility));
+
         return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
     }
 
     @Override
     public List<LaunchScenario> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy) {
+
+        LOGGER.info("findBySandboxIdAndCreatedBy");
+
+        LOGGER.debug("findBySandboxIdAndCreatedBy: "
+        +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy
+        +"; Return value = "+repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy));
+
         return repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy);
     }
 
     @Override
     public List<LaunchScenario> updateLastLaunchForCurrentUser(final List<LaunchScenario> launchScenarios, final User user) {
+        
+        LOGGER.info("updateLastLaunchForCurrentUser");
+
+        LOGGER.debug("updateLastLaunchForCurrentUser: "
+        +"(BEFORE) Parameters: launchScenarios = "+launchScenarios+", user = "+user);
+
         for (LaunchScenario launchScenario : launchScenarios) {
             UserLaunch userLaunch = userLaunchService.findByUserIdAndLaunchScenarioId(user.getSbmUserId(), launchScenario.getId());
             if (userLaunch != null) {
@@ -253,11 +377,23 @@ public class LaunchScenarioServiceImpl implements LaunchScenarioService {
                 launchScenario.setLastLaunchSeconds(0L);
             }
         }
+
+        LOGGER.debug("updateLastLaunchForCurrentUser: "
+        +"(AFTER) Parameters: launchScenarios = "+launchScenarios+", user = "+user
+        +"; Return value = "+launchScenarios);
+
         return launchScenarios;
     }
 
     @Override
     public List<LaunchScenario> findByCdsHookIdAndSandboxId(final int cdsHookId, final String sandboxId) {
+
+        LOGGER.info("findByCdsHookIdAndSandboxId");
+
+        LOGGER.debug("findByCdsHookIdAndSandboxId: "
+        +"Parameters: cdsHookId = "+cdsHookId+", sandboxId = "+sandboxId
+        +"; Return Value = "+repository.findByCdsHookIdAndSandboxId(cdsHookId, sandboxId));
+
         return repository.findByCdsHookIdAndSandboxId(cdsHookId, sandboxId);
     }
 }
