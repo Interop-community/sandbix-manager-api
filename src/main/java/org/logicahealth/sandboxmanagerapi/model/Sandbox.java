@@ -209,4 +209,14 @@ public class Sandbox extends AbstractItem {
 
     public void setCreationStatus(SandboxCreationStatus creationStatus) {
         this.creationStatus = creationStatus;
-    }}
+    }
+
+    public String toString(){
+        
+        return "sandboxId: "+this.sandboxId+", name: "+this.name+", description: "
+        +this.description+", apiEndpointIndex: "+this.apiEndpointIndex+", fhirServerEndPoint: "
+        +this.fhirServerEndPoint+", dataSet: "+this.dataSet+", apps: "+this.apps+", allowOpenAccess: "
+        +this.allowOpenAccess+", expirationMessage: "+this.expirationMessage+", expirationDate: "
+        +this.expirationDate+", payerUserId: "+this.payerUserId+", creationStatus: "+this.creationStatus;
+    }
+}

@@ -918,10 +918,12 @@ public class SandboxServiceImpl implements SandboxService {
         
         LOGGER.info("fullCount");
 
-        LOGGER.debug("fullCount: "
-        +"No input parameters; Return value = "+repository.fullCount());
+        String retVal = repository.fullCount();
 
-        return repository.fullCount();
+        LOGGER.debug("fullCount: "
+        +"No input parameters; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
@@ -1030,10 +1032,16 @@ public class SandboxServiceImpl implements SandboxService {
         
         LOGGER.info("findAll");
 
-        LOGGER.debug("findAll: "
-        +"No input parameters; Return value = "+repository.findAll());
+        Iterable<Sandbox> retVal = repository.findAll();
 
-        return repository.findAll();
+        Iterator<Sandbox> itr = retVal.iterator();
+
+        LOGGER.debug("findAll: "
+        +"No input parameters; Return value = ");
+
+        itr.forEachRemaining(sandbox -> LOGGER.debug(sandbox.toString()));
+
+        return retVal;
     }
 
     @Override

@@ -424,10 +424,12 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         
         LOGGER.info("getSandboxStatisticsOverNumberOfDays");
 
-        LOGGER.debug("getSandboxStatisticsOverNumberOfDays: "
-        +"Parameters: intervalDays = "+intervalDays+"; Return Value = "+getSandboxStatistics(intervalDays));
+        Statistics retVal = getSandboxStatistics(intervalDays);
 
-        return getSandboxStatistics(intervalDays);
+        LOGGER.debug("getSandboxStatisticsOverNumberOfDays: "
+        +"Parameters: intervalDays = "+intervalDays+"; Return Value = "+retVal);
+
+        return retVal;
     }
 
     @Scheduled(cron = "0 50 23 28-31 * ?")
@@ -574,11 +576,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         Date dateYearAgo = new Date(d.getTime() - intNumberOfMonths * lengthOfMonth * 24 * 3600 * 1000L );
         Timestamp yearAgoTimestamp = new Timestamp(dateYearAgo.getTime());
 
+        List<Statistics> retVal = statisticsRepository.get12MonthStatistics(yearAgoTimestamp, currentTimestamp);
+
         LOGGER.debug("displayStatsForGivenNumberOfMonths: "
         +"Parameters: numberOfMonths = "+numberOfMonths
-        +"; Return value = "+statisticsRepository.get12MonthStatistics(yearAgoTimestamp, currentTimestamp));
+        +"; Return value = "+retVal);
 
-        return statisticsRepository.get12MonthStatistics(yearAgoTimestamp, currentTimestamp);
+        return retVal;
     }
 
     public HashMap<String, Object> transactionStats(Integer interval, Integer n) {
