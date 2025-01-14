@@ -27,6 +27,8 @@ import org.logicahealth.sandboxmanagerapi.model.SystemRole;
 import org.logicahealth.sandboxmanagerapi.model.User;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +42,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
+    private static Logger LOGGER = LoggerFactory.getLogger(AdminController.class.getName());
 
     private final UserService userService;
     private final SandboxService sandboxService;
@@ -62,6 +65,9 @@ public class AdminController {
     @DeleteMapping(value = "/sandbox/{id}", produces = APPLICATION_JSON_VALUE)
     @Transactional
     public void deleteSandboxById(HttpServletRequest request, @PathVariable String id) {
+        
+        LOGGER.info("deleteSandboxById");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(id);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -80,6 +86,9 @@ public class AdminController {
     @DeleteMapping(value = "/deleteUnused")
     @ResponseBody
     public Set<String> deleteUnusedSandboxes(HttpServletRequest request) {
+        
+        LOGGER.info("deleteUnusedSandboxes");
+        
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -93,6 +102,9 @@ public class AdminController {
     @GetMapping(value = "/sandbox-differences/$list")
     @Transactional
     public HashMap<String, Object> listSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
+        
+        LOGGER.info("listSandboxManagerReferenceApiDiscrepencies");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");
@@ -104,6 +116,9 @@ public class AdminController {
     @GetMapping(value = "/sandbox-differences/$sync")
     @Transactional
     public HashMap<String, Object> syncSandboxManagerReferenceApiDiscrepencies(HttpServletRequest request) {
+        
+        LOGGER.info("syncSandboxManagerReferenceApiDiscrepencies");
+
         User user = userService.findBySbmUserId(authorizationService.getSystemUserId(request));
         if (user == null) {
             throw new ResourceNotFoundException("User not found in authorization header.");

@@ -7,9 +7,12 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class ImageServiceImpl implements ImageService {
+    private static Logger LOGGER = LoggerFactory.getLogger(ImageServiceImpl.class.getName());
 
     private final ImageRepository repository;
 
@@ -21,12 +24,27 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional
     public Image save(final Image image) {
-        return repository.save(image);
+
+        LOGGER.info("save");
+
+        Image retVal = repository.save(image);
+
+        LOGGER.debug("save: "
+        +"Parameters: image = "+image+"; Return value = "+retVal);
+        
+        return retVal;
     }
 
     @Override
     @Transactional
     public void delete(final int id) {
+        
+        LOGGER.info("delete");
+
         repository.deleteById(id);
+
+        LOGGER.debug("delete: "
+        +"Parameters: id = "+id+"; No return value");
+
     }
 }

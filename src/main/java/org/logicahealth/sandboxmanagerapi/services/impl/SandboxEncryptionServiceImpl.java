@@ -46,8 +46,15 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
 
     @Override
     public void generateKeyPair() {
+        
+        LOGGER.info("generateKeyPair");
+
         if (keysExist()) {
             LOGGER.info("Key pair already exists");
+
+            LOGGER.debug("generateKeyPair: "
+            +"No input parameters; No return value");
+
             return;
         }
         try {
@@ -60,15 +67,27 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("Exception while generating key pair", e);
         }
+
+        LOGGER.debug("generateKeyPair: "
+        +"No input parameters; No return value");
     }
 
     @Override
     public String encrypt(String key) {
+        
+        LOGGER.info("encrypt");
+
         try {
             var privateKey = retrievePrivateKey();
             var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            return Base64.encodeBase64String(cipher.doFinal(key.getBytes(StandardCharsets.UTF_8)));
+
+            String retVal = Base64.encodeBase64String(cipher.doFinal(key.getBytes(StandardCharsets.UTF_8)));
+
+            LOGGER.debug("encrypt: "
+            +"Parameters: key = "+key+"; Return value = "+retVal);
+
+            return retVal;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
             LOGGER.error("Exception while signing key", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while signing key", e);
@@ -76,11 +95,20 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     }
 
     private PrivateKey retrievePrivateKey() {
+        
+        LOGGER.info("retrievePrivateKey");
+
         try {
             var keyBytes = Files.readAllBytes(new File(this.privateKeyFilePath).toPath());
             var spec = new PKCS8EncodedKeySpec(keyBytes);
-            return KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
+            
+            PrivateKey retVal = KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
                              .generatePrivate(spec);
+
+            LOGGER.debug("retrievePrivateKey: "
+            +"No input parameters; Return value = "+retVal);
+
+            return retVal;
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             LOGGER.error("Exception while retrieving private key for signing key", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while retrieving private key for signing key", e);
@@ -89,10 +117,18 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
 
     @Override
     public String decryptSignature(String signature) {
+        
+        LOGGER.info("decryptSignature");
+
         try {
             var publicKey = retrievePublicKey();
             var cipher = Cipher.getInstance(KEY_PAIR_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, publicKey);
+            
+            LOGGER.debug("decryptSignature: "
+            +"Parameters: signature = "+signature
+            +"; Return value = "+new String(cipher.doFinal(Base64.decodeBase64(signature)), StandardCharsets.UTF_8));
+
             return new String(cipher.doFinal(Base64.decodeBase64(signature)), StandardCharsets.UTF_8);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while decrypting signature", e);
@@ -100,11 +136,20 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     }
 
     private PublicKey retrievePublicKey() {
+        
+        LOGGER.info("retrievePublicKey");
+
         try {
             var keyBytes = Files.readAllBytes(new File(this.publicKeyFilePath).toPath());
             var spec = new X509EncodedKeySpec(keyBytes);
-            return KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
+
+            PublicKey retVal = KeyFactory.getInstance(KEY_PAIR_ALGORITHM)
                              .generatePublic(spec);
+
+            LOGGER.debug("retrievePublicKey: "
+            +"No input parameters; Return value = "+retVal);
+
+            return retVal;
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             LOGGER.error("Exception while retrieving public key for decryption", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception while retrieving public key for decryption", e);
@@ -112,16 +157,31 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
     }
 
     private boolean keysExist() {
+        
+        LOGGER.info("keysExist");
+
         var keysDirectory = new File(this.asymmetricKeysFolder);
         if (keysDirectory.isDirectory() && keysDirectory.exists()) {
             var privateKeyFile = new File(privateKeyFilePath);
             var publicKeyFile = new File(this.publicKeyFilePath);
+
+            LOGGER.debug("keysExist: "
+            +"No input parameters; Return value = "
+            +(privateKeyFile.isFile() && privateKeyFile.exists() && publicKeyFile.isFile() && publicKeyFile.exists()));
+
             return privateKeyFile.isFile() && privateKeyFile.exists() && publicKeyFile.isFile() && publicKeyFile.exists();
         }
+
+        LOGGER.debug("keysExist: "
+            +"No input parameters; Return value = false");
+
         return false;
     }
 
     private void storeKey(String keyFile, byte[] key) {
+        
+        LOGGER.info("storeKey");
+
         new File(this.asymmetricKeysFolder).mkdir();
         try (var fileOutputStream = new FileOutputStream(new File(keyFile))) {
             fileOutputStream.write(key);
@@ -129,6 +189,10 @@ public class SandboxEncryptionServiceImpl implements SandboxEncryptionService {
         } catch (IOException e) {
             LOGGER.error("Exception while storing key pair", e);
         }
+
+        LOGGER.debug("storeKey: "
+        +"Parameters: keyFile = "+keyFile+", key = "+key+"; No return value");
+
     }
 
 }

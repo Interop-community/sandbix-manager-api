@@ -25,6 +25,8 @@ import org.apache.http.HttpStatus;
 import org.logicahealth.sandboxmanagerapi.model.*;
 import org.logicahealth.sandboxmanagerapi.services.*;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +38,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping({"/cds-services"})
 public class CdsServiceEndpointController {
+    private static Logger LOGGER = LoggerFactory.getLogger(CdsServiceEndpointController.class.getName());
 
     private final CdsServiceEndpointService cdsServiceEndpointService;
     private final CdsHookService cdsHookService;
@@ -63,6 +66,8 @@ public class CdsServiceEndpointController {
     public List<CdsServiceEndpoint> createCdsServiceEndpoint(final HttpServletRequest request,
                                                              @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
 
+        LOGGER.info("createCdsServiceEndpoint");
+        
         checkUserAuthorizationAndModifyCdsServiceEndpoint(request, cdsServiceEndpoint);
         authorizationService.checkUserAuthorization(request, cdsServiceEndpoint.getCreatedBy().getSbmUserId());
 
@@ -71,6 +76,9 @@ public class CdsServiceEndpointController {
 
     private CdsServiceEndpoint checkUserAuthorizationAndModifyCdsServiceEndpoint (HttpServletRequest request,
                                                                                   CdsServiceEndpoint cdsServiceEndpoint) {
+        
+        LOGGER.info("checkUserAuthorizationAndModifyCdsServiceEndpoint");
+
         Sandbox sandbox = sandboxService.findBySandboxId(cdsServiceEndpoint.getSandbox().getSandboxId());
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox specified in CDS-Service not found.");
@@ -93,6 +101,9 @@ public class CdsServiceEndpointController {
     public CdsServiceEndpoint updateCdsServiceEndpoint(final HttpServletRequest request,
                                                        @PathVariable Integer id,
                                                        @RequestBody CdsServiceEndpoint cdsServiceEndpoint) {
+        
+        LOGGER.info("updateCdsServiceEndpoint");
+
         CdsServiceEndpoint existingCdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         if (existingCdsServiceEndpoint == null || existingCdsServiceEndpoint.getId().intValue() != id.intValue()) {
             throw new RuntimeException(String.format("Response Status : %s.\n" +
@@ -108,6 +119,9 @@ public class CdsServiceEndpointController {
     @ResponseBody
     public List<CdsServiceEndpoint> getCdsServiceEndpoints(final HttpServletRequest request,
                                                @RequestParam(value = "sandboxId") String sandboxId) {
+        
+        LOGGER.info("getCdsServiceEndpoints");
+        
         Sandbox sandbox = sandboxService.findBySandboxId(sandboxId);
         if (sandbox == null) {
             throw new ResourceNotFoundException("Sandbox not found.");
@@ -124,6 +138,9 @@ public class CdsServiceEndpointController {
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public CdsServiceEndpoint getCdsServicEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("getCdsServicEndpoint");
+        
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
         cdsServiceEndpoint.setCdsHooks(cdsHooks);
@@ -139,6 +156,9 @@ public class CdsServiceEndpointController {
     @Transactional
     @ResponseBody
     public void deleteCdsServiceEndpoint(final HttpServletRequest request, @PathVariable Integer id) {
+        
+        LOGGER.info("deleteCdsServiceEndpoint");
+        
         CdsServiceEndpoint cdsServiceEndpoint = cdsServiceEndpointService.getById(id);
         if (cdsServiceEndpoint != null) {
             authorizationService.checkSandboxUserModifyAuthorization(request, cdsServiceEndpoint.getSandbox(), cdsServiceEndpoint);

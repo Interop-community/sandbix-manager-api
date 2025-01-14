@@ -56,58 +56,114 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public String getBearerToken(HttpServletRequest request) {
 
+        LOGGER.info("getBearerToken");
+
         String authToken = request.getHeader("Authorization");
         if (authToken == null) {
+
+            LOGGER.debug("getBearerToken: "
+            +"Parameters: request = "+request+"; Return value = null");
+
             return null;
         }
+
+        LOGGER.debug("getBearerToken: "
+        +"Parameters: request = "+request+"; Return value = "+authToken.substring(7));
+
         return authToken.substring(7);
     }
 
     @Override
     public String getOAuthUserId(HttpServletRequest request) {
+        
+        LOGGER.info("getOAuthUserId");
+
         try {
             JSONObject jsonObject = getOAuthUser(request);
             if (jsonObject != null) {
+
+                LOGGER.debug("getOAuthUserId: "
+                +"Parameters: request = "+request
+                +"; Return value "+((String) jsonObject.get("sub")));
+
                 return (String) jsonObject.get("sub");
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
+
+        LOGGER.debug("getOAuthUserId: "
+        +"Parameters: request = "+request
+        +"; Return value = null");
+
         return null;
     }
 
     @Override
     public String getOAuthUserName(HttpServletRequest request) {
+        
+        LOGGER.info("getOAuthUserId");
+
         try {
             JSONObject jsonObject = getOAuthUser(request);
             if (jsonObject != null) {
+
+                LOGGER.debug("getOAuthUserId: "
+                +"Parameters: request = "+request
+                +"; Return value = "+((String) jsonObject.get("name")));
+
                 return (String) jsonObject.get("name");
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
+
+        LOGGER.debug("getOAuthUserId: "
+        +"Parameters: request = "+request
+        +"; Return value = null");
+
         return null;
     }
 
     @Override
     public String getOAuthUserEmail(HttpServletRequest request) {
+        
+        LOGGER.info("getOAuthUserEmail");
+
         try {
             JSONObject jsonObject = getOAuthUser(request);
             if (jsonObject != null) {
                 //TODO change to email when FireBase starts sending email
+
+                LOGGER.debug("getOAuthUserEmail: "
+                +"Parameters: request = "+request
+                +"; Return value = "+((String) jsonObject.get("preferred_username")));
+
                 return (String) jsonObject.get("preferred_username");
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
+
+        LOGGER.debug("getOAuthUserEmail: "
+        +"Parameters: request = "+request
+        +"; Return value = null");
+
         return null;
     }
 
 
     private JSONObject getOAuthUser(HttpServletRequest request) {
 
+        LOGGER.info("getOAuthUser");
+
         String authToken = getBearerToken(request);
         if (authToken == null) {
+
+            LOGGER.debug("getOAuthUser: "
+            +"Parameters: request = "+request
+            +"; Return value = null");
+
             return null;
         }
 
@@ -119,6 +175,11 @@ public class OAuthServiceImpl implements OAuthService {
         try {
             ResponseEntity<String> response = simpleRestTemplate.exchange(this.oauthUserInfoEndpointURL, HttpMethod.GET, entity, String.class);
             try {
+
+                LOGGER.debug("getOAuthUser: "
+                +"Parameters: request = "+request
+                +"; Return value = "+ new JSONObject(response.getBody()));
+
                 return new JSONObject(response.getBody());
             } catch (JSONException e) {
                 LOGGER.error("JSON Error reading entity: " + entity, e);

@@ -9,6 +9,8 @@ import org.logicahealth.sandboxmanagerapi.services.LaunchScenarioService;
 import org.logicahealth.sandboxmanagerapi.services.UserLaunchService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -22,6 +24,7 @@ import static java.util.Arrays.asList;
 
 @Service
 public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService {
+    private static Logger LOGGER = LoggerFactory.getLogger(CdsServiceEndpointServiceImpl.class.getName());
 
     private final CdsServiceEndpointRepository repository;
     private CdsHookService cdsHookService;
@@ -67,18 +70,36 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
     @Override
     @Transactional
     public CdsServiceEndpoint save(final CdsServiceEndpoint cdsServiceEndpoint) {
-        return repository.save(cdsServiceEndpoint);
+        
+        LOGGER.info("save");
+
+        CdsServiceEndpoint retVal = repository.save(cdsServiceEndpoint);
+
+        LOGGER.debug("save: "
+        +"Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     @Transactional
     public void delete(final int id) {
+
+        LOGGER.info("delete");
+
         repository.deleteById(id);
+
+        LOGGER.debug("delete: "
+        +"Parameters: id = "+id+"; No return value");
     }
 
     @Override
     @Transactional
     public void delete(final CdsServiceEndpoint cdsServiceEndpoint) {
+        
+        LOGGER.info("delete");
+
         // Delete all associated CDS-Hook and  CDS-Hook Launch Scenarios
         List<CdsHook> cdsHooks = cdsHookService.findByCdsServiceEndpointId(cdsServiceEndpoint.getId());
         for (CdsHook cdsHook : cdsHooks) {
@@ -92,17 +113,34 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
             cdsHookService.delete(cdsHook);
         }
         delete(cdsServiceEndpoint.getId());
+
+        LOGGER.debug("delete: "
+        +"Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint+"; No return value");
+
     }
 
     @Override
     @Transactional
     @PublishAtomicMetric
     public List<CdsServiceEndpoint> create(final CdsServiceEndpoint cdsServiceEndpoint, final Sandbox sandbox) {
+        
+        LOGGER.info("create");
+
+        LOGGER.debug("create: "
+        +"(BEFORE) Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint+", sandbox = "+sandbox);
+
         CdsServiceEndpoint existingCdsServiceEndpoint = findByCdsServiceEndpointUrlAndSandboxId(cdsServiceEndpoint.getUrl(), cdsServiceEndpoint.getSandbox()
                                                                                                                                                .getSandboxId());
         if (existingCdsServiceEndpoint != null) {
             cdsServiceEndpoint.setId(existingCdsServiceEndpoint.getId());
-            return List.of(update(cdsServiceEndpoint));
+
+            List<CdsServiceEndpoint> retVal = List.of(update(cdsServiceEndpoint));
+
+            LOGGER.debug("create: "
+            +"(AFTER) Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint+", sandbox = "+sandbox
+            +"; Return value = "+retVal);
+
+            return retVal;
         }
         Timestamp timestamp = new Timestamp(new Date().getTime());
         cdsServiceEndpoint.setCreatedTimestamp(timestamp);
@@ -115,12 +153,25 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
             cdsHook.setHookUrl(cdsServiceEndpointSaved.getUrl() + "/" + cdsHook.getHookId());
             cdsHookService.create(cdsHook);
         }
-        return List.of(cdsServiceEndpointSaved, cdsEndpoints.get(INVALID_CDS_HOOKS_INDEX));
+
+        List<CdsServiceEndpoint> retVal = List.of(cdsServiceEndpointSaved, cdsEndpoints.get(INVALID_CDS_HOOKS_INDEX));
+            
+        LOGGER.debug("create: "
+        +"(AFTER) Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint+", sandbox = "+sandbox
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     @Transactional
     public CdsServiceEndpoint update(final CdsServiceEndpoint cdsServiceEndpoint) {
+        
+        LOGGER.info("update");
+
+        LOGGER.debug("update: "
+        +"(BEFORE) Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint);
+
         CdsServiceEndpoint existingCdsServiceEndpoint = getById(cdsServiceEndpoint.getId());
         existingCdsServiceEndpoint.setTitle(cdsServiceEndpoint.getTitle());
         existingCdsServiceEndpoint.setDescription(cdsServiceEndpoint.getDescription());
@@ -147,36 +198,81 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
             cdsHook.setHookUrl(cdsServiceEndpoint.getUrl() + "/" + cdsHook.getHookId());
             cdsHookService.create(cdsHook);
         }
-        return save(existingCdsServiceEndpoint);
+        
+        CdsServiceEndpoint retVal = save(existingCdsServiceEndpoint);
+
+        LOGGER.debug("update: "
+        +"(AFTER) Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint+"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     public CdsServiceEndpoint getById(final int id) {
+        
+        LOGGER.info("getById");
+
+        LOGGER.debug("getById: "
+        +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
+
         return repository.findById(id)
                          .orElse(null);
     }
 
     @Override
     public List<CdsServiceEndpoint> findBySandboxId(final String sandboxId) {
+        
+        LOGGER.info("findBySandboxId");
+
+        LOGGER.debug("findBySandboxId: "
+        +"Parameters: sandboxId = "+sandboxId+"; Return value = "+repository.findBySandboxId(sandboxId));
+
         return repository.findBySandboxId(sandboxId);
     }
 
     @Override
     public List<CdsServiceEndpoint> findBySandboxIdAndCreatedByOrVisibility(final String sandboxId, final String createdBy, final Visibility visibility) {
+        
+        LOGGER.info("findBySandboxIdAndCreatedByOrVisibility");
+
+        LOGGER.debug("findBySandboxIdAndCreatedByOrVisibility: "
+        +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy+", visibility = "+visibility
+        +"; Return value = "+repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility));
+
         return repository.findBySandboxIdAndCreatedByOrVisibility(sandboxId, createdBy, visibility);
     }
 
     @Override
     public List<CdsServiceEndpoint> findBySandboxIdAndCreatedBy(final String sandboxId, final String createdBy) {
+        
+        LOGGER.info("findBySandboxIdAndCreatedBy");
+
+        LOGGER.debug("findBySandboxIdAndCreatedBy: "
+        +"Parameters: sandboxId = "+sandboxId+", createdBy = "+createdBy
+        +"; Return value = "+repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy));
+
         return repository.findBySandboxIdAndCreatedBy(sandboxId, createdBy);
     }
 
     @Override
     public CdsServiceEndpoint findByCdsServiceEndpointUrlAndSandboxId(final String url, final String sandboxId) {
+        
+        LOGGER.info("findByCdsServiceEndpointUrlAndSandboxId");
+
+        LOGGER.debug("findByCdsServiceEndpointUrlAndSandboxId: "
+        +"Parameters: url = "+url+", sandboxId = "+sandboxId
+        +"; Return value = "+repository.findByCdsServiceEndpointUrlAndSandboxId(url, sandboxId));
+
         return repository.findByCdsServiceEndpointUrlAndSandboxId(url, sandboxId);
     }
 
     private List<CdsServiceEndpoint> separateOutInvalidCdsHooks(final CdsServiceEndpoint cdsServiceEndpoint) {
+        
+        LOGGER.info("separateOutInvalidCdsHooks");
+
+        LOGGER.debug("separateOutInvalidCdsHooks: "
+        +"(BEFORE) Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint);
+
         List<CdsServiceEndpoint> cdsEndpoints = new ArrayList<>(2);
         cdsEndpoints.add(cdsServiceEndpoint);
         CdsServiceEndpoint invalidCdsHooks = new CdsServiceEndpoint();
@@ -193,14 +289,30 @@ public class CdsServiceEndpointServiceImpl implements CdsServiceEndpointService 
                 invalidCdsHooks.getCdsHooks().add(hook);
             }
         });
+
+        LOGGER.debug("separateOutInvalidCdsHooks: "
+        +"(AFTER) Parameters: cdsServiceEndpoint = "+cdsServiceEndpoint+"; Return value = "+cdsEndpoints);
+
         return cdsEndpoints;
     }
 
     private boolean isValidCdsHook(String hook) {
+
+        LOGGER.info("isValidCdsHook");
+
+        LOGGER.debug("isValidCdsHook: "
+        +"Parameters: hook = "+hook+"; Return value = "+asList(this.validCdsHooks).contains(hook));
+
         return asList(this.validCdsHooks).contains(hook);
     }
 
     private boolean isActiveCdsHook(String hook) {
+
+        LOGGER.info("isActiveCdsHook");
+
+        LOGGER.debug("isActiveCdsHook: "
+        +"Parameters: hook = "+hook+"; Return value = "+!asList(this.deprecatedCdsHooks).contains(hook));
+
         return !asList(this.deprecatedCdsHooks).contains(hook);
     }
 

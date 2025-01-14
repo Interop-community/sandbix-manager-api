@@ -7,9 +7,12 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TermsOfUseAcceptanceServiceImpl implements TermsOfUseAcceptanceService {
+    private static Logger LOGGER = LoggerFactory.getLogger(TermsOfUseAcceptanceServiceImpl.class.getName());
 
     private final TermsOfUseAcceptanceRepository repository;
 
@@ -21,11 +24,26 @@ public class TermsOfUseAcceptanceServiceImpl implements TermsOfUseAcceptanceServ
     @Override
     @Transactional
     public TermsOfUseAcceptance save(TermsOfUseAcceptance termsOfUseAcceptance) {
-        return repository.save(termsOfUseAcceptance);
+
+        LOGGER.info("save");
+
+        TermsOfUseAcceptance retVal = repository.save(termsOfUseAcceptance);
+
+        LOGGER.debug("save: "
+        +"Parameters: termsOfUseAcceptance = "+termsOfUseAcceptance
+        +"; Return value = "+retVal);
+
+        return retVal;
     }
 
     @Override
     public TermsOfUseAcceptance getById(final int id) {
+        
+        LOGGER.info("getById");
+
+        LOGGER.debug("getById: "
+        +"Parameters: id = "+id+"; Return value = "+repository.findById(id).orElse(null));
+
         return  repository.findById(id).orElse(null);
     }
 
